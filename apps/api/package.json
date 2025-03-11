@@ -1,0 +1,32 @@
+{
+  "name": "api",
+  "version": "1.0.50",
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "deploy": "wrangler deploy --minify",
+    "dry-run": "wrangler deploy --minify --dry-run"
+  },
+  "dependencies": {
+    "@clickhouse/client": "^1.10.1",
+    "@databuddy/db": "*",
+    "@databuddy/trpc": "*",
+    "@highlight-run/hono": "^1.0.3",
+    "@hono/node-server": "^1.8.2",
+    "@hono/zod-validator": "^0.4.3",
+    "@logtail/edge": "^0.5.2",
+    "@prisma/client": "^6.4.1",
+    "@trpc/server": "^11.0.0-next-beta.294",
+    "@types/ua-parser-js": "^0.7.39",
+    "better-auth": "^1.2.2",
+    "chalk": "^5.4.1",
+    "hono": "^4.7.2",
+    "prisma": "^6.4.1",
+    "ua-parser-js": "^2.0.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "wrangler": "^3.28.2"
+  },
+  "module": "src/index.js"
+}

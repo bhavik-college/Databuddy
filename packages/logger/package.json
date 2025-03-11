@@ -1,0 +1,30 @@
+{
+  "name": "@databuddy/logger",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "clean": "rimraf .turbo node_modules dist",
+    "dev": "tsup --watch",
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@highlight-run/node": "^3.12.0",
+    "@highlight-run/pino": "^0.1.6",
+    "pino": "9.6.0",
+    "pino-pretty": "^10.3.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "rimraf": "^5.0.10",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.2"
+  }
+}

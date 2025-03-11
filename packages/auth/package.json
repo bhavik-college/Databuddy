@@ -1,0 +1,15 @@
+{
+    "name": "@databuddy/auth",
+    "version": "0.0.1",
+    "private": true,
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
+    "dependencies": {
+      "better-auth": "^1.2.3",
+      "@databuddy/db": "*"
+    },
+    "peerDependencies": {
+      "react": "^19.0.0",
+      "react-dom": "^19.0.0"
+    }
+  }

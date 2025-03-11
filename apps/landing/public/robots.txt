@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+# Block access to admin areas
+Disallow: /admin/
+Disallow: /wp-admin/
+
+# Block specific files and directories
+Disallow: /private/
+Disallow: /*.json$
+Disallow: /*.xml$
+Disallow: /*.php$
+
+# Allow access to assets
+Allow: /images/
+Allow: /css/
+Allow: /js/
+
+# Sitemap location
+Sitemap: https://databuddy.cc/sitemap.xml 

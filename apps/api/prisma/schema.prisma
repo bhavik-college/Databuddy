@@ -1,0 +1,241 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Email {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  ipAddress String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Contact {
+  id              String   @id @default(uuid())
+  name            String
+  email           String
+  company         String?
+  website         String?
+  monthlyVisitors String?
+  message         String
+  ipAddress       String?
+  userAgent       String?
+  referrer        String?
+  source          String?  @default("website")
+  status          String   @default("new") // new, contacted, resolved
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// Authentication models
+
+model User {
+  id            String      @id @default(uuid())
+  name          String?
+  email         String      @unique
+  emailVerified Boolean?    @default(false)
+  image         String?
+  password      String?
+  role          Role        @default(USER)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  posts         Post[]
+  accounts      Account[]
+  sessions      Session[]
+  teamMember    TeamMember?
+  websites      Website[] // Relation to websites
+
+  @@map("user")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+enum Role {
+  USER
+  AUTHOR
+  EDITOR
+  ADMIN
+}
+
+// Blog models
+
+model Post {
+  id         String     @id @default(uuid())
+  title      String
+  slug       String     @unique
+  content    String     @db.Text
+  excerpt    String?    @db.Text
+  coverImage String?
+  published  Boolean    @default(false)
+  featured   Boolean    @default(false)
+  authorId   String
+  author     User       @relation(fields: [authorId], references: [id])
+  categories Category[]
+  tags       Tag[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  posts       Post[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  posts     Post[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// About page models
+
+model TeamMember {
+  id          String   @id @default(uuid())
+  name        String
+  position    String
+  bio         String   @db.Text
+  image       String?
+  order       Int      @default(0)
+  userId      String?  @unique
+  user        User?    @relation(fields: [userId], references: [id])
+  socialLinks Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CompanyInfo {
+  id        String   @id @default(uuid())
+  name      String   @default("Databuddy Analytics")
+  mission   String   @db.Text
+  vision    String   @db.Text
+  values    Json
+  founded   DateTime
+  timeline  Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Careers page models
+
+model JobListing {
+  id               String           @id @default(uuid())
+  title            String
+  slug             String           @unique
+  department       String
+  location         String
+  locationType     String // remote, hybrid, onsite
+  description      String           @db.Text
+  requirements     String[]
+  responsibilities String[]
+  active           Boolean          @default(true)
+  featured         Boolean          @default(false)
+  salary           Json? // { min: number, max: number, currency: string }
+  applicationUrl   String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  applications     JobApplication[]
+}
+
+model JobApplication {
+  id              String      @id @default(uuid())
+  jobId           String?
+  job             JobListing? @relation(fields: [jobId], references: [id])
+  name            String
+  email           String
+  phone           String
+  role            String
+  experienceLevel String
+  resumeUrl       String
+  portfolioUrl    String?
+  linkedinUrl     String?
+  githubUrl       String?
+  coverLetter     String      @db.Text
+  status          String      @default("PENDING") // PENDING, REVIEWED, INTERVIEW, REJECTED, HIRED
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+// Website models for dashboard
+
+model Website {
+  id         String             @id @default(uuid())
+  name       String
+  url        String
+  slug       String             @unique
+  isActive   Boolean            @default(true)
+  status     WebsiteStatus      @default(HEALTHY)
+  trackingId String             @unique @default(uuid())
+  userId     String
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+}
+
+enum WebsiteStatus {
+  HEALTHY
+  ISSUES
+  INACTIVE
+}
+
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}

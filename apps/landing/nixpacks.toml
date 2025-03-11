@@ -1,0 +1,19 @@
+name = "Databuddy"
+version = "0.1.0"
+packageManager = "bun@1.2.3"
+private = true
+type = "module"
+
+[scripts]
+
+[phases.setup]
+nixPkgs = ["nodejs", "bun"]
+
+[phases.build]
+cmds = ["bun run build"]
+
+[phases.install]
+cmds = ["bun install"]
+
+[start]
+cmd = "bun run start"
