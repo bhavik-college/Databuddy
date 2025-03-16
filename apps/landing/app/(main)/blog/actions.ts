@@ -14,8 +14,7 @@ export const getAllPublishedPosts = unstable_cache(
       include: {
         author: {
           select: {
-            name: true,
-            image: true
+            name: true
           }
         },
         categories: true,
@@ -26,7 +25,16 @@ export const getAllPublishedPosts = unstable_cache(
       }
     });
     
-    return posts as unknown as Post[];
+    // Transform the data to match our expected Post type
+    const transformedPosts = posts.map(post => ({
+      ...post,
+      author: {
+        name: post.author.name || 'Anonymous',
+        image: null
+      }
+    }));
+    
+    return transformedPosts as unknown as Post[];
   },
   ["published-posts"],
   { revalidate: 3600 } // Revalidate every hour
@@ -43,8 +51,7 @@ export const getPostBySlug = unstable_cache(
       include: {
         author: {
           select: {
-            name: true,
-            image: true
+            name: true
           }
         },
         categories: true,
@@ -52,7 +59,18 @@ export const getPostBySlug = unstable_cache(
       }
     });
     
-    return post as unknown as Post | null;
+    if (!post) return null;
+    
+    // Transform the data to match our expected Post type
+    const transformedPost = {
+      ...post,
+      author: {
+        name: post.author.name || 'Anonymous',
+        image: null
+      }
+    };
+    
+    return transformedPost as unknown as Post;
   },
   ["post-by-slug"],
   { revalidate: 3600 } // Revalidate every hour
@@ -73,8 +91,7 @@ export const getRelatedPosts = unstable_cache(
       include: {
         author: {
           select: {
-            name: true,
-            image: true
+            name: true
           }
         },
         categories: true,
@@ -86,7 +103,16 @@ export const getRelatedPosts = unstable_cache(
       take: limit
     });
     
-    return posts as unknown as Post[];
+    // Transform the data to match our expected Post type
+    const transformedPosts = posts.map(post => ({
+      ...post,
+      author: {
+        name: post.author.name || 'Anonymous',
+        image: null
+      }
+    }));
+    
+    return transformedPosts as unknown as Post[];
   },
   ["related-posts"],
   { revalidate: 3600 } // Revalidate every hour
@@ -108,8 +134,7 @@ export const getRecentPosts = unstable_cache(
         createdAt: true,
         author: {
           select: {
-            name: true,
-            image: true
+            name: true
           }
         }
       },
@@ -119,7 +144,16 @@ export const getRecentPosts = unstable_cache(
       take: limit
     });
     
-    return posts as unknown as SidebarPost[];
+    // Transform the data to match our expected SidebarPost type
+    const transformedPosts = posts.map(post => ({
+      ...post,
+      author: {
+        name: post.author.name || 'Anonymous',
+        image: null
+      }
+    }));
+    
+    return transformedPosts as unknown as SidebarPost[];
   },
   ["recent-posts"],
   { revalidate: 3600 } // Revalidate every hour
