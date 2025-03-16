@@ -76,7 +76,7 @@ export async function getPostsByCategory(categoryId: string): Promise<Post[]> {
   try {
     const posts = await getAllPosts();
     return posts.filter(post => 
-      post.categories.some(category => category.id === categoryId)
+      post.categories?.some((category: Category) => category.id === categoryId) || false
     );
   } catch (error) {
     console.error('Error fetching posts by category:', error);
@@ -89,7 +89,7 @@ export async function getPostsByTag(tagId: string): Promise<Post[]> {
   try {
     const posts = await getAllPosts();
     return posts.filter(post => 
-      post.tags.some(tag => tag.id === tagId)
+      post.tags?.some(tag => tag.id === tagId) || false
     );
   } catch (error) {
     console.error('Error fetching posts by tag:', error);

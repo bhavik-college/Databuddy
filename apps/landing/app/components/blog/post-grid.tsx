@@ -81,15 +81,15 @@ export function PostGrid({ posts }: PostGridProps) {
             )}
             
             <CardHeader className="pb-2">
-              <div className="flex flex-wrap gap-2 mb-2">
-                {post.categories.slice(0, 2).map((category) => (
-                  <Badge 
+              <div className="flex flex-wrap gap-2 mb-3">
+                {post.categories?.slice(0, 2).map((category: Category) => (
+                  <Link 
                     key={category.id} 
-                    variant="secondary" 
-                    className="bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/10 transition-colors"
+                    href={`/blog/category/${category.slug}`}
+                    className="text-xs text-blue-400 hover:text-blue-300 transition-colors mr-3"
                   >
                     {category.name}
-                  </Badge>
+                  </Link>
                 ))}
               </div>
               <h2 className="text-xl font-bold text-white line-clamp-2 group-hover:text-sky-400 transition-colors">
@@ -105,7 +105,7 @@ export function PostGrid({ posts }: PostGridProps) {
               )}
               
               <div className="flex flex-wrap gap-2">
-                {post.tags.slice(0, 3).map((tag) => (
+                {post.tags && post.tags.slice(0, 3).map((tag: Tag) => (
                   <Badge 
                     key={tag.id} 
                     variant="outline" 

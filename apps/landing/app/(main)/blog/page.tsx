@@ -209,7 +209,7 @@ export default function BlogPage() {
                           
                           <div className="p-6 md:p-8">
                             <div className="flex flex-wrap gap-2 mb-4">
-                              {post.categories.map(category => (
+                              {post.categories?.map((category: Category) => (
                                 <Link key={category.id} href={`/blog/category/${category.slug}`}>
                                   <Badge variant="outline" className="hover:bg-slate-800 transition-colors cursor-pointer">
                                     {category.name}
