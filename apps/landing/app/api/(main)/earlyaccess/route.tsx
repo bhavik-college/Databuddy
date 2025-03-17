@@ -1,4 +1,4 @@
-import db from "@/lib/db";
+import { db } from "@databuddy/db";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { LRUCache } from "lru-cache";
@@ -55,17 +55,8 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
   
   try {
-    // Log request received
-    // logEvent("request_received", { 
-    //   requestId,
-    //   method: request.method,
-    //   url: request.url,
-    //   userAgent: request.headers.get("user-agent") || "unknown"
-    // });
-
     // Check request method
     if (request.method !== "POST") {
-      // logEvent("method_not_allowed", { requestId, method: request.method });
       return NextResponse.json(
         { error: "Method not allowed" },
         { status: 405, headers: corsHeaders }
@@ -77,7 +68,6 @@ export async function POST(request: NextRequest) {
     try {
       body = await request.json();
     } catch (e) {
-      // logEvent("invalid_json", { requestId, error: (e as Error).message });
       return NextResponse.json(
         { error: "Invalid JSON in request body" },
         { status: 400, headers: corsHeaders }
@@ -87,10 +77,6 @@ export async function POST(request: NextRequest) {
     // Validate request body against schema
     const validation = requestSchema.safeParse(body);
     if (!validation.success) {
-      // logEvent("validation_failed", { 
-      //   requestId, 
-      //   errors: validation.error.format() 
-      // });
       return NextResponse.json(
         { 
           error: "Validation failed", 
@@ -120,10 +106,6 @@ export async function POST(request: NextRequest) {
 
     // Check if email already exists in cache
     if (emailCache.has(email)) {
-      // logEvent("email_already_submitted", { 
-      //   requestId, 
-      //   email: email.slice(0, 3) + "***" // Log partial email for privacy
-      // });
       return NextResponse.json(
         { error: "This email has already been submitted" }, 
         { status: 409, headers: corsHeaders }
@@ -153,18 +135,15 @@ export async function POST(request: NextRequest) {
     }
     
     // Check if email exists in database
-    const existingUser = await db.email.findUnique({
-      where: { email },
+    const existingUser = await db.email.findFirst({
+      where: { 
+        email: email 
+      },
     });
 
     if (existingUser) {
       // Add to cache to prevent future DB lookups
       emailCache.set(email, true);
-      
-      // logEvent("email_already_registered", { 
-      //   requestId, 
-      //   email: email.slice(0, 3) + "***" // Log partial email for privacy
-      // });
       
       return NextResponse.json(
         { error: "This email has already been registered" }, 
@@ -177,7 +156,6 @@ export async function POST(request: NextRequest) {
       data: {
         email,
         ipAddress: IP,
-        createdAt: new Date(),
       },
     });
 
@@ -194,14 +172,6 @@ export async function POST(request: NextRequest) {
       "Referrer-Policy": "strict-origin-when-cross-origin",
     };
 
-    // Log successful registration
-    // logEvent("registration_success", { 
-    //   requestId, 
-    //   email: email.slice(0, 3) + "***", // Log partial email for privacy
-    //   source,
-    //   processingTimeMs: Date.now() - startTime
-    // });
-
     return NextResponse.json(
       { 
         success: true, 
@@ -213,28 +183,13 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    const errorStack = error instanceof Error ? error.stack : undefined;
     
-    // Log error details
-    // logEvent("registration_error", { 
-    //   requestId, 
-    //   error: errorMessage,
-    //   stack: errorStack,
-    //   processingTimeMs: Date.now() - startTime
-    // });
-    
-    console.error("Early access registration error:", error);
+    console.error("Early access registration error:", errorMessage);
     
     return NextResponse.json(
       { error: "An unexpected error occurred while processing your request" }, 
       { status: 500, headers: corsHeaders }
     );
-  } finally {
-    // Log request completion
-    // logEvent("request_completed", { 
-    //   requestId,
-    //   processingTimeMs: Date.now() - startTime
-    // });
   }
 }
 
