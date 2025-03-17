@@ -5,7 +5,8 @@
     "types": "./src/index.ts",
     "dependencies": {
         "@prisma/client": "^6.5.0",
-        "prism": "^4.1.2"
+        "prism": "^4.1.2",
+        "prisma": "^6.5.0"
     },
     "scripts": {
         "postinstall": "prisma generate",

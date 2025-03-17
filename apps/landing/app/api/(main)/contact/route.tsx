@@ -1,4 +1,4 @@
-import db from "@/lib/db";
+import { db } from "@databuddy/db";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { LRUCache } from "lru-cache";
@@ -9,7 +9,7 @@ const contactSchema = z.object({
   email: z.string().email("Please provide a valid email address"),
   company: z.string().optional(),
   website: z.string().url("Please provide a valid URL").optional().or(z.literal("")),
-  monthlyVisitors: z.string().optional(),
+  monthlyVisitors: z.number(),
   message: z.string().min(10, "Message must be at least 10 characters").max(1000),
   source: z.string().optional(),
 });
@@ -181,10 +181,6 @@ export async function POST(request: NextRequest) {
         website: website || null,
         monthlyVisitors,
         message,
-        ipAddress: IP,
-        source: source || "website",
-        referrer: request.headers.get("referer") || null,
-        userAgent: request.headers.get("user-agent") || null,
       },
     });
 
