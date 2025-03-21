@@ -1,4 +1,4 @@
-const { withNextJSMonorepoWorkaroundPlugin } = require('@prisma/nextjs-monorepo-workaround-plugin')
+// const { withNextJSMonorepoWorkaroundPlugin } = require('@prisma/nextjs-monorepo-workaround-plugin')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -9,4 +9,6 @@ const nextConfig = {
   },
 }
 
-module.exports = withNextJSMonorepoWorkaroundPlugin(nextConfig) 
+module.exports = nextConfig
+
+// module.exports = withNextJSMonorepoWorkaroundPlugin(nextConfig) 
