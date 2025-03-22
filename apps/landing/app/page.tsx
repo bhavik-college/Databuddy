@@ -81,11 +81,11 @@ export default function Home() {
             <FAQ />
           </div>
         </FadeIn>
-        <FadeIn delay={100}>
+        {/* <FadeIn delay={100}>
           <div id="contact">
             <Contact />
           </div>
-        </FadeIn>
+        </FadeIn> */}
         <FadeIn delay={100}>
           <div id="cta-form">
             <CTA />

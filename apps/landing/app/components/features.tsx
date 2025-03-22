@@ -346,7 +346,7 @@ export default function Features() {
         {/* Desktop view: Tabs */}
         <div className="hidden md:block">
           <Tabs defaultValue="core" className="w-full max-w-5xl mx-auto" onValueChange={setActiveCategory}>
-            <TabsList className="grid grid-cols-5 mb-8 bg-slate-900/50 p-1 rounded-lg">
+            <TabsList className="grid grid-cols-6 mb-8 bg-slate-900/50 p-1 rounded-lg">
               {categories.map((category) => (
                 <TabsTrigger 
                   key={category.id} 
@@ -373,17 +373,13 @@ export default function Features() {
                       className="relative p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-sky-500/30 transition-all duration-300 hover:shadow-[0_0_25px_-5px_rgba(14,165,233,0.15)]"
                     >
                       <div className="flex items-center gap-4 mb-3">
-                        <div className="p-2 rounded-lg bg-sky-500/10 text-sky-400">
+                        <div className="p-2 rounded-lg bg-sky-500/10 text-sky-400 flex-shrink-0">
                           {feature.icon}
                         </div>
-                        <h3 className="text-lg font-semibold">{feature.title}</h3>
+                        <h3 className="text-lg font-semibold line-clamp-2">{feature.title}</h3>
                       </div>
-                      <p className="text-slate-400 text-sm mb-4">{feature.description}</p>
-                      {feature.status === "coming" ? (
-                        <Badge variant="outline" className="text-yellow-400 border-yellow-400/30 bg-yellow-400/10">
-                          Coming soon
-                        </Badge>
-                      ) : null}
+                      <p className="text-slate-400 text-sm mb-4 line-clamp-3">{feature.description}</p>
+                      <StatusBadge status={feature.status} />
                     </motion.div>
                   ))}
                 </div>
@@ -394,13 +390,13 @@ export default function Features() {
 
         {/* Mobile view: Category selector + Carousel */}
         <div className="md:hidden">
-          <div className="flex overflow-x-auto pb-4 mb-6 gap-2 scrollbar-hide">
+          <div className="flex overflow-x-auto pb-4 mb-6 gap-2 scrollbar-hide -mx-4 px-4">
             {categories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => setActiveCategory(category.id)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap text-sm",
+                  "flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap text-sm flex-shrink-0",
                   activeCategory === category.id 
                     ? "bg-sky-500/10 text-sky-400 border border-sky-500/30" 
                     : "bg-slate-800 text-slate-300 border border-slate-700"
@@ -424,20 +420,16 @@ export default function Features() {
                 >
                   <CarouselContent>
                     {categoryFeatures.map((feature) => (
-                      <CarouselItem key={feature.title} className="basis-full sm:basis-1/2">
+                      <CarouselItem key={feature.title} className="basis-full sm:basis-1/2 pl-4">
                         <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 h-full">
                           <div className="flex items-center gap-3 mb-3">
-                            <div className="p-2 rounded-lg bg-sky-500/10 text-sky-400">
+                            <div className="p-2 rounded-lg bg-sky-500/10 text-sky-400 flex-shrink-0">
                               {feature.icon}
                             </div>
-                            <h3 className="text-base font-semibold">{feature.title}</h3>
+                            <h3 className="text-base font-semibold line-clamp-2">{feature.title}</h3>
                           </div>
                           <p className="text-slate-400 text-sm mb-4">{feature.description}</p>
-                          {feature.status === "coming" ? (
-                            <Badge variant="outline" className="text-yellow-400 border-yellow-400/30 bg-yellow-400/10">
-                              Coming soon
-                            </Badge>
-                          ) : null}
+                          <StatusBadge status={feature.status} />
                         </div>
                       </CarouselItem>
                     ))}
@@ -450,14 +442,6 @@ export default function Features() {
               </div>
             )
           ))}
-        </div>
-
-        <div className="text-center mt-12">
-          <Link href="#cta-form">
-            <Button size="lg" className="bg-sky-500 hover:bg-sky-600 text-white">
-              Get early access
-            </Button>
-          </Link>
         </div>
       </div>
     </section>
