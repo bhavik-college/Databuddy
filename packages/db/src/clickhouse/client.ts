@@ -58,10 +58,10 @@ class CustomLogger implements Logger {
     clickhouse_settings: {
       date_time_input_format: 'best_effort',
     },
-    log: {
-      LoggerClass: CustomLogger,
-      level: ClickHouseLogLevel.DEBUG,
-    },
+    // log: {
+    //   LoggerClass: CustomLogger,
+    //   level: ClickHouseLogLevel.DEBUG,
+    // },
   };
 
   export const clickHouseOG = createClient({
@@ -152,12 +152,12 @@ class CustomLogger implements Logger {
       }),
     };
   
-    logger.info('query info', {
-      query: cleanQuery(query),
-      rows: json.rows,
-      stats: response.statistics,
-      elapsed: Date.now() - start,
-    });
+    // logger.info('query info', {
+    //   query: cleanQuery(query),
+    //   rows: json.rows,
+    //   stats: response.statistics,
+    //   elapsed: Date.now() - start,
+    // });
   
     return response;
   }

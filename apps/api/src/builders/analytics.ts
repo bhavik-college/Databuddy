@@ -233,12 +233,94 @@ export function createTopReferrersBuilder(websiteId: string, startDate: string, 
   return builder;
 }
 
-export function createEventsByDateBuilder(websiteId: string, startDate: string, endDate: string) {
+export function createEventsByDateBuilder(websiteId: string, startDate: string, endDate: string, granularity: 'hourly' | 'daily' = 'daily') {
   const builder = createSqlBuilder();
   
   // Generate all dates in the range with zero values by default,
   // then only fill in actual data where it exists
   
+  // For hourly data, we need to generate hourly intervals instead of daily
+  if (granularity === 'hourly') {
+    // For hourly data, we should limit the range to avoid generating too many rows
+    // Check if date range is more than 2 days and adjust if needed
+    const startDateTime = new Date(startDate);
+    const endDateTime = new Date(endDate);
+    const diffInDays = Math.ceil((endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // If more than 2 days, limit to the last 48 hours from the end date
+    let adjustedStartDate = startDate;
+    if (diffInDays > 2) {
+      const adjustedStart = new Date(endDateTime);
+      adjustedStart.setHours(adjustedStart.getHours() - 48);
+      adjustedStartDate = adjustedStart.toISOString().split('T')[0];
+    }
+    
+    const sql = `
+      WITH hour_range AS (
+        SELECT arrayJoin(arrayMap(
+          h -> toDateTime('${adjustedStartDate} 00:00:00') + (h * 3600),
+          range(toUInt32(dateDiff('hour', toDateTime('${adjustedStartDate} 00:00:00'), toDateTime('${endDate} 23:59:59')) + 1))
+        )) AS datetime
+      ),
+      session_durations AS (
+        SELECT 
+          toStartOfHour(min_time) as event_hour,
+          session_id,
+          dateDiff('second', min_time, max_time) as duration
+        FROM (
+          SELECT 
+            session_id, 
+            MIN(time) as min_time, 
+            MAX(time) as max_time
+          FROM analytics.events
+          WHERE 
+            client_id = '${websiteId}'
+            AND time >= parseDateTimeBestEffort('${adjustedStartDate} 00:00:00')
+            AND time <= parseDateTimeBestEffort('${endDate} 23:59:59')
+          GROUP BY session_id
+          HAVING min_time < max_time
+        )
+      ),
+      hourly_metrics AS (
+        SELECT
+          toStartOfHour(time) as event_hour,
+          countIf(event_name = 'screen_view') as pageviews,
+          countDistinct(anonymous_id) as unique_visitors,
+          countDistinct(session_id) as sessions,
+          avg(is_bounce) * 100 as bounce_rate
+        FROM analytics.events
+        WHERE 
+          client_id = '${websiteId}'
+          AND time >= parseDateTimeBestEffort('${adjustedStartDate} 00:00:00')
+          AND time <= parseDateTimeBestEffort('${endDate} 23:59:59')
+        GROUP BY event_hour
+      )
+      SELECT
+        formatDateTime(hour_range.datetime, '%Y-%m-%d %H:00:00') as date,
+        COALESCE(hm.pageviews, 0) as pageviews,
+        if(hm.pageviews > 0, hm.unique_visitors, 0) as unique_visitors,
+        if(hm.pageviews > 0, hm.sessions, 0) as sessions,
+        COALESCE(hm.bounce_rate, 0) as bounce_rate,
+        COALESCE(avg(sd.duration), 0) as avg_session_duration
+      FROM hour_range
+      LEFT JOIN hourly_metrics hm ON hour_range.datetime = hm.event_hour
+      LEFT JOIN session_durations sd ON hour_range.datetime = sd.event_hour
+      GROUP BY 
+        hour_range.datetime, 
+        hm.pageviews, 
+        hm.unique_visitors, 
+        hm.sessions, 
+        hm.bounce_rate
+      ORDER BY hour_range.datetime ASC
+    `;
+    
+    // Override the getSql method to return our custom query
+    builder.getSql = () => sql;
+    
+    return builder;
+  }
+  
+  // Default daily granularity query (unchanged)
   const sql = `
     WITH date_range AS (
       SELECT arrayJoin(arrayMap(

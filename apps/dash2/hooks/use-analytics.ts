@@ -21,6 +21,7 @@ export interface TodayStats {
 export interface DateRange {
   start_date: string;
   end_date: string;
+  granularity?: 'hourly' | 'daily';
 }
 
 export interface PageData {
@@ -175,6 +176,44 @@ export interface ProfileData {
   sessions: SessionData[];
 }
 
+export interface ErrorDetail {
+  error_id: string;
+  error_type: string;
+  error_message: string;
+  stack_trace?: string;
+  url: string;
+  path: string;
+  time: string;
+  visitor_id: string;
+  browser: string;
+  os: string;
+  device_type: string;
+  count: number;
+  unique_users: number;
+}
+
+export interface ErrorTypeSummary {
+  error_type: string;
+  error_message: string;
+  count: number;
+  unique_users: number;
+  last_occurrence: string;
+}
+
+export interface ErrorsData {
+  success: boolean;
+  date_range: DateRange;
+  error_types: ErrorTypeSummary[];
+  recent_errors: ErrorDetail[];
+  errors_over_time: Array<{
+    date: string;
+    [key: string]: number | string;
+  }>;
+  total_errors: number;
+  total_pages: number;
+  current_page: number;
+}
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 /**
@@ -206,7 +245,7 @@ export function useWebsiteAnalytics(
   } = options || {};
 
   // Memoize the date range to ensure stable query keys
-  const memoizedDateRange = useMemo(() => dateRange, [dateRange.start_date, dateRange.end_date]);
+  const memoizedDateRange = useMemo(() => dateRange, [dateRange.start_date, dateRange.end_date, dateRange.granularity]);
   
   // Helper to build query params
   const buildParams = useCallback((additionalParams?: Record<string, string | number>) => {
@@ -214,6 +253,7 @@ export function useWebsiteAnalytics(
       website_id: websiteId,
       start_date: memoizedDateRange.start_date,
       end_date: memoizedDateRange.end_date,
+      ...(memoizedDateRange.granularity ? { granularity: memoizedDateRange.granularity } : {}),
       ...additionalParams
     });
     
@@ -222,6 +262,10 @@ export function useWebsiteAnalytics(
   
   // Helper to fetch data with error handling
   const fetchData = useCallback(async (endpoint: string, params?: Record<string, string | number>, signal?: AbortSignal) => {
+    // NOTE: The API should support the 'granularity' parameter with values 'hourly' or 'daily'
+    // For hourly granularity, the API should return data points for each hour in the given date range
+    // For daily granularity (default), the API should return data points for each day
+    // When showing 24-hour data, use hourly granularity for more detailed charts
     const url = `${API_BASE_URL}${endpoint}?${buildParams(params)}`;
     
     // Add a query parameter to bust cache when manually refreshing
@@ -229,9 +273,6 @@ export function useWebsiteAnalytics(
     
     const response = await fetch(`${url}${url.includes('?') ? '&' : '?'}_t=${timestamp}`, {
       credentials: 'include',
-      headers: {
-        'Cache-Control': 'no-cache',
-      },
       signal, // Pass the AbortSignal to allow cancellation
     });
     
@@ -669,9 +710,6 @@ export function useAnalyticsSessions(
       
       const response = await fetch(`${API_BASE_URL}/analytics/sessions?${params.toString()}`, {
         credentials: 'include',
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
         signal, // Pass the AbortSignal to allow cancellation
       });
       
@@ -780,9 +818,6 @@ export function useAnalyticsProfiles(
       
       const response = await fetch(`${API_BASE_URL}/analytics/profiles?${params.toString()}`, {
         credentials: 'include',
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
         signal, // Pass the AbortSignal to allow cancellation
       });
       
@@ -802,6 +837,66 @@ export function useAnalyticsProfiles(
         total_visitors: data.total_visitors as number,
         returning_visitors: data.returning_visitors as number
       };
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes - keep cached data longer
+    refetchOnWindowFocus: false, // Don't auto-refresh when window gets focus
+    refetchOnMount: false, // Don't auto-refresh when component mounts
+    retry: (failureCount, error) => {
+      // Don't retry on aborted requests
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return false;
+      }
+      return failureCount < 2; // Retry other errors up to 2 times
+    }
+  });
+}
+
+/**
+ * Hook to fetch website error analytics
+ */
+export function useWebsiteErrors(
+  websiteId: string,
+  dateRange?: DateRange,
+  limit: number = 50,
+  page: number = 1
+) {
+  return useQuery({
+    queryKey: ['analytics', 'errors', websiteId, dateRange, limit, page],
+    queryFn: async ({ signal }) => {
+      const params = new URLSearchParams({
+        website_id: websiteId,
+        limit: limit.toString(),
+        page: page.toString()
+      });
+      
+      if (dateRange?.start_date) {
+        params.append('start_date', dateRange.start_date);
+      }
+      
+      if (dateRange?.end_date) {
+        params.append('end_date', dateRange.end_date);
+      }
+      
+      // Add a timestamp to bust cache when manually refreshing
+      params.append('_t', new Date().getTime().toString());
+      
+      const response = await fetch(`${API_BASE_URL}/analytics/errors?${params.toString()}`, {
+        credentials: 'include',
+        signal, // Pass the AbortSignal to allow cancellation
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch error analytics');
+      }
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch error analytics');
+      }
+      
+      return data as ErrorsData;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes - keep cached data longer

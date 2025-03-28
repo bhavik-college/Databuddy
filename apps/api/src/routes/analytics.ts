@@ -12,6 +12,7 @@ import { chQuery, createSqlBuilder } from '@databuddy/db';
 import { AppVariables } from '../types';
 import { authMiddleware } from '../middleware/auth';
 import { parseUserAgent } from '../utils/user-agent';
+import { format } from 'date-fns';
 import { 
   createSummaryBuilder, 
   createTodayBuilder, 
@@ -80,6 +81,7 @@ const analyticsQuerySchema = z.object({
   start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)').optional(),
   end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)').optional(),
   interval: z.enum(['day', 'week', 'month', 'auto']).default('day'),
+  granularity: z.enum(['daily', 'hourly']).default('daily'),
   limit: z.coerce.number().int().min(1).max(1000).default(30),
 });
 
@@ -148,7 +150,12 @@ analyticsRouter.get('/summary', zValidator('query', analyticsQuerySchema), async
     const todayBuilder = createTodayBuilder(params.website_id);
     const topPagesBuilder = createTopPagesBuilder(params.website_id, startDate, endDate, 5);
     const topReferrersBuilder = createTopReferrersBuilder(params.website_id, startDate, endDate, 5);
-    const eventsByDateBuilder = createEventsByDateBuilder(params.website_id, startDate, endDate);
+    const eventsByDateBuilder = createEventsByDateBuilder(
+      params.website_id, 
+      startDate, 
+      endDate, 
+      params.granularity as 'hourly' | 'daily'
+    );
     const todayPagesBuilder = createTopPagesBuilder(params.website_id, today, today, 5);
     const todayReferrersBuilder = createTopReferrersBuilder(params.website_id, today, today, 5);
     const resolutionsBuilder = createScreenResolutionsBuilder(params.website_id, startDate, endDate, 10);
@@ -311,31 +318,50 @@ analyticsRouter.get('/summary', zValidator('query', analyticsQuerySchema), async
     
     // Add today to events_by_date if it's within the date range
     if (today >= startDate && today <= endDate) {
-      const todayStats = {
-        date: today,
-        pageviews: todayData[0]?.pageviews || 0,
-        unique_visitors: todayData[0]?.visitors || 0,
-        sessions: todayData[0]?.sessions || 0,
-        bounce_rate: 0, // We don't have this for raw events
-        avg_session_duration: 0 // We don't have this for raw events
-      };
-      
-      // Check if today exists in eventsByDate
-      const todayExists = eventsByDate.some(day => day.date === today);
-      
-      if (todayExists) {
-        // Update today's data to include real-time data
-        const todayIndex = eventsByDate.findIndex(day => day.date === today);
-        if (todayIndex >= 0) {
-          eventsByDate[todayIndex].pageviews += todayData[0]?.pageviews || 0;
-          eventsByDate[todayIndex].unique_visitors += todayData[0]?.visitors || 0;
-          eventsByDate[todayIndex].sessions += todayData[0]?.sessions || 0;
+      // Only add today's summary data when using daily granularity
+      if (params.granularity === 'daily') {
+        const todayStats = {
+          date: today,
+          pageviews: todayData[0]?.pageviews || 0,
+          unique_visitors: todayData[0]?.visitors || 0,
+          sessions: todayData[0]?.sessions || 0,
+          bounce_rate: 0, // We don't have this for raw events
+          avg_session_duration: 0 // We don't have this for raw events
+        };
+        
+        // Check if today exists in eventsByDate
+        const todayExists = eventsByDate.some(day => day.date === today);
+        
+        if (todayExists) {
+          // Update today's data to include real-time data
+          const todayIndex = eventsByDate.findIndex(day => day.date === today);
+          if (todayIndex >= 0) {
+            eventsByDate[todayIndex].pageviews += todayData[0]?.pageviews || 0;
+            eventsByDate[todayIndex].unique_visitors += todayData[0]?.visitors || 0;
+            eventsByDate[todayIndex].sessions += todayData[0]?.sessions || 0;
+          }
+        } else {
+          // Add today if it doesn't exist
+          eventsByDate.push(todayStats);
+          // Sort by date
+          eventsByDate.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
         }
-      } else {
-        // Add today if it doesn't exist
-        eventsByDate.push(todayStats);
-        // Sort by date
-        eventsByDate.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      } else if (params.granularity === 'hourly') {
+        // For hourly granularity, distribute today's data to the current hour
+        const now = new Date();
+        const currentHourFormatted = format(now, 'yyyy-MM-dd HH:00:00');
+        
+        // Check if current hour exists in eventsByDate
+        const currentHourIndex = eventsByDate.findIndex(hour => hour.date === currentHourFormatted);
+        
+        if (currentHourIndex >= 0) {
+          // Update current hour's data to include real-time data
+          eventsByDate[currentHourIndex].pageviews += todayData[0]?.pageviews || 0;
+          eventsByDate[currentHourIndex].unique_visitors += todayData[0]?.visitors || 0;
+          eventsByDate[currentHourIndex].sessions += todayData[0]?.sessions || 0;
+        }
+        // If current hour doesn't exist in the data, we don't add it
+        // as it might be outside the 48-hour limit applied in the hourly query
       }
     }
     
@@ -368,14 +394,15 @@ analyticsRouter.get('/summary', zValidator('query', analyticsQuerySchema), async
       website_id: params.website_id,
       date_range: {
         start_date: startDate,
-        end_date: endDate
+        end_date: endDate,
+        granularity: params.granularity
       },
       summary: {
         pageviews: summary.pageviews,
-        unique_visitors: summary.unique_visitors,
         visitors: summary.visitors,
+        unique_visitors: summary.unique_visitors,
         sessions: summary.sessions,
-        bounce_rate: Math.round(summary.bounce_rate * 10) / 10,
+        bounce_rate: summary.bounce_rate,
         bounce_rate_pct: `${Math.round(summary.bounce_rate * 10) / 10}%`,
         avg_session_duration: Math.round(summary.avg_session_duration),
         avg_session_duration_formatted: formatTime(summary.avg_session_duration)
@@ -387,9 +414,7 @@ analyticsRouter.get('/summary', zValidator('query', analyticsQuerySchema), async
       },
       events_by_date: eventsByDate.map(day => ({
         ...day,
-        bounce_rate: Math.round(day.bounce_rate * 10) / 10,
         bounce_rate_pct: `${Math.round(day.bounce_rate * 10) / 10}%`,
-        avg_session_duration: Math.round(day.avg_session_duration),
         avg_session_duration_formatted: formatTime(day.avg_session_duration)
       })),
       top_pages: finalTopPages,
@@ -447,65 +472,22 @@ analyticsRouter.get('/trends', zValidator('query', analyticsQuerySchema), async 
     const endDate = params.end_date || new Date().toISOString().split('T')[0];
     const startDate = params.start_date || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     
-    // Define interval based on parameter
-    let intervalFunc = "toDate(time)";
-    let intervalName = "date";
+    // Use EventsByDateBuilder to get consistent results across endpoints
+    const eventsByDateBuilder = createEventsByDateBuilder(
+      params.website_id, 
+      startDate, 
+      endDate, 
+      params.granularity as 'hourly' | 'daily'
+    );
     
-    if (params.interval === 'week') {
-      intervalFunc = "toStartOfWeek(time)";
-      intervalName = "week";
-    } else if (params.interval === 'month') {
-      intervalFunc = "toStartOfMonth(time)";
-      intervalName = "month";
-    } else if (params.interval === 'auto') {
-      // Calculate days difference to determine best interval
-      const startDateObj = new Date(startDate);
-      const endDateObj = new Date(endDate);
-      const daysDiff = Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24));
-      
-      if (daysDiff > 90) {
-        intervalFunc = "toStartOfMonth(time)";
-        intervalName = "month";
-      } else if (daysDiff > 30) {
-        intervalFunc = "toStartOfWeek(time)";
-        intervalName = "week";
-      }
-    }
-    
-    // Create SQL builder for trends directly from events table
-    const trendsBuilder = createSqlBuilder('events');
-    
-    trendsBuilder.sb.select = {
-      interval_field: `${intervalFunc} as ${intervalName}`,
-      pageviews: "COUNT(CASE WHEN event_name = 'screen_view' THEN 1 END) as pageviews",
-      visitors: 'COUNT(DISTINCT anonymous_id) as visitors',
-      sessions: 'COUNT(DISTINCT session_id) as sessions',
-      bounce_rate: 'AVG(is_bounce) * 100 as bounce_rate',
-      avg_session_duration: 'AVG(CASE WHEN event_name = \'screen_view\' THEN time_on_page ELSE 0 END) as avg_session_duration'
-    };
-    
-    trendsBuilder.sb.where = {
-      client_filter: `client_id = '${params.website_id}'`,
-      date_filter: `time >= parseDateTimeBestEffort('${startDate}') AND time <= parseDateTimeBestEffort('${endDate} 23:59:59')`
-    };
-    
-    trendsBuilder.sb.groupBy = {
-      interval_group: intervalFunc
-    };
-    
-    trendsBuilder.sb.orderBy = {
-      interval_order: `${intervalName} ASC`
-    };
-    
-    trendsBuilder.sb.limit = params.limit;
-    
-    const trends = await chQuery(trendsBuilder.getSql());
+    // Execute the query
+    const eventsByDate = await chQuery(eventsByDateBuilder.getSql());
     
     // Format the data for better readability
-    const formattedTrends = trends.map(entry => ({
-      [intervalName]: entry[intervalName],
+    const formattedTrends = eventsByDate.map(entry => ({
+      date: entry.date,
       pageviews: entry.pageviews || 0,
-      visitors: entry.visitors || 0,
+      visitors: entry.unique_visitors || 0,
       sessions: entry.sessions || 0,
       bounce_rate: Math.round((entry.bounce_rate || 0) * 10) / 10,
       bounce_rate_pct: `${Math.round((entry.bounce_rate || 0) * 10) / 10}%`,
@@ -518,9 +500,10 @@ analyticsRouter.get('/trends', zValidator('query', analyticsQuerySchema), async 
       website_id: params.website_id,
       date_range: {
         start_date: startDate,
-        end_date: endDate
+        end_date: endDate,
+        granularity: params.granularity
       },
-      interval: intervalName,
+      interval: params.granularity === 'hourly' ? 'hour' : 'day',
       data: formattedTrends
     });
   } catch (error) {
