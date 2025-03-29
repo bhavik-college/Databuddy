@@ -24,7 +24,7 @@ let _authClient = createAuthClient({
     twoFactorClient(),
     multiSession(),
     jwt(),
-    emailOTPClient(),
+    // emailOTPClient(),
     organizationClient({
       teams: {
         enabled: true

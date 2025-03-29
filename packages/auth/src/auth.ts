@@ -3,32 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { customSession, multiSession, jwt, twoFactor, captcha, organization, emailOTP } from "better-auth/plugins";
 import { getSessionCookie } from "better-auth/cookies";
 import { db } from "@databuddy/db";
-import type { EmailClient } from "@databuddy/email";
-
-// Use dynamic import to prevent client-side bundling of emailjs
-let emailClient: EmailClient | null = null;
-
-// This function will be called only on the server side
-export async function getEmailClient() {
-  if (typeof window !== 'undefined') {
-    console.error('Email client cannot be used on the client side');
-    return null;
-  }
-
-  if (!emailClient) {
-    // Dynamic import to prevent bundling on client
-    const { createEmailClient } = await import('@databuddy/email');
-    emailClient = await createEmailClient({
-      user: process.env.SMTP_USER as string,
-      password: process.env.SMTP_PASSWORD as string,
-      host: process.env.SMTP_HOST as string,
-      port: Number(process.env.SMTP_PORT) as number,
-      ssl: process.env.SMTP_SSL === 'true',
-      defaultFrom: process.env.SMTP_FROM as string,
-    });
-  }
-  return emailClient;
-}
+import { sendEmail } from "@databuddy/email";
 
 export const canManageUsers = (role: string) => {
   return role === 'ADMIN'
@@ -107,58 +82,48 @@ export const auth = betterAuth({
         twoFactor(),
         multiSession(),
         jwt(),
-        emailOTP({
-            sendVerificationOnSignUp: true,
-            disableSignUp: true,
-            generateOTP: () => Math.floor(100000 + Math.random() * 900000).toString(),
-            async sendVerificationOTP({ email, otp, type }: { email: string, otp: string, type: 'sign-in' | 'email-verification' | 'forget-password' }) {
-                // Dynamically import and initialize email client only when needed
-                const emailClientInstance = await getEmailClient();
-                
-                if (!emailClientInstance) {
-                    console.error('Failed to initialize email client');
-                    return;
-                }
-                
-                if (type === 'sign-in') {
-                    await emailClientInstance.sendEmail({
-                        to: email,
-                        subject: 'Sign in OTP',
-                        template: 'verification',
-                        data: { 
-                            otp,
-                            userName: email.split('@')[0],
-                            verificationUrl: `https://app.databuddy.cc/verify?code=${otp}`,
-                            companyName: 'Databuddy'
-                        },
-                    });
-                } else if (type === 'email-verification') {
-                    await emailClientInstance.sendEmail({
-                        to: email,
-                        subject: 'Email Verification OTP',
-                        template: 'verification',
-                        data: { 
-                            otp,
-                            userName: email.split('@')[0],
-                            verificationUrl: `https://app.databuddy.cc/verify?code=${otp}`,
-                            companyName: 'Databuddy'
-                        },
-                    });
-                } else if (type === 'forget-password') {
-                    await emailClientInstance.sendEmail({
-                        to: email,
-                        subject: 'Password Reset OTP',
-                        template: 'password-reset',
-                        data: { 
-                            otp,
-                            userName: email.split('@')[0],
-                            resetUrl: `https://app.databuddy.cc/reset-password?code=${otp}`,
-                            companyName: 'Databuddy'
-                        },
-                    });
-                }
-            }
-        }),
+        // emailOTP({
+        //     sendVerificationOnSignUp: true,
+        //     disableSignUp: true,
+        //     generateOTP: () => Math.floor(100000 + Math.random() * 900000).toString(),
+        //     async sendVerificationOTP({ email, otp, type }: { email: string, otp: string, type: 'sign-in' | 'email-verification' | 'forget-password' }) {
+        //         try {
+        //             if (type === 'sign-in') {
+        //                 await sendEmail('verification', {
+        //                     to: email,
+        //                     data: { 
+        //                         userName: email.split('@')[0],
+        //                         verificationUrl: `https://app.databuddy.cc/verify?code=${otp}`,
+        //                         companyName: 'Databuddy',
+        //                         expiryHours: 24
+        //                     },
+        //                 });
+        //             } else if (type === 'email-verification') {
+        //                 await sendEmail('verification', {
+        //                     to: email,
+        //                     data: { 
+        //                         userName: email.split('@')[0],
+        //                         verificationUrl: `https://app.databuddy.cc/verify?code=${otp}`,
+        //                         companyName: 'Databuddy',
+        //                         expiryHours: 24
+        //                     },
+        //                 });
+        //             } else if (type === 'forget-password') {
+        //                 await sendEmail('password-reset', {
+        //                     to: email,
+        //                     data: { 
+        //                         userName: email.split('@')[0],
+        //                         resetUrl: `https://app.databuddy.cc/reset-password?code=${otp}`,
+        //                         companyName: 'Databuddy',
+        //                         expiryMinutes: 30
+        //                     },
+        //                 });
+        //             }
+        //         } catch (error) {
+        //             console.error('Failed to send email', error);
+        //         }
+        //     }
+        // }),
         organization({
             teams: {
                 enabled: true,

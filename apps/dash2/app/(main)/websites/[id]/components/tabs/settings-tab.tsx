@@ -837,8 +837,10 @@ export function WebsiteSettingsTab({
           </CardContent>
           <CardFooter className="pt-4">
             <Button variant="outline" size="sm" className="w-full text-xs h-8">
-              <ExternalLink className="h-3 w-3 mr-2" />
-              Privacy Policy
+              <Link href="https://www.databuddy.cc/privacy-policy" target="_blank" className="flex flex-row">
+                <ExternalLink className="h-3 w-3 mr-2" />
+                Privacy Policy
+              </Link>
             </Button>
           </CardFooter>
         </Card>

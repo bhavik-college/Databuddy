@@ -18,6 +18,8 @@ interface StatCardProps {
   isLoading?: boolean;
   className?: string;
   variant?: "default" | "success" | "info" | "warning" | "danger";
+  // Flag to indicate if decreasing values are positive (e.g., bounce rate, page load time)
+  invertTrend?: boolean;
 }
 
 export function StatCard({
@@ -29,7 +31,8 @@ export function StatCard({
   trendLabel,
   isLoading = false,
   className,
-  variant = "default"
+  variant = "default",
+  invertTrend = false
 }: StatCardProps) {
   // Determine color based on variant
   const getVariantClasses = () => {
@@ -50,6 +53,12 @@ export function StatCard({
   // Determine color for trend indicator
   const getTrendColor = () => {
     if (trend === undefined || trend === 0) return "text-muted-foreground";
+    
+    // For metrics where decreasing is positive (like bounce rate), invert the color logic
+    if (invertTrend) {
+      return trend < 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400";
+    }
+    
     return trend > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400";
   };
 
@@ -79,17 +88,17 @@ export function StatCard({
         </div>
         <div className="text-base font-bold leading-none mt-1.5">{value}</div>
         <div className="flex items-center text-[10px] mt-1 leading-none">
-          {trend !== undefined && (
+          {trend !== undefined && !isNaN(trend) && (
             <span className={cn("font-medium", getTrendColor())}>
               {trend > 0 ? "↑" : trend < 0 ? "↓" : "→"} {Math.abs(trend)}%
             </span>
           )}
-          {trendLabel && (
+          {trendLabel && trend !== undefined && !isNaN(trend) && (
             <span className="text-muted-foreground ml-1">
               {trendLabel}
             </span>
           )}
-          {description && !trendLabel && (
+          {description && (!trendLabel || trend === undefined || isNaN(trend)) && (
             <span className="text-muted-foreground">
               {description}
             </span>

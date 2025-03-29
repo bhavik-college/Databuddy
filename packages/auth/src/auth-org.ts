@@ -267,8 +267,8 @@ export async function hasPermission(
       permission,
       organizationId: options?.organizationId
     })
-    options?.onSuccess?.(result.data?.hasPermission || false);
-    return { success: true, hasPermission: result.data?.hasPermission || false };
+    options?.onSuccess?.(result.data?.success || false);
+    return { success: true, hasPermission: result.data?.success || false };
   } catch (error) {
     options?.onError?.(error);
     return { success: false, error, hasPermission: false };

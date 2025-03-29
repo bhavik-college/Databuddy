@@ -1,145 +1,91 @@
-import { SMTPClient, Message, MessageAttachment } from 'emailjs';
+import { Resend } from 'resend';
+import type { z } from 'zod';
 import { createLogger } from '@databuddy/logger';
-import { 
-  EmailConfig, 
-  EmailOptions, 
-  SendEmailResult, 
-  emailConfigSchema,
-  Attachment
-} from './types';
-import { renderTemplate } from './templates';
+import { render } from '@react-email/render';
 
-// Initialize logger
+import { type TemplateKey, type Templates, templates } from './emails';
+
 const log = createLogger('email');
+const FROM = process.env.EMAIL_SENDER ?? 'no-reply@databuddy.cc';
 
-export class EmailClient {
-  private client: SMTPClient;
-  private config: EmailConfig;
+/**
+ * Send an email using Resend
+ */
+export async function sendEmail<T extends TemplateKey>(
+  template: T,
+  options: {
+    to: string | string[];
+    data: z.infer<Templates[T]['schema']>;
+    cc?: string | string[];
+    bcc?: string | string[];
+  },
+) {
+  try {
+    const { to, cc, bcc, data } = options;
+    const { subject, Component, schema } = templates[template];
+    const props = schema.safeParse(data);
 
-  constructor(config: EmailConfig) {
-    try {
-      // Validate config with zod
-      this.config = emailConfigSchema.parse(config);
-      
-      // Create SMTPClient
-      this.client = new SMTPClient({
-        user: this.config.user,
-        password: this.config.password,
-        host: this.config.host,
-        port: this.config.port,
-        ssl: this.config.ssl,
-        tls: this.config.tls,
-        timeout: this.config.timeout,
-        domain: this.config.domain,
-      });
-      
-      log.info('Email client initialized successfully');
-    } catch (error) {
-      log.error('Failed to initialize email client', { error });
-      throw error;
-    }
-  }
-
-  async verifyConnection(): Promise<boolean> {
-    try {
-      // No direct verify method in emailjs, send a test email to verify connection
-      log.info('SMTP connection verified successfully');
-      return true;
-    } catch (error) {
-      log.error('SMTP connection verification failed', { error });
-      return false;
-    }
-  }
-
-  async sendEmail(options: EmailOptions): Promise<SendEmailResult> {
-    try {
-      const { to, subject, template, data, from, cc, bcc, attachments } = options;
-      
-      // Render the HTML content from the template
-      const html = await renderTemplate(template, data);
-      
-      // Create a clean text version by stripping HTML tags and invisible characters
-      const text = html
-        .replace(/<meta[^>]*>/gi, '') // Remove meta tags 
-        .replace(/<[^>]*>?/gm, '') // Remove HTML tags
-        .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
-        .replace(/&quot;/g, '"') // Replace &quot; with "
-        .replace(/&amp;/g, '&') // Replace &amp; with &
-        .replace(/&lt;/g, '<') // Replace &lt; with <
-        .replace(/&gt;/g, '>') // Replace &gt; with >
-        .replace(/&#x27;/g, "'") // Replace &#x27; with '
-        .replace(/\s+/g, ' ') // Collapse multiple whitespace
-        .replace(/[\u200B-\u200F\uFEFF\u200C-\u200E]/g, '') // Remove zero-width characters
-        .trim();
-      
-      // Prepare message with proper format following emailjs documentation
-      const message = new Message({
-        from: from || this.config.defaultFrom,
-        to: Array.isArray(to) ? to.join(', ') : to,
-        cc: Array.isArray(cc) ? cc.join(', ') : cc,
-        bcc: Array.isArray(bcc) ? bcc.join(', ') : bcc,
-        subject,
-        text,
-        attachment: [
-          { 
-            data: html, 
-            alternative: true,
-            charset: 'UTF-8',
-            headers: {
-              "Content-Type": "text/html; charset=UTF-8"
-            }
-          }
-        ]
-      });
-      
-      // Add any other attachments
-      if (attachments && attachments.length > 0) {
-        for (const attachment of attachments) {
-          message.attach(attachment as MessageAttachment);
-        }
-      }
-      
-      // Send the email
-      const result = await this.client.sendAsync(message);
-      
-      log.info('Email sent successfully', { 
-        messageId: result.header["message-id"],
-        template,
-        to 
-      });
-      
-      return {
-        success: true,
-        messageId: result.header["message-id"],
-      };
-    } catch (error) {
-      log.error('Failed to send email', { 
-        error,
-        template: options.template,
-        to: options.to 
-      });
-      
+    if (!props.success) {
+      log.error('Failed to parse email data', { error: props.error, template });
       return {
         success: false,
-        error: error instanceof Error ? error : new Error(String(error)),
+        error: new Error(`Failed to parse email data: ${props.error.message}`),
       };
     }
+
+    if (!process.env.RESEND_API_KEY) {
+      log.warn('No RESEND_API_KEY found, here is the data that would be sent', { 
+        template, 
+        to, 
+        data: props.data 
+      });
+      return {
+        success: true,
+        messageId: 'dev-mode',
+      };
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    
+    // Render the React component to HTML
+    const html = render(Component(props.data));
+
+    const response = await resend.emails.send({
+      from: FROM,
+      to,
+      cc,
+      bcc,
+      subject: subject(props.data),
+      html,
+    });
+
+    if (response.error) {
+      log.error('Failed to send email', { 
+        error: response.error, 
+        template, 
+        to 
+      });
+      return {
+        success: false,
+        error: new Error(response.error.message),
+      };
+    }
+
+    log.info('Email sent successfully', { 
+      messageId: response.data?.id,
+      template,
+      to 
+    });
+
+    return {
+      success: true,
+      messageId: response.data?.id,
+    };
+  } catch (error) {
+    log.error('Exception while sending email', { error, template });
+    return {
+      success: false,
+      error: error instanceof Error ? error : new Error(String(error)),
+    };
   }
 }
-
-export function createEmailClient(config: EmailConfig): EmailClient {
-  const client = new EmailClient(config);
-  client.verifyConnection();
-  return client;
-} 
-
-const client = createEmailClient({
-  user: process.env.SMTP_USER || '',
-  password: process.env.SMTP_PASSWORD || '',
-  host: process.env.SMTP_HOST || '',
-  port: parseInt(process.env.SMTP_PORT || '587', 10),
-  ssl: process.env.SMTP_SSL === 'true',
-  defaultFrom: process.env.SMTP_FROM || 'no-reply@databuddy.cc',
-});
-
-export { client as emailClient };

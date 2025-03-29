@@ -60,14 +60,14 @@ const websiteNavigation = [
   //     { name: "A/B Testing", icon: TestTube, href: "/experiments" },
   //   ],
   // },
-  {
-    title: "TRANSPARENCY",
-    items: [
-      { name: "Roadmap", icon: MapPin, href: "/transparency/roadmap", disabled: true },
-      { name: "Changelog", icon: ClipboardList, href: "/transparency/changelog", disabled: true },
-      { name: "Feedback", icon: Megaphone, href: "/transparency/feedback", disabled: true },
-    ],
-  },
+  // {
+  //   title: "TRANSPARENCY",
+  //   items: [
+  //     { name: "Roadmap", icon: MapPin, href: "/transparency/roadmap", disabled: true },
+  //     { name: "Changelog", icon: ClipboardList, href: "/transparency/changelog", disabled: true },
+  //     { name: "Feedback", icon: Megaphone, href: "/transparency/feedback", disabled: true },
+  //   ],
+  // },
   {
     title: "ACCOUNT",
     items: [

@@ -133,18 +133,18 @@ export function MetricsChart({
                   <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
                   <stop offset="95%" stopColor="#6366f1" stopOpacity={0.1} />
                 </linearGradient>
-                <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
+                {/* <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
                   <stop offset="95%" stopColor="#10b981" stopOpacity={0.1} />
-                </linearGradient>
+                </linearGradient> */}
                 <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8} />
                   <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.1} />
                 </linearGradient>
-                <linearGradient id="colorBounceRate" x1="0" y1="0" x2="0" y2="1">
+                {/* <linearGradient id="colorBounceRate" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
                   <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1} />
-                </linearGradient>
+                </linearGradient> */}
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" strokeOpacity={0.5} />
               <XAxis 
@@ -198,7 +198,7 @@ export function MetricsChart({
                   yAxisId="left"
                 />
               )}
-              {hasVisitors && (
+              {/* {hasVisitors && (
                 <Area 
                   type="monotone" 
                   dataKey="visitors" 
@@ -210,7 +210,7 @@ export function MetricsChart({
                   name="Visitors"
                   yAxisId="left"
                 />
-              )}
+              )} */}
               {hasSessions && (
                 <Area 
                   type="monotone" 
@@ -224,7 +224,7 @@ export function MetricsChart({
                   yAxisId="left"
                 />
               )}
-              {hasBounceRate && (
+              {/* {hasBounceRate && (
                 <Area 
                   type="monotone" 
                   dataKey="bounce_rate" 
@@ -236,7 +236,7 @@ export function MetricsChart({
                   name="Bounce Rate"
                   yAxisId="right"
                 />
-              )}
+              )} */}
             </AreaChart>
           </ResponsiveContainer>
         </div>
