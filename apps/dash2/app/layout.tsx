@@ -28,7 +28,25 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <Script src="/databuddy.js" defer/>
+      <Script id="databuddy-config" strategy="beforeInteractive">
+        {`
+          window.databuddyConfig = {
+            apiUrl: "${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}",
+            trackScreenViews: true,
+            trackPerformance: true,
+            trackWebVitals: true
+          };
+        `}
+      </Script>
+      <Script 
+        src="/databuddy.js" 
+        data-client-id={process.env.NEXT_PUBLIC_ANALYTICS_CLIENT_ID || "5ced32e5-0219-4e75-a18a-ad9826f85698"}
+        data-track-screen-views="true"
+        data-track-performance="true"
+        data-track-web-vitals="true"
+        data-track-errors="true"
+        strategy="afterInteractive"
+      />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >

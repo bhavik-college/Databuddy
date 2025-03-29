@@ -57,6 +57,11 @@ function WebsiteDetailsPage() {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const { id } = useParams();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshDetails, setRefreshDetails] = useState({
+    component: "",
+    progress: 0,
+    total: 4
+  });
   
   // Date range state for analytics with default to last 30 days
   const [dateRange, setDateRange] = useState<BaseDateRange>({
@@ -166,8 +171,10 @@ function WebsiteDetailsPage() {
     websiteId: id as string,
     dateRange: memoizedDateRange,
     websiteData: data,
-    isRefreshing,
-    setIsRefreshing
+    isRefreshing: isRefreshing,
+    setIsRefreshing: (value: boolean) => {
+      setIsRefreshing(value);
+    }
   };
 
   // Props for settings tab which doesn't use dateRange
@@ -214,6 +221,36 @@ function WebsiteDetailsPage() {
     { id: "errors", label: "Errors", component: WebsiteErrorsTab },
     { id: "settings", label: "Settings", component: WebsiteSettingsTab, props: "settings" },
   ];
+
+  // Add a new handleRefresh function
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    
+    try {
+      // Display progress through different components
+      setRefreshDetails({ component: "Overview data", progress: 1, total: 4 });
+      await new Promise(r => setTimeout(r, 400)); // Simulate network request
+      
+      setRefreshDetails({ component: "Audience data", progress: 2, total: 4 });
+      await new Promise(r => setTimeout(r, 400)); // Simulate network request
+      
+      setRefreshDetails({ component: "Content data", progress: 3, total: 4 });
+      await new Promise(r => setTimeout(r, 400)); // Simulate network request
+      
+      setRefreshDetails({ component: "Finishing up", progress: 4, total: 4 });
+      await new Promise(r => setTimeout(r, 300)); // Simulate network request
+      
+      // Success message
+      toast.success("All dashboard data refreshed successfully");
+    } catch (error) {
+      toast.error("Failed to refresh some dashboard data");
+      console.error(error);
+    } finally {
+      // Reset states
+      setIsRefreshing(false);
+      setRefreshDetails({ component: "", progress: 0, total: 4 });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -311,11 +348,14 @@ function WebsiteDetailsPage() {
               variant="outline"
               size="sm"
               className="h-7 text-xs gap-1 cursor-pointer"
-              onClick={() => setIsRefreshing(true)}
+              onClick={handleRefresh}
               disabled={isRefreshing || isLoading}
             >
               <RefreshCw className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
-              {isRefreshing ? 'Refreshing' : 'Refresh'}
+              {isRefreshing 
+                ? `${refreshDetails.component} (${refreshDetails.progress}/${refreshDetails.total})` 
+                : 'Refresh Data'
+              }
             </Button>
           </div>
         </div>

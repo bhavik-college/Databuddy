@@ -4,9 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSession } from "@databuddy/auth";
-import { authClient, useUser } from "@databuddy/auth";
-import { enableTwoFactor, verifyTwoFactorCode, generateBackupCodes } from "@databuddy/auth";
+import { useSession } from "@databuddy/auth/auth-client";
+import { authClient, useUser } from "@databuddy/auth/auth-client";
+import { enableTwoFactor, verifyTwoFactorCode, generateBackupCodes } from "@databuddy/auth/auth-helpers";
 import { toast } from "sonner";
 import { Loader2, Copy, Check, Key, Shield, Download } from "lucide-react";
 

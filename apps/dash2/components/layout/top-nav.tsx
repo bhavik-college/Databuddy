@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSession, signOut } from "@databuddy/auth";
+import { useSession, signOut } from "@databuddy/auth/auth-client";
 import { Bell, Menu, Search, ChevronDown, LayoutDashboard, LogOut, Settings } from "lucide-react";
 
 import { Button } from "@/components/ui/button";

@@ -33,4 +33,4 @@ export {
 } from './auth-helpers';
 
 // Default export for convenience
-export { auth } from './auth';
+// export { auth } from './auth';

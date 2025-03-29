@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "bun-types": "latest",
-    "wrangler": "^3.28.2"
+    "wrangler": "4"
   },
   "module": "src/index.js"
 }

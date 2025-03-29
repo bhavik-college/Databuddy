@@ -24,6 +24,10 @@ import {
   Users,
   Clock,
   Map,
+  MapPin,
+  ClipboardList,
+  Megaphone,
+  Inbox,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
@@ -56,6 +60,14 @@ const websiteNavigation = [
   //     { name: "A/B Testing", icon: TestTube, href: "/experiments" },
   //   ],
   // },
+  {
+    title: "TRANSPARENCY",
+    items: [
+      { name: "Roadmap", icon: MapPin, href: "/transparency/roadmap", disabled: true },
+      { name: "Changelog", icon: ClipboardList, href: "/transparency/changelog", disabled: true },
+      { name: "Feedback", icon: Megaphone, href: "/transparency/feedback", disabled: true },
+    ],
+  },
   {
     title: "ACCOUNT",
     items: [
@@ -163,9 +175,12 @@ export function Sidebar() {
             // Regular sidebar for website selection page
             <>
               <div className="mb-6">
-                <h3 className="px-2 mb-2 text-xs font-medium text-muted-foreground">
-                  WEBSITES
-                </h3>
+                <Button variant="outline" className="w-full justify-start mb-4 cursor-pointer">
+                  <Link href="/websites" className="flex flex-row items-center">
+                    <Globe className="h-4 w-4 mr-2" />
+                    Websites
+                </Link>
+                </Button>
                 <div className="space-y-1">
                   {isLoading ? (
                     // Loading skeletons
@@ -204,6 +219,67 @@ export function Sidebar() {
                   )}
                 </div>
               </div>
+              
+              {/* Transparency section */}
+              {/* <div className="mb-6">
+                <h3 className="px-2 mb-2 text-xs font-medium text-muted-foreground">
+                  TRANSPARENCY
+                </h3>
+                <div className="space-y-1">
+                  <Link
+                    href="/transparency/roadmap"
+                    aria-disabled={true}
+                    className={cn(
+                      "flex items-center gap-x-3 px-2 py-2 text-sm rounded-lg transition-colors group",
+                      pathname === "/transparency/roadmap"
+                        ? "bg-accent text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    )}
+                  >
+                    <MapPin className={cn(
+                      "h-5 w-5",
+                      pathname === "/transparency/roadmap"
+                        ? "opacity-100"
+                        : "opacity-75 group-hover:opacity-100"
+                    )} />
+                    <span>Roadmap</span>
+                  </Link>
+                  <Link
+                    href="/transparency/changelog"
+                    className={cn(
+                      "flex items-center gap-x-3 px-2 py-2 text-sm rounded-lg transition-colors group",
+                      pathname === "/transparency/changelog"
+                        ? "bg-accent text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    )}
+                  >
+                    <ClipboardList className={cn(
+                      "h-5 w-5",
+                      pathname === "/transparency/changelog"
+                        ? "opacity-100"
+                        : "opacity-75 group-hover:opacity-100"
+                    )} />
+                    <span>Changelog</span>
+                  </Link>
+                  <Link
+                    href="/transparency/feedback"
+                    className={cn(
+                      "flex items-center gap-x-3 px-2 py-2 text-sm rounded-lg transition-colors group",
+                      pathname === "/transparency/feedback"
+                        ? "bg-accent text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    )}
+                  >
+                    <Megaphone className={cn(
+                      "h-5 w-5",
+                      pathname === "/transparency/feedback"
+                        ? "opacity-100"
+                        : "opacity-75 group-hover:opacity-100"
+                    )} />
+                    <span>Feedback</span>
+                  </Link>
+                </div>
+              </div> */}
               
               {/* Account section */}
               <div className="mb-6">

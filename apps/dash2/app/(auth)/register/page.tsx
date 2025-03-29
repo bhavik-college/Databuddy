@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { loginWithEmail, registerWithEmail, signIn } from "@databuddy/auth";
+import { registerWithEmail } from "@databuddy/auth/auth-helpers";
+import { authClient } from "@databuddy/auth/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,24 +54,20 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const { success, data } = await registerWithEmail(formData.email, formData.password, formData.name);
+      // Use authClient.signUp.email to register the user
+      const result = await authClient.signUp.email({
+        email: formData.email,
+        password: formData.password,
+        name: formData.name
+      });
 
-      if (!success) {
-        toast.error(data?.error?.message ?? "Something went wrong");
+      if (result.error) {
+        toast.error(result.error.message || "Failed to create account");
         return;
       }
 
-      toast.success("Account created successfully");
-      
-      // Sign in the user after successful registration
-      const { success: loginSuccess, data: loginData } = await loginWithEmail(formData.email, formData.password, { redirectUrl: "/home", router });
-
-      if (!loginSuccess) {
-        toast.error(loginData?.error?.message ?? "Something went wrong");
-        return;
-      }
-      
-      router.refresh();
+      toast.success("Account created! Please check your email to verify your account.");
+      router.push(`/verify?email=${encodeURIComponent(formData.email)}`);
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -85,11 +82,14 @@ export default function RegisterPage() {
   const handleSocialLogin = async (provider: "github" | "google") => {
     setIsLoading(true);
     try {
-      await signIn.social({ provider: provider, fetchOptions: {
-        onSuccess: () => {
-          router.push("/home");
-        }
-      } });
+      await authClient.signIn.social({ 
+        provider: provider, 
+        fetchOptions: {
+          onSuccess: () => {
+            router.push("/home");
+          }
+        } 
+      });
     } catch (error) {
       toast.error("Something went wrong");
     } finally {
@@ -245,44 +245,34 @@ export default function RegisterPage() {
                   className="border-slate-600 data-[state=checked]:bg-sky-500 data-[state=checked]:border-sky-500"
                   aria-label="Accept terms and conditions"
                 />
-                <label
+                <Label
                   htmlFor="terms"
-                  className="text-sm text-slate-300 cursor-pointer"
+                  className="text-sm font-medium leading-none text-slate-400 cursor-pointer peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
                   I agree to the{" "}
-                  <Link 
-                    href="/terms" 
-                    className="text-sky-400 hover:text-sky-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-sky-400/20 focus:ring-offset-2 focus:ring-offset-slate-800 rounded"
-                  >
+                  <Link href="/terms" className="text-sky-400 hover:text-sky-300 transition-colors duration-200">
                     terms and conditions
                   </Link>
-                </label>
+                </Label>
               </div>
               <Button
                 type="submit"
-                className="w-full bg-sky-500 hover:bg-sky-600 text-white transition-colors duration-200 focus:ring-2 focus:ring-sky-400/20 focus:ring-offset-2 focus:ring-offset-slate-800"
-                disabled={isLoading || !acceptTerms}
-                aria-label={isLoading ? "Creating account..." : "Create account"}
+                className="w-full mt-6 bg-sky-600 hover:bg-sky-700 text-white transition-colors duration-200"
+                disabled={isLoading}
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
-                  </>
-                ) : (
-                  "Create account"
-                )}
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create Account
               </Button>
             </form>
           </CardContent>
-          <CardFooter>
-            <div className="text-center w-full text-sm text-slate-400">
+          <CardFooter className="flex justify-center border-t border-slate-700/50 pt-4">
+            <div className="text-sm text-slate-400">
               Already have an account?{" "}
-              <Link 
-                href="/login" 
-                className="text-sky-400 hover:text-sky-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-sky-400/20 focus:ring-offset-2 focus:ring-offset-slate-800 rounded"
+              <Link
+                href="/login"
+                className="text-sky-400 hover:text-sky-300 transition-colors duration-200"
               >
-                Sign in instead
+                Sign in
               </Link>
             </div>
           </CardFooter>

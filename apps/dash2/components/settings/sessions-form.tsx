@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "@databuddy/auth";
-import { authClient } from "@databuddy/auth";
+import { useSession } from "@databuddy/auth/auth-client";
+import { authClient } from "@databuddy/auth/auth-client";
 import { toast } from "sonner";
 import { Loader2, LogOut, Monitor, Smartphone, Globe, Clock } from "lucide-react";
 

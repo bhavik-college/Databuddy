@@ -4,8 +4,8 @@ import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSession } from "@databuddy/auth";
-import { signOut } from "@databuddy/auth";
+import { useSession } from "@databuddy/auth/auth-client";
+import { logout } from "@databuddy/auth/auth-helpers";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Trash2, AlertTriangle, Loader2, Info, ShieldAlert } from "lucide-react";
@@ -82,7 +82,7 @@ export function AccountDeletion() {
         setIsDialogOpen(false);
         
         // Sign out the user
-        await signOut();
+        await logout();
         router.push("/login");
       } else if (result.error) {
         toast.error(result.error);

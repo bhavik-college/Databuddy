@@ -110,7 +110,7 @@ export const websiteAuthHook = (): MiddlewareHandler<{
       await next();
     } catch (error) {
       logger.error('Error validating website', { clientId, error });
-      return c.json({ error: 'Authentication error' }, 500);
+      return c.json({ error: 'Authentication error', details: error }, 500);
     }
   };
 }; 
