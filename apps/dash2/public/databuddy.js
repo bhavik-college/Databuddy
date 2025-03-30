@@ -1,59 +1,92 @@
 "use strict";
 ( () => {
+    // HTTP Client
     var c = class {
-        constructor(e) {
-            this.baseUrl = e.baseUrl,
+        constructor(config) {
+            this.baseUrl = config.baseUrl;
             this.headers = {
                 "Content-Type": "application/json",
-                ...e.defaultHeaders
-            },
-            this.maxRetries = e.maxRetries ?? 3,
-            this.initialRetryDelay = e.initialRetryDelay ?? 500
+                ...config.defaultHeaders
+            };
+            this.maxRetries = config.maxRetries ?? 3;
+            this.initialRetryDelay = config.initialRetryDelay ?? 500;
         }
+
         async resolveHeaders() {
-            let e = {};
-            for (let[t,r] of Object.entries(this.headers)) {
-                let i = await r;
-                i !== null && (e[t] = i)
-            }
-            return e
+            // More efficient header resolution with Promise.all
+            const headerEntries = Object.entries(this.headers);
+            const resolvedEntries = await Promise.all(
+                headerEntries.map(async ([key, value]) => {
+                    const resolvedValue = await value;
+                    return resolvedValue !== null ? [key, resolvedValue] : null;
+                })
+            );
+            return Object.fromEntries(resolvedEntries.filter(Boolean));
         }
-        addHeader(e, t) {
-            this.headers[e] = t
+
+        addHeader(key, value) {
+            this.headers[key] = value;
         }
-        async post(e, t, r, i) {
+
+        async post(url, data, options = {}, retryCount = 0) {
             try {
-                let n = await fetch(e, {
+                // Ensure keepalive is set consistently
+                const fetchOptions = {
                     method: "POST",
                     headers: await this.resolveHeaders(),
-                    body: JSON.stringify(t ?? {}),
-                    keepalive: !0,
-                    ...r
-                });
-                if (n.status === 401)
+                    body: JSON.stringify(data ?? {}),
+                    keepalive: true, // Always use keepalive for better reliability
+                    ...options
+                };
+                
+                const response = await fetch(url, fetchOptions);
+
+                if (response.status === 401) {
                     return null;
-                if (n.status !== 200 && n.status !== 202)
-                    throw new Error(`HTTP error! status: ${n.status}`);
-                let s = await n.text();
-                return s ? JSON.parse(s) : null
-            } catch (n) {
-                if (i < this.maxRetries) {
-                    let s = this.initialRetryDelay * 2 ** i;
-                    return await new Promise(o => setTimeout(o, s)),
-                    this.post(e, t, r, i + 1)
                 }
-                return console.error("Max retries reached:", n),
-                null
+
+                if (response.status !== 200 && response.status !== 202) {
+                    throw new Error(`HTTP error! status: ${response.status} for URL: ${url}`);
+                }
+
+                // Try to parse JSON directly if possible
+                try {
+                    return await response.json();
+                } catch (e) {
+                    // Fallback to text parsing for non-JSON responses
+                    const text = await response.text();
+                    return text ? JSON.parse(text) : null;
+                }
+            } catch (error) {
+                const isRetryableError = error.message.includes('HTTP error') || 
+                    error.name === 'TypeError' || 
+                    error.name === 'NetworkError';
+                
+                // Only retry if enabled and it's a retryable error
+                if (retryCount < this.maxRetries && isRetryableError) {
+                    // Add jitter to retry delay to prevent thundering herd
+                    const jitter = Math.random() * 0.3 + 0.85; // 0.85-1.15 randomization factor
+                    const delay = this.initialRetryDelay * Math.pow(2, retryCount) * jitter;
+                    
+                    console.debug(`Databuddy: Retrying request (${retryCount+1}/${this.maxRetries}) in ${Math.round(delay)}ms`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return this.post(url, data, options, retryCount + 1);
+                }
+                
+                console.error(`Databuddy: ${this.maxRetries > 0 ? `Max retries (${this.maxRetries}) reached for` : `Error with no retries for`} ${url}:`, error);
+                return null;
             }
         }
-        async fetch(e, t, r={}) {
-            let i = `${this.baseUrl}${e}`;
-            return this.post(i, t, r, 0)
+
+        async fetch(endpoint, data, options = {}) {
+            const url = `${this.baseUrl}${endpoint}`;
+            return this.post(url, data, options, 0);
         }
-    }
-    ;
+    };
+
+    // Base Tracker
     var l = class {
-        constructor(e) {
+        constructor(options) {
             this.options = {
                 disabled: false,
                 waitForProfile: false,
@@ -73,19 +106,34 @@
                 trackErrors: false,
                 trackBounceRate: false,
 
-                ...e
+                // Sampling and retry configuration
+                samplingRate: 1.0, // Default to 100% sampling (1.0 = 100%, 0.1 = 10%)
+                enableRetries: true, // Whether to retry failed requests
+                maxRetries: 3, // Max retry attempts for failed requests
+                initialRetryDelay: 500, // Initial delay before first retry (ms)
+                
+                ...options
             };
             
             this.queue = [];
-            let t = {
+            const headers = {
                 "databuddy-client-id": this.options.clientId
             };
-            this.options.clientSecret && (t["databuddy-client-secret"] = this.options.clientSecret),
-            t["databuddy-sdk-name"] = this.options.sdk || "node",
-            t["databuddy-sdk-version"] = this.options.sdkVersion || process.env.SDK_VERSION,
+            
+            if (this.options.clientSecret) {
+                headers["databuddy-client-secret"] = this.options.clientSecret;
+            }
+            
+            headers["databuddy-sdk-name"] = this.options.sdk || "web";
+            // Use directly provided version or fallback to safe default
+            headers["databuddy-sdk-version"] = this.options.sdkVersion || "1.0.0";
+            
             this.api = new c({
                 baseUrl: this.options.apiUrl || "https://api.databuddy.cc",
-                defaultHeaders: t
+                defaultHeaders: headers,
+                // Pass retry config to HTTP client
+                maxRetries: this.options.enableRetries ? (this.options.maxRetries || 3) : 0,
+                initialRetryDelay: this.options.initialRetryDelay || 500
             });
             
             this.lastPath = "";
@@ -97,16 +145,20 @@
             this.sessionStartTime = this.getSessionStartTime();
             this.lastActivityTime = Date.now();
             
+            // Initialize tracking metrics to avoid undefined values
             this.maxScrollDepth = 0;
             this.interactionCount = 0;
             this.hasExitIntent = false;
             this.pageStartTime = Date.now();
+            this.pageEngagementStart = Date.now(); // Ensure this is initialized
             this.utmParams = this.getUtmParams();
 
-            if (typeof window !== 'undefined' && this.options.trackExitIntent) {
+            // Always set up exit tracking for page_exit events
+            if (typeof window !== 'undefined') {
                 this.setupExitTracking();
             }
         }
+
         getOrCreateAnonymousId() {
             if (typeof window !== 'undefined' && window.localStorage) {
                 const storedId = localStorage.getItem('did');
@@ -119,10 +171,12 @@
             }
             return this.generateAnonymousId();
         }
+        
         generateAnonymousId() {
             return 'anon_' + Math.random().toString(36).substring(2, 15) + 
                 Math.random().toString(36).substring(2, 15);
         }
+        
         getOrCreateSessionId() {
             if (this.isServer()) {
                 return this.generateSessionId();
@@ -137,10 +191,12 @@
             sessionStorage.setItem('did_session', newId);
             return newId;
         }
+        
         generateSessionId() {
             return 'sess_' + this.anonymousId.substring(5, 10) + '_' + 
                 Date.now().toString(36);
         }
+        
         getSessionStartTime() {
             if (this.isServer()) {
                 return Date.now();
@@ -155,6 +211,7 @@
             sessionStorage.setItem('did_session_start', now.toString());
             return now;
         }
+        
         init() {
             if (this.isServer()) return;
             
@@ -212,87 +269,196 @@
                 });
             }
         }
+
         trackScrollDepth() {
             if (this.isServer()) return;
             
             const scroll_depth = Math.round(this.maxScrollDepth);
-            super.track('scroll_depth', { scroll_depth });
+            this.track('scroll_depth', { scroll_depth });
         }
+        
         ready() {
-            this.options.waitForProfile = !1,
-            this.flush()
+            this.options.waitForProfile = false;
+            this.flush();
         }
-        async send(e) {
-            if (e.payload && (e.payload.profileId || this.profileId)) {
-                e.payload.anonymousId = this.anonymousId;
-                delete e.payload.profileId;
+        
+        async send(event) {
+            if (event.payload && (event.payload.profileId || this.profileId)) {
+                event.payload.anonymousId = this.anonymousId;
+                delete event.payload.profileId;
             }
             
-            if (e.payload && e.payload.properties) {
-                e.payload.properties.sessionId = this.sessionId;
+            if (event.payload && event.payload.properties) {
+                event.payload.properties.sessionId = this.sessionId;
             }
             
-            return this.options.disabled || this.options.filter && !this.options.filter(e) ? Promise.resolve() : this.options.waitForProfile && !this.anonymousId ? (this.queue.push(e),
-            Promise.resolve()) : this.api.fetch("/basket", e)
+            // Skip sending if disabled or filtered out
+            if (this.options.disabled || (this.options.filter && !this.options.filter(event))) {
+                return Promise.resolve();
+            }
+            
+            // Queue event if waiting for profile
+            if (this.options.waitForProfile && !this.anonymousId) {
+                this.queue.push(event);
+                return Promise.resolve();
+            }
+            
+            // Add keepalive for more reliable delivery, especially near page unload
+            const fetchOptions = {
+                keepalive: true,
+                credentials: 'omit' // Avoid CORS issues
+            };
+            
+            // Try to send directly to API with keepalive
+            return this.api.fetch("/basket", event, fetchOptions);
         }
-        setGlobalProperties(e) {
+        
+        setGlobalProperties(props) {
             this.global = {
                 ...this.global,
-                ...e
-            }
+                ...props
+            };
         }
-        async track(e, t) {
+        
+        async track(eventName, properties) {
             // Skip tracking if disabled globally
             if (this.options.disabled) return;
+            
+            // Apply sampling if configured (skip random events based on sampling rate)
+            if (this.options.samplingRate < 1.0) {
+                // Generate random number between 0-1
+                const samplingValue = Math.random();
+                
+                // Skip event if random value exceeds sampling rate
+                if (samplingValue > this.options.samplingRate) {
+                    console.debug(`Databuddy: Skipping ${eventName} event due to sampling (${this.options.samplingRate * 100}%)`);
+                    return { sampled: false };
+                }
+            }
             
             const sessionData = {
                 sessionId: this.sessionId,
                 sessionStartTime: this.sessionStartTime,
             };
             
-            if (e === 'screen_view' || e === 'page_view') {
+            if (eventName === 'screen_view' || eventName === 'page_view') {
                 // Add performance metrics for page loads if enabled
                 if (!this.isServer() && this.options.trackPerformance) {
                     // Collect performance timing metrics
                     const performanceData = this.collectNavigationTiming();
                     
                     // Add them to properties
-                    Object.assign(t ?? {}, performanceData);
+                    Object.assign(properties ?? {}, performanceData);
                     
                     // Add vitals if enabled
                     if (this.options.trackWebVitals) {
                         setTimeout(() => {
-                            this.collectWebVitals(e);
+                            this.collectWebVitals(eventName);
                         }, 1000);
                     }
                 }
             }
             
-            return this.send({
+            const payload = {
                 type: "track",
                 payload: {
-                    name: e,
+                    name: eventName,
                     anonymousId: this.anonymousId,
                     properties: {
                         ...this.global ?? {},
                         ...sessionData,
-                        ...t ?? {}
+                        ...properties ?? {}
                     }
                 }
-            })
+            };
+            
+            // Use sendBeacon for all events by default
+            try {
+                console.debug(`Databuddy: Tracking ${eventName} event with beacon`);
+                const beaconResult = await this.sendBeacon(payload);
+                if (beaconResult) {
+                    console.debug(`Databuddy: Successfully sent ${eventName} via beacon`);
+                    return beaconResult;
+                }
+            } catch (e) {
+                // If beacon fails, fall back to regular send
+                console.debug(`Databuddy: Beacon failed for ${eventName}, using fetch fallback`);
+            }
+            
+            // Fallback to regular fetch
+            console.debug(`Databuddy: Tracking ${eventName} event with fetch+keepalive`);
+            return this.send(payload);
         }
-        async increment(e) {
+        
+        // Special method for sending events using Beacon API (preferred for reliability)
+        async sendBeacon(event) {
+            if (this.isServer()) return null;
+            
+            try {
+                // Format event data for sending
+                if (event.payload && (event.payload.profileId || this.profileId)) {
+                    event.payload.anonymousId = this.anonymousId;
+                    delete event.payload.profileId;
+                }
+                
+                if (event.payload && event.payload.properties) {
+                    event.payload.properties.sessionId = this.sessionId;
+                }
+                
+                // Skip sending if disabled or filtered out
+                if (this.options.disabled || (this.options.filter && !this.options.filter(event))) {
+                    return null;
+                }
+                
+                // Add client ID and SDK info as URL parameters since Beacon can't set headers
+                const baseUrl = this.api.baseUrl;
+                const clientId = this.options.clientId;
+                const sdkName = this.options.sdk || "web";
+                const sdkVersion = this.options.sdkVersion || "1.0.0";
+                
+                // Build URL with query parameters for authentication
+                const url = `${baseUrl}/basket?client_id=${encodeURIComponent(clientId)}&sdk_name=${encodeURIComponent(sdkName)}&sdk_version=${encodeURIComponent(sdkVersion)}`;
+                const data = JSON.stringify(event);
+                
+                // Only try sendBeacon if it's available
+                if (navigator.sendBeacon) {
+                    try {
+                        const blob = new Blob([data], { type: 'application/json' });
+                        const success = navigator.sendBeacon(url, blob);
+                        
+                        if (success) {
+                            if (event.payload.name === 'page_exit') {
+                                console.log("Databuddy: Successfully sent exit event via Beacon API");
+                            }
+                            return { success: true };
+                        }
+                    } catch (e) {
+                        console.warn("Databuddy: Error using Beacon API", e);
+                    }
+                }
+                
+                // If we got here, Beacon failed or isn't available
+                return null;
+            } catch (error) {
+                console.error("Databuddy: Error in sendBeacon", error);
+                return null;
+            }
+        }
+        
+        async increment(data) {
             return this.send({
                 type: "increment",
-                payload: e
-            })
+                payload: data
+            });
         }
-        async decrement(e) {
+        
+        async decrement(data) {
             return this.send({
                 type: "decrement",
-                payload: e
-            })
+                payload: data
+            });
         }
+        
         clear() {
             this.anonymousId = this.generateAnonymousId();
             if (typeof window !== 'undefined' && window.localStorage) {
@@ -308,58 +474,36 @@
                 sessionStorage.setItem('did_session_start', this.sessionStartTime.toString());
             }
         }
+        
         flush() {
-            this.queue.forEach(e => {
+            this.queue.forEach(event => {
                 this.send({
-                    ...e,
+                    ...event,
                     payload: {
-                        ...e.payload,
+                        ...event.payload,
                         anonymousId: this.anonymousId
                     }
-                })
-            }),
-            this.queue = []
+                });
+            });
+            this.queue = [];
         }
+        
         isServer() {
             return typeof document === "undefined" || typeof window === "undefined" || typeof localStorage === "undefined";
         }
-        collectPerformanceData() {
-            if (this.isServer() || !window.performance) return {};
-            
-            try {
-                const perf = window.performance;
-                const timing = perf.timing;
-                
-                if (!timing) return {};
-                
-                const navigationStart = timing.navigationStart;
-                
-                return {
-                    loadTime: timing.loadEventEnd - navigationStart,
-                    domReadyTime: timing.domContentLoadedEventEnd - navigationStart,
-                    domInteractive: timing.domInteractive - navigationStart,
-                    ttfb: timing.responseStart - timing.requestStart,
-                    redirectTime: timing.redirectEnd - timing.redirectStart,
-                    domainLookupTime: timing.domainLookupEnd - timing.domainLookupStart,
-                    connectTime: timing.connectEnd - timing.connectStart,
-                    requestTime: timing.responseEnd - timing.requestStart,
-                    renderTime: timing.domComplete - timing.domInteractive
-                };
-            } catch (e) {
-                return {};
-            }
-        }
+        
         collectNavigationTiming() {
             if (this.isServer() || !this.options.trackPerformance) return {};
             
             try {
-                // Try to use the newer Navigation Timing API if available
+                // Prioritize newer Navigation Timing API
                 let perfData = {};
                 
                 if (window.performance && window.performance.getEntriesByType) {
-                    const navEntry = window.performance.getEntriesByType('navigation')[0];
-                    if (navEntry) {
-                        perfData = {
+                    const navEntries = window.performance.getEntriesByType('navigation');
+                    if (navEntries && navEntries.length > 0) {
+                        const navEntry = navEntries[0];
+                        return {
                             load_time: Math.round(navEntry.loadEventEnd),
                             dom_ready_time: Math.round(navEntry.domContentLoadedEventEnd),
                             ttfb: Math.round(navEntry.responseStart),
@@ -369,45 +513,157 @@
                     }
                 }
                 
-                // Fall back to the older timing API if needed
-                if (Object.keys(perfData).length === 0 && window.performance && window.performance.timing) {
-                    return this.collectPerformanceData();
+                // Fallback to older timing API if needed
+                if (window.performance && window.performance.timing) {
+                    const timing = window.performance.timing;
+                    const navigationStart = timing.navigationStart;
+                    
+                    return {
+                        load_time: timing.loadEventEnd - navigationStart,
+                        dom_ready_time: timing.domContentLoadedEventEnd - navigationStart,
+                        dom_interactive: timing.domInteractive - navigationStart,
+                        ttfb: timing.responseStart - timing.requestStart,
+                        request_time: timing.responseEnd - timing.requestStart,
+                        render_time: timing.domComplete - timing.domInteractive
+                    };
                 }
                 
-                return perfData;
+                return {};
             } catch (e) {
+                console.warn("Error collecting performance data:", e);
                 return {};
             }
         }
-        
-        calculatePageSize() {
-            try {
-                if (window.performance && window.performance.getEntriesByType) {
-                    const resources = window.performance.getEntriesByType('resource');
-                    let totalSize = 0;
-                    
-                    // Transfer size for all resources
-                    resources.forEach(resource => {
-                        if (resource.transferSize) {
-                            totalSize += resource.transferSize;
-                        }
-                    });
-                    
-                    // For the main document
-                    const navEntry = window.performance.getEntriesByType('navigation')[0];
-                    if (navEntry && navEntry.transferSize) {
-                        totalSize += navEntry.transferSize;
-                    }
-                    
-                    return Math.round(totalSize / 1024); // Convert to KB
-                }
-            } catch (e) {
-                // Ignore errors
-            }
+
+        getUtmParams() {
+            if (typeof window === 'undefined') return {};
             
-            return 0;
+            const urlParams = new URLSearchParams(window.location.search);
+            return {
+                utm_source: urlParams.get('utm_source'),
+                utm_medium: urlParams.get('utm_medium'),
+                utm_campaign: urlParams.get('utm_campaign'),
+                utm_term: urlParams.get('utm_term'),
+                utm_content: urlParams.get('utm_content')
+            };
         }
-        
+
+        setupExitTracking() {
+            if (typeof window === 'undefined') return;
+
+            console.log("Databuddy: Setting up exit tracking");
+            
+            window.addEventListener('scroll', () => {
+                const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const currentScroll = window.scrollY;
+                const scrollPercent = Math.round((currentScroll / scrollHeight) * 100);
+                this.maxScrollDepth = Math.max(this.maxScrollDepth, scrollPercent);
+            });
+
+            const interactionEvents = ['click', 'keypress', 'mousemove', 'touchstart'];
+            interactionEvents.forEach(event => {
+                window.addEventListener(event, () => {
+                    this.interactionCount++;
+                }, { once: true });
+            });
+
+            window.addEventListener('mouseout', (e) => {
+                if (e.clientY <= 0 && !this.hasExitIntent) {
+                    this.hasExitIntent = true;
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('a[href]');
+                if (link && link.href) {
+                    try {
+                        const linkUrl = new URL(link.href);
+                        const isSameOrigin = linkUrl.origin === window.location.origin;
+                        if (isSameOrigin) {
+                            this.isInternalNavigation = true;
+                        }
+                    } catch (err) {
+                        // Invalid URL, ignore
+                    }
+                }
+            });
+
+            window.addEventListener('popstate', () => {
+                this.isInternalNavigation = true;
+            });
+
+            window.addEventListener('pushstate', () => {
+                this.isInternalNavigation = true;
+            });
+
+            window.addEventListener('replacestate', () => {
+                this.isInternalNavigation = true;
+            });
+
+            // Use the 'pagehide' event as it's more reliable than 'beforeunload'
+            window.addEventListener('pagehide', (event) => {
+                console.log("Databuddy: pagehide event triggered", {
+                    persisted: event.persisted,
+                    isInternalNavigation: this.isInternalNavigation
+                });
+                
+                if (!this.isInternalNavigation) {
+                    this.trackExitData();
+                }
+                this.isInternalNavigation = false;
+            });
+            
+            // Also keep beforeunload as a backup
+            window.addEventListener('beforeunload', (event) => {
+                console.log("Databuddy: beforeunload event triggered", {
+                    isInternalNavigation: this.isInternalNavigation
+                });
+                
+                if (!this.isInternalNavigation) {
+                    this.trackExitData();
+                }
+                this.isInternalNavigation = false;
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                console.log("Databuddy: visibilitychange event", {
+                    state: document.visibilityState,
+                    isInternalNavigation: this.isInternalNavigation
+                });
+                
+                if (document.visibilityState === 'hidden' && !this.isInternalNavigation) {
+                    this.trackExitData();
+                }
+            });
+        }
+
+        trackExitData() {
+            if (this.isServer()) return;
+            
+            console.log("Databuddy: Preparing page_exit event");
+            const time_on_page = Math.round((Date.now() - this.pageEngagementStart) / 1000);
+            const utm_params = this.getUtmParams();
+            const exit_data = {
+                time_on_page: time_on_page,
+                scroll_depth: Math.round(this.maxScrollDepth),
+                interaction_count: this.interactionCount,
+                has_exit_intent: this.hasExitIntent,
+                page_count: this.pageCount,
+                is_bounce: this.pageCount <= 1 ? 1 : 0,
+                __path: window.location.href,
+                __title: document.title,
+                __timestamp_ms: Date.now(),
+                utm_source: utm_params.utm_source || "",
+                utm_medium: utm_params.utm_medium || "",
+                utm_campaign: utm_params.utm_campaign || "",
+                utm_term: utm_params.utm_term || "",
+                utm_content: utm_params.utm_content || ""
+            };
+            
+            // Track the exit event
+            this.track('page_exit', exit_data);
+        }
+
         collectWebVitals(eventName) {
             if (this.isServer() || !this.options.trackWebVitals || 
                 typeof window.performance === 'undefined') {
@@ -486,105 +742,6 @@
             }
         }
 
-        getUtmParams() {
-            if (typeof window === 'undefined') return {};
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            return {
-                utm_source: urlParams.get('utm_source'),
-                utm_medium: urlParams.get('utm_medium'),
-                utm_campaign: urlParams.get('utm_campaign'),
-                utm_term: urlParams.get('utm_term'),
-                utm_content: urlParams.get('utm_content')
-            };
-        }
-
-        setupExitTracking() {
-            if (typeof window === 'undefined') return;
-
-            window.addEventListener('scroll', () => {
-                const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-                const currentScroll = window.scrollY;
-                const scrollPercent = Math.round((currentScroll / scrollHeight) * 100);
-                this.maxScrollDepth = Math.max(this.maxScrollDepth, scrollPercent);
-            });
-
-            const interactionEvents = ['click', 'keypress', 'mousemove', 'touchstart'];
-            interactionEvents.forEach(event => {
-                window.addEventListener(event, () => {
-                    this.interactionCount++;
-                }, { once: true });
-            });
-
-            window.addEventListener('mouseout', (e) => {
-                if (e.clientY <= 0 && !this.hasExitIntent) {
-                    this.hasExitIntent = true;
-                }
-            });
-
-            document.addEventListener('click', (e) => {
-                const link = e.target.closest('a[href]');
-                if (link && link.href) {
-                    try {
-                        const linkUrl = new URL(link.href);
-                        const isSameOrigin = linkUrl.origin === window.location.origin;
-                        if (isSameOrigin) {
-                            this.isInternalNavigation = true;
-                        }
-                    } catch (err) {
-                        // Invalid URL, ignore
-                    }
-                }
-            });
-
-            window.addEventListener('popstate', () => {
-                this.isInternalNavigation = true;
-            });
-
-            window.addEventListener('pushstate', () => {
-                this.isInternalNavigation = true;
-            });
-
-            window.addEventListener('replacestate', () => {
-                this.isInternalNavigation = true;
-            });
-
-            window.addEventListener('beforeunload', () => {
-                if (!this.isInternalNavigation) {
-                    this.trackExitData();
-                }
-                this.isInternalNavigation = false;
-            });
-
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'hidden' && !this.isInternalNavigation) {
-                    this.trackExitData();
-                }
-            });
-        }
-
-        trackExitData() {
-            if (this.isServer()) return;
-            
-            const time_on_page = Math.round((Date.now() - this.pageEngagementStart) / 1000);
-            const utm_params = this.getUtmParams();
-            const exit_data = {
-                time_on_page: time_on_page,
-                scroll_depth: Math.round(this.maxScrollDepth),
-                interaction_count: this.interactionCount,
-                has_exit_intent: this.hasExitIntent,
-                page_count: this.pageCount,
-                is_bounce: this.pageCount <= 1 ? 1 : 0,
-                utm_source: utm_params.utm_source || "",
-                utm_medium: utm_params.utm_medium || "",
-                utm_campaign: utm_params.utm_campaign || "",
-                utm_term: utm_params.utm_term || "",
-                utm_content: utm_params.utm_content || ""
-            };
-            
-            super.track('page_exit', exit_data);
-        }
-
         getConnectionInfo() {
             if (!navigator.connection) return {};
 
@@ -619,7 +776,7 @@
             const connectionInfo = this.getConnectionInfo();
 
             // Track the custom event with all context
-            super.track(eventName, {
+            this.track(eventName, {
                 __timestamp_ms: Date.now(),
                 ...properties,
                 ...pageContext,
@@ -628,11 +785,12 @@
                 ...connectionInfo,
             });
         }
-    }
-    ;
+    };
+
     function h(a) {
         return a.replace(/([-_][a-z])/gi, e => e.toUpperCase().replace("-", "").replace("_", ""))
     }
+    
     var d = class extends l {
         constructor(t) {
             super({
@@ -676,7 +834,7 @@
                   , i = r.closest("a");
                 if (i && r) {
                     let n = i.getAttribute("href");
-                    n?.startsWith("http") && super.track("link_out", {
+                    n?.startsWith("http") && this.track("link_out", {
                         href: n,
                         text: i.innerText || i.getAttribute("title") || r.getAttribute("alt") || r.getAttribute("title")
                     })
@@ -730,7 +888,7 @@
                     for (let p of s.attributes)
                         p.name.startsWith("data-") && p.name !== "data-track" && (o[h(p.name.replace(/^data-/, ""))] = p.value);
                     let u = s.getAttribute("data-track");
-                    u && super.track(u, o)
+                    u && this.track(u, o)
                 }
             })
         }
@@ -782,7 +940,7 @@
                     __referrer: this.global?.__referrer || document.referrer || 'direct'
                 };
 
-                super.track("screen_view", {
+                this.track("screen_view", {
                     ...n ?? {},
                     __path: i,
                     __title: document.title,
@@ -798,130 +956,154 @@
         }
     }
     ;
-    (a => {
-        if (a.db && "q"in a.db) {
-            let e = a.db.q || []
-              , t = new d(e.shift()[1]);
-            e.forEach(r => {
-                r[0]in t && t[r[0]](...r.slice(1))
+
+    function initializeDatabuddy() {
+        // Don't run in Node environment
+        if (typeof window === 'undefined') return;
+            
+        // Get current script tag
+        const currentScript = document.currentScript || (function() {
+            const scripts = document.getElementsByTagName('script');
+            return scripts[scripts.length - 1];
+        })();
+        
+        // Get configuration from various sources
+        function getConfig() {
+            // Check if a global configuration object exists
+            const globalConfig = window.databuddyConfig || {};
+            
+            // If no current script found, return global config
+            if (!currentScript) {
+                console.warn('Databuddy: Could not identify script tag, using global config only');
+                return globalConfig;
             }
-            ),
-            a.db = (r, ...i) => {
-                let n = t[r] ? t[r].bind(t) : void 0;
-                typeof n == "function" ? n(...i) : console.warn(`Databuddy: ${r} is not a function`)
+            
+            // Get all data attributes
+            const dataAttributes = {};
+            Array.from(currentScript.attributes).forEach(attr => {
+                if (attr.name.startsWith('data-')) {
+                    // Convert kebab-case to camelCase
+                    const key = attr.name.substring(5).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+                    
+                    // Convert string values to appropriate types
+                    let value = attr.value;
+                    if (value === 'true') value = true;
+                    if (value === 'false') value = false;
+                    if (!isNaN(value) && value !== '') value = Number(value);
+                    
+                    dataAttributes[key] = value;
+                }
+            });
+            
+            // Extract URL parameters from script src
+            const urlParams = {};
+            try {
+                const srcUrl = new URL(currentScript.src);
+                const params = new URLSearchParams(srcUrl.search);
+                
+                params.forEach((value, key) => {
+                    // Convert string values to appropriate types
+                    if (value === 'true') value = true;
+                    if (value === 'false') value = false;
+                    if (!isNaN(value) && value !== '') value = Number(value);
+                    
+                    urlParams[key] = value;
+                });
+            } catch (e) {
+                // Ignore URL parsing errors
             }
-            ,
-            a.databuddy = t
+            
+            // Handle specific numeric configurations with range validation
+            const config = {
+                ...globalConfig,
+                ...urlParams,
+                ...dataAttributes
+            };
+            
+            // Ensure sampling rate is a valid proportion between 0 and 1
+            if (config.samplingRate !== undefined) {
+                if (config.samplingRate < 0) config.samplingRate = 0;
+                if (config.samplingRate > 1) config.samplingRate = 1;
+            }
+            
+            // Ensure maxRetries is non-negative
+            if (config.maxRetries !== undefined && config.maxRetries < 0) {
+                config.maxRetries = 0;
+            }
+            
+            // Ensure initialRetryDelay is reasonable (50-10000ms)
+            if (config.initialRetryDelay !== undefined) {
+                if (config.initialRetryDelay < 50) config.initialRetryDelay = 50;
+                if (config.initialRetryDelay > 10000) config.initialRetryDelay = 10000;
+            }
+            
+            return config;
+        }
+        
+        // Extract client ID from config or data-* attributes
+        function getClientId(config) {
+            // First check for clientId in merged config
+            if (config.clientId) {
+                return config.clientId;
+            }
+            
+            // Then check for data-client-id attr directly (for backwards compatibility)
+            if (currentScript && currentScript.getAttribute('data-client-id')) {
+                return currentScript.getAttribute('data-client-id');
+            }
+            
+            console.error('Databuddy: Missing client ID');
+            return null;
+        }
+        
+        function init() {
+            // Get merged configuration
+            const config = getConfig();
+            const clientId = getClientId(config);
+            
+            // Don't initialize without a client ID
+            if (!clientId) return;
+            
+            console.log('Databuddy: Initializing with config', { 
+                clientId, 
+                apiUrl: config.apiUrl,
+                samplingRate: config.samplingRate,
+                enableRetries: config.enableRetries,
+                // Don't log all config details to keep log cleaner
+                // ...config
+            });
+            
+            // Initialize the tracker with the merged configuration
+            window.databuddy = new d({
+                ...config,
+                clientId
+            });
+            
+            // Expose API to window.db function
+            window.db = (method, ...args) => {
+                if (window.databuddy && typeof window.databuddy[method] === 'function') {
+                    return window.databuddy[method](...args);
+                } else {
+                    console.warn(`Databuddy: ${method} is not a function`);
+                }
+            };
+        }
+        
+        // Initialize immediately or on DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
         }
     }
-    )(window);
-
-    // Wrap everything in an IIFE to avoid globals
-    (function() {
-        // Auto-initialize the tracker
-        function initializeDatabuddy() {
-            // Don't run in Node environment
-            if (typeof window === 'undefined') return;
-            
-            // Initialize databuddy with configuration from various sources
-            function init() {
-                // Check if a global configuration object exists
-                const config = window.databuddyConfig || {};
-                
-                // Find the script tag
-                const scripts = document.querySelectorAll('script');
-                let scriptTag = null;
-                
-                for (let i = 0; i < scripts.length; i++) {
-                    if (scripts[i].src && (
-                        scripts[i].src.includes('/databuddy.js') || 
-                        scripts[i].src.includes('/api/tracking')
-                    )) {
-                        scriptTag = scripts[i];
-                        break;
-                    }
-                }
-                
-                if (!scriptTag) {
-                    console.error('Databuddy: Could not find tracking script');
-                    return;
-                }
-                
-                // Get client ID from various sources (in order of precedence):
-                // 1. data-client-id attribute
-                // 2. URL parameter
-                // 3. Global config
-                let clientId = null;
-                
-                // Check for data attribute
-                if (scriptTag.hasAttribute('data-client-id')) {
-                    clientId = scriptTag.getAttribute('data-client-id');
-                }
-                
-                // If not found, check URL params
-                if (!clientId) {
-                    const srcParts = scriptTag.src.split('?');
-                    const urlParams = new URLSearchParams(srcParts.length > 1 ? srcParts[1] : '');
-                    clientId = urlParams.get('id');
-                }
-                
-                // If still not found, check global config
-                if (!clientId) {
-                    clientId = config.clientId;
-                }
-                
-                if (!clientId) {
-                    console.error('Databuddy: Missing client ID');
-                    return;
-                }
-                
-                // Get all data attributes from script tag
-                const dataAttributes = {};
-                if (scriptTag.dataset) {
-                    Object.keys(scriptTag.dataset).forEach(key => {
-                        // Convert camelCase to proper config case
-                        const configKey = key.replace(/[A-Z]/g, letter => letter.toLowerCase());
-                        
-                        // Convert string values to proper types
-                        let value = scriptTag.dataset[key];
-                        if (value === 'true') value = true;
-                        if (value === 'false') value = false;
-                        if (!isNaN(value) && value !== '') value = Number(value);
-                        
-                        dataAttributes[configKey] = value;
-                    });
-                }
-                
-                // Merge configuration from all sources (in order of precedence)
-                const mergedConfig = {
-                    ...config,                // Global config (lowest precedence)
-                    ...dataAttributes,        // Data attributes (higher precedence)
-                    clientId                  // Client ID (highest precedence)
-                };
-                
-                // Initialize the tracker with the merged configuration
-                window.databuddy = new d(mergedConfig);
-            }
-            
-            // Initialize on DOM ready
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', init);
-            } else {
-                init();
-            }
-        }
-        
-        // Auto-initialize the library if we're in a browser
-        if (typeof window !== 'undefined') {
-            initializeDatabuddy();
-        }
-        
-        // Export library for module use cases
-        if (typeof window !== 'undefined') {
-            window.Databuddy = d;
-        } else if (typeof exports === 'object') {
-            module.exports = d;
-        }
-    })();
-}
-)();
+    
+    // Auto-initialize when script is loaded
+    initializeDatabuddy();
+    
+    // Export library for module use cases
+    if (typeof window !== 'undefined') {
+        window.Databuddy = d;
+    } else if (typeof exports === 'object') {
+        module.exports = d;
+    }
+})();

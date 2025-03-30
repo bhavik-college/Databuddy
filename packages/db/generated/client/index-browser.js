@@ -188,7 +188,8 @@ exports.Prisma.PostScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   publishedAt: 'publishedAt',
-  categoryId: 'categoryId'
+  categoryId: 'categoryId',
+  deletedAt: 'deletedAt'
 };
 
 exports.Prisma.CategoryScalarFieldEnum = {
@@ -196,7 +197,8 @@ exports.Prisma.CategoryScalarFieldEnum = {
   name: 'name',
   slug: 'slug',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
 };
 
 exports.Prisma.TagScalarFieldEnum = {
@@ -204,59 +206,20 @@ exports.Prisma.TagScalarFieldEnum = {
   name: 'name',
   slug: 'slug',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.CompanyInfoScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  description: 'description',
-  logo: 'logo',
-  website: 'website',
-  email: 'email',
-  phone: 'phone',
-  address: 'address',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.JobListingScalarFieldEnum = {
-  id: 'id',
-  title: 'title',
-  description: 'description',
-  requirements: 'requirements',
-  location: 'location',
-  salary: 'salary',
-  type: 'type',
-  published: 'published',
-  createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  publishedAt: 'publishedAt',
-  closedAt: 'closedAt'
-};
-
-exports.Prisma.JobApplicationScalarFieldEnum = {
-  id: 'id',
-  jobListingId: 'jobListingId',
-  name: 'name',
-  email: 'email',
-  phone: 'phone',
-  resume: 'resume',
-  coverLetter: 'coverLetter',
-  status: 'status',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  reviewedAt: 'reviewedAt'
+  deletedAt: 'deletedAt'
 };
 
 exports.Prisma.WebsiteScalarFieldEnum = {
   id: 'id',
   domain: 'domain',
   name: 'name',
-  userId: 'userId',
   status: 'status',
+  userId: 'userId',
+  projectId: 'projectId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
 };
 
 exports.Prisma.AccountScalarFieldEnum = {
@@ -275,24 +238,37 @@ exports.Prisma.AccountScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.SubscriptionScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  customerId: 'customerId',
+  priceId: 'priceId',
+  productId: 'productId',
+  status: 'status',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  canceledAt: 'canceledAt',
+  periodEventsCount: 'periodEventsCount',
+  periodEventsCountExceededAt: 'periodEventsCountExceededAt',
+  periodEventsLimit: 'periodEventsLimit',
+  interval: 'interval',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.OrganizationScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  description: 'description',
+  logo: 'logo',
+  website: 'website',
+  email: 'email',
+  phone: 'phone',
+  address: 'address',
   createdByUserId: 'createdByUserId',
-  subscriptionId: 'subscriptionId',
-  subscriptionCustomerId: 'subscriptionCustomerId',
-  subscriptionPriceId: 'subscriptionPriceId',
-  subscriptionProductId: 'subscriptionProductId',
-  subscriptionStatus: 'subscriptionStatus',
-  subscriptionStartsAt: 'subscriptionStartsAt',
-  subscriptionEndsAt: 'subscriptionEndsAt',
-  subscriptionCanceledAt: 'subscriptionCanceledAt',
-  subscriptionCreatedByUserId: 'subscriptionCreatedByUserId',
-  subscriptionPeriodEventsCount: 'subscriptionPeriodEventsCount',
-  subscriptionPeriodEventsCountExceededAt: 'subscriptionPeriodEventsCountExceededAt',
-  subscriptionPeriodEventsLimit: 'subscriptionPeriodEventsLimit',
-  subscriptionInterval: 'subscriptionInterval',
   deleteAt: 'deleteAt',
+  deletedAt: 'deletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -302,20 +278,22 @@ exports.Prisma.MemberScalarFieldEnum = {
   role: 'role',
   email: 'email',
   userId: 'userId',
-  invitedById: 'invitedById',
   organizationId: 'organizationId',
+  invitedById: 'invitedById',
   meta: 'meta',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
 };
 
 exports.Prisma.ProjectAccessScalarFieldEnum = {
   id: 'id',
   projectId: 'projectId',
   userId: 'userId',
-  level: 'level',
+  role: 'role',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
 };
 
 exports.Prisma.InviteScalarFieldEnum = {
@@ -365,7 +343,20 @@ exports.Prisma.ClientScalarFieldEnum = {
   type: 'type',
   organizationId: 'organizationId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.AuditLogScalarFieldEnum = {
+  id: 'id',
+  action: 'action',
+  resourceType: 'resourceType',
+  resourceId: 'resourceId',
+  details: 'details',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  userId: 'userId',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.TwoFactorScalarFieldEnum = {
@@ -415,19 +406,11 @@ exports.UserStatus = exports.$Enums.UserStatus = {
 
 exports.Role = exports.$Enums.Role = {
   ADMIN: 'ADMIN',
-  USER: 'USER',
-  AUTHOR: 'AUTHOR',
+  OWNER: 'OWNER',
   EDITOR: 'EDITOR',
+  AUTHOR: 'AUTHOR',
   VIEWER: 'VIEWER',
-  OWNER: 'OWNER'
-};
-
-exports.ApplicationStatus = exports.$Enums.ApplicationStatus = {
-  NEW: 'NEW',
-  REVIEWED: 'REVIEWED',
-  INTERVIEWING: 'INTERVIEWING',
-  REJECTED: 'REJECTED',
-  HIRED: 'HIRED'
+  USER: 'USER'
 };
 
 exports.WebsiteStatus = exports.$Enums.WebsiteStatus = {
@@ -438,10 +421,13 @@ exports.WebsiteStatus = exports.$Enums.WebsiteStatus = {
   PENDING: 'PENDING'
 };
 
-exports.AccessLevel = exports.$Enums.AccessLevel = {
-  ADMIN: 'ADMIN',
-  EDITOR: 'EDITOR',
-  VIEWER: 'VIEWER'
+exports.SubscriptionStatus = exports.$Enums.SubscriptionStatus = {
+  ACTIVE: 'ACTIVE',
+  TRIALING: 'TRIALING',
+  PAST_DUE: 'PAST_DUE',
+  CANCELED: 'CANCELED',
+  PAUSED: 'PAUSED',
+  INCOMPLETE: 'INCOMPLETE'
 };
 
 exports.ProjectType = exports.$Enums.ProjectType = {
@@ -449,6 +435,13 @@ exports.ProjectType = exports.$Enums.ProjectType = {
   MOBILE_APP: 'MOBILE_APP',
   DESKTOP_APP: 'DESKTOP_APP',
   API: 'API'
+};
+
+exports.ProjectStatus = exports.$Enums.ProjectStatus = {
+  ACTIVE: 'ACTIVE',
+  COMPLETED: 'COMPLETED',
+  ON_HOLD: 'ON_HOLD',
+  CANCELLED: 'CANCELLED'
 };
 
 exports.ClientType = exports.$Enums.ClientType = {
@@ -466,11 +459,9 @@ exports.Prisma.ModelName = {
   Post: 'Post',
   Category: 'Category',
   Tag: 'Tag',
-  CompanyInfo: 'CompanyInfo',
-  JobListing: 'JobListing',
-  JobApplication: 'JobApplication',
   Website: 'Website',
   Account: 'Account',
+  Subscription: 'Subscription',
   Organization: 'Organization',
   Member: 'Member',
   ProjectAccess: 'ProjectAccess',
@@ -478,6 +469,7 @@ exports.Prisma.ModelName = {
   Project: 'Project',
   EventMeta: 'EventMeta',
   Client: 'Client',
+  AuditLog: 'AuditLog',
   TwoFactor: 'TwoFactor',
   Jwks: 'Jwks'
 };

@@ -8,6 +8,9 @@ import { DataTable } from "@/components/analytics/data-table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useAnalyticsProfiles } from "@/hooks/use-analytics";
 import { DateRange } from "@/hooks/use-analytics";
+import { AnimatedLoading } from "@/components/analytics/animated-loading";
+import { RefreshCw, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Define the component props type
 interface WebsiteProfilesTabProps {
@@ -25,6 +28,7 @@ export function WebsiteProfilesTab({
 }: WebsiteProfilesTabProps) {
   // Add this for profile details dialog
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
+  const [loadingProgress, setLoadingProgress] = useState<number>(0);
   
   // Fetch profiles data
   const { 
@@ -81,6 +85,42 @@ export function WebsiteProfilesTab({
     }
   }, [isRefreshing, profilesRefetch]);
 
+  // Simulate loading progress
+  useEffect(() => {
+    if (isLoadingProfiles) {
+      const intervals = [
+        { target: 25, duration: 800 },
+        { target: 50, duration: 1500 },
+        { target: 75, duration: 2000 },
+        { target: 90, duration: 1800 }
+      ];
+      
+      let cleanup: NodeJS.Timeout[] = [];
+      
+      intervals.forEach((interval, index) => {
+        const timeout = setTimeout(() => {
+          setLoadingProgress(interval.target);
+        }, interval.duration * (index === 0 ? 1 : index));
+        
+        cleanup.push(timeout);
+      });
+      
+      return () => {
+        cleanup.forEach(timeout => clearTimeout(timeout));
+      };
+    } else {
+      // Reset progress when loading is complete
+      setLoadingProgress(100);
+      
+      // After animation completes, reset to 0
+      const timeout = setTimeout(() => {
+        setLoadingProgress(0);
+      }, 1000);
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [isLoadingProfiles]);
+
   // Handler for session row clicks 
   const handleSessionRowClick = (sessionId: string) => {
     // This would ideally open the session details in another dialog
@@ -98,76 +138,95 @@ export function WebsiteProfilesTab({
     <div className="pt-2 space-y-3">
       <h2 className="text-lg font-semibold mb-2">Visitor Profiles</h2>
       
-      <div className="rounded-lg border shadow-sm overflow-hidden">
-        <DataTable
-          data={profilesData?.profiles || []}
-          columns={[
-            {
-              accessorKey: 'visitor_id',
-              header: 'Visitor ID',
-              cell: (value: string) => (
-                <div className="font-medium">
-                  {value.substring(0, 12)}...
-                  {value && value.split('_').length > 1 && (
-                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">
-                      {value.split('_')[0]}
-                    </span>
-                  )}
-                </div>
-              )
-            },
-            {
-              accessorKey: 'first_visit',
-              header: 'First Visit',
-              cell: (value: string) => (
-                <div>
-                  {value ? format(new Date(value), 'MMM d, yyyy HH:mm') : '-'}
-                </div>
-              )
-            },
-            {
-              accessorKey: 'total_sessions',
-              header: 'Sessions',
-              className: 'text-right',
-              cell: (value: number) => value || 0
-            },
-            {
-              accessorKey: 'total_pageviews',
-              header: 'Pageviews',
-              className: 'text-right',
-              cell: (value: number) => value || 0
-            },
-            {
-              accessorKey: 'device',
-              header: 'Device',
-              cell: (value: string) => value || 'Unknown'
-            },
-            {
-              accessorKey: 'browser',
-              header: 'Browser',
-              cell: (value: string) => value || 'Unknown'
-            },
-            {
-              accessorKey: 'total_duration_formatted',
-              header: 'Total Time',
-              className: 'text-right',
-              cell: (value: string) => value || '0s'
-            }
-          ]}
-          title="Visitor Profiles"
-          description="Detailed visitor information grouped by unique ID"
-          isLoading={isLoadingProfiles}
-          emptyMessage="No visitor data available for the selected period"
-          onRowClick={(row: { visitor_id: string }) => handleProfileRowClick(row.visitor_id)}
-        />
-      </div>
-      
-      {profilesData && (
-        <div className="text-sm text-muted-foreground mt-2">
-          Showing {profilesData.profiles.length} of {profilesData.total_visitors} visitors ({profilesData.returning_visitors} returning) in the selected period.
+      {isLoadingProfiles ? (
+        <AnimatedLoading type="profiles" progress={loadingProgress} />
+      ) : profilesData && profilesData.profiles.length > 0 ? (
+        <>
+          <div className="rounded-lg border shadow-sm overflow-hidden">
+            <DataTable
+              data={profilesData?.profiles || []}
+              columns={[
+                {
+                  accessorKey: 'visitor_id',
+                  header: 'Visitor ID',
+                  cell: (value: string) => <div className="font-mono text-xs">{value.substring(0, 8)}...</div>
+                },
+                {
+                  accessorKey: 'last_visit',
+                  header: 'Last Visit',
+                  cell: (value: string) => format(new Date(value), 'MMM d, yyyy HH:mm')
+                },
+                {
+                  accessorKey: 'total_sessions',
+                  header: 'Sessions',
+                  className: 'text-right'
+                },
+                {
+                  accessorKey: 'total_pageviews',
+                  header: 'Pageviews',
+                  className: 'text-right'
+                },
+                {
+                  accessorKey: 'country',
+                  header: 'Country',
+                  cell: (value: string) => value || '-'
+                },
+                {
+                  accessorKey: 'device',
+                  header: 'Device',
+                  cell: (value: string) => value || '-'
+                },
+                {
+                  accessorKey: 'total_duration_formatted',
+                  header: 'Time Spent',
+                  className: 'text-right'
+                }
+              ]}
+              title="Visitor Profiles"
+              description="Overview of visitors to your website"
+              isLoading={isLoadingProfiles}
+              emptyMessage="No visitor data available for the selected period"
+              onRowClick={(row: { visitor_id: string }) => handleProfileRowClick(row.visitor_id)}
+            />
+          </div>
+          
+          {profilesData && (
+            <div className="text-sm text-muted-foreground mt-2">
+              Showing {profilesData.profiles.length} of {profilesData.total_visitors} visitors ({profilesData.returning_visitors} returning) in the selected period.
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="rounded-lg border shadow-sm p-8 text-center">
+          <div className="flex flex-col items-center">
+            <Users className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
+            <h3 className="text-lg font-medium mb-2">No visitor profiles</h3>
+            <p className="text-muted-foreground mb-4">
+              No visitor profile data is available for the selected time period.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsRefreshing(true);
+                profilesRefetch()
+                  .then(() => {
+                    toast.success("Profile data refreshed");
+                  })
+                  .catch(() => {
+                    toast.error("Failed to refresh profile data");
+                  })
+                  .finally(() => {
+                    setIsRefreshing(false);
+                  });
+              }}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Try Again
+            </Button>
+          </div>
         </div>
       )}
-
+      
       {/* Profile Details Dialog */}
       <Dialog open={!!selectedProfileId} onOpenChange={(open) => {
         if (!open) handleCloseProfileDialog();

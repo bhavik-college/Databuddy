@@ -454,27 +454,40 @@ function WebsiteDetailsPage() {
 
       {/* Tabs */}
       <Tabs defaultValue="overview" value={activeTab} onValueChange={(value) => setActiveTab(value as TabId)} className="mb-3">
-        <div className="border-b mb-3">
-          <TabsList className="h-9 bg-transparent p-0 w-full justify-start gap-1">
+        <div className="bg-muted/30 rounded-t-lg border border-b-0 pt-1 px-2">
+          <TabsList className="h-10 bg-transparent p-0.5 w-full justify-start gap-1 relative">
             {tabs.map((tab) => (
               <TabsTrigger 
                 key={tab.id} 
                 value={tab.id} 
-                className="text-xs h-9 px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none cursor-pointer"
+                className="h-9 px-5 text-xs font-medium tracking-wide rounded-md transition-all 
+                  data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm
+                  data-[state=active]:border-none data-[state=active]:font-semibold
+                  hover:bg-background/40 cursor-pointer flex items-center gap-1.5"
               >
+                {tab.id === "overview" && <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />}
+                {tab.id === "audience" && <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+                {tab.id === "content" && <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />}
+                {tab.id === "performance" && <div className="h-1.5 w-1.5 rounded-full bg-purple-500" />}
+                {tab.id === "sessions" && <div className="h-1.5 w-1.5 rounded-full bg-sky-500" />}
+                {tab.id === "profiles" && <div className="h-1.5 w-1.5 rounded-full bg-rose-500" />}
+                {tab.id === "errors" && <div className="h-1.5 w-1.5 rounded-full bg-red-500" />}
+                {tab.id === "settings" && <div className="h-1.5 w-1.5 rounded-full bg-gray-500" />}
                 {tab.label}
               </TabsTrigger>
             ))}
           </TabsList>
         </div>
 
-        {tabs.map((tab) => (
-          <TabsContent key={tab.id} value={tab.id} className={tab.className}>
-            <Suspense fallback={<TabLoadingSkeleton />}>
-              {renderTabContent(tab.id)}
-            </Suspense>
-          </TabsContent>
-        ))}
+        <div className="border rounded-b-lg bg-background p-4 shadow-sm">
+          {tabs.map((tab) => (
+            <TabsContent key={tab.id} value={tab.id} className={`${tab.className || ''} pt-1 focus-visible:outline-none focus-visible:ring-0`}>
+              <Suspense fallback={<TabLoadingSkeleton />}>
+                {renderTabContent(tab.id)}
+              </Suspense>
+            </TabsContent>
+          ))}
+        </div>
       </Tabs>
     </div>
   );
@@ -483,16 +496,16 @@ function WebsiteDetailsPage() {
 // Loading skeleton for tabs
 function TabLoadingSkeleton() {
   return (
-    <div className="space-y-4 pt-2">
-      <div className="grid grid-cols-4 gap-2">
+    <div className="space-y-5 pt-2 animate-pulse">
+      <div className="grid grid-cols-4 gap-3">
         {[...Array(4)].map((_, i) => (
-          <Skeleton key={i} className="h-24 w-full" />
+          <div key={i} className="h-24 w-full bg-muted/50 rounded-lg border"></div>
         ))}
       </div>
-      <Skeleton className="h-64 w-full" />
-      <div className="grid grid-cols-2 gap-3">
-        <Skeleton className="h-40 w-full" />
-        <Skeleton className="h-40 w-full" />
+      <div className="h-64 w-full bg-muted/50 rounded-lg border"></div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="h-40 w-full bg-muted/50 rounded-lg border"></div>
+        <div className="h-40 w-full bg-muted/50 rounded-lg border"></div>
       </div>
     </div>
   );

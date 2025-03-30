@@ -70,12 +70,34 @@ export const websiteAuthHook = (): MiddlewareHandler<{
   Variables: AppVariables;
 }> => {
   return async (c, next) => {
-    const clientId = c.req.header('databuddy-client-id');
+    // First try to get client ID from header
+    let clientId = c.req.header('databuddy-client-id');
     const origin = c.req.header('origin') || '';
     
-    // Handle the case where clientId is literally the string "undefined"
+    // If no header, try to get from URL parameters (for beacon API compatibility)
     if (!clientId || clientId === 'undefined') {
-      return c.json({ error: 'Missing or invalid client ID' }, 401);
+      const url = new URL(c.req.url);
+      clientId = url.searchParams.get('client_id') || '';
+      
+      // If still no client ID, return 401
+      if (!clientId) {
+        logger.warn('Missing client ID', { url: c.req.url });
+        return c.json({ error: 'Missing or invalid client ID' }, 401);
+      }
+    }
+    
+    // For beacon requests also get SDK info from URL if not in headers
+    let sdkName = c.req.header('databuddy-sdk-name');
+    let sdkVersion = c.req.header('databuddy-sdk-version');
+    
+    if (!sdkName) {
+      const url = new URL(c.req.url);
+      sdkName = url.searchParams.get('sdk_name') || 'web';
+    }
+    
+    if (!sdkVersion) {
+      const url = new URL(c.req.url);
+      sdkVersion = url.searchParams.get('sdk_version') || '1.0.0';
     }
     
     try {
@@ -104,8 +126,18 @@ export const websiteAuthHook = (): MiddlewareHandler<{
         return c.json({ error: 'Origin not authorized for this client ID' }, 403);
       }
       
-      // Add website to context for later use
-      c.set('website', website);
+      // Set the website in the context
+      c.set('website', {
+        id: website.id,
+        name: website.name,
+        domain: website.domain,
+        status: website.status,
+        userId: website.userId,
+        projectId: website.projectId,
+        createdAt: website.createdAt,
+        updatedAt: website.updatedAt,
+        deletedAt: website.deletedAt
+      });
       
       await next();
     } catch (error) {

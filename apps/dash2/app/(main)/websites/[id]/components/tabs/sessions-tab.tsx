@@ -3,12 +3,14 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, ActivitySquare, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 import { DataTable } from "@/components/analytics/data-table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useAnalyticsSessions, useAnalyticsSessionDetails } from "@/hooks/use-analytics";
 import { DateRange } from "@/hooks/use-analytics";
+import { AnimatedLoading } from "@/components/analytics/animated-loading";
 
 // Define the component props type
 interface WebsiteSessionsTabProps {
@@ -26,6 +28,7 @@ export function WebsiteSessionsTab({
 }: WebsiteSessionsTabProps) {
   // Session details dialog state
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [loadingProgress, setLoadingProgress] = useState<number>(0);
   
   // Fetch sessions data
   const { 
@@ -88,87 +91,163 @@ export function WebsiteSessionsTab({
     }
   }, [isRefreshing, sessionsRefetch]);
 
+  // Simulate loading progress
+  useEffect(() => {
+    if (isLoadingSessions) {
+      const intervals = [
+        { target: 30, duration: 1000 },
+        { target: 65, duration: 2000 },
+        { target: 85, duration: 1500 },
+        { target: 95, duration: 1500 }
+      ];
+      
+      let cleanup: NodeJS.Timeout[] = [];
+      
+      intervals.forEach((interval, index) => {
+        const timeout = setTimeout(() => {
+          setLoadingProgress(interval.target);
+        }, interval.duration * (index === 0 ? 1 : index));
+        
+        cleanup.push(timeout);
+      });
+      
+      return () => {
+        cleanup.forEach(timeout => clearTimeout(timeout));
+      };
+    } else {
+      // Reset progress when loading is complete
+      setLoadingProgress(100);
+      
+      // After animation completes, reset to 0
+      const timeout = setTimeout(() => {
+        setLoadingProgress(0);
+      }, 1000);
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [isLoadingSessions]);
+
   return (
     <div className="pt-2 space-y-3">
-      <h2 className="text-lg font-semibold mb-2">Visitor Sessions</h2>
+      <h2 className="text-lg font-semibold mb-2">Session Analytics</h2>
       
-      <div className="rounded-lg border shadow-sm overflow-hidden">
-        <DataTable
-          data={sessionsData?.sessions || []}
-          columns={[
-            {
-              accessorKey: 'session_name',
-              header: 'Session',
-              cell: (value: string, row: any) => (
-                <div className="font-medium flex items-center">
-                  {value}
-                  {row.is_returning_visitor && (
-                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">
-                      Returning
-                    </span>
-                  )}
-                </div>
-              )
-            },
-            {
-              accessorKey: 'first_visit',
-              header: 'Time',
-              cell: (value: string) => (
-                <div>
-                  {value ? format(new Date(value), 'MMM d, yyyy HH:mm:ss') : '-'}
-                </div>
-              )
-            },
-            {
-              accessorKey: 'country',
-              header: 'Location',
-              cell: (value: string) => (
-                <div className="whitespace-nowrap">
-                  {value || 'Unknown'}
-                </div>
-              )
-            },
-            {
-              accessorKey: 'device',
-              header: 'Device',
-              cell: (value: string) => value || 'Unknown'
-            },
-            {
-              accessorKey: 'page_views',
-              header: 'Pages',
-              className: 'text-right',
-              cell: (value: number) => value || 0
-            },
-            {
-              accessorKey: 'duration_formatted',
-              header: 'Duration',
-              className: 'text-right',
-              cell: (value: string) => value || '0s'
-            },
-            {
-              accessorKey: 'referrer_parsed',
-              header: 'Source',
-              cell: (value: { type: string; name: string; domain: string } | undefined) => (
-                <div className="max-w-[200px] truncate">
-                  {value?.name || 'Direct'}
-                </div>
-              )
-            }
-          ]}
-          title="Recent Sessions"
-          description="List of visitor sessions on your website"
-          isLoading={isLoadingSessions}
-          emptyMessage="No session data available for the selected period"
-          onRowClick={(row: { session_id: string }) => handleSessionRowClick(row.session_id)}
-        />
-      </div>
-      
-      {sessionsData && (
-        <div className="text-sm text-muted-foreground mt-2">
-          Showing {sessionsData.sessions.length} sessions from {sessionsData.unique_visitors} unique visitors in the selected period.
+      {/* Show animated loading component when loading */}
+      {isLoadingSessions ? (
+        <AnimatedLoading type="sessions" progress={loadingProgress} />
+      ) : sessionsData ? (
+        <>
+          {/* Session summary cards */}
+          {/* ... existing session summary content ... */}
+          
+          {/* Sessions list table */}
+          <div className="rounded-lg border shadow-sm overflow-hidden">
+            <DataTable
+              data={sessionsData?.sessions || []}
+              columns={[
+                {
+                  accessorKey: 'session_name',
+                  header: 'Session',
+                  cell: (value: string, row: any) => (
+                    <div className="font-medium flex items-center">
+                      {value}
+                      {row.is_returning_visitor && (
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">
+                          Returning
+                        </span>
+                      )}
+                    </div>
+                  )
+                },
+                {
+                  accessorKey: 'first_visit',
+                  header: 'Time',
+                  cell: (value: string) => (
+                    <div>
+                      {value ? format(new Date(value), 'MMM d, yyyy HH:mm:ss') : '-'}
+                    </div>
+                  )
+                },
+                {
+                  accessorKey: 'country',
+                  header: 'Location',
+                  cell: (value: string) => (
+                    <div className="whitespace-nowrap">
+                      {value || 'Unknown'}
+                    </div>
+                  )
+                },
+                {
+                  accessorKey: 'device',
+                  header: 'Device',
+                  cell: (value: string) => value || 'Unknown'
+                },
+                {
+                  accessorKey: 'page_views',
+                  header: 'Pages',
+                  className: 'text-right',
+                  cell: (value: number) => value || 0
+                },
+                {
+                  accessorKey: 'duration_formatted',
+                  header: 'Duration',
+                  className: 'text-right',
+                  cell: (value: string) => value || '0s'
+                },
+                {
+                  accessorKey: 'referrer_parsed',
+                  header: 'Source',
+                  cell: (value: { type: string; name: string; domain: string } | undefined) => (
+                    <div className="max-w-[200px] truncate">
+                      {value?.name || 'Direct'}
+                    </div>
+                  )
+                }
+              ]}
+              title="Recent Sessions"
+              description="List of visitor sessions on your website"
+              isLoading={isLoadingSessions}
+              emptyMessage="No session data available for the selected period"
+              onRowClick={(row: { session_id: string }) => handleSessionRowClick(row.session_id)}
+            />
+          </div>
+          
+          {sessionsData && (
+            <div className="text-sm text-muted-foreground mt-2">
+              Showing {sessionsData.sessions.length} sessions from {sessionsData.unique_visitors} unique visitors in the selected period.
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="rounded-lg border shadow-sm p-8 text-center">
+          <div className="flex flex-col items-center">
+            <ActivitySquare className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
+            <h3 className="text-lg font-medium mb-2">No session data</h3>
+            <p className="text-muted-foreground mb-4">
+              No session data is available for the selected time period.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsRefreshing(true);
+                sessionsRefetch()
+                  .then(() => {
+                    toast.success("Session data refreshed");
+                  })
+                  .catch(() => {
+                    toast.error("Failed to refresh session data");
+                  })
+                  .finally(() => {
+                    setIsRefreshing(false);
+                  });
+              }}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Try Again
+            </Button>
+          </div>
         </div>
       )}
-
+      
       {/* Session Details Dialog */}
       <Dialog open={!!selectedSessionId} onOpenChange={(open) => {
         if (!open) handleCloseSessionDialog();

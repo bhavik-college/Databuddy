@@ -1,4 +1,4 @@
-import { prisma } from '../client';
+import { prisma, ProjectStatus } from '../client';
 import { Prisma, Project, ProjectType } from '../client';
 import { createLogger } from '@databuddy/logger';
 // import { cacheable } from '@databuddy/redis';
@@ -133,7 +133,7 @@ export class ProjectService {
     try {
       const project = await prisma.project.update({
         where: { id },
-        data: { status },
+        data: { status: status as ProjectStatus },
       });
       // Invalidate caches
       // await ProjectService.findById.invalidate(id);

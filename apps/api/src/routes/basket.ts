@@ -1,15 +1,12 @@
 /**
- * DataBuddy Analytics Collection Endpoint (Basket)
- * 
- * This file implements the /basket endpoint that collects analytics events
- * from the databuddy.js client and stores them in ClickHouse.
+ * Databuddy Analytics Collection Endpoint (Basket)
+ * Collects analytics events from the databuddy.js client and stores them in ClickHouse.
  */
 
 import { Hono } from 'hono';
 import { createLogger } from '@databuddy/logger';
 import { cors } from 'hono/cors';
 import { z } from 'zod';
-import { zValidator } from '@hono/zod-validator';
 import { websiteAuthHook } from '../hooks/auth';
 import { processEvent } from '../controllers/analytics.controller';
 import { AppVariables, TrackingEvent } from '../types';
@@ -21,21 +18,59 @@ import { parseReferrer } from '../utils/referrer';
 const logger = createLogger('analytics-basket');
 
 // Create a new basket router
-const basketRouter = new Hono<{ Variables: AppVariables & { enriched?: any } }>()
-  .use(
-    '*',
-    cors({
-      origin: '*',
-      allowHeaders: [
-        'Content-Type',
-        'databuddy-client-id',
-        'databuddy-sdk-name',
-        'databuddy-sdk-version',
-      ],
-      allowMethods: ['POST', 'OPTIONS', 'GET'],
-      maxAge: 600,
-    })
-  );
+const basketRouter = new Hono<{ Variables: AppVariables & { enriched?: any } }>();
+
+// Apply website authentication hook first to get website info
+basketRouter.use(websiteAuthHook());
+
+// Add CORS middleware with dynamic origin based on website domain
+basketRouter.use('*', async (c, next) => {
+  const website = c.get('website');
+  
+  const corsMiddleware = cors({
+    origin: (origin) => {
+      if (!origin) return origin;
+      
+      try {
+        // Always allow localhost for development
+        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+          return origin;
+        }
+        
+        let domain = website?.domain || '';
+        
+        if (domain.startsWith('http://') || domain.startsWith('https://')) {
+          domain = new URL(domain).hostname;
+        }
+        
+        const originHostname = new URL(origin).hostname;
+        
+        if (domain && (originHostname === domain || 
+                     (domain.length > 0 && originHostname.endsWith(`.${domain}`)))) {
+          return origin;
+        }
+        
+        logger.warn('Origin mismatch but allowing', { origin, domain });
+        return origin;
+      } catch (error) {
+        logger.error('Error validating origin', { origin, error });
+        return origin;
+      }
+    },
+    allowHeaders: [
+      'Content-Type',
+      'databuddy-client-id',
+      'databuddy-sdk-name',
+      'databuddy-sdk-version',
+    ],
+    allowMethods: ['POST', 'OPTIONS', 'GET'],
+    exposeHeaders: ['Content-Type'],
+    credentials: false,
+    maxAge: 600,
+  });
+  
+  return corsMiddleware(c, next);
+});
 
 // Define the event validation schema
 const eventSchema = z.object({
@@ -50,10 +85,7 @@ const eventSchema = z.object({
   }),
 }) satisfies z.ZodType<TrackingEvent>;
 
-// Apply website authentication hook
-basketRouter.use(websiteAuthHook());
-
-// Middleware to enrich events with user agent, geo, and referrer data
+// Middleware to enrich events with metadata
 basketRouter.use('*', async (c, next) => {
   const userAgent = c.req.header('user-agent') || '';
   const referrer = c.req.header('referer') || '';
@@ -81,59 +113,40 @@ basketRouter.use('*', async (c, next) => {
   });
   
   const geo = await parseIp(request);
-
-  // Parse referrer and UTM params
   const referrerInfo = parseReferrer(referrer);
   const urlParams = new URLSearchParams(url.search);
 
   // Add enriched data to context matching ClickHouse schema
-  const enriched = {
-    // URL and page info
+  c.set('enriched', {
     url: url.toString(),
     path: url.pathname,
-    title: '', // Will be set by client
-
-    // User agent info
+    title: '',
     user_agent: userAgent,
     browser: uaInfo.browser,
-    browser_version: '', // TODO: Add version parsing
+    browser_version: '',
     os: uaInfo.os,
-    os_version: '', // TODO: Add version parsing
+    os_version: '',
     device_type: uaInfo.device,
-    device_vendor: '', // TODO: Add vendor parsing
-    device_model: '', // TODO: Add model parsing
-    
-    // Screen and viewport (will be set by client)
+    device_vendor: '',
+    device_model: '',
     screen_resolution: '',
     viewport_size: '',
-    
-    // Location and timezone
     language,
     timezone: geo.timezone || '',
-    timezone_offset: null, // Will be set by client
-    
-    // Network info
-    connection_type: '', // Will be set by client
+    timezone_offset: null,
+    connection_type: '',
     connection_speed: '',
     rtt: null,
-    
-    // Geo info
     ip: anonymizeIp(geo.ip || ''),
     country: geo.country || '',
     region: geo.region || '',
     city: geo.city || '',
-    
-    // Referrer info
     referrer: referrerInfo.url,
-    
-    // UTM parameters
     utm_source: urlParams.get('utm_source') || '',
     utm_medium: urlParams.get('utm_medium') || '',
     utm_campaign: urlParams.get('utm_campaign') || '',
     utm_term: urlParams.get('utm_term') || '',
     utm_content: urlParams.get('utm_content') || '',
-    
-    // Performance metrics (will be set by client)
     load_time: null,
     dom_ready_time: null,
     ttfb: null,
@@ -146,23 +159,18 @@ basketRouter.use('*', async (c, next) => {
     lcp: null,
     cls: null,
     page_size: null,
-    
-    // Engagement metrics (will be set by client)
     time_on_page: null,
     page_count: null,
     scroll_depth: null,
     interaction_count: null,
     exit_intent: 0
-  };
-
-  c.set('enriched', enriched);
+  });
 
   await next();
 });
 
 // Handle analytics events with validation
 basketRouter.post('/', async (c) => {
-  // Validate the request body
   const validationResult = eventSchema.safeParse(await c.req.json());
   
   if (!validationResult.success) {
@@ -173,11 +181,10 @@ basketRouter.post('/', async (c) => {
     }, 400);
   }
   
-  // Get enriched data
   const enriched = c.get('enriched');
   const properties = validationResult.data.payload.properties || {};
   
-  // Extract values from properties and map to correct columns
+  // Map properties to clickhouse schema
   const mappedEvent = {
     ...validationResult.data,
     payload: {
@@ -190,8 +197,6 @@ basketRouter.post('/', async (c) => {
       connection_type: properties.connection_type || '',
       connection_speed: properties.connection_speed || '',
       rtt: properties.rtt || null,
-      
-      // Performance metrics
       load_time: properties.load_time || null,
       dom_ready_time: properties.dom_ready_time || null,
       ttfb: properties.ttfb || null,
@@ -204,45 +209,27 @@ basketRouter.post('/', async (c) => {
       lcp: properties.lcp || null,
       cls: properties.cls || null,
       page_size: properties.page_size || null,
-      
-      // Engagement metrics
       time_on_page: properties.time_on_page || null,
       page_count: properties.page_count || null,
       scroll_depth: properties.scroll_depth || null,
       interaction_count: properties.interaction_count || null,
       exit_intent: properties.exit_intent || 0,
-      
-      // URL and page info
       title: properties.__title || '',
       path: properties.__path || enriched.path,
-      
-      // Session info
       session_id: properties.sessionId,
       session_start_time: properties.sessionStartTime,
-      
-      // Referrer info
       referrer: properties.__referrer || enriched.referrer,
       referrer_type: properties.__referrer_type,
       referrer_name: properties.__referrer_name,
-      
-      // SDK info
       sdk_name: properties.__sdk_name || properties.__enriched?.sdk_name,
       sdk_version: properties.__sdk_version || properties.__enriched?.sdk_version,
-      
-      // Keep the original properties for reference
       __raw_properties: properties,
-      
-      // Add enriched data
       __enriched: enriched
     }
   } as TrackingEvent;
   
-  // Store the validated and enriched data
   c.set('event', mappedEvent);
-  
-  // Call the event processor
   return processEvent(c);
 });
 
-// Export the router
 export default basketRouter;

@@ -8,7 +8,7 @@ export default function TrackingOptionsPage() {
       <main className={styles.main}>
         <h1>Tracking Configuration Options</h1>
         
-        <p>DataBuddy.js can be configured with various options to control which tracking features are enabled. This allows you to customize the tracking experience to match your website's needs and your users' privacy requirements.</p>
+        <p>Databuddy.js can be configured with various options to control which tracking features are enabled. This allows you to customize the tracking experience to match your website's needs and your users' privacy requirements.</p>
         
         <h2>Basic Usage</h2>
         

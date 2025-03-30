@@ -1,7 +1,6 @@
 "use client"
 
 import { signIn, signOut, signUp, authClient } from './auth-client';
-import type { AuthUser } from './types';
 
 interface TwoFactorResponse {
   data?: {

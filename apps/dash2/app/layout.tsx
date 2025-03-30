@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
@@ -8,16 +8,33 @@ import Script from "next/script";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Databuddy Dashboard",
-  description: "Analytics dashboard for Databuddy platform",
+  title: {
+    template: "%s | Databuddy Dashboard",
+    default: "Databuddy Dashboard",
+  },
+  description: "Powerful analytics dashboard for your websites",
+  keywords: ["analytics", "dashboard", "monitoring", "statistics", "web analytics", "tracking"],
+  authors: [{ name: "Databuddy" }],
+  creator: "Databuddy",
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "white" },
+    { media: "(prefers-color-scheme: dark)", color: "#1a1a1a" },
+  ],
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -26,21 +43,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="h-full">
       <head />
-      <Script id="databuddy-config" strategy="beforeInteractive">
-        {`
-          window.databuddyConfig = {
-            apiUrl: "${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}",
-            trackScreenViews: true,
-            trackPerformance: true,
-            trackWebVitals: true
-          };
-        `}
-      </Script>
       <Script 
-        src="/databuddy.js" 
-        data-client-id={process.env.NEXT_PUBLIC_ANALYTICS_CLIENT_ID || "5ced32e5-0219-4e75-a18a-ad9826f85698"}
+        src="http://localhost:3000/databuddy.js"
+        data-client-id="5ced32e5-0219-4e75-a18a-ad9826f85698"
+        data-api-url="http://localhost:4000"
         data-track-screen-views="true"
         data-track-performance="true"
         data-track-web-vitals="true"
@@ -48,12 +56,12 @@ export default function RootLayout({
         strategy="afterInteractive"
       />
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full min-h-screen bg-background text-foreground flex flex-col`}
       >
         <Providers>
-          {children}
+          <main className="flex-1">{children}</main>
         </Providers>
-        <Toaster duration={1500} position="top-center" closeButton />
+        <Toaster duration={1500} position="top-center" closeButton richColors />
       </body>
     </html>
   );

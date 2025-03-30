@@ -5,7 +5,7 @@
  * and platform identification.
  */
 
-import { isBot } from '../bots';
+import { isBot } from '../lists';
 
 export interface UserAgentInfo {
   bot: {

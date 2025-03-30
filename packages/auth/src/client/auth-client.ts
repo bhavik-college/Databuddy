@@ -1,7 +1,7 @@
 import { createAuthClient } from "better-auth/react"
 import { customSessionClient, twoFactorClient, organizationClient, emailOTPClient } from "better-auth/client/plugins";
-import { auth } from "./auth";
-import { AuthUser, SignInOptions, SignUpOptions } from "./types";
+import { type auth } from "../auth";
+import { AuthUser } from "../types";
 import { jwt, multiSession } from "better-auth/plugins";
 
 // Define a type for the auth client configuration

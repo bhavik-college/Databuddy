@@ -121,7 +121,7 @@ export async function inviteToOrganization(
   email: string,
   role: string | string[],
   options?: {
-    organizationId?: string;
+    organizationId: string;
     teamId?: string;
     onSuccess?: () => void;
     onError?: (error: any) => void;
@@ -180,7 +180,7 @@ export async function acceptInvitation(
 export async function createTeam(
   name: string,
   options?: {
-    organizationId?: string;
+    organizationId: string;
     onSuccess?: (team: Team) => void;
     onError?: (error: any) => void;
   }
@@ -205,7 +205,7 @@ export async function createTeam(
 export async function removeMember(
   memberIdOrEmail: string,
   options?: {
-    organizationId?: string;
+    organizationId: string;
     onSuccess?: () => void;
     onError?: (error: any) => void;
   }
@@ -231,7 +231,7 @@ export async function updateMemberRole(
   memberId: string,
   role: string | string[],
   options?: {
-    organizationId?: string;
+    organizationId: string;
     onSuccess?: () => void;
     onError?: (error: any) => void;
   }
@@ -257,7 +257,7 @@ export async function updateMemberRole(
 export async function hasPermission(
   permission: Record<string, string[]>,
   options?: {
-    organizationId?: string;
+    organizationId: string;
     onSuccess?: (hasPermission: boolean) => void;
     onError?: (error: any) => void;
   }
@@ -341,7 +341,7 @@ export async function updateOrganization(
     metadata?: Record<string, any>;
   },
   options?: {
-    organizationId?: string;
+    organizationId: string;
     onSuccess?: () => void;
     onError?: (error: any) => void;
   }
@@ -365,7 +365,7 @@ export async function updateOrganization(
  */
 export async function deleteOrganization(
   options?: {
-    organizationId?: string;
+    organizationId: string;
     onSuccess?: () => void;
     onError?: (error: any) => void;
   }

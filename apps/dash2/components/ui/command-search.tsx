@@ -45,9 +45,30 @@ const searchItems = [
   },
 ]
 
-export function CommandSearch({ ...props }: DialogProps) {
-  const [open, setOpen] = React.useState(false)
+interface CommandSearchProps extends DialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function CommandSearch({ 
+  open: controlledOpen, 
+  onOpenChange: setControlledOpen,
+  ...props 
+}: CommandSearchProps) {
+  const [internalOpen, setInternalOpen] = React.useState(false)
   const router = useRouter()
+  
+  // Determine if component is controlled or uncontrolled
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = React.useCallback((value: boolean | ((prevState: boolean) => boolean)) => {
+    if (isControlled) {
+      const newValue = typeof value === "function" ? value(controlledOpen) : value;
+      setControlledOpen?.(newValue);
+    } else {
+      setInternalOpen(value);
+    }
+  }, [isControlled, controlledOpen, setControlledOpen]);
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -59,7 +80,7 @@ export function CommandSearch({ ...props }: DialogProps) {
 
     document.addEventListener("keydown", down)
     return () => document.removeEventListener("keydown", down)
-  }, [])
+  }, [setOpen])
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen} {...props}>

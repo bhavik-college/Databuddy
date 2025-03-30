@@ -1,4 +1,4 @@
-import { db, AccessLevel, Role } from "@databuddy/db";
+import { db, Role } from "@databuddy/db";
 import { TRPCError } from '@trpc/server';
 
 // Cache duration in seconds
@@ -77,7 +77,6 @@ async function getProjectById(projectId: string) {
  */
 type ProjectAccessResult = {
   hasAccess: boolean;
-  level?: AccessLevel;
   role?: Role;
   projectAccess?: any;
 };
@@ -91,7 +90,6 @@ type OrganizationAccessResult = {
 type ClientAccessResult = {
   hasAccess: boolean;
   role?: Role;
-  level?: AccessLevel;
   through?: 'organization' | 'project';
   projectId?: string;
 };
@@ -135,7 +133,6 @@ export async function getProjectAccess({
       if (member.role === Role.ADMIN || member.role === Role.OWNER) {
         return {
           hasAccess: true,
-          level: AccessLevel.ADMIN,
           role: member.role as Role,
         };
       }
@@ -143,7 +140,6 @@ export async function getProjectAccess({
       // Other members have viewer access by default
       return {
         hasAccess: true,
-        level: AccessLevel.VIEWER,
         role: member.role as Role,
       };
     }
@@ -153,7 +149,7 @@ export async function getProjectAccess({
     if (access) {
       return {
         hasAccess: true,
-        level: access.level as AccessLevel,
+        role: access.role as Role,
         projectAccess: access,
       };
     }
@@ -257,7 +253,7 @@ export async function getClientAccess({
       if (projectAccess.hasAccess) {
         return {
           hasAccess: true,
-          level: projectAccess.level,
+          role: projectAccess.role,
           through: 'project',
           projectId: project.id,
         };
@@ -282,7 +278,7 @@ export const getClientAccessCached = cacheable(getClientAccess, CACHE_DURATION);
 export async function canAccessProject(
   userId: string,
   projectId: string,
-  requiredLevel: AccessLevel = AccessLevel.VIEWER
+  requiredRole: Role = Role.VIEWER
 ): Promise<boolean> {
   const access = await getProjectAccessCached({ userId, projectId });
   
@@ -291,17 +287,17 @@ export async function canAccessProject(
   }
   
   // Admin always has access
-  if (access.level === AccessLevel.ADMIN) {
+  if (access.role === Role.ADMIN) {
     return true;
   }
   
   // Editor can access viewer and editor level resources
-  if (access.level === AccessLevel.EDITOR) {
-    return requiredLevel !== AccessLevel.ADMIN;
+  if (access.role === Role.EDITOR) {
+    return requiredRole !== Role.ADMIN;
   }
   
   // Viewer can only access viewer level resources
-  return requiredLevel === AccessLevel.VIEWER;
+  return requiredRole === Role.VIEWER;
 }
 
 /**
@@ -341,7 +337,7 @@ export async function canAccessOrganization(
  * Middleware to check project access for tRPC procedures
  */
 export function requireProjectAccess(
-  requiredLevel: AccessLevel = AccessLevel.VIEWER
+  requiredRole: Role = Role.VIEWER
 ) {
   return async ({ ctx, next, input }: any) => {
     if (!ctx.user) {
@@ -359,7 +355,7 @@ export function requireProjectAccess(
       });
     }
     
-    const hasAccess = await canAccessProject(ctx.user.id, projectId, requiredLevel);
+    const hasAccess = await canAccessProject(ctx.user.id, projectId, requiredRole);
     if (!hasAccess) {
       throw new TRPCError({
         code: 'FORBIDDEN',

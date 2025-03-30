@@ -4,7 +4,7 @@
  * Functions for analyzing referrer URLs to extract information about traffic sources.
  */
 
-import referrers from '../referrers/referrers';
+import referrers from '../lists/referrers';
 
 export interface ReferrerInfo {
   type: string;

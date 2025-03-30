@@ -1,14 +1,14 @@
 /**
- * DataBuddy Analytics Types
+ * Databuddy Analytics Types
  * 
- * This file contains TypeScript interfaces for analytics collected by DataBuddy.
+ * This file contains TypeScript interfaces for analytics collected by Databuddy.
  * Structured to match how databuddy.js actually sends data.
  */
 
 /**
- * Configuration options for DataBuddy client initialization
+ * Configuration options for Databuddy client initialization
  */
-export interface DataBuddyConfig {
+export interface DatabuddyConfig {
   /** Required unique identifier for your website/project */
   clientId: string;
   
@@ -37,7 +37,7 @@ export interface DataBuddyConfig {
   waitForProfile?: boolean;
   
   /** Custom function to filter events */
-  filter?: (event: DataBuddyEvent) => boolean;
+  filter?: (event: DatabuddyEvent) => boolean;
   
   /** SDK name (auto-set based on platform) */
   sdk?: "web" | "node" | "react-native";
@@ -52,7 +52,7 @@ export interface DataBuddyConfig {
 /**
  * Base event data structure
  */
-export interface DataBuddyEvent {
+export interface DatabuddyEvent {
   type: "track" | "alias" | "increment" | "decrement";
   payload: {
     /** Properties of the event (for track events) */
@@ -69,7 +69,7 @@ export interface DataBuddyEvent {
 /**
  * Track event data structure - this is what databuddy.js actually sends
  */
-export interface DataBuddyTrackEvent extends DataBuddyEvent {
+export interface DatabuddyTrackEvent extends DatabuddyEvent {
   type: "track";
   payload: {
     /** Event name */
@@ -97,7 +97,7 @@ export interface DataBuddyTrackEvent extends DataBuddyEvent {
 /**
  * Alias event data structure - used to connect anonymous to known users
  */
-export interface DataBuddyAliasEvent extends DataBuddyEvent {
+export interface DatabuddyAliasEvent extends DatabuddyEvent {
   type: "alias";
   payload: {
     /** Original anonymous ID */
@@ -110,7 +110,7 @@ export interface DataBuddyAliasEvent extends DataBuddyEvent {
 /**
  * Increment event data structure
  */
-export interface DataBuddyIncrementEvent extends DataBuddyEvent {
+export interface DatabuddyIncrementEvent extends DatabuddyEvent {
   type: "increment";
   payload: {
     /** Property to increment */
@@ -125,7 +125,7 @@ export interface DataBuddyIncrementEvent extends DataBuddyEvent {
 /**
  * Decrement event data structure
  */
-export interface DataBuddyDecrementEvent extends DataBuddyEvent {
+export interface DatabuddyDecrementEvent extends DatabuddyEvent {
   type: "decrement";
   payload: {
     /** Property to decrement */
@@ -141,7 +141,7 @@ export interface DataBuddyDecrementEvent extends DataBuddyEvent {
  * Standard properties that can be sent with any event
  * This includes automatically collected properties and suggested ones
  */
-export interface DataBuddyEventProperties {
+export interface DatabuddyEventProperties {
   /** Referrer URL - automatically added by databuddy.js (anonymized) */
   __referrer?: string;
   /** Current path - automatically added by databuddy.js for screen_view (anonymized) */
@@ -182,7 +182,7 @@ export interface DataBuddyEventProperties {
  * Properties specific to screen_view events
  * "screen_view" events are automatically sent by databuddy.js when trackScreenViews is true
  */
-export interface ScreenViewProperties extends DataBuddyEventProperties {
+export interface ScreenViewProperties extends DatabuddyEventProperties {
   /** Current page path - automatically added by databuddy.js (anonymized) */
   __path: string;
   /** Page title - automatically added by databuddy.js */
@@ -201,7 +201,7 @@ export interface ScreenViewProperties extends DataBuddyEventProperties {
  * Properties for link_out events
  * "link_out" events are automatically sent by databuddy.js when trackOutgoingLinks is true
  */
-export interface LinkOutProperties extends DataBuddyEventProperties {
+export interface LinkOutProperties extends DatabuddyEventProperties {
   /** Link URL - automatically added by databuddy.js (anonymized) */
   href: string;
   /** Link text content - automatically added by databuddy.js if available */
@@ -213,7 +213,7 @@ export interface LinkOutProperties extends DataBuddyEventProperties {
  * Use these when manually tracking sessions
  * (Not automatically collected by databuddy.js)
  */
-export interface SessionProperties extends DataBuddyEventProperties {
+export interface SessionProperties extends DatabuddyEventProperties {
   /** Session duration in seconds */
   duration: number;
   /** Number of pages viewed */
@@ -234,7 +234,7 @@ export interface SessionProperties extends DataBuddyEventProperties {
 /**
  * Form submission properties
  */
-export interface FormEventProperties extends DataBuddyEventProperties {
+export interface FormEventProperties extends DatabuddyEventProperties {
   /** Form identifier */
   formId?: string;
   /** Number of fields in the form */
@@ -248,7 +248,7 @@ export interface FormEventProperties extends DataBuddyEventProperties {
 /**
  * Error tracking properties
  */
-export interface ErrorEventProperties extends DataBuddyEventProperties {
+export interface ErrorEventProperties extends DatabuddyEventProperties {
   /** Error type or category */
   errorType: string;
   /** Component or area where error occurred */
@@ -262,7 +262,7 @@ export interface ErrorEventProperties extends DataBuddyEventProperties {
 /**
  * Interaction properties (clicks, etc.)
  */
-export interface InteractionEventProperties extends DataBuddyEventProperties {
+export interface InteractionEventProperties extends DatabuddyEventProperties {
   /** Element type (button, link, etc.) */
   elementType: string;
   /** Element identifier */
@@ -276,7 +276,7 @@ export interface InteractionEventProperties extends DataBuddyEventProperties {
 /**
  * Feature usage properties
  */
-export interface FeatureEventProperties extends DataBuddyEventProperties {
+export interface FeatureEventProperties extends DatabuddyEventProperties {
   /** Feature name */
   feature: string;
   /** Action performed with feature */

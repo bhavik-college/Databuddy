@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { useSession, signOut } from '@databuddy/auth';
-import { loginWithEmail, loginWithGoogle, loginWithGithub, registerWithEmail } from '@databuddy/auth';
+import { useSession, signOut } from '@databuddy/auth/client';
+import { loginWithEmail, loginWithGoogle, loginWithGithub, registerWithEmail } from '@databuddy/auth/client';
 import type { AuthUser } from '@databuddy/auth';
 
 interface AuthStore {

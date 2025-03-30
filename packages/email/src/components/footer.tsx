@@ -21,7 +21,7 @@ import {
             textAlign: 'center',
             margin: '16px 0'
           }}>
-            &copy; {new Date().getFullYear()} DataBuddy. All rights reserved.
+            &copy; {new Date().getFullYear()} Databuddy. All rights reserved.
           </Text>
           <Text style={{
             fontSize: '12px',

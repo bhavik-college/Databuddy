@@ -17,6 +17,11 @@ export interface EnrichedData {
     browser?: string;
     os?: string;
     device?: 'desktop' | 'mobile' | 'tablet' | 'unknown';
+    bot?: {
+      isBot: boolean;
+      name?: string;
+      type?: string;
+    };
     raw: string;
   };
   geo: {
@@ -41,9 +46,11 @@ export interface AppVariables {
     name: string | null;
     id: string;
     domain: string;
-    userId: string;
+    userId: string | null;
+    projectId: string | null;
     createdAt: Date;
     updatedAt: Date;
+    deletedAt: Date | null;
   };
   enriched?: EnrichedData;
 } 

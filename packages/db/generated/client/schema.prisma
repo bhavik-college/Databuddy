@@ -50,17 +50,18 @@ model User {
   deletedAt     DateTime?
   // Relations
   organizations Organization[]  @relation("organizationCreatedBy")
-  subscriptions Organization[]  @relation(name: "subscriptionCreatedBy")
+  subscriptions Subscription[]  @relation(name: "subscriptionCreatedBy")
   memberships   Member[]
   invitesSent   Member[]        @relation("invitedBy")
   projectAccess ProjectAccess[]
   posts         Post[]
   role          Role            @default(USER)
-  websites      Website[]
+  websites      Website[] // This will be for personal websites, org websites go through projects
   // Authentication relations - preserved as requested
   sessions      Session[]
   accounts      Account[]
   invites       Invite[]
+  auditLogs     AuditLog[]      @relation("actionByUser")
 
   twoFactorEnabled Boolean?
   twofactors       TwoFactor[]
@@ -102,11 +103,29 @@ enum UserStatus {
 
 enum Role {
   ADMIN
-  USER
-  AUTHOR
-  EDITOR
-  VIEWER
   OWNER
+  EDITOR
+  AUTHOR
+  VIEWER
+  USER
+}
+
+// New enum for project status standardization
+enum ProjectStatus {
+  ACTIVE
+  COMPLETED
+  ON_HOLD
+  CANCELLED
+}
+
+// New enum for subscription status
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  PAUSED
+  INCOMPLETE
 }
 
 // Blog models
@@ -127,109 +146,60 @@ model Post {
   categoryId  String?
   category    Category? @relation(fields: [categoryId], references: [id])
   tags        Tag[]
+  deletedAt   DateTime?
 
   @@index([authorId])
-  @@index([categoryId])
   @@map("posts")
 }
 
 model Category {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  slug      String   @unique
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
   posts     Post[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  deletedAt DateTime?
 
   @@map("categories")
 }
 
 model Tag {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  slug      String   @unique
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
   posts     Post[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  deletedAt DateTime?
 
   @@map("tags")
-}
-
-model CompanyInfo {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  logo        String?
-  website     String?
-  email       String?
-  phone       String?
-  address     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
-
-  @@map("company_info")
-}
-
-// Careers page models
-
-model JobListing {
-  id           String           @id @default(uuid())
-  title        String
-  description  String
-  requirements String?
-  location     String?
-  salary       String?
-  type         String? // full-time, part-time, contract
-  published    Boolean          @default(false)
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @default(now()) @updatedAt
-  publishedAt  DateTime?
-  closedAt     DateTime?
-  applications JobApplication[]
-
-  @@map("job_listings")
-}
-
-model JobApplication {
-  id           String            @id @default(uuid())
-  jobListingId String
-  jobListing   JobListing        @relation(fields: [jobListingId], references: [id])
-  name         String
-  email        String
-  phone        String?
-  resume       String?
-  coverLetter  String?
-  status       ApplicationStatus @default(NEW)
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @default(now()) @updatedAt
-  reviewedAt   DateTime?
-
-  @@index([jobListingId])
-  @@map("job_applications")
-}
-
-enum ApplicationStatus {
-  NEW
-  REVIEWED
-  INTERVIEWING
-  REJECTED
-  HIRED
 }
 
 // Website models for dashboard
 
 model Website {
-  id        String        @id @default(uuid())
-  domain    String        @unique
-  name      String?
-  userId    String
-  user      User          @relation(fields: [userId], references: [id])
-  status    WebsiteStatus @default(ACTIVE)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @default(now()) @updatedAt
+  id     String        @id @default(uuid())
+  domain String        @unique
+  name   String?
+  status WebsiteStatus @default(ACTIVE)
+
+  // Can belong to either a user (personal site) or a project (org site)
+  // User-owned website
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  // Project-owned website (represents connection to organizations)
+  projectId String?  @unique // One project can have one website
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  // Timestamps & soft delete
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  deletedAt DateTime?
 
   @@index([userId])
-  @@map("website")
+  @@map("websites")
 }
 
 enum WebsiteStatus {
@@ -266,65 +236,97 @@ enum ProjectType {
   API
 }
 
-model Organization {
-  id              String          @id @default(uuid())
-  name            String
-  projects        Project[]
-  members         Member[]
+// New Subscription model extracted from Organization
+model Subscription {
+  id             String       @id @default(uuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  // Payment provider details
+  customerId String?
+  priceId    String?
+  productId  String?
+  status     SubscriptionStatus @default(ACTIVE)
+
+  // Dates
+  startsAt   DateTime?
+  endsAt     DateTime?
+  canceledAt DateTime?
+
+  // Usage limits
+  periodEventsCount           Int       @default(0)
+  periodEventsCountExceededAt DateTime?
+  periodEventsLimit           Int       @default(0)
+  interval                    String? // monthly, yearly, etc.
+
+  // Creation tracking
   createdByUserId String?
-  createdBy       User?           @relation(name: "organizationCreatedBy", fields: [createdByUserId], references: [id])
-  ProjectAccess   ProjectAccess[]
-  Client          Client[]
-  // Dashboard       Dashboard[]
-  // ShareOverview   ShareOverview[]
-  // integrations    Integration[]
-  invites         Invite[]
+  createdBy       User?   @relation(name: "subscriptionCreatedBy", fields: [createdByUserId], references: [id])
 
-  // Subscription
-  subscriptionId                          String?
-  subscriptionCustomerId                  String?
-  subscriptionPriceId                     String?
-  subscriptionProductId                   String?
-  /// [IPrismaSubscriptionStatus]
-  subscriptionStatus                      String?
-  subscriptionStartsAt                    DateTime?
-  subscriptionEndsAt                      DateTime?
-  subscriptionCanceledAt                  DateTime?
-  subscriptionCreatedByUserId             String?
-  subscriptionCreatedBy                   User?     @relation(name: "subscriptionCreatedBy", fields: [subscriptionCreatedByUserId], references: [id])
-  subscriptionPeriodEventsCount           Int       @default(0)
-  subscriptionPeriodEventsCountExceededAt DateTime?
-  subscriptionPeriodEventsLimit           Int       @default(0)
-  subscriptionInterval                    String?
-
-  // When deleteAt > now(), the organization will be deleted
-  deleteAt DateTime?
-
+  // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("subscriptions")
+}
+
+model Organization {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  logo        String?
+
+  // Company info directly on organization
+  website String?
+  email   String?
+  phone   String?
+  address String?
+
+  // Relations
+  projects     Project[]
+  members      Member[]
+  clients      Client[]
+  invites      Invite[]
+  subscription Subscription?
+
+  // Creation tracking
+  createdByUserId String?
+  createdBy       User?   @relation(name: "organizationCreatedBy", fields: [createdByUserId], references: [id])
+
+  // Timestamps & soft delete
+  deleteAt  DateTime? // Legacy field - when deleteAt > now(), org will be deleted
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
 
   @@map("organizations")
 }
 
 model Member {
-  id             String       @id @default(uuid()) @db.Uuid
-  role           String
-  email          String
-  // userId is nullable because we want to allow invites to be sent to emails that are not registered
-  userId         String?
-  user           User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  invitedById    String?
-  invitedBy      User?        @relation("invitedBy", fields: [invitedById], references: [id])
+  id    String @id @default(uuid()) @db.Uuid
+  role  Role   @default(VIEWER)
+  email String
+
+  // User connection (nullable for invites)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Organization connection
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  meta           Json?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @default(now()) @updatedAt
+
+  // Invite tracking
+  invitedById String?
+  invitedBy   User?   @relation("invitedBy", fields: [invitedById], references: [id])
+
+  meta      Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  deletedAt DateTime?
 
   @@unique([organizationId, userId])
   @@index([organizationId])
   @@index([userId])
-  @@index([invitedById])
   @@map("members")
 }
 
@@ -334,43 +336,34 @@ enum ClientType {
   NONPROFIT
 }
 
-enum AccessLevel {
-  ADMIN
-  EDITOR
-  VIEWER
-}
-
 model ProjectAccess {
-  id        String      @id @default(uuid())
+  id        String    @id @default(uuid())
   projectId String
-  project   Project     @relation(fields: [projectId], references: [id])
+  project   Project   @relation(fields: [projectId], references: [id])
   userId    String
-  user      User        @relation(fields: [userId], references: [id])
-  level     AccessLevel @default(VIEWER)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @default(now()) @updatedAt
-
-  Organization Organization[]
+  user      User      @relation(fields: [userId], references: [id])
+  role      Role      @default(VIEWER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  deletedAt DateTime?
 
   @@unique([projectId, userId])
-  @@index([projectId])
-  @@index([userId])
   @@map("project_access")
 }
 
 model Invite {
-  id             String        @id @default(uuid())
+  id             String       @id @default(uuid())
   email          String
   organizationId String
-  role           Role          @default(VIEWER)
-  token          String        @unique
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  role           Role         @default(VIEWER)
+  token          String       @unique
   expires        DateTime
   createdById    String
-  createdBy      User          @relation(fields: [createdById], references: [id])
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @default(now()) @updatedAt
+  createdBy      User         @relation(fields: [createdById], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now()) @updatedAt
   acceptedAt     DateTime?
-  Organization   Organization? @relation(fields: [organizationId], references: [id])
 
   @@index([createdById])
   @@map("invites")
@@ -388,17 +381,17 @@ model Project {
   client         Client?         @relation(fields: [clientId], references: [id])
   startDate      DateTime?
   endDate        DateTime?
-  status         String          @default("active") // active, completed, on-hold, cancelled
+  status         ProjectStatus   @default(ACTIVE)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @default(now()) @updatedAt
   deletedAt      DateTime?
   // Relations
   access         ProjectAccess[]
   events         EventMeta[]
+  website        Website? // New: A project of type WEBSITE can have an associated website
 
   @@unique([organizationId, slug])
   @@index([organizationId])
-  @@index([clientId])
   @@map("projects")
 }
 
@@ -427,9 +420,32 @@ model Client {
   projects       Project[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @default(now()) @updatedAt
+  deletedAt      DateTime?
 
   @@index([organizationId])
   @@map("clients")
+}
+
+// New model for audit trail
+model AuditLog {
+  id           String  @id @default(uuid())
+  action       String
+  resourceType String
+  resourceId   String
+  details      Json?
+  ipAddress    String?
+  userAgent    String?
+
+  // User who performed the action
+  userId String?
+  user   User?   @relation("actionByUser", fields: [userId], references: [id])
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([resourceType, resourceId])
+  @@map("audit_logs")
 }
 
 model TwoFactor {

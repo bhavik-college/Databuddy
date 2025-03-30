@@ -181,7 +181,7 @@ export function WebsiteOverviewTab({
   // Metric toggle colors
   const metricColors = {
     pageviews: 'blue-500',
-    visitors: 'emerald-500', 
+    visitors: 'emerald-500',
     sessions: 'yellow-500',
     bounce_rate: 'red-500'
   };
@@ -326,7 +326,7 @@ export function WebsiteOverviewTab({
 
       {/* Visitor Trends */}
       <div className="rounded-2xl border shadow-sm overflow-hidden">
-        <div className="p-4 border-b flex flex-col sm:flex-row justify-between items-start gap-2">
+        <div className="p-4 border-b flex flex-col sm:flex-row justify-between items-start gap-3">
           <div>
             <h2 className="text-lg font-medium">Visitor Trends</h2>
             <p className="text-sm text-muted-foreground">
@@ -342,11 +342,13 @@ export function WebsiteOverviewTab({
           </div>
           
           {/* Metrics toggles */}
-          <MetricToggles 
-            metrics={visibleMetrics} 
-            onToggle={toggleMetric} 
-            colors={metricColors}
-          />
+          <div className="flex flex-wrap gap-3 items-center justify-end">
+            <MetricToggles 
+              metrics={visibleMetrics} 
+              onToggle={toggleMetric} 
+              colors={metricColors}
+            />
+          </div>
         </div>
         <MetricsChart 
           data={chartData} 

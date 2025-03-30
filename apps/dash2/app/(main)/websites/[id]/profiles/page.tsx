@@ -540,36 +540,36 @@ export default function ProfilesPage() {
                     <CardContent className="space-y-4 pt-4">
                       <div className="space-y-1">
                         <p className="text-xs text-muted-foreground">Visitor ID</p>
-                        <p className="font-mono text-xs truncate px-2 py-1 bg-muted/30 rounded" title={selectedProfile.visitor_id}>
+                        <div className="font-mono text-xs truncate px-2 py-1 bg-muted/30 rounded" title={selectedProfile.visitor_id}>
                           {selectedProfile.visitor_id}
-                        </p>
+                        </div>
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                           <p className="text-xs text-muted-foreground">First Seen</p>
-                          <p className="text-sm font-medium">
+                          <div className="text-sm font-medium">
                             {selectedProfile.first_seen ? format(new Date(selectedProfile.first_seen), 'MMM d, yyyy') : '-'}
-                          </p>
+                          </div>
                         </div>
                         
                         <div className="space-y-1">
                           <p className="text-xs text-muted-foreground">Last Seen</p>
-                          <p className="text-sm font-medium">
+                          <div className="text-sm font-medium">
                             {selectedProfile.last_seen ? format(new Date(selectedProfile.last_seen), 'MMM d, yyyy') : '-'}
-                          </p>
+                          </div>
                         </div>
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4 pt-2">
                         <div className="space-y-1 bg-primary/5 p-3 rounded-lg">
                           <p className="text-xs text-muted-foreground">Total Sessions</p>
-                          <p className="text-2xl font-bold">{selectedProfile.sessions}</p>
+                          <div className="text-2xl font-bold">{selectedProfile.sessions}</div>
                         </div>
                         
                         <div className="space-y-1 bg-indigo-500/5 p-3 rounded-lg">
                           <p className="text-xs text-muted-foreground">Pageviews</p>
-                          <p className="text-2xl font-bold">{selectedProfile.pageviews}</p>
+                          <div className="text-2xl font-bold">{selectedProfile.pageviews}</div>
                         </div>
                       </div>
                     </CardContent>
@@ -585,8 +585,8 @@ export default function ProfilesPage() {
                         <div className="flex items-center gap-2 bg-muted/20 p-3 rounded-lg">
                           <Globe className="h-5 w-5 text-green-500" />
                           <div className="text-sm">
-                            <p className="font-medium">{selectedProfile.country || 'Unknown'}</p>
-                            <p className="text-muted-foreground text-xs">{selectedProfile.city || 'Unknown location'}</p>
+                            <div className="font-medium">{selectedProfile.country || 'Unknown'}</div>
+                            <span className="text-muted-foreground text-xs">{selectedProfile.city || 'Unknown location'}</span>
                           </div>
                         </div>
                       </div>
@@ -600,8 +600,8 @@ export default function ProfilesPage() {
                             <Monitor className="h-5 w-5 text-blue-500" />
                           )}
                           <div>
-                            <p className="text-sm font-medium">{selectedProfile.device_type || 'Unknown device'}</p>
-                            <p className="text-muted-foreground text-xs">{selectedProfile.browser || 'Unknown browser'}</p>
+                            <div className="text-sm font-medium">{selectedProfile.device_type || 'Unknown device'}</div>
+                            <span className="text-muted-foreground text-xs">{selectedProfile.browser || 'Unknown browser'}</span>
                           </div>
                         </div>
                       </div>

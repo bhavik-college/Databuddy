@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { authClient } from "@databuddy/auth/auth-client";
+import { authClient } from "@databuddy/auth/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 

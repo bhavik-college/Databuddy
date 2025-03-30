@@ -31,15 +31,16 @@ app.use('*', logger());
 
 // Configure CORS - must be before auth routes
 app.use('*', cors({
-  origin: ['https://dashboard.databuddy.cc', 'http://localhost:3000'],
+  origin: ['https://dashboard.databuddy.cc', 'http://localhost:3000', 'http://localhost:4000'],
   allowHeaders: [
     'Content-Type',
     'databuddy-client-id',
     'databuddy-sdk-name',
     'databuddy-sdk-version',
   ],
-  allowMethods: ['POST', 'OPTIONS',],
+  allowMethods: ['POST', 'OPTIONS', 'GET'],
   credentials: true,
+  exposeHeaders: ['Content-Type'],
   maxAge: 600,
 }));
 

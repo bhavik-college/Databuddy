@@ -24,6 +24,7 @@ import { Label } from "@/components/ui/label";
 import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from "recharts";
 import { useWebsiteErrors } from "@/hooks/use-analytics";
 import { DateRange, ErrorDetail } from "@/hooks/use-analytics";
+import { AnimatedLoading } from "@/components/analytics/animated-loading";
 
 // Define the component props type
 interface WebsiteErrorsTabProps {
@@ -45,6 +46,7 @@ export function WebsiteErrorsTab({
   const [visibleErrorMetrics, setVisibleErrorMetrics] = useState<Record<string, boolean>>({
     all: true
   });
+  const [loadingProgress, setLoadingProgress] = useState<number>(0);
 
   // Fetch errors data
   const { 
@@ -91,31 +93,48 @@ export function WebsiteErrorsTab({
     });
   }, [errorsData?.errors_over_time, visibleErrorMetrics]);
 
-  // Handle refresh
+  // Simulate loading progress
   useEffect(() => {
-    if (isRefreshing) {
-      errorsRefetch()
-        .then(() => {
-          // Success will be handled by the parent component
-        })
-        .catch(() => {
-          toast.error("Failed to refresh error data");
-        })
-        .finally(() => {
-          // Finalization will be handled by the parent component
-        });
+    if (isLoadingErrors) {
+      const intervals = [
+        { target: 20, duration: 800 },
+        { target: 45, duration: 1300 },
+        { target: 70, duration: 1800 },
+        { target: 90, duration: 2000 }
+      ];
+      
+      let cleanup: NodeJS.Timeout[] = [];
+      
+      intervals.forEach((interval, index) => {
+        const timeout = setTimeout(() => {
+          setLoadingProgress(interval.target);
+        }, interval.duration * (index === 0 ? 1 : index));
+        
+        cleanup.push(timeout);
+      });
+      
+      return () => {
+        cleanup.forEach(timeout => clearTimeout(timeout));
+      };
+    } else {
+      // Reset progress when loading is complete
+      setLoadingProgress(100);
+      
+      // After animation completes, reset to 0
+      const timeout = setTimeout(() => {
+        setLoadingProgress(0);
+      }, 1000);
+      
+      return () => clearTimeout(timeout);
     }
-  }, [isRefreshing, errorsRefetch]);
+  }, [isLoadingErrors]);
 
   return (
     <div className="pt-2 space-y-3">
       <h2 className="text-lg font-semibold mb-2">Error Tracking</h2>
       
       {isLoadingErrors ? (
-        <div className="space-y-3">
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-96 w-full" />
-        </div>
+        <AnimatedLoading type="errors" progress={loadingProgress} />
       ) : errorsData ? (
         <>
           {/* Error trends chart */}
@@ -452,17 +471,33 @@ export function WebsiteErrorsTab({
           </div>
         </>
       ) : (
-        <div className="rounded-lg border shadow-sm overflow-hidden p-6 flex flex-col items-center justify-center">
-          <div className="text-amber-500 mb-3">
-            <AlertTriangle className="h-12 w-12" />
+        <div className="rounded-lg border shadow-sm p-8 text-center">
+          <div className="flex flex-col items-center">
+            <AlertCircle className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
+            <h3 className="text-lg font-medium mb-2">No error data</h3>
+            <p className="text-muted-foreground mb-4">
+              No error data is available for the selected time period.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsRefreshing(true);
+                errorsRefetch()
+                  .then(() => {
+                    toast.success("Error data refreshed");
+                  })
+                  .catch(() => {
+                    toast.error("Failed to refresh error data");
+                  })
+                  .finally(() => {
+                    setIsRefreshing(false);
+                  });
+              }}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Try Again
+            </Button>
           </div>
-          <h3 className="text-lg font-medium mb-1">Error data unavailable</h3>
-          <p className="text-sm text-muted-foreground text-center max-w-md mb-3">
-            There was an issue retrieving error data. Try refreshing the page or try again later.
-          </p>
-          <Button onClick={() => errorsRefetch()} variant="outline" size="sm">
-            <RefreshCw className="h-3.5 w-3.5 mr-2" /> Retry
-          </Button>
         </div>
       )}
 

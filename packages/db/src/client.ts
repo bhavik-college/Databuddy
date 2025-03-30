@@ -20,11 +20,6 @@ const globalForPrisma = globalThis as unknown as {
 // Export a singleton instance of PrismaClient
 export const prisma = globalForPrisma.prisma ?? getPrismaClient();
 
-prisma.$on(async (params, next) => {
-  console.log(params);
-  return next(params);
-});
-
 // Prevent multiple instances during development due to HMR
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;

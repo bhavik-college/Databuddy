@@ -64,7 +64,7 @@
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0.5rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -149,6 +149,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
@@ -181,4 +182,54 @@
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* Card hover effect */
+.card-hover-effect {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover-effect:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+/* Glass morphism effect for cards */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.dark .glass-card {
+  background: rgba(30, 30, 30, 0.7);
+}
+
+/* Subtle gradient backgrounds */
+.subtle-gradient {
+  background-image: linear-gradient(to bottom right, var(--background), color-mix(in oklch, var(--background), var(--primary) 5%));
+}
+
+/* Better focus styles */
+.focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+}
+
+/* Soft transitions for UI elements */
+.soft-transition {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Page transitions */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

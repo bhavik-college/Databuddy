@@ -1,7 +1,7 @@
 /**
  * Admin Routes
  * 
- * Provides administrative functionality for the DataBuddy platform.
+ * Provides administrative functionality for the Databuddy platform.
  */
 
 import { Hono } from 'hono';

@@ -103,4 +103,32 @@ export function useWebsites() {
     isDeleting: deleteWebsiteMutation.isPending,
     refetch: websitesQuery.refetch,
   };
+}
+
+// Hook to get a single website by ID
+export function useWebsite(id: string) {
+  const { websites } = useWebsites();
+  
+  const websiteQuery = useQuery({
+    queryKey: ["website", id],
+    queryFn: async () => {
+      if (!id) return null;
+      
+      // First check if we already have the website data in cache
+      const cachedWebsite = websites.find(website => website.id === id);
+      if (cachedWebsite) return cachedWebsite;
+      
+      // If not cached, we could fetch it directly (in a real app) 
+      // by implementing a 'getWebsite' action to fetch from the backend
+      // For now, we'll just return null if not found
+      return null;
+    },
+    enabled: !!id, // Only run if id is provided
+  });
+
+  return {
+    data: websiteQuery.data,
+    isLoading: websiteQuery.isLoading,
+    isError: websiteQuery.isError,
+  };
 } 

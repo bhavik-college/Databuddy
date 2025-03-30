@@ -22,7 +22,7 @@ export class OrganizationService {
           projects: true,
           members: true,
           createdBy: true,
-          Client: true,
+          clients: true,
           invites: true,
         },
       });
@@ -45,7 +45,7 @@ export class OrganizationService {
           projects: true,
           members: true,
           createdBy: true,
-          Client: true,
+          clients: true,
         },
       });
     } catch (error) {
@@ -123,27 +123,6 @@ export class OrganizationService {
       });
     } catch (error) {
       logger.error('Failed to accept invite', { error, token });
-      throw error;
-    }
-  }
-
-  static async updateSubscription(id: string, data: {
-    subscriptionId?: string;
-    subscriptionCustomerId?: string;
-    subscriptionPriceId?: string;
-    subscriptionProductId?: string;
-    subscriptionStatus?: string;
-    subscriptionStartsAt?: Date;
-    subscriptionEndsAt?: Date;
-    subscriptionPeriodEventsLimit?: number;
-  }) {
-    try {
-      return await prisma.organization.update({
-        where: { id },
-        data,
-      });
-    } catch (error) {
-      logger.error('Failed to update organization subscription', { error, id });
       throw error;
     }
   }
