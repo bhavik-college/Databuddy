@@ -125,73 +125,94 @@ function buildCommonOrderBy(fields: Record<string, string>) {
 }
 
 // Builder functions
-export function createSummaryBuilder(websiteId: string, startDate: string, endDate: string) {
+export function createSummaryBuilder(
+  websiteId: string,
+  startDate: string,
+  endDate: string
+) {
   const builder = createSqlBuilder();
-  
-  // Use a raw SQL query to properly calculate session duration as time difference between first and last events
+
+  // Use raw SQL to calculate bounce rate and session duration properly
   const sql = `
-    WITH session_durations AS (
+    WITH session_metrics AS (
+      SELECT
+        session_id,
+        countIf(event_name = 'screen_view') as page_count,
+        countDistinct(anonymous_id) as unique_visitors
+      FROM analytics.events
+      WHERE 
+        client_id = '${websiteId}'
+        AND toDate(time) >= '${startDate}'
+        AND toDate(time) <= '${endDate}'
+      GROUP BY session_id
+    ),
+    session_durations AS (
       SELECT
         session_id,
         dateDiff('second', MIN(time), MAX(time)) as duration
       FROM analytics.events
-      WHERE
+      WHERE 
         client_id = '${websiteId}'
-        AND time >= parseDateTimeBestEffort('${startDate}')
-        AND time <= parseDateTimeBestEffort('${endDate} 23:59:59')
+        AND toDate(time) >= '${startDate}'
+        AND toDate(time) <= '${endDate}'
       GROUP BY session_id
-      HAVING MIN(time) < MAX(time)
+      HAVING duration > 0
     )
     SELECT
-      (SELECT COUNT(CASE WHEN event_name = 'screen_view' THEN 1 END) 
-       FROM analytics.events 
-       WHERE client_id = '${websiteId}'
-       AND time >= parseDateTimeBestEffort('${startDate}')
-       AND time <= parseDateTimeBestEffort('${endDate} 23:59:59')) as pageviews,
-      
-      (SELECT COUNT(DISTINCT anonymous_id) 
-       FROM analytics.events 
-       WHERE client_id = '${websiteId}'
-       AND time >= parseDateTimeBestEffort('${startDate}')
-       AND time <= parseDateTimeBestEffort('${endDate} 23:59:59')) as unique_visitors,
-      
-      (SELECT COUNT(DISTINCT session_id) 
-       FROM analytics.events 
-       WHERE client_id = '${websiteId}'
-       AND time >= parseDateTimeBestEffort('${startDate}')
-       AND time <= parseDateTimeBestEffort('${endDate} 23:59:59')) as sessions,
-      
-      (SELECT AVG(is_bounce) * 100 
-       FROM analytics.events 
-       WHERE client_id = '${websiteId}'
-       AND time >= parseDateTimeBestEffort('${startDate}')
-       AND time <= parseDateTimeBestEffort('${endDate} 23:59:59')) as bounce_rate,
-      
-      (SELECT AVG(duration) 
-       FROM session_durations) as avg_session_duration
+      sum(page_count) as pageviews,
+      sum(unique_visitors) as visitors,
+      count(session_metrics.session_id) as sessions,
+      (COALESCE(countIf(page_count = 1), 0) / COALESCE(COUNT(*), 0)) * 100 as bounce_rate,
+      AVG(sd.duration) as avg_session_duration
+    FROM session_metrics
+    LEFT JOIN session_durations as sd ON session_metrics.session_id = sd.session_id
   `;
-  
-  // Override the getSql method to return our custom query
+
+  // Override the getSql method
   builder.getSql = () => sql;
-  
+
   return builder;
 }
 
 export function createTodayBuilder(websiteId: string) {
   const builder = createSqlBuilder();
-  builder.setTable('events');
   
-  builder.sb.select = buildCommonSelect({
-    pageviews: "COUNT(CASE WHEN event_name = 'screen_view' THEN 1 END) as pageviews",
-    visitors: "COUNT(DISTINCT anonymous_id) as visitors",
-    sessions: "COUNT(DISTINCT session_id) as sessions",
-    bounce_rate: "AVG(is_bounce) * 100 as bounce_rate"
-  });
+  // Use raw SQL to calculate bounce rate properly
+  const sql = `
+    WITH session_metrics AS (
+      SELECT
+        session_id,
+        countIf(event_name = 'screen_view') as page_count,
+        countDistinct(anonymous_id) as unique_visitors
+      FROM analytics.events
+      WHERE 
+        client_id = '${websiteId}'
+        AND toDate(time) = today()
+      GROUP BY session_id
+    ),
+    session_durations AS (
+      SELECT
+        session_id,
+        dateDiff('second', MIN(time), MAX(time)) as duration
+      FROM analytics.events
+      WHERE 
+        client_id = '${websiteId}'
+        AND toDate(time) = today()
+      GROUP BY session_id
+      HAVING duration > 0
+    )
+    SELECT
+      sum(page_count) as pageviews,
+      sum(unique_visitors) as visitors,
+      count(session_metrics.session_id) as sessions,
+      (COALESCE(countIf(page_count = 1), 0) / COALESCE(COUNT(*), 0)) * 100 as bounce_rate,
+      AVG(sd.duration) as avg_session_duration
+    FROM session_metrics
+    LEFT JOIN session_durations as sd ON session_metrics.session_id = sd.session_id
+  `;
   
-  builder.sb.where = {
-    client_filter: `client_id = '${websiteId}'`,
-    date_filter: "toDate(time) = today()"
-  };
+  // Override the getSql method
+  builder.getSql = () => sql;
   
   return builder;
 }
@@ -211,27 +232,66 @@ export function createTodayByHourBuilder(websiteId: string) {
         range(24)
       )) AS datetime
     ),
-    hourly_metrics AS (
+    session_metrics AS (
       SELECT
         toStartOfHour(time) as event_hour,
-        countIf(event_name = 'screen_view') as pageviews,
-        countDistinct(anonymous_id) as unique_visitors,
-        countDistinct(session_id) as sessions,
-        avg(is_bounce) * 100 as bounce_rate
+        session_id,
+        countIf(event_name = 'screen_view') as page_count,
+        countDistinct(anonymous_id) as session_visitors
       FROM analytics.events
       WHERE 
         client_id = '${websiteId}'
         AND toDate(time) = today()
+      GROUP BY event_hour, session_id
+    ),
+    session_durations AS (
+      SELECT
+        toStartOfHour(min_time) as event_hour,
+        session_id,
+        dateDiff('second', min_time, max_time) as duration
+      FROM (
+        SELECT 
+          session_id,
+          MIN(time) as min_time,
+          MAX(time) as max_time
+        FROM analytics.events
+        WHERE 
+          client_id = '${websiteId}'
+          AND toDate(time) = today()
+        GROUP BY session_id
+        HAVING min_time < max_time
+      )
+    ),
+    hourly_metrics AS (
+      SELECT
+        event_hour,
+        sum(page_count) as pageviews,
+        sum(session_visitors) as unique_visitors,
+        count(session_id) as sessions,
+        countIf(page_count = 1) as bounced_sessions
+      FROM session_metrics
       GROUP BY event_hour
     )
     SELECT
       formatDateTime(hour_range.datetime, '%Y-%m-%d %H:00:00') as date,
       COALESCE(hm.pageviews, 0) as pageviews,
-      if(hm.pageviews > 0, hm.unique_visitors, 0) as unique_visitors,
-      if(hm.pageviews > 0, hm.sessions, 0) as sessions,
-      COALESCE(hm.bounce_rate, 0) as bounce_rate
+      COALESCE(hm.unique_visitors, 0) as unique_visitors,
+      COALESCE(hm.sessions, 0) as sessions,
+      CASE 
+        WHEN COALESCE(hm.sessions, 0) > 0 
+        THEN (COALESCE(hm.bounced_sessions, 0) / COALESCE(hm.sessions, 0)) * 100 
+        ELSE 0 
+      END as bounce_rate,
+      COALESCE(AVG(sd.duration), 0) as avg_session_duration
     FROM hour_range
     LEFT JOIN hourly_metrics hm ON hour_range.datetime = hm.event_hour
+    LEFT JOIN session_durations sd ON hour_range.datetime = sd.event_hour
+    GROUP BY 
+      hour_range.datetime, 
+      hm.pageviews, 
+      hm.unique_visitors, 
+      hm.sessions, 
+      hm.bounced_sessions
     ORDER BY hour_range.datetime ASC
   `;
   
@@ -332,26 +392,39 @@ export function createEventsByDateBuilder(websiteId: string, startDate: string, 
           HAVING min_time < max_time
         )
       ),
-      hourly_metrics AS (
+      session_metrics AS (
         SELECT
           toStartOfHour(time) as event_hour,
-          countIf(event_name = 'screen_view') as pageviews,
-          countDistinct(anonymous_id) as unique_visitors,
-          countDistinct(session_id) as sessions,
-          avg(is_bounce) * 100 as bounce_rate
+          session_id,
+          countIf(event_name = 'screen_view') as page_count,
+          count(distinct anonymous_id) as unique_visitors
         FROM analytics.events
         WHERE 
           client_id = '${websiteId}'
           AND time >= parseDateTimeBestEffort('${adjustedStartDate} 00:00:00')
           AND time <= parseDateTimeBestEffort('${endDate} 23:59:59')
+        GROUP BY event_hour, session_id
+      ),
+      hourly_metrics AS (
+        SELECT
+          event_hour,
+          sum(page_count) as pageviews,
+          sum(unique_visitors) as unique_visitors,
+          count(session_id) as sessions,
+          countIf(page_count = 1) as bounced_sessions
+        FROM session_metrics
         GROUP BY event_hour
       )
       SELECT
         formatDateTime(hour_range.datetime, '%Y-%m-%d %H:00:00') as date,
         COALESCE(hm.pageviews, 0) as pageviews,
-        if(hm.pageviews > 0, hm.unique_visitors, 0) as unique_visitors,
-        if(hm.pageviews > 0, hm.sessions, 0) as sessions,
-        COALESCE(hm.bounce_rate, 0) as bounce_rate,
+        COALESCE(hm.unique_visitors, 0) as unique_visitors,
+        COALESCE(hm.sessions, 0) as sessions,
+        CASE 
+          WHEN COALESCE(hm.sessions, 0) > 0
+          THEN (COALESCE(hm.bounced_sessions, 0) / COALESCE(hm.sessions, 0)) * 100 
+          ELSE 0 
+        END as bounce_rate,
         COALESCE(avg(sd.duration), 0) as avg_session_duration
       FROM hour_range
       LEFT JOIN hourly_metrics hm ON hour_range.datetime = hm.event_hour
@@ -361,7 +434,7 @@ export function createEventsByDateBuilder(websiteId: string, startDate: string, 
         hm.pageviews, 
         hm.unique_visitors, 
         hm.sessions, 
-        hm.bounce_rate
+        hm.bounced_sessions
       ORDER BY hour_range.datetime ASC
     `;
     
@@ -398,26 +471,39 @@ export function createEventsByDateBuilder(websiteId: string, startDate: string, 
         HAVING min_time < max_time
       )
     ),
-    daily_metrics AS (
+    session_metrics AS (
       SELECT
         toDate(time) as event_date,
-        countIf(event_name = 'screen_view') as pageviews,
-        countDistinct(anonymous_id) as unique_visitors,
-        countDistinct(session_id) as sessions,
-        avg(is_bounce) * 100 as bounce_rate
+        session_id,
+        countIf(event_name = 'screen_view') as page_count,
+        count(distinct anonymous_id) as unique_visitors
       FROM analytics.events
       WHERE 
         client_id = '${websiteId}'
         AND time >= parseDateTimeBestEffort('${startDate}')
         AND time <= parseDateTimeBestEffort('${endDate} 23:59:59')
+      GROUP BY event_date, session_id
+    ),
+    daily_metrics AS (
+      SELECT
+        event_date,
+        sum(page_count) as pageviews,
+        sum(unique_visitors) as unique_visitors,
+        count(session_id) as sessions,
+        countIf(page_count = 1) as bounced_sessions
+      FROM session_metrics
       GROUP BY event_date
     )
     SELECT
       date_range.date,
       COALESCE(dm.pageviews, 0) as pageviews,
-      if(dm.pageviews > 0, dm.unique_visitors, 0) as unique_visitors,
-      if(dm.pageviews > 0, dm.sessions, 0) as sessions,
-      COALESCE(dm.bounce_rate, 0) as bounce_rate,
+      COALESCE(dm.unique_visitors, 0) as unique_visitors,
+      COALESCE(dm.sessions, 0) as sessions,
+      CASE 
+        WHEN COALESCE(dm.sessions, 0) > 0
+        THEN (COALESCE(dm.bounced_sessions, 0) / COALESCE(dm.sessions, 0)) * 100 
+        ELSE 0 
+      END as bounce_rate,
       COALESCE(avg(sd.duration), 0) as avg_session_duration
     FROM date_range
     LEFT JOIN daily_metrics dm ON date_range.date = dm.event_date
@@ -427,7 +513,7 @@ export function createEventsByDateBuilder(websiteId: string, startDate: string, 
       dm.pageviews, 
       dm.unique_visitors, 
       dm.sessions, 
-      dm.bounce_rate
+      dm.bounced_sessions
     ORDER BY date_range.date ASC
   `;
   

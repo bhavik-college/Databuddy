@@ -591,8 +591,43 @@ analyticsRouter.get('/chart', zValidator('query', analyticsQuerySchema), async (
       pageviews: "COUNT(CASE WHEN event_name = 'screen_view' THEN 1 END) as pageviews",
       visitors: 'COUNT(DISTINCT anonymous_id) as visitors',
       sessions: 'COUNT(DISTINCT session_id) as sessions',
-      bounce_rate: 'AVG(is_bounce) * 100 as bounce_rate',
-      avg_session_duration: 'AVG(CASE WHEN event_name = \'screen_view\' THEN time_on_page ELSE 0 END) as avg_session_duration'
+      bounce_rate: `
+        COALESCE(
+          (SELECT (countIf(page_count = 1) / count(*)) * 100
+           FROM 
+             (SELECT 
+                session_id, 
+                countIf(event_name = 'screen_view') as page_count
+              FROM analytics.events
+              WHERE 
+                client_id = '${params.website_id}'
+                AND toDate(time) >= '${startDate}'
+                AND toDate(time) <= '${endDate}'
+                ${intervalName === 'date' ? `AND toDayOfMonth(time) = day` : ''}
+                ${intervalName === 'week' ? `AND toDayOfWeek(time) = day` : ''}
+                ${intervalName === 'month' ? `AND toMonth(time) = month` : ''}
+              GROUP BY session_id)
+          ), 0
+        ) as bounce_rate`,
+      avg_session_duration: `
+        COALESCE(
+          (SELECT AVG(duration)
+           FROM 
+             (SELECT 
+                session_id, 
+                dateDiff('second', MIN(time), MAX(time)) as duration
+              FROM analytics.events
+              WHERE 
+                client_id = '${params.website_id}'
+                AND toDate(time) >= '${startDate}'
+                AND toDate(time) <= '${endDate}'
+                ${intervalName === 'date' ? `AND toDayOfMonth(time) = day` : ''}
+                ${intervalName === 'week' ? `AND toDayOfWeek(time) = day` : ''}
+                ${intervalName === 'month' ? `AND toMonth(time) = month` : ''}
+              GROUP BY session_id
+              HAVING duration > 0)
+          ), 0
+        ) as avg_session_duration`
     };
     
     metricsBuilder.sb.where = {

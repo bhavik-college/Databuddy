@@ -13,26 +13,56 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return null;
   }
 
+  // Helper function to format seconds into a human-readable time format
+  const formatDuration = (seconds: number): string => {
+    if (seconds < 60) return `${Math.round(seconds)}s`;
+    
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    
+    let result = '';
+    if (hours > 0) result += `${hours}h `;
+    if (minutes > 0 || hours > 0) result += `${minutes}m `;
+    if (remainingSeconds > 0 || (hours === 0 && minutes === 0)) result += `${remainingSeconds}s`;
+    
+    return result.trim();
+  };
+
   return (
     <div className="bg-background border border-border/70 p-3 rounded-lg shadow-md text-xs">
       <p className="font-semibold text-foreground mb-2">{label}</p>
       <div className="space-y-1.5">
-        {payload.map((entry: any, index: number) => (
-          <div key={`item-${index}`} className="flex items-center gap-2 py-0.5">
-            <div 
-              className="w-3 h-3 rounded-full" 
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="text-muted-foreground">
-              {entry.name}: 
-            </span>
-            <span className="font-medium text-foreground">
-              {entry.name.toLowerCase().includes('bounce rate') 
-                ? `${entry.value.toFixed(1)}%` 
-                : entry.value.toLocaleString()}
-            </span>
-          </div>
-        ))}
+        {payload.map((entry: any, index: number) => {
+          // Get the data point that this entry is representing
+          const dataPoint = entry.payload;
+          
+          // Get the formatted value based on the data type
+          let displayValue;
+          if (entry.name.toLowerCase().includes('bounce rate')) {
+            displayValue = `${entry.value.toFixed(1)}%`;
+          } else if (entry.name.toLowerCase().includes('session duration')) {
+            // Use the pre-formatted duration string if available
+            displayValue = dataPoint.avg_session_duration_formatted || formatDuration(entry.value);
+          } else {
+            displayValue = entry.value.toLocaleString();
+          }
+          
+          return (
+            <div key={`item-${index}`} className="flex items-center gap-2 py-0.5">
+              <div 
+                className="w-3 h-3 rounded-full" 
+                style={{ backgroundColor: entry.color }}
+              />
+              <span className="text-muted-foreground">
+                {entry.name}: 
+              </span>
+              <span className="font-medium text-foreground">
+                {displayValue}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -46,6 +76,7 @@ interface MetricsChartProps {
     unique_visitors?: number;
     sessions?: number;
     bounce_rate?: number;
+    avg_session_duration?: number;
     [key: string]: any;
   }> | undefined;
   isLoading: boolean;
@@ -79,6 +110,13 @@ export function MetricsChart({
       return `${(value / 1000).toFixed(1)}k`;
     }
     return value.toString();
+  };
+
+  // Custom formatter for duration values
+  const durationFormatter = (seconds: number): string => {
+    if (seconds < 60) return `${seconds}s`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+    return `${Math.floor(seconds / 3600)}h`;
   };
 
   if (isLoading) {
@@ -122,6 +160,7 @@ export function MetricsChart({
   const hasUniqueVisitors = data.some(item => 'unique_visitors' in item && item.unique_visitors !== undefined);
   const hasSessions = data.some(item => 'sessions' in item && item.sessions !== undefined);
   const hasBounceRate = data.some(item => 'bounce_rate' in item && item.bounce_rate !== undefined);
+  const hasAvgSessionDuration = data.some(item => 'avg_session_duration' in item && item.avg_session_duration !== undefined);
 
   // Colors and gradients for metrics
   const metricColors = {
@@ -130,6 +169,7 @@ export function MetricsChart({
     unique_visitors: "#10b981", // Emerald-500
     sessions: "#eab308", // Yellow-500
     bounce_rate: "#ef4444", // Red-500
+    avg_session_duration: "#a855f7", // Purple-500
   };
 
   return (
@@ -169,6 +209,12 @@ export function MetricsChart({
               <linearGradient id="colorBounceRate" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor={metricColors.bounce_rate} stopOpacity={0.3} />
                 <stop offset="95%" stopColor={metricColors.bounce_rate} stopOpacity={0.05} />
+              </linearGradient>
+              
+              {/* Avg Session Duration gradient */}
+              <linearGradient id="colorAvgSessionDuration" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={metricColors.avg_session_duration} stopOpacity={0.3} />
+                <stop offset="95%" stopColor={metricColors.avg_session_duration} stopOpacity={0.05} />
               </linearGradient>
             </defs>
             
@@ -211,6 +257,18 @@ export function MetricsChart({
               />
             )}
             
+            {hasAvgSessionDuration && (
+              <YAxis 
+                yAxisId="duration"
+                orientation="right"
+                tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                tickLine={false}
+                axisLine={false}
+                width={40}
+                tickFormatter={durationFormatter}
+              />
+            )}
+            
             <Tooltip 
               content={<CustomTooltip />} 
               wrapperStyle={{ outline: 'none' }} 
@@ -222,7 +280,7 @@ export function MetricsChart({
               iconSize={8}
               iconType="circle"
               formatter={(value) => {
-                return value.charAt(0).toUpperCase() + value.slice(1).replace('_', ' ');
+                return value.charAt(0).toUpperCase() + value.slice(1).replace(/_/g, ' ');
               }}
             />
             
@@ -294,6 +352,20 @@ export function MetricsChart({
                 activeDot={{ r: 6, strokeWidth: 1, stroke: '#fff' }}
                 name="Bounce Rate"
                 yAxisId="right"
+              />
+            )}
+            
+            {hasAvgSessionDuration && (
+              <Area 
+                type="monotone" 
+                dataKey="avg_session_duration" 
+                stroke={metricColors.avg_session_duration} 
+                fillOpacity={1} 
+                fill="url(#colorAvgSessionDuration)" 
+                strokeWidth={2}
+                activeDot={{ r: 6, strokeWidth: 1, stroke: '#fff' }}
+                name="Avg session duration"
+                yAxisId="duration"
               />
             )}
           </AreaChart>

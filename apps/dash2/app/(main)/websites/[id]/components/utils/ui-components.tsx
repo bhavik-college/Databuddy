@@ -113,6 +113,7 @@ export const MetricToggles: React.FC<MetricTogglesProps> = ({
     visitors: "Number of unique users visiting your website",
     sessions: "A group of interactions within a time frame",
     bounce_rate: "Percentage of single-page sessions",
+    avg_session_duration: "Average time spent during a session",
     ...descriptions
   };
 

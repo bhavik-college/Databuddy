@@ -49,7 +49,6 @@ export function WebsiteOverviewTab({
 }: FullTabProps) {
   // Local state for adjusted granularity
   const [adjustedDateRange, setAdjustedDateRange] = useState(dateRange);
-  const [isDateRangeChanging, setIsDateRangeChanging] = useState(false);
   
   // Fetch analytics data
   const { analytics, loading, refetch } = useWebsiteAnalytics(websiteId, adjustedDateRange);
@@ -59,7 +58,8 @@ export function WebsiteOverviewTab({
     pageviews: true,
     visitors: true,
     sessions: true,
-    bounce_rate: false
+    bounce_rate: false,
+    avg_session_duration: false
   });
   
   // Toggle metric visibility
@@ -69,33 +69,49 @@ export function WebsiteOverviewTab({
 
   // Handle refresh
   useEffect(() => {
-    handleDataRefresh(isRefreshing, refetch, setIsRefreshing, "Analytics data has been updated");
+    let isMounted = true;
+    
+    if (isRefreshing) {
+      const doRefresh = async () => {
+        try {
+          await refetch();
+        } catch (error) {
+          console.error("Failed to refresh data:", error);
+        } finally {
+          if (isMounted) {
+            setIsRefreshing(false);
+          }
+        }
+      };
+      
+      doRefresh();
+    }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [isRefreshing, refetch, setIsRefreshing]);
 
-  // Track date range changes and set loading state
+  // Set granularity based on date range
   useEffect(() => {
-    setIsDateRangeChanging(true);
-    // Set granularity based on date range
     const start = new Date(dateRange.start_date);
     const end = new Date(dateRange.end_date);
     const diffHours = Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60);
     
-    if (!dateRange.granularity) {
-      setAdjustedDateRange({
-        ...dateRange,
-        granularity: diffHours <= 24 ? 'hourly' : 'daily'
-      });
-    } else {
-      setAdjustedDateRange(dateRange);
-    }
+    const newAdjustedRange = {
+      ...dateRange,
+      granularity: !dateRange.granularity ? 
+        (diffHours <= 24 ? 'hourly' : 'daily') : 
+        dateRange.granularity
+    };
+    
+    setAdjustedDateRange(newAdjustedRange);
   }, [dateRange]);
 
-  // Clear the loading state when data arrives
-  useEffect(() => {
-    if (!loading.summary && isDateRangeChanging) {
-      setIsDateRangeChanging(false);
-    }
-  }, [loading.summary, isDateRangeChanging]);
+  // Combine loading states into one - component is loading if:
+  // 1. The API is loading
+  // 2. We are refreshing data
+  const isLoading = loading.summary || isRefreshing;
 
   // Format data for UI
   const deviceData = useMemo(() => 
@@ -179,6 +195,14 @@ export function WebsiteOverviewTab({
         filtered.bounce_rate = event.bounce_rate;
       }
       
+      if (visibleMetrics.avg_session_duration) {
+        // Use the value directly - API already provides duration in seconds
+        filtered.avg_session_duration = event.avg_session_duration || 0;
+        
+        // Also include the formatted string for tooltip use
+        filtered.avg_session_duration_formatted = event.avg_session_duration_formatted || '0s';
+      }
+      
       return filtered;
     });
   }, [analytics.events_by_date, visibleMetrics, adjustedDateRange.granularity]);
@@ -193,7 +217,8 @@ export function WebsiteOverviewTab({
     pageviews: 'blue-500',
     visitors: 'green-500',
     sessions: 'yellow-500',
-    bounce_rate: 'red-500'
+    bounce_rate: 'red-500',
+    avg_session_duration: 'purple-500'
   };
 
   // Calculate trends
@@ -307,7 +332,7 @@ export function WebsiteOverviewTab({
                 value={analytics.summary?.unique_visitors || 0}
                 icon={Users}
                 description={`${analytics.today?.visitors || 0} today`}
-                isLoading={loading.summary || isDateRangeChanging}
+                isLoading={isLoading}
                 variant="default"
                 trend={calculateTrends.visitors}
                 trendLabel={calculateTrends.visitors !== undefined ? "vs previous period" : undefined}
@@ -320,7 +345,7 @@ export function WebsiteOverviewTab({
                 value={analytics.summary?.sessions || 0}
                 icon={BarChart}
                 description={`${analytics.today?.sessions || 0} today`}
-                isLoading={loading.summary || isDateRangeChanging}
+                isLoading={isLoading}
                 variant="default"
                 trend={calculateTrends.sessions}
                 trendLabel={calculateTrends.sessions !== undefined ? "vs previous period" : undefined}
@@ -333,7 +358,7 @@ export function WebsiteOverviewTab({
                 value={analytics.summary?.pageviews || 0}
                 icon={Globe}
                 description={`${analytics.today?.pageviews || 0} today`}
-                isLoading={loading.summary || isDateRangeChanging}
+                isLoading={isLoading}
                 variant="default"
                 trend={calculateTrends.pageviews}
                 trendLabel={calculateTrends.pageviews !== undefined ? "vs previous period" : undefined}
@@ -350,7 +375,7 @@ export function WebsiteOverviewTab({
                   ) : '0'
                 }
                 icon={LayoutDashboard}
-                isLoading={loading.summary || isDateRangeChanging}
+                isLoading={isLoading}
                 variant="default"
                 trend={calculateTrends.pages_per_session}
                 trendLabel={calculateTrends.pages_per_session !== undefined ? "vs previous period" : undefined}
@@ -362,7 +387,7 @@ export function WebsiteOverviewTab({
                 title="BOUNCE RATE"
                 value={analytics.summary?.bounce_rate_pct || '0%'}
                 icon={MousePointer}
-                isLoading={loading.summary || isDateRangeChanging}
+                isLoading={isLoading}
                 trend={calculateTrends.bounce_rate}
                 trendLabel={calculateTrends.bounce_rate !== undefined ? "vs previous period" : undefined}
                 variant={getColorVariant(analytics.summary?.bounce_rate || 0, 70, 50)}
@@ -375,7 +400,7 @@ export function WebsiteOverviewTab({
                 title="AVG. SESSION"
                 value={analytics.summary?.avg_session_duration_formatted || '0s'}
                 icon={Timer}
-                isLoading={loading.summary || isDateRangeChanging}
+                isLoading={isLoading}
                 variant="default"
                 trend={calculateTrends.session_duration}
                 trendLabel={calculateTrends.session_duration !== undefined ? "vs previous period" : undefined}
@@ -412,7 +437,7 @@ export function WebsiteOverviewTab({
         </div>
         <MetricsChart 
           data={chartData} 
-          isLoading={loading.summary || isDateRangeChanging}
+          isLoading={isLoading}
         />
       </div>
 
@@ -423,7 +448,7 @@ export function WebsiteOverviewTab({
           <div className="rounded-2xl border shadow-sm overflow-hidden">
             <DistributionChart 
               data={deviceData} 
-              isLoading={loading.summary || isDateRangeChanging}
+              isLoading={isLoading}
               title="Device Types"
               description="Visitors by device type"
               height={190}
@@ -436,7 +461,7 @@ export function WebsiteOverviewTab({
               columns={referrerColumns}
               title="Top Referrers"
               description="Sources of your traffic"
-              isLoading={loading.summary || isDateRangeChanging}
+              isLoading={isLoading}
               limit={5}
             />
           </div>
@@ -447,7 +472,7 @@ export function WebsiteOverviewTab({
           <div className="rounded-2xl border shadow-sm overflow-hidden">
             <DistributionChart 
               data={browserData} 
-              isLoading={loading.summary || isDateRangeChanging}
+              isLoading={isLoading}
               title="Browsers"
               description="Visitors by browser"
               height={190}
@@ -460,7 +485,7 @@ export function WebsiteOverviewTab({
               columns={topPagesColumns}
               title="Top Pages"
               description="Most viewed content"
-              isLoading={loading.summary || isDateRangeChanging}
+              isLoading={isLoading}
               limit={5}
             />
           </div>
