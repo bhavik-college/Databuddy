@@ -77,6 +77,9 @@ export const auth = betterAuth({
             issuer: "databuddy.cc",
             audience: "databuddy.cc",
             expirationTime: "30d"
+        },
+        jwks: {
+            disablePrivateKeyEncryption: true
         }
     },
     api: {

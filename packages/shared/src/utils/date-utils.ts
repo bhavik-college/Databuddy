@@ -1,7 +1,7 @@
 // Import dayjs using require format
-import dayjs = require('dayjs');
-import utcPlugin = require('dayjs/plugin/utc');
-import timezonePlugin = require('dayjs/plugin/timezone');
+import * as dayjs from 'dayjs';
+import * as utcPlugin from 'dayjs/plugin/utc';
+import * as timezonePlugin from 'dayjs/plugin/timezone';
 import { TIMEZONES } from '../lists/timezones';
 
 // Initialize dayjs plugins
