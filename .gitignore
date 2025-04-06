@@ -29,6 +29,7 @@ coverage
 out/
 build
 generated
+packages/db/generated
 dist
 
 

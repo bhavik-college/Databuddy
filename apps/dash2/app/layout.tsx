@@ -50,10 +50,11 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable} h-full`}>
       <head />
       <Script 
-        src="http://localhost:3000/databuddy.js"
+        // src="http://localhost:3000/databuddy.js"
+        src="https://app.databuddy.cc/databuddy.js"
         data-client-id="5ced32e5-0219-4e75-a18a-ad9826f85698"
-        data-api-url="http://localhost:4000"
-        // data-api-url="https://api.databuddy.cc"
+        // data-api-url="http://localhost:4000"
+        data-api-url="https://api.databuddy.cc"
         data-track-screen-views="true"
         data-track-performance="true"
         data-track-web-vitals="true"
