@@ -113,6 +113,13 @@ enum Role {
   USER
 }
 
+enum OrganizationRole {
+  ADMIN
+  OWNER
+  MEMBER
+  VIEWER
+}
+
 // New enum for project status standardization
 enum ProjectStatus {
   ACTIVE

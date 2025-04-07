@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { TopHeader } from "./top-header";
 import { useWebsites } from "@/hooks/use-websites";
+import { OrganizationSelector } from "./organization-selector";
 
 interface NavigationItem {
   name: string;
@@ -135,6 +136,7 @@ export function Sidebar() {
           isMobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
+        <OrganizationSelector />
         <ScrollArea className="h-[calc(100vh-4rem)]">
           <div className="p-4">
             {isInWebsiteContext ? (
