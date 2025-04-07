@@ -159,7 +159,7 @@ function mapTRPCErrorToStatus(code: string): number {
 function getEnv(key: string) {
   return process.env[key] || 
          (typeof globalThis.process !== 'undefined' ? globalThis.process.env?.[key] : null) || 
-         (typeof globalThis !== 'undefined' && key in globalThis ? (globalThis as any)[key] : null);
+         (typeof globalThis !== 'undefined' && key in globalThis ? (globalThis as Record<string, any>)[key] : null);
 }
 
 // Export the app for Cloudflare Workers - DONT ENABLE.

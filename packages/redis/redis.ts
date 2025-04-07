@@ -93,7 +93,7 @@ export function getRedisCache() {
     // Access environment variables properly in both Node.js and Cloudflare Workers
     const redisUrl = process.env.REDIS_URL || 
                      (typeof globalThis.process !== 'undefined' ? globalThis.process.env?.REDIS_URL : null) || 
-                     (typeof globalThis !== 'undefined' && 'REDIS_URL' in globalThis ? globalThis.REDIS_URL : null);
+                     (typeof globalThis !== 'undefined' && 'REDIS_URL' in globalThis ? (globalThis as Record<string, any>).REDIS_URL : null);
     
     if (!redisUrl) {
       logger.error('REDIS_URL environment variable is not set');
@@ -111,7 +111,7 @@ export function getRedisSub() {
     // Access environment variables properly in both Node.js and Cloudflare Workers
     const redisUrl = process.env.REDIS_URL || 
                      (typeof globalThis.process !== 'undefined' ? globalThis.process.env?.REDIS_URL : null) || 
-                     (typeof globalThis !== 'undefined' && 'REDIS_URL' in globalThis ? globalThis.REDIS_URL : null);
+                     (typeof globalThis !== 'undefined' && 'REDIS_URL' in globalThis ? (globalThis as Record<string, any>).REDIS_URL : null);
     
     if (!redisUrl) {
       logger.error('REDIS_URL environment variable is not set');
@@ -129,7 +129,7 @@ export async function getRedisPub() {
     // Access environment variables properly in both Node.js and Cloudflare Workers
     const redisUrl = process.env.REDIS_URL || 
                      (typeof globalThis.process !== 'undefined' ? globalThis.process.env?.REDIS_URL : null) || 
-                     (typeof globalThis !== 'undefined' && 'REDIS_URL' in globalThis ? globalThis.REDIS_URL : null);
+                     (typeof globalThis !== 'undefined' && 'REDIS_URL' in globalThis ? (globalThis as Record<string, any>).REDIS_URL : null);
     
     if (!redisUrl) {
       logger.error('REDIS_URL environment variable is not set');
@@ -147,10 +147,10 @@ export async function getRedisQueue() {
     // Access environment variables properly in both Node.js and Cloudflare Workers
     const queueRedisUrl = process.env.QUEUE_REDIS_URL || 
                          (typeof globalThis.process !== 'undefined' ? globalThis.process.env?.QUEUE_REDIS_URL : null) || 
-                         (typeof globalThis !== 'undefined' && 'QUEUE_REDIS_URL' in globalThis ? globalThis.QUEUE_REDIS_URL : null) || 
+                         (typeof globalThis !== 'undefined' && 'QUEUE_REDIS_URL' in globalThis ? (globalThis as Record<string, any>).QUEUE_REDIS_URL : null) || 
                          process.env.REDIS_URL || 
                          (typeof globalThis.process !== 'undefined' ? globalThis.process.env?.REDIS_URL : null) || 
-                         (typeof globalThis !== 'undefined' && 'REDIS_URL' in globalThis ? globalThis.REDIS_URL : null);
+                         (typeof globalThis !== 'undefined' && 'REDIS_URL' in globalThis ? (globalThis as Record<string, any>).REDIS_URL : null);
     
     if (!queueRedisUrl) {
       logger.error('Neither QUEUE_REDIS_URL nor REDIS_URL environment variable is set');

@@ -8,7 +8,7 @@ const logger = createLogger('ip-geo');
 function getEnv(key: string) {
   return process.env[key] || 
          (typeof globalThis.process !== 'undefined' ? globalThis.process.env?.[key] : null) || 
-         (typeof globalThis !== 'undefined' && key in globalThis ? (globalThis as any)[key] : null);
+         (typeof globalThis !== 'undefined' && key in globalThis ? (globalThis as Record<string, any>)[key] : null);
 }
 
 const GeoLocationSchema = z.object({
