@@ -160,7 +160,7 @@ export function mergeTodayIntoTrends(
   trends: any[],
   todayData: TodayData | null,
   granularity: 'daily' | 'hourly' = 'daily',
-  dateField: string = 'date'
+  dateField = 'date'
 ): any[] {
   if (!todayData) {
     return trends;

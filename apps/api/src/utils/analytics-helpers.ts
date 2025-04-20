@@ -2,7 +2,7 @@
  * Utility functions for analytics data processing
  */
 
-import { format } from 'date-fns';
+import dayjs from 'dayjs';
 
 /**
  * Calculate weighted bounce rate from two sets of data
@@ -110,7 +110,7 @@ export function isToday(date: string): boolean {
  * Get the current hour formatted for matching with hourly data
  */
 export function getCurrentHourFormatted(): string {
-  return format(new Date(), 'yyyy-MM-dd HH:00:00');
+  return dayjs().format('YYYY-MM-DD HH:00:00');
 }
 
 /**
