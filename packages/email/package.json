@@ -11,7 +11,7 @@
     "build": "bun build --target=node --outdir=dist ./src/index.ts"
   },
   "dependencies": {
-    "@databuddy/logger": "workspace:*",
+    "@databuddy/logger": "../../packages/logger",
     "@react-email/components": "^0.0.15",
     "@react-email/render": "^0.0.12",
     "emailjs": "^4.0.3",
