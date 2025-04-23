@@ -216,6 +216,7 @@ export default function AboutPage() {
           {/* Structured data for SEO */}
           <script
             type="application/ld+json"
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
             dangerouslySetInnerHTML={{
               __html: JSON.stringify({
                 "@context": "https://schema.org",

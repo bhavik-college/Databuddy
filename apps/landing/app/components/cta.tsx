@@ -108,7 +108,7 @@ export default function CTA() {
               <form onSubmit={handleWishlistSubmit} className="flex flex-col sm:flex-row gap-4 justify-center mb-8" ref={formRef}>
                 <Input
                   type="email"
-                  placeholder="Enter your work email"
+                  placeholder="Enter your email"
                   value={wishlistEmail}
                   onChange={(e) => setWishlistEmail(e.target.value)}
                   className="max-w-sm bg-black/50 border-slate-800 placeholder:text-slate-500"
@@ -136,10 +136,6 @@ export default function CTA() {
             )}
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-slate-400">
-            <div className="flex items-center gap-2">
-              <Check className="h-4 w-4 text-green-400" />
-              No credit card required
-            </div>
             <div className="flex items-center gap-2">
               <Check className="h-4 w-4 text-green-400" />
               Priority access when we launch
