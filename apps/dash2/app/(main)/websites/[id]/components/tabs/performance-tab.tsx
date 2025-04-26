@@ -17,7 +17,7 @@ import {
 import { StatCard } from "@/components/analytics/stat-card";
 import { useWebsiteAnalytics } from "@/hooks/use-analytics";
 import { getColorVariant } from "../utils/analytics-helpers";
-import { RefreshableTabProps } from "../utils/types";
+import type { RefreshableTabProps } from "../utils/types";
 import { EmptyState } from "../utils/ui-components";
 
 // Define the normal/healthy ranges for each metric
@@ -107,15 +107,15 @@ export function WebsitePerformanceTab({
           <div className="font-medium text-xs">{label || metricKey.replace(/_/g, ' ')}</div>
           <div className="text-xs space-y-1">
             <div className="flex items-center">
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-1.5"></div>
+              <div className="w-2 h-2 bg-green-500 rounded-full mr-1.5" />
               <span>Good: &lt; {threshold.good}{threshold.unit}</span>
             </div>
             <div className="flex items-center">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full mr-1.5"></div>
+              <div className="w-2 h-2 bg-yellow-500 rounded-full mr-1.5" />
               <span>Needs improvement: {threshold.good}{threshold.unit} - {threshold.average}{threshold.unit}</span>
             </div>
             <div className="flex items-center">
-              <div className="w-2 h-2 bg-red-500 rounded-full mr-1.5"></div>
+              <div className="w-2 h-2 bg-red-500 rounded-full mr-1.5" />
               <span>Poor: &gt; {threshold.average}{threshold.unit}</span>
             </div>
           </div>

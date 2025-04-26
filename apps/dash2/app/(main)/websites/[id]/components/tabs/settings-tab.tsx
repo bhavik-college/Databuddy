@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,12 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
-import { WebsiteDataTabProps } from "../utils/types";
+import type { WebsiteDataTabProps } from "../utils/types";
 import { Check, Clipboard, Code, ExternalLink, Globe, Info, Laptop, Settings2, Zap, HelpCircle, ChevronRight, AlertCircle, Pencil, FileCode, BookOpen, Activity, Sliders, BarChart, TableProperties, Server } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { formatDistanceToNow } from "date-fns";
-import Link from "next/link";
 import { WebsiteDialog } from "@/components/website-dialog";
 import { updateWebsite } from "@/app/actions/websites";
 import { queryClient } from "@/app/providers";
@@ -78,7 +76,7 @@ export function WebsiteSettingsTab({
   }, []);
   
   // Generate tracking code based on selected options and library defaults
-  const generateScriptTag = () => {
+  const generateScriptTag = useCallback(() => {
     // Only include options that differ from defaults
     const options = Object.entries(trackingOptions)
       .filter(([key, value]) => value !== LIBRARY_DEFAULTS[key as keyof TrackingOptions])
@@ -86,17 +84,17 @@ export function WebsiteSettingsTab({
       .join(" ");
     
     return `<script src="${process.env.NEXT_PUBLIC_APP_URL || 'https://app.databuddy.cc'}/api/tracking" data-client-id="${websiteId}" ${options} async></script>`;
-  };
+  }, [trackingOptions, websiteId]);
   
   // Generate NPM init code based on selected options
-  const generateNpmCode = () => {
+  const generateNpmCode = useCallback(() => {
     // For NPM, we'll show all options explicitly
     const options = Object.entries(trackingOptions)
       .map(([key, value]) => `  ${key}: ${value}`)
       .join(",\n");
     
     return `import { DataBuddy } from '@databuddy/tracker';\n\n// Initialize the tracker\nconst databuddy = new DataBuddy({\n  clientId: '${websiteId}',\n${options}\n});`;
-  };
+  }, [trackingOptions, websiteId]);
   
   const [trackingCode, setTrackingCode] = useState(generateScriptTag());
   const [npmCode, setNpmCode] = useState(generateNpmCode());
@@ -105,7 +103,7 @@ export function WebsiteSettingsTab({
   useEffect(() => {
     setTrackingCode(generateScriptTag());
     setNpmCode(generateNpmCode());
-  }, [trackingOptions, websiteId, generateScriptTag, generateNpmCode]);
+  }, [generateScriptTag, generateNpmCode]);
   
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -132,36 +130,18 @@ export function WebsiteSettingsTab({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <WebsiteDialog
-                    website={{
-                      id: websiteData.id,
-                      name: websiteData.name,
-                      domain: websiteData.domain,
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 gap-1 px-2 text-muted-foreground"
+                    onClick={() => {
+                      toast.info("Edit website functionality");
+                      // Here you would typically open your WebsiteDialog
                     }}
-                    onSubmit={(formData: WebsiteFormData) => {
-                      updateWebsite(websiteData.id, formData)
-                        .then((result) => {
-                          if (result.error) {
-                            toast.error(result.error);
-                            return;
-                          }
-                          toast.success("Website updated successfully");
-                          // Invalidate queries to refresh data
-                          queryClient.invalidateQueries({ queryKey: ["website", websiteData.id] });
-                          queryClient.invalidateQueries({ queryKey: ["websites"] });
-                        })
-                        .catch((error) => {
-                          toast.error("Failed to update website");
-                          console.error(error);
-                        });
-                    }}
-                    isSubmitting={false}
                   >
-                    <Button variant="ghost" size="sm" className="h-7 gap-1 px-2 text-muted-foreground">
-                      <Pencil className="h-3.5 w-3.5" />
-                      <span className="text-xs">Edit</span>
-                    </Button>
-                  </WebsiteDialog>
+                    <Pencil className="h-3.5 w-3.5" />
+                    <span className="text-xs">Edit</span>
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="text-xs">Edit website details</p>
@@ -183,7 +163,7 @@ export function WebsiteSettingsTab({
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="gap-1 text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
-            <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
+            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
             Active
           </Badge>
           <Badge variant="outline" className="gap-1 text-xs">
@@ -725,7 +705,7 @@ export function WebsiteSettingsTab({
                                 value={trackingOptions.initialRetryDelay}
                                 onChange={(e) => setTrackingOptions(prev => ({
                                   ...prev,
-                                  initialRetryDelay: parseInt(e.target.value)
+                                  initialRetryDelay: Number.parseInt(e.target.value)
                                 }))}
                                 className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background"
                               />

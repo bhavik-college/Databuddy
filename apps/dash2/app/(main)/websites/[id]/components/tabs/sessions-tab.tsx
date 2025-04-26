@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/analytics/data-table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useAnalyticsSessions, useAnalyticsSessionDetails } from "@/hooks/use-analytics";
-import { DateRange } from "@/hooks/use-analytics";
+import type { DateRange } from "@/hooks/use-analytics";
 import { AnimatedLoading } from "@/components/analytics/animated-loading";
 
 // Define the component props type
@@ -112,19 +112,21 @@ export function WebsiteSessionsTab({
       });
       
       return () => {
-        cleanup.forEach(timeout => clearTimeout(timeout));
+        for (const timeout of cleanup) {
+          clearTimeout(timeout);
+        }
       };
-    } else {
-      // Reset progress when loading is complete
-      setLoadingProgress(100);
-      
+    }
+    
+    // Reset progress when loading is complete
+    setLoadingProgress(100);
+    
       // After animation completes, reset to 0
       const timeout = setTimeout(() => {
         setLoadingProgress(0);
       }, 1000);
       
-      return () => clearTimeout(timeout);
-    }
+    return () => clearTimeout(timeout);
   }, [isLoadingSessions]);
 
   return (

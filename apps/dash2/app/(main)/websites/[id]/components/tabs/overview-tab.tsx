@@ -28,7 +28,7 @@ import {
   calculatePercentChange
 } from "../utils/analytics-helpers";
 import { MetricToggles, ExternalLinkButton, BORDER_RADIUS } from "../utils/ui-components";
-import { FullTabProps, MetricPoint } from "../utils/types";
+import type { FullTabProps, MetricPoint } from "../utils/types";
 // Define trend calculation return type
 interface TrendCalculation {
   visitors?: number;

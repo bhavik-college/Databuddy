@@ -6,7 +6,7 @@ import { DistributionChart } from "@/components/charts/distribution-chart";
 import { DataTable } from "@/components/analytics/data-table";
 import { useWebsiteAnalytics } from "@/hooks/use-analytics";
 import { formatDistributionData, groupBrowserData } from "../utils/analytics-helpers";
-import { RefreshableTabProps } from "../utils/types";
+import type { RefreshableTabProps } from "../utils/types";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function WebsiteAudienceTab({
@@ -215,7 +215,7 @@ export function WebsiteAudienceTab({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {analytics.screen_resolutions?.slice(0, 6).map((item, index) => {
                 const [width, height] = item.screen_resolution.split('x').map(Number);
-                const isValid = !isNaN(width) && !isNaN(height);
+                const isValid = !Number.isNaN(width) && !Number.isNaN(height);
                 
                 // Calculate percentage of total visitors
                 const totalVisitors = analytics.screen_resolutions?.reduce(
@@ -246,7 +246,7 @@ export function WebsiteAudienceTab({
                 
                 return (
                   <div 
-                    key={index} 
+                    key={item.screen_resolution} 
                     className="border rounded-lg p-4 flex flex-col"
                   >
                     <div className="flex justify-between items-start mb-3">
@@ -297,9 +297,9 @@ export function WebsiteAudienceTab({
                           className="absolute bottom-6 inset-x-3 grid grid-cols-3 gap-1"
                           style={{ transform: 'translateZ(3px)' }}
                         >
-                          <div className="h-2 bg-primary/10 rounded-full"></div>
-                          <div className="h-2 bg-primary/15 rounded-full"></div>
-                          <div className="h-2 bg-primary/10 rounded-full"></div>
+                          <div className="h-2 bg-primary/10 rounded-full" />
+                          <div className="h-2 bg-primary/15 rounded-full" />
+                          <div className="h-2 bg-primary/10 rounded-full" />
                         </div>
                       </div>
                       

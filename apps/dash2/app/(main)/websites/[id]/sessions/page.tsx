@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useState, useMemo } from "react";
 import { format, subDays } from "date-fns";
-import { DateRange } from "react-day-picker";
+import type { DateRange } from "react-day-picker";
 import { 
   CalendarIcon, 
   Clock, 
@@ -136,7 +136,7 @@ export default function SessionsPage() {
           const date = new Date(value);
           return (
             <span className="whitespace-nowrap">
-              {isNaN(date.getTime()) ? '-' : format(date, 'MMM d, yyyy HH:mm:ss')}
+              {Number.isNaN(date.getTime()) ? '-' : format(date, 'MMM d, yyyy HH:mm:ss')}
             </span>
           );
         } catch (error) {

@@ -1,7 +1,5 @@
-import React from "react";
+import type React from "react";
 import { ExternalLink } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -58,7 +56,8 @@ export const MetricToggle: React.FC<MetricToggleProps> = ({
   const colorHex = getColorMap(color);
   
   return (
-    <div 
+    <button
+      type="button"
       className={cn(
         "group flex items-center gap-2.5 px-3.5 py-2 rounded-lg transition-all duration-200 cursor-pointer border",
         checked 
@@ -66,7 +65,6 @@ export const MetricToggle: React.FC<MetricToggleProps> = ({
           : "border-border/50 bg-transparent hover:bg-muted/30 hover:border-border"
       )}
       onClick={onChange}
-      role="button"
       aria-pressed={checked}
       tabIndex={0}
       onKeyDown={(e) => {
@@ -92,7 +90,7 @@ export const MetricToggle: React.FC<MetricToggleProps> = ({
       )}>
         {label}
       </span>
-    </div>
+    </button>
   );
 };
 

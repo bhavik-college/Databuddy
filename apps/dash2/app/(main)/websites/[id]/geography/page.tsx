@@ -2,8 +2,8 @@
 
 import { useParams } from "next/navigation";
 import { useState, useMemo } from "react";
-import { format, subDays } from "date-fns";
-import { DateRange } from "react-day-picker";
+  import { format, subDays } from "date-fns";
+import type { DateRange } from "react-day-picker";
 import { CalendarIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";

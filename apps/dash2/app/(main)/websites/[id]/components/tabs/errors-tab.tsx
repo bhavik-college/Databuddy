@@ -24,10 +24,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from "recharts";
 import { useWebsiteErrors } from "@/hooks/use-analytics";
-import { DateRange, ErrorDetail } from "@/hooks/use-analytics";
+import type { DateRange, ErrorDetail } from "@/hooks/use-analytics";
 import { AnimatedLoading } from "@/components/analytics/animated-loading";
 import { Card } from "@/components/ui/card";
-import { RefreshableTabProps } from "../utils/types";
+import type { RefreshableTabProps } from "../utils/types";
 import { EmptyState } from "../utils/ui-components";
 
 export function WebsiteErrorsTab({
@@ -124,19 +124,21 @@ export function WebsiteErrorsTab({
       });
       
       return () => {
-        cleanup.forEach(timeout => clearTimeout(timeout));
+        for (const timeout of cleanup) {
+          clearTimeout(timeout);
+        }
       };
-    } else {
-      // Reset progress when loading is complete
-      setLoadingProgress(100);
-      
+    }
+    
+    // Reset progress when loading is complete
+    setLoadingProgress(100);
+    
       // After animation completes, reset to 0
       const timeout = setTimeout(() => {
         setLoadingProgress(0);
       }, 1000);
       
-      return () => clearTimeout(timeout);
-    }
+    return () => clearTimeout(timeout);
   }, [isLoadingErrors]);
 
   // Only show error state when there's a real error with summary data and not loading
@@ -199,7 +201,7 @@ export function WebsiteErrorsTab({
                           className={`data-[state=checked]:bg-red-${300 + (index * 100)} data-[state=checked]:text-white`}
                         />
                         <Label htmlFor={`error-${errorType}`} className="text-xs cursor-pointer flex items-center gap-1">
-                          <div className={`w-3 h-3 rounded-full bg-red-${300 + (index * 100)}`}></div>
+                          <div className={`w-3 h-3 rounded-full bg-red-${300 + (index * 100)}`} />
                           {errorType.charAt(0).toUpperCase() + errorType.slice(1).replace(/_/g, ' ')}
                         </Label>
                       </div>
@@ -348,7 +350,7 @@ export function WebsiteErrorsTab({
                 {/* Page numbers */}
                 {Array.from({ length: Math.min(5, errorsData.total_pages) }, (_, i) => {
                   // Calculate visible page numbers with current page in the middle
-                  let pageNum;
+                  let pageNum: number;
                   if (errorsData.total_pages <= 5) {
                     pageNum = i + 1;
                   } else {

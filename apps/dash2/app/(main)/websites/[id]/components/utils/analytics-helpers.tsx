@@ -64,9 +64,9 @@ export const formatDateByGranularity = (
 // Create metric visibility toggles state
 export const createMetricToggles = <T extends string>(initialMetrics: T[]): Record<T, boolean> => {
   const initialState = {} as Record<T, boolean>;
-  initialMetrics.forEach(metric => {
+  for (const metric of initialMetrics) {
     initialState[metric] = true;
-  });
+  }
   return initialState;
 };
 
@@ -123,7 +123,7 @@ export const formatDomainLink = (
   maxLength = 30
 ): { href: string; display: string; title: string } => {
   const displayPath = path.length > maxLength 
-    ? path.slice(0, maxLength - 3) + '...' 
+    ? `${path.slice(0, maxLength - 3)}...` 
     : path;
   
   return {
@@ -144,13 +144,13 @@ export const formatMetricNumber = (num: number): string => {
   if (num === undefined || num === null) return '0';
   
   if (num >= 1000000000) {
-    return (num / 1000000000).toFixed(1) + 'B';
+    return `${(num / 1000000000).toFixed(1)}B`;
   }
   if (num >= 1000000) {
-    return (num / 1000000).toFixed(1) + 'M';
+    return `${(num / 1000000).toFixed(1)}M`;
   }
   if (num >= 1000) {
-    return (num / 1000).toFixed(1) + 'K';
+    return `${(num / 1000).toFixed(1)}K`;
   }
   return num.toString();
 };

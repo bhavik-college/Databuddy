@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { FileText, Globe, BarChart, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useWebsiteAnalytics } from "@/hooks/use-analytics";
-import { RefreshableTabProps } from "../utils/types";
+import type { RefreshableTabProps } from "../utils/types";
 import { EmptyState } from "../utils/ui-components";
 
 export function WebsiteContentTab({
