@@ -6,7 +6,8 @@
     "build": {
       "dependsOn": ["^build", "db:generate"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+
       "passThroughEnv": [
         "SENTRY_AUTH_TOKEN",
         "BETTER_AUTH_SECRET",
@@ -26,7 +27,8 @@
     },
     "start": {
       "dependsOn": ["^start", "db:generate"],
-      "cache": false
+      "cache": false,
+      "outputs": ["dist/**"]
     },
     "db:generate": {
       "cache": false
