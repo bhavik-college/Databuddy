@@ -5,11 +5,17 @@ import Redis from 'ioredis';
 // Initialize logger
 const logger = console;
 
+// Helper function to access environment variables in both Node.js and Cloudflare Workers
+function getEnv(key: string) {
+  return process.env[key] || 
+         (typeof globalThis.process !== 'undefined' ? globalThis.process.env?.[key] : null) || 
+         (typeof globalThis !== 'undefined' && key in globalThis ? (globalThis as Record<string, any>)[key] : null);
+}
+
 const options: RedisOptions = {
   connectTimeout: 10000,
   retryStrategy: (times) => {
     const delay = Math.min(times * 100, 3000);
-    // logger.debug(`Redis connection retry attempt ${times}, delay: ${delay}ms`);
     return delay;
   },
   maxRetriesPerRequest: 3
@@ -88,7 +94,7 @@ let isConnecting = false;
 
 export function getRedisCache() {
   if (!redisCache && !isConnecting) {
-    const redisUrl = process.env.REDIS_URL
+    const redisUrl = getEnv('REDIS_URL');
     if (!redisUrl) {
       logger.error('REDIS_URL environment variable is not set');
       throw new Error('REDIS_URL environment variable is required');
