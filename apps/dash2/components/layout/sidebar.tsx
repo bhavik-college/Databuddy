@@ -80,7 +80,7 @@ export function Sidebar() {
 
   // Find current website details
   const currentWebsite = isInWebsiteContext 
-    ? websites?.find(site => site.id === currentWebsiteId) 
+    ? websites?.find((site: any) => site.id === currentWebsiteId) 
     : null;
 
   const renderNavigationItems = (items: NavigationItem[], currentPath: string) => {
@@ -223,7 +223,7 @@ export function Sidebar() {
                       </div>
                     ) : (
                       // Website list
-                      websites.map((site) => (
+                      websites.map((site: any) => (
                         <Link
                           key={site.id}
                           href={`/websites/${site.id}`}
