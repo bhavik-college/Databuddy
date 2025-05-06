@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { useSession } from "@databuddy/auth/client"
-import { useState, createContext, useContext } from "react";
+import { useState, createContext, useContext, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { session } from "@databuddy/db";
 
@@ -49,6 +49,13 @@ export const useAuthSession = () => useContext(SessionContext);
 const SessionProvider = ({ children }: { children: ReactNode }) => {
   const { data: session, isPending, error } = useSession();
   
+  // Clear React Query cache when session changes
+  useEffect(() => {
+    if (!session && !isPending) {
+      queryClient.clear();
+    }
+  }, [session, isPending]);
+  
   return (
     <SessionContext.Provider value={{ 
       session: session as Session | null, 
@@ -62,7 +69,17 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   // Create a client-specific query client to avoid shared state between users
-  const [clientQueryClient] = useState(() => new QueryClient(defaultQueryClientOptions));
+  const [clientQueryClient] = useState(() => new QueryClient({
+    ...defaultQueryClientOptions,
+    defaultOptions: {
+      ...defaultQueryClientOptions.defaultOptions,
+      queries: {
+        ...defaultQueryClientOptions.defaultOptions.queries,
+        gcTime: 1000 * 60 * 5, // 5 minutes
+        staleTime: 1000 * 60 * 2, // 2 minutes
+      }
+    }
+  }));
 
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
