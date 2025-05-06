@@ -10,6 +10,7 @@ import { parseUserAgent } from '../utils/user-agent';
 import { getGeoData } from '../utils/ip-geo';
 import { getRedisCache } from '@databuddy/redis';
 import { logger } from '../lib/logger';
+import { nanoid } from 'nanoid';
 
 /**
  * Redis client wrapper for recent events cache
@@ -97,7 +98,7 @@ export async function processEvent(c: Context) {
     const geo = await getGeoData(enriched.ip || '');
     // Map event data to ClickHouse columns
     const eventData = {
-      id: crypto.randomUUID(),
+      id: nanoid(),
       client_id: website.id,
       event_name: payload.name || event.type,
       anonymous_id: payload.anonymousId || '',

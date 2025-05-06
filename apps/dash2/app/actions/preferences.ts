@@ -6,7 +6,7 @@ import { auth } from "@databuddy/auth";
 import { headers } from "next/headers";
 import { cache } from "react";
 import { z } from "zod";
-import { randomUUID } from "node:crypto";
+import { nanoid } from "nanoid";
 
 // Helper to get authenticated user
 const getUser = cache(async () => {
@@ -40,7 +40,7 @@ export async function getUserPreferences() {
     // Create default preferences if none exist
     if (!preferences) {
       const inserted = await db.insert(userPreferences).values({
-        id: randomUUID(),
+        id: nanoid(),
         userId: user.id,
         timezone: "auto",
         dateFormat: "MMM D, YYYY",
@@ -86,7 +86,7 @@ export async function updateUserPreferences(formData: FormData) {
     if (!preferences) {
       // Create if doesn't exist
       const inserted = await db.insert(userPreferences).values({
-        id: randomUUID(),
+        id: nanoid(),
         userId: user.id,
         timezone: validatedData.timezone || "auto",
         dateFormat: validatedData.dateFormat || "MMM D, YYYY",
