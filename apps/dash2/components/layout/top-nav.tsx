@@ -77,7 +77,7 @@ export function TopNav({
               <Menu className="h-5 w-5" />
               <span className="sr-only">Toggle menu</span>
             </Button>
-            <Link href="/dashboard" className="flex items-center gap-2.5 group transition-all duration-200">
+            <Link href="/websites" className="flex items-center gap-2.5 group transition-all duration-200">
               <div className="p-1.5 rounded-md bg-primary shadow-sm group-hover:shadow-md transition-all duration-200">
                 <LayoutDashboard className="h-5 w-5 text-primary-foreground" />
               </div>
@@ -158,9 +158,9 @@ export function TopNav({
                   </div>
                   <DropdownMenuSeparator className="my-1" />
                   <DropdownMenuItem asChild className="focus-ring h-9 rounded-md">
-                    <Link href="/dashboard" className="flex items-center w-full">
+                    <Link href="/websites" className="flex items-center w-full">
                       <LayoutDashboard className="mr-2.5 h-4 w-4" />
-                      Dashboard
+                      Websites
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="focus-ring h-9 rounded-md">

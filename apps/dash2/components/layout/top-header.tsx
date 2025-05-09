@@ -106,7 +106,7 @@ export function TopHeader({ setMobileOpen }: TopHeaderProps) {
             <span className="sr-only">Toggle menu</span>
           </Button>
 
-          <Link href="/dashboard" className="flex items-center gap-2.5 group">
+          <Link href="/websites" className="flex items-center gap-2.5 group">
             <div className="p-1.5 rounded-md bg-primary shadow-sm group-hover:shadow-md transition-all duration-200">
               <LayoutDashboard className="h-5 w-5 text-primary-foreground" />
             </div>
@@ -191,9 +191,9 @@ export function TopHeader({ setMobileOpen }: TopHeaderProps) {
                 
                 <DropdownMenuGroup>
                   <DropdownMenuItem asChild className="h-9 rounded-md">
-                    <Link href="/dashboard" className="flex items-center w-full">
+                    <Link href="/websites" className="flex items-center w-full">
                       <LayoutDashboard className="mr-2.5 h-4 w-4" />
-                      Dashboard
+                      Websites
                       <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
                     </Link>
                   </DropdownMenuItem>
