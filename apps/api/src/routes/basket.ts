@@ -32,66 +32,20 @@ const basketRouter = new Hono<{ Variables: AppVariables & { enriched?: any } }>(
 
 basketRouter.use(websiteAuthHook());
 
-const getCorsOrigin = (origin: string, domain: string) => {
-  logger.info('CORS origin check', { origin, domain });
-  
-  if (!origin) {
-    logger.warn('No origin provided');
-    return origin;
-  }
-  
-  if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-    logger.info('Allowing localhost origin', { origin });
-    return origin;
-  }
-  
-  try {
-    // Handle empty or invalid domain
-    if (!domain) {
-      logger.warn('No domain provided for CORS check', { origin });
-      return origin;
-    }
-
-    // Clean up domain - remove protocol and www if present
-    let cleanDomain = domain;
-    if (domain.startsWith('http')) {
-      cleanDomain = new URL(domain).hostname;
-    }
-    cleanDomain = cleanDomain.replace(/^www\./, '');
-    
-    const originHostname = new URL(origin).hostname.replace(/^www\./, '');
-    
-    logger.info('CORS domain comparison', { 
-      cleanDomain, 
-      originHostname,
-      isExactMatch: originHostname === cleanDomain,
-      isSubdomain: originHostname.endsWith(`.${cleanDomain}`)
-    });
-    
-    if (cleanDomain && (originHostname === cleanDomain || originHostname.endsWith(`.${cleanDomain}`))) {
-      logger.info('Origin allowed', { origin, domain: cleanDomain });
-      return origin;
-    }
-    
-    logger.warn('Origin mismatch but allowing', { origin, domain: cleanDomain });
-    return origin;
-  } catch (error) {
-    logger.error('Error validating origin', { origin, domain, error });
-    return origin;
-  }
-};
-
 basketRouter.use('*', async (c, next) => {
   const website = c.get('website');
-  logger.info('CORS middleware', { 
+  logger.info('CORS middleware invoked', { 
     websiteId: website?.id,
     websiteDomain: website?.domain,
+    requestOrigin: c.req.header('origin'),
     method: c.req.method,
     path: c.req.path
   });
   
   const corsMiddleware = cors({
-    origin: (origin) => getCorsOrigin(origin, website?.domain || ''),
+    origin: (requestOriginValue) => {
+      return requestOriginValue;
+    },
     allowHeaders: ['*'],
     allowMethods: ['POST', 'OPTIONS', 'GET'],
     exposeHeaders: ['Content-Type'],

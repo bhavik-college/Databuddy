@@ -144,18 +144,6 @@ export const websiteAuthHook = (): MiddlewareHandler<{
         return c.json({ error: 'Website is not active' }, 403);
       }
       
-      // Check if domain is verified or localhost (localhost domains are exempt from verification)
-      const isLocalhostDomain = isLocalhost(website.domain);
-      const isVerified = website.status === 'ACTIVE' || isLocalhostDomain;
-      
-      if (!isVerified) {
-        logger.warn('Unverified domain', { clientId, domain: website.domain });
-        return c.json({ 
-          error: 'Domain not verified',
-          message: 'This domain needs to be verified before collecting analytics data'
-        }, 403);
-      }
-      
       // Validate origin against domain if origin header is present
       if (origin && !isValidOrigin(origin, website.domain)) {
         logger.warn('Origin mismatch', { 
@@ -182,7 +170,7 @@ export const websiteAuthHook = (): MiddlewareHandler<{
       
       await next();
     } catch (error) {
-      // logger.error('Error validating website', { clientId, error });
+      logger.error('Error validating website', { clientId, origin, error: error instanceof Error ? error.message : String(error) });
       return c.json({ error: 'Authentication error', message: error instanceof Error ? error.message : 'Unknown error' }, 500);
     }
   };
