@@ -1,7 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { auth, type AuthUser, type SessionData } from '@databuddy/auth';
-import basketRouter from './routes/basket';
 import analyticsRouter from './routes/analytics';
 import { logger } from './lib/logger';
 import { logger as HonoLogger } from "hono/logger"
@@ -42,10 +41,6 @@ app.use('*', cors({
     'Content-Type',
     'Authorization',
     'Cookie',
-    'databuddy-client-id',
-    'databuddy-sdk-name',
-    'databuddy-sdk-version',
-    'x-user-timezone'
   ],
   allowMethods: ['POST', 'OPTIONS', 'GET'],
   credentials: true,
@@ -73,17 +68,18 @@ app.on(['POST', 'GET', 'OPTIONS'], '/api/auth/*', async (c) => {
 // Health check route
 app.get('/', (c) => c.json({ status: 'ok', version: '1.0.0' }));
 
-// Mount analytics basket endpoint (no auth required)
-app.route('/basket', basketRouter);
-
 // Mount analytics routes with auth middleware
 app.route('/analytics', analyticsRouter);
 
 app.get('/health', (c) => c.json({ status: 'ok', version: '1.0.0' }));
 
 // Error handling
-app.onError((err, c) => {
-  logger.error(`[API Error]: ${err.message}`, err);
+app.onError((err) => {
+  logger.error({
+    message: `[API Error]: ${err.message}`,
+    stack: err.stack,
+    name: err.name
+  });
   return new Response(JSON.stringify({ 
     error: err.message || 'Internal Server Error',
     status: 500

@@ -14,7 +14,6 @@ import { WebsiteCard } from "@/components/websites/website-card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import Link from "next/link";
-import type { websites } from "@databuddy/db";
 
 function WebsitesPage() {
   const searchParams = useSearchParams();

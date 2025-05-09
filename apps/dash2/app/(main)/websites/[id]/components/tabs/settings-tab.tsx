@@ -93,7 +93,7 @@ export function WebsiteSettingsTab({
   const generateScriptTag = useCallback(() => {
     const isLocalhost = process.env.NODE_ENV === 'development';
     const scriptUrl = isLocalhost ? "http://localhost:3000/databuddy.js" : "https://app.databuddy.cc/databuddy.js";
-    const apiUrl = isLocalhost ? "http://localhost:4000" : "https://api.databuddy.cc";
+    const apiUrl = isLocalhost ? "http://localhost:4000" : "https://basket.databuddy.cc";
     
     // Only include options that differ from defaults
     const options = Object.entries(trackingOptions)
