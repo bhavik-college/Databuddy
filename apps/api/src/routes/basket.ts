@@ -30,8 +30,6 @@ const isBot = (userAgent: string): boolean => {
 
 const basketRouter = new Hono<{ Variables: AppVariables & { enriched?: any } }>();
 
-basketRouter.use(websiteAuthHook());
-
 basketRouter.use('*', async (c, next) => {
   const website = c.get('website');
   logger.info('CORS middleware invoked', { 
@@ -55,6 +53,8 @@ basketRouter.use('*', async (c, next) => {
   
   return corsMiddleware(c, next);
 });
+
+basketRouter.use(websiteAuthHook());
 
 const eventSchema = z.object({
   type: z.enum(['track', 'alias', 'increment', 'decrement']),
