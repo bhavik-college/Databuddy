@@ -92,18 +92,7 @@ basketRouter.use('*', async (c, next) => {
   
   const corsMiddleware = cors({
     origin: (origin) => getCorsOrigin(origin, website?.domain || ''),
-    allowHeaders: [
-      'Content-Type',
-      'databuddy-client-id',
-      'databuddy-sdk-name',
-      'databuddy-sdk-version',
-      'Origin',
-      'Accept',
-      'Accept-Language',
-      'Accept-Encoding',
-      'User-Agent',
-      'Referer'
-    ],
+    allowHeaders: ['*'],
     allowMethods: ['POST', 'OPTIONS', 'GET'],
     exposeHeaders: ['Content-Type'],
     credentials: false,
