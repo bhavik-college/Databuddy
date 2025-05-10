@@ -1,5 +1,5 @@
 import type React from "react";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -7,6 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { PERFORMANCE_THRESHOLDS } from "./analytics-helpers";
 
 // Consistent border radius values
 export const BORDER_RADIUS = {
@@ -192,4 +193,46 @@ export const EmptyState: React.FC<{
       {action}
     </div>
   </div>
-); 
+);
+
+// Tooltip for performance metrics
+export const MetricTooltip = ({ 
+  metricKey, 
+  label,
+  children 
+}: { 
+  metricKey: keyof typeof PERFORMANCE_THRESHOLDS, 
+  label?: string,
+  children: React.ReactNode 
+}) => {
+  const threshold = PERFORMANCE_THRESHOLDS[metricKey];
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="w-full relative">
+            {children}
+            <HelpCircle className="h-3 w-3 absolute top-2 right-2 text-muted-foreground/50" />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent className="bg-background border text-foreground p-3 shadow-lg max-w-[300px] space-y-2">
+          <div className="font-medium text-xs">{label || String(metricKey).replace(/_/g, ' ')}</div>
+          <div className="text-xs space-y-1">
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-green-500 rounded-full mr-1.5" />
+              <span>Good: &lt; {threshold.good}{threshold.unit}</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full mr-1.5" />
+              <span>Needs improvement: {threshold.good}{threshold.unit} - {threshold.average}{threshold.unit}</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-red-500 rounded-full mr-1.5" />
+              <span>Poor: &gt; {threshold.average}{threshold.unit}</span>
+            </div>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}; 

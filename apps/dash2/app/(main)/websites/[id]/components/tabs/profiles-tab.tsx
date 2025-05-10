@@ -9,8 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useAnalyticsProfiles } from "@/hooks/use-analytics";
 import type { DateRange } from "@/hooks/use-analytics";
 import { AnimatedLoading } from "@/components/analytics/animated-loading";
-import { RefreshCw, Users } from "lucide-react";
+import { RefreshCw, Users, Repeat, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StatCard } from "@/components/analytics/stat-card";
 
 // Define the component props type
 interface WebsiteProfilesTabProps {
@@ -123,6 +124,18 @@ export function WebsiteProfilesTab({
     return () => clearTimeout(timeout);
   }, [isLoadingProfiles]);
 
+  // Calculate summary stats for StatCards
+  const totalVisitors = useMemo(() => profilesData?.total_visitors || 0, [profilesData?.total_visitors]);
+  const returningVisitors = useMemo(() => profilesData?.returning_visitors || 0, [profilesData?.returning_visitors]);
+  const avgSessionsPerVisitor = useMemo(() => {
+    if (!profilesData?.profiles?.length || !totalVisitors) return 0;
+    const totalProfileSessions = profilesData.profiles.reduce((sum, profile) => sum + (profile.total_sessions || 0), 0);
+    // Use totalVisitors from the API if available and likely more accurate for the overall average
+    // If we only have a subset of profiles, this average is for the displayed profiles.
+    // For a true site-wide average, the API might need to provide it or we use total_sessions from summary if that data was available.
+    return totalProfileSessions / profilesData.profiles.length; // Average of the loaded profiles
+  }, [profilesData?.profiles, totalVisitors]);
+
   // Handler for session row clicks 
   const handleSessionRowClick = (sessionId: string) => {
     // This would ideally open the session details in another dialog
@@ -137,8 +150,41 @@ export function WebsiteProfilesTab({
   };
 
   return (
-    <div className="pt-2 space-y-3">
-      <h2 className="text-lg font-semibold mb-2">Visitor Profiles</h2>
+    <div className="pt-2 space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Visitor Profiles</h2>
+        {/* Potentially add filters or other controls here */}
+      </div>
+
+      {/* Summary StatCards */}
+      {!isLoadingProfiles && profilesData && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+          <StatCard
+            title="Total Unique Visitors"
+            value={totalVisitors.toLocaleString()}
+            icon={Users}
+            isLoading={isLoadingProfiles}
+            description="Overall unique visitors"
+            className="shadow-sm"
+          />
+          <StatCard
+            title="Returning Visitors"
+            value={returningVisitors.toLocaleString()}
+            icon={Repeat}
+            isLoading={isLoadingProfiles}
+            description="Visitors with multiple sessions"
+            className="shadow-sm"
+          />
+          <StatCard
+            title="Avg. Sessions / Visitor"
+            value={avgSessionsPerVisitor.toFixed(1)}
+            icon={Activity}
+            isLoading={isLoadingProfiles}
+            description="Average sessions per loaded profile"
+            className="shadow-sm"
+          />
+        </div>
+      )}
       
       {isLoadingProfiles ? (
         <AnimatedLoading type="profiles" progress={loadingProgress} />
@@ -176,7 +222,14 @@ export function WebsiteProfilesTab({
                 {
                   accessorKey: 'device',
                   header: 'Device',
-                  cell: (value: string) => value || '-'
+                  cell: (value: string, row: any) => {
+                    const deviceInfo = [
+                        row.device || 'Device',
+                        row.browser || 'Browser',
+                        row.os || 'OS'
+                    ].filter(part => part && !part.includes('Unknown')).join(' - ') || 'Unknown Device Info';
+                    return <div className="whitespace-nowrap">{deviceInfo}</div>;
+                  }
                 },
                 {
                   accessorKey: 'total_duration_formatted',

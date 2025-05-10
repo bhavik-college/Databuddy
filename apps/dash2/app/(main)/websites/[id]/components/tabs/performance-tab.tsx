@@ -16,20 +16,9 @@ import {
 } from "@/components/ui/tooltip";
 import { StatCard } from "@/components/analytics/stat-card";
 import { useWebsiteAnalytics } from "@/hooks/use-analytics";
-import { getColorVariant } from "../utils/analytics-helpers";
+import { getColorVariant, PERFORMANCE_THRESHOLDS } from "../utils/analytics-helpers";
 import type { RefreshableTabProps } from "../utils/types";
-import { EmptyState } from "../utils/ui-components";
-
-// Define the normal/healthy ranges for each metric
-const PERFORMANCE_THRESHOLDS = {
-  load_time: { good: 1500, average: 3000, unit: 'ms' },
-  ttfb: { good: 500, average: 1000, unit: 'ms' },
-  dom_ready: { good: 1000, average: 2000, unit: 'ms' },
-  render_time: { good: 1000, average: 2000, unit: 'ms' },
-  fcp: { good: 1800, average: 3000, unit: 'ms' },
-  lcp: { good: 2500, average: 4000, unit: 'ms' },
-  cls: { good: 0.1, average: 0.25, unit: '' }
-};
+import { EmptyState, MetricTooltip } from "../utils/ui-components";
 
 export function WebsitePerformanceTab({
   websiteId,
@@ -84,46 +73,6 @@ export function WebsitePerformanceTab({
   // Combine loading states
   const isLoading = loading.summary || isRefreshing;
 
-  // Helper for displaying tooltips with helpful information
-  const MetricTooltip = ({ 
-    metricKey, 
-    label,
-    children 
-  }: { 
-    metricKey: keyof typeof PERFORMANCE_THRESHOLDS, 
-    label?: string,
-    children: React.ReactNode 
-  }) => {
-    const threshold = PERFORMANCE_THRESHOLDS[metricKey];
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="w-full relative">
-            {children}
-            <HelpCircle className="h-3 w-3 absolute top-2 right-2 text-muted-foreground/50" />
-          </div>
-        </TooltipTrigger>
-        <TooltipContent className="bg-background border text-foreground p-3 shadow-lg max-w-[300px] space-y-2">
-          <div className="font-medium text-xs">{label || metricKey.replace(/_/g, ' ')}</div>
-          <div className="text-xs space-y-1">
-            <div className="flex items-center">
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-1.5" />
-              <span>Good: &lt; {threshold.good}{threshold.unit}</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full mr-1.5" />
-              <span>Needs improvement: {threshold.good}{threshold.unit} - {threshold.average}{threshold.unit}</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-2 h-2 bg-red-500 rounded-full mr-1.5" />
-              <span>Poor: &gt; {threshold.average}{threshold.unit}</span>
-            </div>
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    );
-  };
-
   // Only show error state when there's a real error with summary data and not loading
   if (error?.summary && !isLoading) {
     return (
@@ -171,7 +120,7 @@ export function WebsitePerformanceTab({
                 value={analytics.performance?.avg_load_time_formatted || '0 ms'}
                 icon={Zap}
                 isLoading={isLoading}
-                variant={getColorVariant(analytics.performance?.avg_load_time || 0, 3000, 1500)}
+                variant={getColorVariant(analytics.performance?.avg_load_time || 0, PERFORMANCE_THRESHOLDS.load_time.average, PERFORMANCE_THRESHOLDS.load_time.good)}
                 className="shadow-sm h-full"
                 description="Total time to load the page"
               />
@@ -183,7 +132,7 @@ export function WebsitePerformanceTab({
                 value={analytics.performance?.avg_ttfb_formatted || '0 ms'}
                 icon={Zap}
                 isLoading={isLoading}
-                variant={getColorVariant(analytics.performance?.avg_ttfb || 0, 1000, 500)}
+                variant={getColorVariant(analytics.performance?.avg_ttfb || 0, PERFORMANCE_THRESHOLDS.ttfb.average, PERFORMANCE_THRESHOLDS.ttfb.good)}
                 className="shadow-sm h-full"
                 description="Server response time"
               />
@@ -195,7 +144,7 @@ export function WebsitePerformanceTab({
                 value={analytics.performance?.avg_dom_ready_time_formatted || '0 ms'}
                 icon={Zap}
                 isLoading={isLoading}
-                variant={getColorVariant(analytics.performance?.avg_dom_ready_time || 0, 2000, 1000)}
+                variant={getColorVariant(analytics.performance?.avg_dom_ready_time || 0, PERFORMANCE_THRESHOLDS.dom_ready.average, PERFORMANCE_THRESHOLDS.dom_ready.good)}
                 className="shadow-sm h-full"
                 description="Time until DOM is ready"
               />
@@ -207,7 +156,7 @@ export function WebsitePerformanceTab({
                 value={analytics.performance?.avg_render_time_formatted || '0 ms'}
                 icon={Zap}
                 isLoading={isLoading}
-                variant={getColorVariant(analytics.performance?.avg_render_time || 0, 2000, 1000)}
+                variant={getColorVariant(analytics.performance?.avg_render_time || 0, PERFORMANCE_THRESHOLDS.render_time.average, PERFORMANCE_THRESHOLDS.render_time.good)}
                 className="shadow-sm h-full"
                 description="Time until content renders"
               />
@@ -216,14 +165,18 @@ export function WebsitePerformanceTab({
         </TabsContent>
 
         <TabsContent value="web-vitals" className="pt-1">
-          <div className="grid gap-3 grid-cols-3">
+          <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             <MetricTooltip metricKey="fcp" label="First Contentful Paint">
               <StatCard 
                 title="First Contentful Paint"
-                value={analytics.performance?.avg_fcp_formatted || '0 ms'}
+                value={analytics.performance?.avg_fcp === null || analytics.performance?.avg_fcp === undefined 
+                  ? 'N/A' 
+                  : (analytics.performance?.avg_fcp_formatted || '0 ms')}
                 icon={Monitor}
                 isLoading={isLoading}
-                variant={getColorVariant(analytics.performance?.avg_fcp || 0, 3000, 1800)}
+                variant={analytics.performance?.avg_fcp === null || analytics.performance?.avg_fcp === undefined 
+                  ? 'default'
+                  : getColorVariant(analytics.performance.avg_fcp, PERFORMANCE_THRESHOLDS.fcp.average, PERFORMANCE_THRESHOLDS.fcp.good)}
                 className="shadow-sm h-full"
                 description="When first content is painted"
               />
@@ -232,10 +185,14 @@ export function WebsitePerformanceTab({
             <MetricTooltip metricKey="lcp" label="Largest Contentful Paint">
               <StatCard 
                 title="Largest Contentful Paint"
-                value={analytics.performance?.avg_lcp_formatted || '0 ms'}
+                value={analytics.performance?.avg_lcp === null || analytics.performance?.avg_lcp === undefined 
+                  ? 'N/A' 
+                  : (analytics.performance?.avg_lcp_formatted || '0 ms')}
                 icon={Monitor}
                 isLoading={isLoading}
-                variant={getColorVariant(analytics.performance?.avg_lcp || 0, 4000, 2500)}
+                variant={analytics.performance?.avg_lcp === null || analytics.performance?.avg_lcp === undefined 
+                  ? 'default'
+                  : getColorVariant(analytics.performance.avg_lcp, PERFORMANCE_THRESHOLDS.lcp.average, PERFORMANCE_THRESHOLDS.lcp.good)}
                 className="shadow-sm h-full"
                 description="When largest content is painted"
               />
@@ -244,10 +201,14 @@ export function WebsitePerformanceTab({
             <MetricTooltip metricKey="cls" label="Cumulative Layout Shift">
               <StatCard 
                 title="Cumulative Layout Shift"
-                value={analytics.performance?.avg_cls_formatted || '0'}
+                value={analytics.performance?.avg_cls === null || analytics.performance?.avg_cls === undefined 
+                  ? 'N/A' 
+                  : (analytics.performance?.avg_cls_formatted || '0')}
                 icon={Monitor}
                 isLoading={isLoading}
-                variant={getColorVariant(analytics.performance?.avg_cls || 0, 0.25, 0.1)}
+                variant={analytics.performance?.avg_cls === null || analytics.performance?.avg_cls === undefined 
+                  ? 'default'
+                  : getColorVariant(analytics.performance.avg_cls, PERFORMANCE_THRESHOLDS.cls.average, PERFORMANCE_THRESHOLDS.cls.good)}
                 className="shadow-sm h-full"
                 description="Visual stability"
               />

@@ -9,6 +9,26 @@ import { formatDistributionData, groupBrowserData } from "../utils/analytics-hel
 import type { RefreshableTabProps } from "../utils/types";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Define the structure for API entries (mirroring overview-tab.tsx)
+interface ApiBrowserVersionEntry {
+  browser_name?: string;
+  browser?: string;
+  browser_version?: string;
+  version?: string;
+  os_name?: string;
+  os_version?: string;
+  count: number;
+  visitors: number;
+}
+
+interface DeviceTypeEntry {
+  device_type: string;
+  device_brand: string;
+  device_model: string;
+  visitors: number;
+  pageviews: number;
+}
+
 export function WebsiteAudienceTab({
   websiteId,
   dateRange,
@@ -47,17 +67,56 @@ export function WebsiteAudienceTab({
     };
   }, [isRefreshing, refetch, setIsRefreshing]);
 
-  // Prepare device data
-  const deviceData = useMemo(() => 
-    formatDistributionData(analytics.device_types, 'device_type'), 
-    [analytics.device_types]
-  );
+  // Prepare device data with descriptive names
+  const deviceData = useMemo(() => { 
+    if (!analytics.device_types?.length) return [];
 
-  // Prepare browser data
+    const processedDeviceData = (analytics.device_types as DeviceTypeEntry[]).map((item) => {
+      let name = item.device_type || 'Unknown Type';
+      const brand = item.device_brand || 'Unknown';
+      const model = item.device_model || 'Unknown';
+
+      if (brand !== 'Unknown' && brand.toLowerCase() !== 'generic') {
+        name += ` - ${brand}`;
+        if (model !== 'Unknown' && model.toLowerCase() !== brand.toLowerCase()) {
+          name += ` ${model}`;
+        }
+      } else if (model !== 'Unknown') {
+        name += ` - ${model}`;
+      }
+      return {
+        ...item,
+        descriptiveName: name 
+      };
+    });
+    
+    return formatDistributionData(processedDeviceData, 'descriptiveName');
+  }, [analytics.device_types]);
+
+  // Prepare browser data (remains as is, OS is separate)
   const browserData = useMemo(() => 
     groupBrowserData(analytics.browser_versions), 
     [analytics.browser_versions]
   );
+
+  // Prepare OS distribution data
+  const osDistributionData = useMemo(() => {
+    if (!analytics.browser_versions?.length) return [];
+    const osMap = new Map<string, number>();
+
+    for (const item of analytics.browser_versions as ApiBrowserVersionEntry[]) {
+      const osName = item.os_name || 'Unknown';
+      const valueToAdd = item.visitors || item.count || 0;
+      if (valueToAdd > 0) {
+          const currentTotal = osMap.get(osName) || 0;
+          osMap.set(osName, currentTotal + valueToAdd);
+      }
+    }
+
+    return Array.from(osMap, ([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 7); // Display top 7 for clarity
+  }, [analytics.browser_versions]);
 
   // Prepare connection types data
   const connectionData = useMemo(() => 

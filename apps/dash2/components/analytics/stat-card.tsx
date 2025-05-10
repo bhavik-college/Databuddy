@@ -1,9 +1,6 @@
-import { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { 
   Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -70,13 +67,14 @@ export function StatCard({
     }
     
     // For numeric values or strings that can be converted to numbers
-    const numVal = typeof val === 'number' ? val : parseFloat(val);
-    if (!isNaN(numVal)) {
+    const numVal = typeof val === 'number' ? val : Number.parseFloat(val);
+    if (! Number.isNaN(numVal)) {
       // Handle larger numbers more compactly
       if (numVal >= 1000000) {
-        return (numVal / 1000000).toFixed(1) + 'M';
-      } else if (numVal >= 1000) {
-        return (numVal / 1000).toFixed(1) + 'K';
+        return `${(numVal / 1000000).toFixed(1)}M`;
+      } 
+      if (numVal >= 1000) {
+        return `${(numVal / 1000).toFixed(1)}K`;
       }
     }
     
@@ -118,17 +116,17 @@ export function StatCard({
           {formatValue(value)}
         </div>
         <div className="flex items-center text-[9px] sm:text-[10px] mt-1 leading-none">
-          {trend !== undefined && !isNaN(trend) && (
+          {trend !== undefined && !Number.isNaN(trend) && (
             <span className={cn("font-medium whitespace-nowrap", getTrendColor())}>
               {trend > 0 ? "↑" : trend < 0 ? "↓" : "→"} {Math.abs(trend)}%
             </span>
           )}
-          {trendLabel && trend !== undefined && !isNaN(trend) && (
+          {trendLabel && trend !== undefined && !Number.isNaN(trend) && (
             <span className="text-muted-foreground ml-1 hidden xs:inline">
               {trendLabel}
             </span>
           )}
-          {description && (!trendLabel || trend === undefined || isNaN(trend)) && (
+          {description && (!trendLabel || trend === undefined || Number.isNaN(trend)) && (
             <span className="text-muted-foreground line-clamp-1">
               {description}
             </span>

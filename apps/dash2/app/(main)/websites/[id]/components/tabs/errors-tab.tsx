@@ -29,6 +29,7 @@ import { AnimatedLoading } from "@/components/analytics/animated-loading";
 import { Card } from "@/components/ui/card";
 import type { RefreshableTabProps } from "../utils/types";
 import { EmptyState } from "../utils/ui-components";
+import { StatCard } from "@/components/analytics/stat-card";
 
 export function WebsiteErrorsTab({
   websiteId,
@@ -141,6 +142,15 @@ export function WebsiteErrorsTab({
     return () => clearTimeout(timeout);
   }, [isLoadingErrors]);
 
+  // Calculate summary stats for StatCards
+  const totalErrorOccurrences = useMemo(() => {
+    return errorsData?.error_types?.reduce((sum, type) => sum + type.count, 0) || 0;
+  }, [errorsData?.error_types]);
+
+  const uniqueErrorTypesCount = useMemo(() => {
+    return errorsData?.error_types?.length || 0;
+  }, [errorsData?.error_types]);
+
   // Only show error state when there's a real error with summary data and not loading
   if (errorsError && !isLoading) {
     return (
@@ -170,10 +180,39 @@ export function WebsiteErrorsTab({
   }
 
   return (
-    <div className="pt-2 space-y-3">
-      <h2 className="text-lg font-semibold mb-2">Error Tracking</h2>
+    <div className="pt-2 space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Error Tracking</h2>
+        {/* Add refresh button or other controls here if needed later */}
+      </div>
       
-      {isLoading ? (
+      {/* Summary StatCards */}
+      {!isLoading && errorsData && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+          <StatCard
+            title="Total Occurrences"
+            value={totalErrorOccurrences.toLocaleString()}
+            icon={AlertTriangle}
+            isLoading={isLoading}
+            variant="danger"
+            description="Total count of all errors"
+            className="shadow-sm"
+          />
+          <StatCard
+            title="Unique Error Types"
+            value={uniqueErrorTypesCount.toLocaleString()}
+            icon={Bug}
+            isLoading={isLoading}
+            variant="default"
+            description="Distinct types of errors recorded"
+            className="shadow-sm"
+          />
+          {/* Placeholder for another potential stat, e.g., Users Affected */}
+          {/* <StatCard title="Users Affected" value="-" icon={Users} isLoading={isLoading} /> */}
+        </div>
+      )}
+
+      {isLoading && !errorsData ? (
         <AnimatedLoading type="errors" progress={loadingProgress} />
       ) : errorsData ? (
         <>

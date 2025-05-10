@@ -57,7 +57,7 @@ export const formatDateByGranularity = (
 ): string => {
   const dateObj = safeParseDate(date);
   return granularity === 'hourly' 
-    ? format(dateObj, 'MMM d, HH:mm') 
+    ? format(dateObj, 'MMM d, hh:mm a')
     : format(dateObj, 'MMM d');
 };
 
@@ -165,4 +165,15 @@ export const calculatePercentChange = (current: number, previous: number): numbe
 export const formatPercentChange = (change: number): string => {
   const sign = change > 0 ? '+' : '';
   return `${sign}${change.toFixed(1)}%`;
+};
+
+// Performance Metrics Thresholds
+export const PERFORMANCE_THRESHOLDS = {
+  load_time: { good: 1500, average: 3000, unit: 'ms' },
+  ttfb: { good: 500, average: 1000, unit: 'ms' },
+  dom_ready: { good: 1000, average: 2000, unit: 'ms' },
+  render_time: { good: 1000, average: 2000, unit: 'ms' },
+  fcp: { good: 1800, average: 3000, unit: 'ms' },
+  lcp: { good: 2500, average: 4000, unit: 'ms' },
+  cls: { good: 0.1, average: 0.25, unit: '' }
 }; 

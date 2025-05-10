@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { ExternalLink, ActivitySquare, RefreshCw } from "lucide-react";
+import { ExternalLink, ActivitySquare, RefreshCw, Users, Eye, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { DataTable } from "@/components/analytics/data-table";
@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useAnalyticsSessions, useAnalyticsSessionDetails } from "@/hooks/use-analytics";
 import type { DateRange } from "@/hooks/use-analytics";
 import { AnimatedLoading } from "@/components/analytics/animated-loading";
+import { StatCard } from "@/components/analytics/stat-card";
 
 // Define the component props type
 interface WebsiteSessionsTabProps {
@@ -129,18 +130,80 @@ export function WebsiteSessionsTab({
     return () => clearTimeout(timeout);
   }, [isLoadingSessions]);
 
+  // Calculate summary stats for StatCards
+  const totalSessions = useMemo(() => sessionsData?.sessions?.length || 0, [sessionsData?.sessions]);
+  const uniqueVisitors = useMemo(() => sessionsData?.unique_visitors || 0, [sessionsData?.unique_visitors]);
+  
+  const avgPagesPerSession = useMemo(() => {
+    if (!sessionsData?.sessions || sessionsData.sessions.length === 0) return 0;
+    const totalPageViews = sessionsData.sessions.reduce((sum, session) => sum + (session.page_views || 0), 0);
+    return totalPageViews / sessionsData.sessions.length;
+  }, [sessionsData?.sessions]);
+
+  const avgSessionDurationFormatted = useMemo(() => {
+    if (!sessionsData?.sessions || sessionsData.sessions.length === 0) return '0s';
+    const totalDurationSeconds = sessionsData.sessions.reduce((sum, session) => sum + (session.duration || 0), 0);
+    const avgSeconds = totalDurationSeconds / sessionsData.sessions.length;
+    const hours = Math.floor(avgSeconds / 3600);
+    const minutes = Math.floor((avgSeconds % 3600) / 60);
+    const seconds = Math.floor(avgSeconds % 60);
+    let formatted = '';
+    if (hours > 0) formatted += `${hours}h `;
+    if (minutes > 0 || hours > 0) formatted += `${minutes}m `;
+    formatted += `${seconds}s`;
+    return formatted || '0s';
+  }, [sessionsData?.sessions]);
+
   return (
-    <div className="pt-2 space-y-3">
-      <h2 className="text-lg font-semibold mb-2">Session Analytics</h2>
+    <div className="pt-2 space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Session Analytics</h2>
+        {/* Potentially add filters or other controls here */}
+      </div>
+
+      {/* Summary StatCards */}
+      {!isLoadingSessions && sessionsData && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+          <StatCard
+            title="Total Sessions"
+            value={totalSessions.toLocaleString()}
+            icon={ActivitySquare}
+            isLoading={isLoadingSessions}
+            description="Number of distinct sessions"
+            className="shadow-sm"
+          />
+          <StatCard
+            title="Unique Visitors"
+            value={uniqueVisitors.toLocaleString()}
+            icon={Users}
+            isLoading={isLoadingSessions}
+            description="Number of unique users"
+            className="shadow-sm"
+          />
+          <StatCard
+            title="Avg. Pages/Session"
+            value={avgPagesPerSession.toFixed(1)}
+            icon={Eye}
+            isLoading={isLoadingSessions}
+            description="Average pages viewed per session"
+            className="shadow-sm"
+          />
+          <StatCard
+            title="Avg. Session Duration"
+            value={avgSessionDurationFormatted}
+            icon={Clock}
+            isLoading={isLoadingSessions}
+            description="Average length of a session"
+            className="shadow-sm"
+          />
+        </div>
+      )}
       
       {/* Show animated loading component when loading */}
       {isLoadingSessions ? (
         <AnimatedLoading type="sessions" progress={loadingProgress} />
       ) : sessionsData ? (
         <>
-          {/* Session summary cards */}
-          {/* ... existing session summary content ... */}
-          
           {/* Sessions list table */}
           <div className="rounded-lg border shadow-sm overflow-hidden">
             <DataTable
@@ -181,7 +244,14 @@ export function WebsiteSessionsTab({
                 {
                   accessorKey: 'device',
                   header: 'Device',
-                  cell: (value: string) => value || 'Unknown'
+                  cell: (value: string, row: any) => {
+                    const deviceInfo = [
+                        row.device || 'Unknown Device',
+                        row.browser || 'Unknown Browser',
+                        row.os || 'Unknown OS'
+                    ].join(' - ');
+                    return <div className="whitespace-nowrap">{deviceInfo}</div>;
+                  }
                 },
                 {
                   accessorKey: 'page_views',
