@@ -84,6 +84,7 @@ const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   subdomain: z.string().optional(),
   domainId: z.string().min(1, "Please select a verified domain"),
+  domain: z.string().min(1, "Domain is required"),
 });
 
 interface WebsiteDialogProps {
@@ -169,7 +170,12 @@ export function WebsiteDialog({
 
     setIsSubmitting(true);
     try {
-      await onSubmit(data);
+      await onSubmit({
+        ...data,
+        domain: data.subdomain 
+          ? `${data.subdomain}.${selectedDomain.name}`
+          : selectedDomain.name
+      });
       handleClose();
     } catch (error) {
       toast.error("Failed to save website");
