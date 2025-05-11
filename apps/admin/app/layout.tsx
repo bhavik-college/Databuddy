@@ -23,12 +23,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <meta name="apple-mobile-web-app-title" content="Databuddy" />
+    <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-          {children}
+        {children}
       </body>
     </html>
   );
