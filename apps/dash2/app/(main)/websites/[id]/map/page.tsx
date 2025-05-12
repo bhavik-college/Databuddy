@@ -155,7 +155,7 @@ function WebsiteMapPage() {
                 <p>The map shows geographic distribution of your website's visitors.</p>
                 <p><strong>Total Visits</strong>: Shows the absolute number of visitors.</p>
                 <p><strong>Per Capita</strong>: Shows visitors normalized by population.</p>
-                <p className="text-muted-foreground">Zoom in to see regional details. Click on a region to filter analytics by that location.</p>
+                {/* <p className="text-muted-foreground">Zoom in to see regional details. Click on a region to filter analytics by that location.</p> */}
               </div>
             </CardContent>
           </Card>
