@@ -10,7 +10,7 @@ import { useDomains } from "@/hooks/use-domains";
 import { LoadingState } from "@/components/websites/loading-state";
 import { EmptyState } from "@/components/websites/empty-state";
 import { ErrorState } from "@/components/websites/error-state";
-import { WebsiteCard } from "@/components/websites/website-card";
+import { WebsiteList } from "@/components/websites/website-list";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import Link from "next/link";
@@ -86,17 +86,17 @@ function WebsitesPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-8">
+    <div className="h-full flex flex-col animate-fadeIn">
+      <div className="flex items-center justify-between px-4 py-4 border-b">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Websites</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Websites</h1>
+          <p className="text-muted-foreground text-sm mt-0.5">
             Manage your websites for analytics tracking
           </p>
         </div>
         <Button 
           size="default" 
-          className="h-10"
+          className="h-9 text-primary-foreground btn-hover-effect"
           onClick={handleOpenDialog}
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -104,47 +104,44 @@ function WebsitesPage() {
         </Button>
       </div>
 
-      {/* Show no verified domains message */}
-      {!isLoading && verifiedDomains.length === 0 && (
-        <Alert className="mb-6">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>No verified domains available</AlertTitle>
-          <AlertDescription>
-            You need at least one verified domain to create a website. 
-            <Link href="/domains" className="ml-1 font-medium hover:underline">
-              Go to Domains page
-            </Link> to add and verify domains.
-          </AlertDescription>
-        </Alert>
-      )}
+      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-6">
+        {/* Show no verified domains message */}
+        {!isLoading && verifiedDomains.length === 0 && (
+          <Alert className="mb-4 border-warning/40 bg-[color-mix(in_oklch,var(--background),var(--warning)_5%)] text-warning">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>No verified domains available</AlertTitle>
+            <AlertDescription>
+              You need at least one verified domain to create a website. 
+              <Link href="/domains" className="ml-1 font-medium text-primary hover:underline">
+                Go to Domains page
+              </Link> to add and verify domains.
+            </AlertDescription>
+          </Alert>
+        )}
 
-      {/* Show loading state */}
-      {isLoading && <LoadingState />}
+        {/* Show loading state */}
+        {isLoading && <LoadingState />}
 
-      {/* Show empty state */}
-      {!isLoading && websites.length === 0 && (
-        <EmptyState 
-          onCreateWebsite={createWebsite} 
-          isCreating={isCreating} 
-          hasVerifiedDomains={verifiedDomains.length > 0}
-          verifiedDomains={verifiedDomains}
-        />
-      )}
+        {/* Show empty state */}
+        {!isLoading && websites.length === 0 && (
+          <EmptyState 
+            onCreateWebsite={createWebsite} 
+            isCreating={isCreating} 
+            hasVerifiedDomains={verifiedDomains.length > 0}
+            verifiedDomains={verifiedDomains}
+          />
+        )}
 
-      {/* Show website grid */}
-      {!isLoading && websites.length > 0 && (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {websites.map((website: typeof websites.$inferSelect) => (
-            <WebsiteCard
-              key={website.id}
-              website={website}
-              onUpdate={(id: string, name: string) => updateWebsite({ id, name })}
-              isUpdating={isUpdating}
-              verifiedDomains={verifiedDomains}
-            />
-          ))}
-        </div>
-      )}
+        {/* Show website list view */}
+        {!isLoading && websites.length > 0 && (
+          <WebsiteList
+            websites={websites}
+            onUpdate={(id: string, name: string) => updateWebsite({ id, name })}
+            isUpdating={isUpdating}
+            verifiedDomains={verifiedDomains}
+          />
+        )}
+      </div>
 
       {/* Separate dialog component */}
       <WebsiteDialog
@@ -160,7 +157,9 @@ function WebsitesPage() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="flex items-center justify-center h-full">
+      <div className="text-muted-foreground">Loading...</div>
+    </div>}>
       <WebsitesPage />
     </Suspense>
   )
