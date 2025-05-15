@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useWebsitesStore } from '@/stores/use-websites-store';
 import { toast } from 'sonner';
 import { 
@@ -8,6 +8,7 @@ import {
   deleteWebsite as deleteWebsiteAction, 
   getUserWebsites,
   updateWebsite as updateWebsiteAction,
+  getWebsiteById
 } from "@/app/actions/websites";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -66,11 +67,16 @@ export const websiteKeys = {
 };
 
 export function useWebsites() {
-  const store = useWebsitesStore();
-  const queryClient = useQueryClient();
-  const previousDataRef = useRef<Website[] | null>(null);
+  // Get store actions directly. Avoid subscribing to the whole store if only actions are needed.
+  const { 
+    setIsCreating, 
+    setIsUpdating, 
+    setIsDeleting,
+    clearSelectedOnDelete 
+  } = useWebsitesStore.getState(); 
   
-  // Fetch websites with React Query
+  const queryClient = useQueryClient();
+  
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: websiteKeys.lists(),
     queryFn: async () => {
@@ -87,22 +93,12 @@ export function useWebsites() {
     refetchOnWindowFocus: false,
   });
   
-  // Update store when data changes, but only if data has actually changed
-  useEffect(() => {
-    if (data && JSON.stringify(data) !== JSON.stringify(previousDataRef.current)) {
-      previousDataRef.current = data;
-      store.setWebsites(data);
-    }
-  }, [data, store]);
-  
-  // Show toast on error, but don't update the store here to avoid loop
   useEffect(() => {
     if (isError) {
       toast.error('Failed to fetch websites');
     }
   }, [isError]);
 
-  // Create website mutation
   const createMutation = useMutation({
     mutationFn: async (data: CreateWebsiteData) => {
       const result = await createWebsiteAction(data);
@@ -110,7 +106,7 @@ export function useWebsites() {
       return result.data;
     },
     onMutate: () => {
-      store.setIsCreating(true);
+      setIsCreating(true);
     },
     onSuccess: () => {
       toast.success("Website created successfully");
@@ -120,11 +116,10 @@ export function useWebsites() {
       toast.error(error.message || 'Failed to create website');
     },
     onSettled: () => {
-      store.setIsCreating(false);
+      setIsCreating(false);
     }
   });
 
-  // Update website mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, name }: { id: string; name: string }) => {
       const result = await updateWebsiteAction(id, name);
@@ -132,7 +127,7 @@ export function useWebsites() {
       return result.data;
     },
     onMutate: () => {
-      store.setIsUpdating(true);
+      setIsUpdating(true);
     },
     onSuccess: () => {
       toast.success("Website updated successfully");
@@ -142,49 +137,40 @@ export function useWebsites() {
       toast.error(error.message || 'Failed to update website');
     },
     onSettled: () => {
-      store.setIsUpdating(false);
+      setIsUpdating(false);
     }
   });
 
-  // Delete website mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const result = await deleteWebsiteAction(id);
       if (result.error) throw new Error(result.error);
-      return result.data;
+      // Pass id to onSuccess to use it for store update
+      return { data: result.data, id }; 
     },
     onMutate: () => {
-      store.setIsDeleting(true);
+      setIsDeleting(true);
     },
-    onSuccess: (_, id) => {
+    onSuccess: ({ id }) => { // Destructure id from the mutation result
       toast.success("Website deleted successfully");
-      // Update the store first
-      store.deleteWebsite(id);
-      // Then invalidate all website-related queries
+      clearSelectedOnDelete(id); // Clear selected if it was the one deleted
       queryClient.invalidateQueries({ queryKey: websiteKeys.all });
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to delete website');
     },
     onSettled: () => {
-      store.setIsDeleting(false);
+      setIsDeleting(false);
     }
   });
 
   return {
-    // Data directly from React Query
     websites: data || [],
-    selectedWebsite: store.selectedWebsite,
-    
-    // UI States
     isLoading,
     isError,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
-    
-    // Actions
-    setSelectedWebsite: store.setSelectedWebsite,
     createWebsite: createMutation.mutate,
     updateWebsite: updateMutation.mutate,
     deleteWebsite: deleteMutation.mutate,
@@ -196,19 +182,35 @@ export function useWebsites() {
 export function useWebsite(id: string) {
   const queryClient = useQueryClient();
   
-  return useQuery({
+  return useQuery<Website | null, Error>({
     queryKey: websiteKeys.detail(id),
     queryFn: async () => {
       if (!id) return null;
       
-      // First check if we already have the website data in cache
       const websitesData = queryClient.getQueryData<Website[]>(websiteKeys.lists());
       const cachedWebsite = websitesData?.find(website => website.id === id);
-      if (cachedWebsite) return cachedWebsite;
+      if (cachedWebsite) {
+        return cachedWebsite;
+      }
       
-      // If not found in cache, could implement a getWebsiteById fetch here
-      return null;
+      console.log(`Website with ID ${id} not found in cache, fetching from server...`);
+      const result = await getWebsiteById(id);
+      
+      if (result.error) {
+        toast.error(`Failed to fetch website: ${result.error}`);
+        throw new Error(result.error);
+      }
+      
+      if (!result.data) {
+        // Using toast.message for neutral information. 
+        // If this should be an error state, toast.error might be more appropriate.
+        toast.message(`Website with ID ${id} not found on server.`);
+        return null; 
+      }
+      
+      return result.data as Website; // Cast to Website type
     },
     enabled: !!id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 } 

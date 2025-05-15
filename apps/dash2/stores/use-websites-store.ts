@@ -38,31 +38,21 @@ export interface Website {
   } | null;
 }
 
-interface WebsitesState {
-  // Data
-  websites: Website[];
+interface WebsitesStateData {
   selectedWebsite: Website | null;
-  
-  // UI States
-  isLoading: boolean;
-  isError: boolean;
   isCreating: boolean;
   isUpdating: boolean;
   isDeleting: boolean;
   isVerifying: boolean;
   isRegenerating: boolean;
   showVerificationDialog: boolean;
-  
-  // Actions
-  setWebsites: (websites: Website[]) => void;
+}
+
+interface WebsitesStateActions {
   setSelectedWebsite: (website: Website | null) => void;
   setShowVerificationDialog: (show: boolean) => void;
-  deleteWebsite: (id: string) => void;
+  clearSelectedOnDelete: (id: string) => void; 
   reset: () => void;
-  
-  // Loading States
-  setIsLoading: (loading: boolean) => void;
-  setIsError: (error: boolean) => void;
   setIsCreating: (creating: boolean) => void;
   setIsUpdating: (updating: boolean) => void;
   setIsDeleting: (deleting: boolean) => void;
@@ -70,46 +60,26 @@ interface WebsitesState {
   setIsRegenerating: (regenerating: boolean) => void;
 }
 
-// Use standard Zustand create with better performance
-export const useWebsitesStore = create<WebsitesState>((set) => ({
-  // Initial Data
-  websites: [],
+export type WebsitesState = WebsitesStateData & WebsitesStateActions;
+
+const initialStateData: WebsitesStateData = {
   selectedWebsite: null,
-  
-  // Initial UI States
-  isLoading: true,
-  isError: false,
   isCreating: false,
   isUpdating: false,
   isDeleting: false,
   isVerifying: false,
   isRegenerating: false,
   showVerificationDialog: false,
-  
-  // Actions
-  setWebsites: (websites) => set({ websites }),
+};
+
+export const useWebsitesStore = create<WebsitesState>((set) => ({
+  ...initialStateData,
   setSelectedWebsite: (website) => set({ selectedWebsite: website }),
   setShowVerificationDialog: (show) => set({ showVerificationDialog: show }),
-  deleteWebsite: (id) => set((state) => ({
-    websites: state.websites.filter(website => website.id !== id),
+  clearSelectedOnDelete: (id) => set((state) => ({
     selectedWebsite: state.selectedWebsite?.id === id ? null : state.selectedWebsite
   })),
-  reset: () => set({
-    websites: [],
-    selectedWebsite: null,
-    isLoading: true,
-    isError: false,
-    isCreating: false,
-    isUpdating: false,
-    isDeleting: false,
-    isVerifying: false,
-    isRegenerating: false,
-    showVerificationDialog: false,
-  }),
-  
-  // Loading States
-  setIsLoading: (loading) => set({ isLoading: loading }),
-  setIsError: (error) => set({ isError: error }),
+  reset: () => set(initialStateData),
   setIsCreating: (creating) => set({ isCreating: creating }),
   setIsUpdating: (updating) => set({ isUpdating: updating }),
   setIsDeleting: (deleting) => set({ isDeleting: deleting }),
@@ -117,18 +87,17 @@ export const useWebsitesStore = create<WebsitesState>((set) => ({
   setIsRegenerating: (regenerating) => set({ isRegenerating: regenerating }),
 }));
 
-// Helper selectors for more efficient component subscriptions
 export const useSelectedWebsite = () => useWebsitesStore(state => state.selectedWebsite);
-export const useVerificationDialog = () => {
-  const { showVerificationDialog, setShowVerificationDialog } = useWebsitesStore(
-    state => ({
-      showVerificationDialog: state.showVerificationDialog,
-      setShowVerificationDialog: state.setShowVerificationDialog
-    })
-  );
-  
-  return {
-    show: showVerificationDialog,
-    setShow: setShowVerificationDialog
-  };
-}; 
+
+// Selector for the dialog visibility state
+export const useShowVerificationDialog = () => useWebsitesStore(state => state.showVerificationDialog);
+
+// To get the setter for the dialog, a component can use:
+// const setShowVerificationDialog = useWebsitesStore(state => state.setShowVerificationDialog);
+// Or, if a component needs both, it can use shallow compare:
+/*
+export const useVerificationDialogCombined = () => useWebsitesStore(state => ({
+  show: state.showVerificationDialog,
+  setShow: state.setShowVerificationDialog
+}), shallow);
+*/ 
