@@ -6,7 +6,6 @@ import { PostHogProvider } from "./providers/posthog";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import NextTopLoader from 'nextjs-toploader';
 import Head from "next/head";
-import { TrackingScript } from "@/components/analytics/tracking-script";
 import Script from "next/script";
 
 const poppins = Poppins({
@@ -111,7 +110,6 @@ export default function RootLayout({
             }}
           />
           <NuqsAdapter>{children}</NuqsAdapter>
-          <TrackingScript trackingId="70ea6264-89df-4de2-8591-e28dca053344" />
         </body>
       </PostHogProvider>
     </html>
