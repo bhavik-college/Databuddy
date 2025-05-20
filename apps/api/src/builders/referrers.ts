@@ -31,23 +31,27 @@ export interface TopReferrer {
 /**
  * Creates a builder for fetching top referrers data
  */
-export function createTopReferrersBuilder(websiteId: string, startDate: string, endDate: string, limit = 5) {
+export function createTopReferrersBuilder(websiteId: string, startDate: string, endDate: string, domain?: string) {
   const builder = createSqlBuilder();
   builder.setTable('events');
   
   builder.sb.select = buildCommonSelect({
-    referrer: 'referrer',
+    referrer: `
+      CASE
+        WHEN referrer = '' OR referrer IS NULL THEN 'direct'
+        WHEN referrer LIKE '%${domain}%' THEN 'direct'
+        ELSE referrer
+      END as referrer`,
     visitors: 'COUNT(DISTINCT anonymous_id) as visitors',
     pageviews: 'COUNT(*) as pageviews'
   });
   
   builder.sb.where = buildWhereClauses(websiteId, startDate, endDate, {
-    referrer_filter: "referrer != '' AND event_name = 'screen_view'"
+    event_filter: "event_name = 'screen_view'"
   });
   
   builder.sb.groupBy = buildCommonGroupBy({ referrer: 'referrer' });
   builder.sb.orderBy = buildCommonOrderBy({ visitors: 'visitors DESC' });
-  builder.sb.limit = limit;
   
   return builder;
 }

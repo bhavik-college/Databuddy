@@ -59,24 +59,29 @@ export async function fetchReferrerData(params: DataExplorerParams = {}) {
 
     // Fetch referrer data with metrics
     const referrersQuery = `
-      SELECT
-        referrer,
-        count() as count,
-        count(DISTINCT anonymous_id) as unique_users,
-        avg(time_on_site) as avg_time_on_site,
-        (countIf(session_length = 1) / count()) * 100 as bounce_rate
-      FROM (
+      WITH parsed_referrers AS (
         SELECT
-          referrer,
+          CASE
+            WHEN referrer = '' OR referrer IS NULL THEN 'direct'
+            WHEN referrer LIKE '%better-auth-kit.com%' THEN 'direct'
+            ELSE referrer
+          END as normalized_referrer,
           anonymous_id,
           session_id,
           max(time) - min(time) as time_on_site,
           count() as session_length
         FROM analytics.events
         ${whereClause}
-        GROUP BY referrer, anonymous_id, session_id
+        GROUP BY normalized_referrer, anonymous_id, session_id
       )
-      GROUP BY referrer
+      SELECT
+        normalized_referrer as referrer,
+        count() as count,
+        count(DISTINCT anonymous_id) as unique_users,
+        avg(time_on_site) as avg_time_on_site,
+        (countIf(session_length = 1) / count()) * 100 as bounce_rate
+      FROM parsed_referrers
+      GROUP BY normalized_referrer
       ORDER BY ${sort_by} ${sort_order}
       LIMIT ${limit}
       OFFSET ${offset}

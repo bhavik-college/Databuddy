@@ -11,25 +11,11 @@ import type { AppVariables, TrackingEvent } from '../types';
 import { UAParser } from 'ua-parser-js';
 import { parseIp, anonymizeIp } from '../utils/ip-geo';
 import { parseReferrer } from '../utils/referrer';
-import bots from '../lists/bots';
+import { isBot } from '../lists';
 import { logger } from '../lib/logger';
 import { getRedisCache } from '@databuddy/redis';
 
 const redis = getRedisCache();
-
-
-const isBot = (userAgent: string): boolean => {
-  if (!userAgent) return false;
-  const ua = userAgent.toLowerCase();
-  return bots.some(bot => {
-    try {
-      return new RegExp(bot.regex, 'i').test(ua);
-    } catch (e) {
-      logger.error('Bot regex error', { pattern: bot.regex, error: e });
-      return false;
-    }
-  });
-};
 
 const basketRouter = new Hono<{ Variables: AppVariables & { enriched?: any } }>();
 

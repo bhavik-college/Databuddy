@@ -1,6 +1,14 @@
 // The data is fetch from device-detector https://raw.githubusercontent.com/matomo-org/device-detector/master/regexes/bots.yml
 
-const bots = [
+export interface Bot {
+  regex: string;
+  name: string;
+  category?: string;
+  url?: string;
+  producer?: { name: string; url?: string };
+}
+
+const bots: Bot[] = [
     {
       regex: 'WireReaderBot(?:/([\\d+.]+))?',
       name: 'WireReaderBot',

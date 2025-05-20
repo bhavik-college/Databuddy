@@ -1,20 +1,13 @@
-
 import bots from './bots';
 
 export function isBot(ua: string) {
-  const res = bots.find((bot) => {
-    if (new RegExp(bot.regex).test(ua)) {
-      return true;
+  if (!ua) return null;
+  
+  return bots.find((bot) => {
+    try {
+      return new RegExp(bot.regex).test(ua);
+    } catch (e) {
+      return false;
     }
-    return false;
   });
-
-  if (!res) {
-    return null;
-  }
-
-  return {
-    name: res.name,
-    type: 'category' in res ? res.category : 'Unknown',
-  };
 }
