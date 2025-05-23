@@ -114,17 +114,17 @@ function WebsiteDetailsPage() {
     to: currentDateRange.endDate,
   }), [currentDateRange]);
   
-  // Quick date range options
+  // Quick date range options - mobile optimized labels
   const quickRanges = [
-    { label: "Last 24 hours", value: "24h", fn: () => ({
+    { label: "24h", fullLabel: "Last 24 hours", value: "24h", fn: () => ({
       start: subHours(new Date(), 24),
       end: new Date()
     })},
-    { label: "Last 7 days", value: "7d", fn: () => ({
+    { label: "7d", fullLabel: "Last 7 days", value: "7d", fn: () => ({
       start: subDays(new Date(), 7),
       end: new Date()
     })},
-    { label: "Last 30 days", value: "30d", fn: () => ({
+    { label: "30d", fullLabel: "Last 30 days", value: "30d", fn: () => ({
       start: subDays(new Date(), 30),
       end: new Date()
     })},
@@ -280,30 +280,38 @@ function WebsiteDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="p-3">
+      <div className="p-3 sm:p-4">
+        {/* Mobile-optimized loading header */}
         <div className="flex items-center gap-2 mb-3">
-          <Button variant="ghost" size="icon" disabled className="h-8 w-8">
+          <Button variant="ghost" size="icon" disabled className="h-8 w-8 touch-manipulation">
             <ArrowLeft className="h-3.5 w-3.5" />
           </Button>
-          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-4 w-24 sm:w-32" />
         </div>
-        <div className="flex justify-between items-center mb-4">
+        
+        {/* Mobile-optimized loading controls */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-3">
           <div>
-            <Skeleton className="h-7 w-48 mb-1" />
-            <Skeleton className="h-3.5 w-32" />
+            <Skeleton className="h-6 sm:h-7 w-32 sm:w-48 mb-1" />
+            <Skeleton className="h-3 sm:h-3.5 w-24 sm:w-32" />
           </div>
-          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-8 w-full sm:w-32" />
         </div>
-        <Skeleton className="h-9 w-full max-w-xs mb-4" />
-        <div className="grid grid-cols-4 gap-2 mb-4">
+        
+        <Skeleton className="h-9 w-full mb-4" />
+        
+        {/* Mobile-optimized loading grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
           {[1, 2, 3, 4].map((num) => (
-            <Skeleton key={`loading-skeleton-${num}`} className="h-24 w-full" />
+            <Skeleton key={`loading-skeleton-${num}`} className="h-20 sm:h-24 w-full" />
           ))}
         </div>
-        <Skeleton className="h-64 w-full mb-4" />
-        <div className="grid grid-cols-2 gap-3">
-          <Skeleton className="h-40 w-full" />
-          <Skeleton className="h-40 w-full" />
+        
+        <Skeleton className="h-48 sm:h-64 w-full mb-4" />
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Skeleton className="h-32 sm:h-40 w-full" />
+          <Skeleton className="h-32 sm:h-40 w-full" />
         </div>
       </div>
     );
@@ -311,17 +319,17 @@ function WebsiteDetailsPage() {
 
   if (!data) {
     return (
-      <div className="flex items-center justify-center min-h-[80vh]">
-        <div className="bg-card border rounded-lg shadow-sm p-8 max-w-md w-full text-center">
-          <div className="bg-muted/50 rounded-full h-16 w-16 flex items-center justify-center mx-auto mb-4">
-            <AlertTriangle className="h-8 w-8 text-muted-foreground" />
+      <div className="flex items-center justify-center min-h-[80vh] p-3 sm:p-4">
+        <div className="bg-card border rounded-lg shadow-sm p-6 sm:p-8 max-w-md w-full text-center">
+          <div className="bg-muted/50 rounded-full h-12 w-12 sm:h-16 sm:w-16 flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
           </div>
-          <h1 className="text-2xl font-semibold mb-3">Website Not Found</h1>
-          <p className="text-muted-foreground mb-6 max-w-xs mx-auto">
+          <h1 className="text-xl sm:text-2xl font-semibold mb-3">Website Not Found</h1>
+          <p className="text-muted-foreground mb-6 text-sm sm:text-base max-w-xs mx-auto">
             The website you're looking for doesn't exist or you don't have
             permission to view it.
           </p>
-          <Button asChild size="default" className="px-6">
+          <Button asChild size="default" className="px-6 touch-manipulation">
             <Link href="/websites">Back to Websites</Link>
           </Button>
         </div>
@@ -330,37 +338,56 @@ function WebsiteDetailsPage() {
   }
 
   return (
-    <div className="p-3 max-w-[1600px] mx-auto">
-      {/* Compact header */}
+    <div className="p-3 sm:p-4 max-w-[1600px] mx-auto">
+      {/* Mobile-optimized header */}
       <header className="border-b pb-3">
-        {/* Controls */}
-        <div className="flex items-center gap-3 flex-wrap mt-3 bg-muted/30 rounded-lg p-2.5 border">
-          {/* Time granularity toggle */}
-          <div className="bg-background rounded-md border overflow-hidden flex shadow-sm h-8">
+        {/* Mobile-optimized controls */}
+        <div className="flex flex-col gap-3 mt-3 bg-muted/30 rounded-lg p-2.5 border">
+          {/* Top row: Time granularity and refresh button */}
+          <div className="flex items-center justify-between gap-3">
+            {/* Time granularity toggle */}
+            <div className="bg-background rounded-md border overflow-hidden flex shadow-sm h-8">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-8 text-xs px-2 sm:px-3 rounded-none touch-manipulation ${currentGranularity === 'daily' ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground'}`}
+                onClick={() => setCurrentGranularityAtomState('daily')}
+                title="View daily aggregated data"
+              >
+                Daily
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-8 text-xs px-2 sm:px-3 rounded-none touch-manipulation ${currentGranularity === 'hourly' ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground'}`}
+                onClick={() => setCurrentGranularityAtomState('hourly')}
+                title="View hourly data (best for 24h periods)"
+              >
+                Hourly
+              </Button>
+            </div>
+            
+            {/* Refresh button */}
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className={`h-8 text-xs px-3 rounded-none cursor-pointer ${currentGranularity === 'daily' ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground'}`}
-              onClick={() => setCurrentGranularityAtomState('daily')}
-              title="View daily aggregated data"
+              className="h-8 text-xs gap-1.5 bg-background shadow-sm font-medium touch-manipulation"
+              onClick={handleRefresh}
+              disabled={isRefreshing || isLoading}
             >
-              Daily
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`h-8 text-xs px-3 rounded-none cursor-pointer ${currentGranularity === 'hourly' ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground'}`}
-              onClick={() => setCurrentGranularityAtomState('hourly')}
-              title="View hourly data (best for 24h periods)"
-            >
-              Hourly
+              <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">
+                {isRefreshing 
+                  ? `${refreshDetails.progress}/${refreshDetails.total}` 
+                  : 'Refresh'
+                }
+              </span>
             </Button>
           </div>
           
-          <div className="h-5 border-r border-border/70 mx-1" />
-          
-          {/* Date range preset buttons */}
-          <div className="flex items-center gap-1.5 bg-background rounded-md p-1 border shadow-sm overflow-x-auto scrollbar-hide flex-1 max-w-md">
+          {/* Bottom row: Date range controls */}
+          <div className="flex items-center gap-2 bg-background rounded-md p-1 border shadow-sm overflow-x-auto">
+            {/* Quick range buttons */}
             {quickRanges.map((range) => {
               const dayPickerCurrentRange = dayPickerSelectedRange;
               const isActive = dayPickerCurrentRange?.from && dayPickerCurrentRange?.to &&
@@ -372,41 +399,44 @@ function WebsiteDetailsPage() {
                   key={range.value}
                   variant={isActive ? 'default' : 'ghost'} 
                   size="sm" 
-                  className={`h-6 text-xs whitespace-nowrap px-2.5 cursor-pointer ${isActive ? 'shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                  className={`h-6 text-xs whitespace-nowrap px-2 sm:px-2.5 touch-manipulation ${isActive ? 'shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                   onClick={() => handleQuickRangeSelect(range.value)}
+                  title={range.fullLabel}
                 >
-                  {range.label}
+                  <span className="sm:hidden">{range.label}</span>
+                  <span className="hidden sm:inline">{range.fullLabel}</span>
                 </Button>
               );
             })}
             
+            {/* Custom date picker */}
             <Popover>
               <PopoverTrigger asChild>
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="h-6 text-xs gap-1.5 whitespace-nowrap px-2.5 border-l border-border/50 ml-1 pl-3 cursor-pointer"
+                  className="h-6 text-xs gap-1 sm:gap-1.5 whitespace-nowrap px-2 sm:px-2.5 border-l border-border/50 ml-1 pl-2 sm:pl-3 touch-manipulation"
                 >
-                  <Calendar className="h-3.5 w-3.5 text-primary" />
-                  <span className="font-medium">
+                  <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary flex-shrink-0" />
+                  <span className="font-medium text-xs truncate">
                     {dayPickerSelectedRange?.from ? format(dayPickerSelectedRange.from, 'MMM d') : ''} - {dayPickerSelectedRange?.to ? format(dayPickerSelectedRange.to, 'MMM d') : ''}
                   </span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-2 border shadow-lg" align="end">
                 <div className="grid gap-2">
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
                     <span className="text-sm font-medium">Select date range</span>
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 flex-wrap">
                       {quickRanges.map((range) => (
                         <Button 
                           key={range.value}
                           variant="outline"
                           size="sm" 
-                          className="h-7 text-xs cursor-pointer"
+                          className="h-7 text-xs touch-manipulation"
                           onClick={() => handleQuickRangeSelect(range.value)}
                         >
-                          {range.label.replace('Last ', '')}
+                          {range.label}
                         </Button>
                       ))}
                     </div>
@@ -417,14 +447,14 @@ function WebsiteDetailsPage() {
                     defaultMonth={dayPickerSelectedRange?.from}
                     selected={dayPickerSelectedRange}
                     onSelect={handleDateRangeChange}
-                    numberOfMonths={2}
+                    numberOfMonths={window.innerWidth < 640 ? 1 : 2}
                     disabled={(d) => d > new Date() || d < new Date(2020, 0, 1)}
                     className="rounded-md border"
                   />
                   <div className="flex justify-end">
                     <Button 
                       size="sm" 
-                      className="mt-2 cursor-pointer"
+                      className="mt-2 touch-manipulation"
                       onClick={() => {
                         if (dayPickerSelectedRange?.from && dayPickerSelectedRange?.to) {
                            setDateRangeAction({ startDate: dayPickerSelectedRange.from, endDate: dayPickerSelectedRange.to });
@@ -438,25 +468,10 @@ function WebsiteDetailsPage() {
               </PopoverContent>
             </Popover>
           </div>
-          
-          {/* Refresh button */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs gap-1.5 ml-auto bg-background shadow-sm font-medium cursor-pointer"
-            onClick={handleRefresh}
-            disabled={isRefreshing || isLoading}
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            {isRefreshing 
-              ? `${refreshDetails.progress}/${refreshDetails.total}` 
-              : 'Refresh'
-            }
-          </Button>
         </div>
       </header>
 
-      {/* Tabs with CSS animation */}
+      {/* Mobile-optimized tabs */}
       <Tabs 
         defaultValue="overview" 
         value={activeTab} 
@@ -464,12 +479,12 @@ function WebsiteDetailsPage() {
         className="space-y-4"
       >
         <div className="border-b relative">
-          <TabsList className="h-10 bg-transparent p-0 w-full justify-start gap-1">
+          <TabsList className="h-10 bg-transparent p-0 w-full justify-start gap-0.5 sm:gap-1 overflow-x-auto">
             {tabs.map((tab) => (
               <TabsTrigger 
                 key={tab.id} 
                 value={tab.id} 
-                className="text-sm h-10 px-4 rounded-none cursor-pointer hover:bg-muted/50 relative transition-colors"
+                className="text-xs sm:text-sm h-10 px-2 sm:px-4 rounded-none touch-manipulation hover:bg-muted/50 relative transition-colors whitespace-nowrap"
                 onClick={() => setActiveTab(tab.id)}
               >
                 {tab.label}
@@ -495,19 +510,19 @@ function WebsiteDetailsPage() {
   );
 } 
 
-// Fix TabLoadingSkeleton array key issues
+// Mobile-optimized TabLoadingSkeleton
 function TabLoadingSkeleton() {
   return (
-    <div className="space-y-4 pt-2">
-      <div className="grid grid-cols-4 gap-2">
+    <div className="space-y-3 sm:space-y-4 pt-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {[1, 2, 3, 4].map((num) => (
-          <Skeleton key={`tab-loading-skeleton-${num}`} className="h-24 w-full" />
+          <Skeleton key={`tab-loading-skeleton-${num}`} className="h-20 sm:h-24 w-full" />
         ))}
       </div>
-      <Skeleton className="h-64 w-full" />
-      <div className="grid grid-cols-2 gap-3">
-        <Skeleton className="h-40 w-full" />
-        <Skeleton className="h-40 w-full" />
+      <Skeleton className="h-48 sm:h-64 w-full" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Skeleton className="h-32 sm:h-40 w-full" />
+        <Skeleton className="h-32 sm:h-40 w-full" />
       </div>
     </div>
   );
@@ -516,15 +531,15 @@ function TabLoadingSkeleton() {
 export default function Page() {
     return (
         <Suspense fallback={
-          <div className="p-3 flex items-center justify-center h-screen">
+          <div className="p-3 sm:p-4 flex items-center justify-center h-screen">
             <div className="space-y-3 w-full max-w-md">
-              <Skeleton className="h-7 w-2/3 mx-auto" />
-              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-6 sm:h-7 w-2/3 mx-auto" />
+              <Skeleton className="h-20 sm:h-24 w-full" />
               <div className="grid grid-cols-2 gap-2">
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-12 sm:h-16 w-full" />
+                <Skeleton className="h-12 sm:h-16 w-full" />
               </div>
-              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-32 sm:h-48 w-full" />
             </div>
           </div>
         }>

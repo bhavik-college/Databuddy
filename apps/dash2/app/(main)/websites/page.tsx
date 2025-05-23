@@ -53,21 +53,21 @@ const WebsiteList = dynamic(
   }
 );
 
-// Loading skeleton component for website components
+// Loading skeleton component for website components - mobile optimized
 function WebsiteLoadingSkeleton() {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="space-y-3 sm:space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {[1, 2, 3, 4, 5, 6].map((num) => (
-          <div key={`website-skeleton-${num}`} className="rounded-lg border p-4 space-y-3">
+          <div key={`website-skeleton-${num}`} className="rounded-lg border p-3 sm:p-4 space-y-2 sm:space-y-3">
             <div className="flex items-center justify-between">
-              <Skeleton className="h-5 w-32" />
-              <Skeleton className="h-4 w-4 rounded-full" />
+              <Skeleton className="h-4 sm:h-5 w-24 sm:w-32" />
+              <Skeleton className="h-3 sm:h-4 w-3 sm:w-4 rounded-full" />
             </div>
-            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-3 sm:h-4 w-full max-w-[200px] sm:max-w-[240px]" />
             <div className="flex items-center gap-2">
-              <Skeleton className="h-6 w-16" />
-              <Skeleton className="h-6 w-20" />
+              <Skeleton className="h-5 sm:h-6 w-12 sm:w-16" />
+              <Skeleton className="h-5 sm:h-6 w-16 sm:w-20" />
             </div>
           </div>
         ))}
@@ -144,43 +144,57 @@ function WebsitesPage() {
 
   if (isError) {
     return (
-      <Suspense fallback={<WebsiteLoadingSkeleton />}>
-        <ErrorState onRetry={handleRefresh} />
-      </Suspense>
+      <div className="h-full flex flex-col">
+        <div className="p-3 sm:p-4">
+          <Suspense fallback={<WebsiteLoadingSkeleton />}>
+            <ErrorState onRetry={handleRefresh} />
+          </Suspense>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col animate-fadeIn overflow-scroll">
-      <div className="flex items-center justify-between px-4 py-4 border-b">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Websites</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">
+    <div className="h-full flex flex-col animate-fadeIn">
+      {/* Mobile-optimized header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:px-4 sm:py-4 border-b gap-3 sm:gap-0">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground truncate">
+            Websites
+          </h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-0.5 line-clamp-2 sm:line-clamp-1">
             Manage your websites for analytics tracking
           </p>
         </div>
         <Button 
           size="default" 
-          className="h-9 text-primary-foreground btn-hover-effect"
+          className="h-9 sm:h-9 text-sm sm:text-base text-primary-foreground btn-hover-effect w-full sm:w-auto touch-manipulation"
           onClick={handleOpenDialog}
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Website
+          <Plus className="h-4 w-4 mr-2 flex-shrink-0" />
+          <span className="truncate">Add Website</span>
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-6">
-        {/* Show no verified domains message */}
+      {/* Mobile-optimized content area */}
+      <div className="flex-1 overflow-y-auto p-3 sm:px-4 sm:pt-4 sm:pb-6">
+        {/* Show no verified domains message - mobile optimized */}
         {!isLoading && verifiedDomains.length === 0 && (
-          <Alert className="mb-4 border-warning/40 bg-[color-mix(in_oklch,var(--background),var(--warning)_5%)] text-warning">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>No verified domains available</AlertTitle>
-            <AlertDescription>
-              You need at least one verified domain to create a website. 
-              <Link href="/domains" className="ml-1 font-medium text-primary hover:underline">
-                Go to Domains page
-              </Link> to add and verify domains.
-            </AlertDescription>
+          <Alert className="mb-3 sm:mb-4 border-warning/40 bg-[color-mix(in_oklch,var(--background),var(--warning)_5%)] text-warning">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            <div className="min-w-0">
+              <AlertTitle className="text-sm sm:text-base">No verified domains available</AlertTitle>
+              <AlertDescription className="text-xs sm:text-sm">
+                You need at least one verified domain to create a website.{" "}
+                <Link 
+                  href="/domains" 
+                  className="font-medium text-primary hover:underline touch-manipulation inline-block"
+                >
+                  Go to Domains page
+                </Link>{" "}
+                to add and verify domains.
+              </AlertDescription>
+            </div>
           </Alert>
         )}
 
@@ -233,14 +247,15 @@ function WebsitesPage() {
 export default function Page() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center h-full">
-        <div className="space-y-3 w-full max-w-4xl px-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <Skeleton className="h-8 w-32" />
-              <Skeleton className="h-4 w-48" />
+      <div className="flex items-center justify-center h-full p-3 sm:p-4">
+        <div className="space-y-3 sm:space-y-4 w-full max-w-4xl">
+          {/* Mobile-optimized loading header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
+            <div className="space-y-2 min-w-0 flex-1">
+              <Skeleton className="h-6 sm:h-8 w-24 sm:w-32" />
+              <Skeleton className="h-3 sm:h-4 w-full max-w-[200px] sm:max-w-[300px]" />
             </div>
-            <Skeleton className="h-9 w-32" />
+            <Skeleton className="h-9 w-full sm:w-32" />
           </div>
           <WebsiteLoadingSkeleton />
         </div>

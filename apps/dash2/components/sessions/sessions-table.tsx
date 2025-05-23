@@ -297,7 +297,7 @@ export function SessionsTable({ sessions, isLoading, onSessionClick }: SessionsT
       </div>
 
       {/* Pagination */}
-      {/* <div className="flex-shrink-0 flex items-center justify-between mt-4">
+      <div className="flex-shrink-0 flex items-center justify-between mt-4">
         <div className="text-sm text-muted-foreground">
           Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
         </div>
@@ -321,7 +321,7 @@ export function SessionsTable({ sessions, isLoading, onSessionClick }: SessionsT
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-      </div> */}
+      </div>
     </div>
   );
 } 

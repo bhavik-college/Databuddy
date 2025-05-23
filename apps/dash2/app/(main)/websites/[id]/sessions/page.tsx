@@ -30,6 +30,25 @@ export default function SessionsPage() {
 
   return (
     <div className="h-screen overflow-hidden">
+      <div className="h-full flex flex-col overflow-hidden">
+        <div className="flex-shrink-0 pt-4 px-6">
+          <SessionStats
+            totalSessions={totalSessions}
+            avgDuration={Math.round(avgDuration)}
+            bounceRate={bounceRate}
+            totalPageViews={totalPageViews}
+          />
+        </div>
+        
+        <div className="flex-1 px-6 pb-6 min-h-0">
+          <SessionsTable
+            sessions={sessions}
+            isLoading={isLoading}
+            onSessionClick={setSelectedSession}
+          />
+        </div>
+      </div>
+
       {selectedSession && (
         <SessionDetailsModal
           session={selectedSession}

@@ -2,6 +2,8 @@ import { format } from "date-fns";
 import { Monitor, Smartphone, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { SessionData } from "@/hooks/use-analytics";
+import Image from "next/image";
+
 
 interface SessionRowProps {
   session: SessionData;
@@ -43,15 +45,14 @@ export function SessionRow({ session, onClick }: SessionRowProps) {
       onClick={() => onClick(session)}
     >
       <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div className="w-6 h-6 flex items-center justify-center">
+        <div className="w-6 h-6">
           {hasValidCountry ? (
-            <img 
+            <Image 
               src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${session.country.toUpperCase()}.svg`}
               alt={session.country}
-              className="w-6 h-4 object-cover rounded-sm"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
+              className="w-6 h-6 rounded-sm"
+              width={24}
+              height={24}
             />
           ) : (
             <Globe className="h-4 w-4 text-muted-foreground" />

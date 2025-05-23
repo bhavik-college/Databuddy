@@ -16,7 +16,8 @@ import {
   Sun,
   MessageSquare,
   Laptop,
-  Search
+  Search,
+  Users
 } from "lucide-react";
 
 import { useTheme } from "next-themes";
@@ -38,11 +39,13 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog";
 import { NotificationsPopover } from "@/components/notifications/notifications-popover";
 // import { CommandSearch } from "@/components/ui/command-search";
 import { useWebsites } from "@/hooks/use-websites";
 import { redirect } from "next/navigation";
+import { SessionSwitcher } from "@/components/session/session-switcher";
 
 // Interface for website items for CommandSearch
 interface WebsiteItem {
@@ -62,6 +65,7 @@ export function TopHeader({ setMobileOpen }: TopHeaderProps) {
   const [mounted, setMounted] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [sessionManagerOpen, setSessionManagerOpen] = useState(false);
 
   // Transform fetched websites for CommandSearch
   const commandSearchWebsites = useMemo((): WebsiteItem[] => {
@@ -212,6 +216,13 @@ export function TopHeader({ setMobileOpen }: TopHeaderProps) {
                       Profile
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onSelect={() => setSessionManagerOpen(true)} 
+                    className="h-9 rounded-md cursor-pointer"
+                  >
+                    <Users className="mr-2.5 h-4 w-4" />
+                    Manage Sessions
+                  </DropdownMenuItem>
                 </DropdownMenuGroup>
                 
                 <DropdownMenuSeparator className="my-1" />
@@ -267,6 +278,21 @@ export function TopHeader({ setMobileOpen }: TopHeaderProps) {
                 </div>
               </div>
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Session Manager Dialog */}
+      <Dialog open={sessionManagerOpen} onOpenChange={setSessionManagerOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Manage Active Sessions</DialogTitle>
+            <DialogDescription>
+              Switch between your accounts or revoke sessions on this device.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <SessionSwitcher />
           </div>
         </DialogContent>
       </Dialog>
