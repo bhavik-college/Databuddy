@@ -68,6 +68,8 @@ export default function DomainsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [domainsPerPage] = useState(10);
   const [hasError, setHasError] = useState(false);
+  const [regenerateDialogOpen, setRegenerateDialogOpen] = useState<Record<string, boolean>>({});
+  const [expandedDomains, setExpandedDomains] = useState<Set<string>>(new Set());
   const router = useRouter();
 
   // Clean domain input
@@ -106,7 +108,13 @@ export default function DomainsPage() {
         return;
       }
       setDomains(result.data || []);
-      // Reset to first page when refreshing data
+      
+      // Auto-expand domains that need verification (PENDING or FAILED)
+      const domainsNeedingVerification = (result.data || [])
+        .filter(domain => domain.verificationStatus === "PENDING" || domain.verificationStatus === "FAILED")
+        .map(domain => domain.id);
+      setExpandedDomains(new Set(domainsNeedingVerification));
+      
       setCurrentPage(1);
     } catch (error) {
       console.error("Error fetching domains:", error);
@@ -317,8 +325,11 @@ export default function DomainsPage() {
         return;
       }
       
-      toast.success("Verification token regenerated");
-      fetchDomains(); // Refresh domains list
+      toast.success("Verification token regenerated", {
+        description: "Please update your DNS record with the new token"
+      });
+      setRegenerateDialogOpen(prev => ({ ...prev, [domainId]: false }));
+      fetchDomains();
     } catch (error) {
       console.error("Error regenerating token:", error);
       toast.error("Failed to regenerate token");
@@ -404,8 +415,7 @@ export default function DomainsPage() {
   // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // Auto-collapse any expanded domains when changing pages
-    setExpandedDomainId(null);
+    // Keep expanded state when changing pages for better UX
   };
 
   const handleCreateWebsite = (domainId: string, domainName: string) => {
@@ -414,7 +424,6 @@ export default function DomainsPage() {
 
   const handleRetryFailedDomain = async (domainId: string) => {
     try {
-      // First regenerate the verification token
       setIsRegenerating(prev => ({ ...prev, [domainId]: true }));
       
       const regenerateResult = await regenerateVerificationToken(domainId);
@@ -428,11 +437,10 @@ export default function DomainsPage() {
         description: "Try adding the new DNS record and verify again"
       });
       
-      // Refresh domains list to get the new token
       await fetchDomains();
       
       // Auto-expand the domain details
-      setExpandedDomainId(domainId);
+      setExpandedDomains(prev => new Set([...prev, domainId]));
     } catch (error) {
       console.error("Error retrying failed domain:", error);
       toast.error("Failed to retry domain verification");
@@ -447,9 +455,21 @@ export default function DomainsPage() {
     const domainIsRegenerating = isRegenerating[domain.id] || false;
     const domainVerificationResult = verificationResult[domain.id];
     const domainVerificationProgress = verificationProgress[domain.id] || 0;
-    const isExpanded = expandedDomainId === domain.id;
+    const isExpanded = expandedDomains.has(domain.id);
     const canExpand = domain.verificationStatus === "PENDING" || domain.verificationStatus === "FAILED";
     const isRetrying = retryingDomains[domain.id] || false;
+    
+    const toggleExpanded = () => {
+      setExpandedDomains(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(domain.id)) {
+          newSet.delete(domain.id);
+        } else {
+          newSet.add(domain.id);
+        }
+        return newSet;
+      });
+    };
     
     return (
       <TableRow key={domain.id}>
@@ -461,7 +481,7 @@ export default function DomainsPage() {
                 size="icon"
                 className="mr-2"
                 aria-label={isExpanded ? "Collapse details" : "Expand details"}
-                onClick={() => setExpandedDomainId(isExpanded ? null : domain.id)}
+                onClick={toggleExpanded}
               >
                 {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
               </Button>
@@ -513,14 +533,57 @@ export default function DomainsPage() {
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        onClick={() => handleRegenerateToken(domain.id)}
-                        disabled={domainIsRegenerating}
-                      >
-                        <RefreshCw className={`h-4 w-4 ${domainIsRegenerating ? "animate-spin" : ""}`} />
-                      </Button>
+                      <Dialog open={regenerateDialogOpen[domain.id]} onOpenChange={(open) => setRegenerateDialogOpen(prev => ({ ...prev, [domain.id]: open }))}>
+                        <DialogTrigger asChild>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            disabled={domainIsRegenerating}
+                            className="text-amber-600 hover:text-amber-800 border-amber-200 hover:border-amber-300"
+                          >
+                            <RefreshCw className={`h-4 w-4 ${domainIsRegenerating ? "animate-spin" : ""}`} />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Regenerate Verification Token</DialogTitle>
+                            <DialogDescription>
+                              This will generate a new verification token for <strong>{domain.name}</strong>. 
+                              You'll need to update your DNS record with the new token value.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <Alert className="my-4">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertTitle>Important</AlertTitle>
+                            <AlertDescription>
+                              After regenerating, your current DNS record will no longer work. 
+                              Make sure to update it with the new token immediately.
+                            </AlertDescription>
+                          </Alert>
+                          <DialogFooter>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setRegenerateDialogOpen(prev => ({ ...prev, [domain.id]: false }))}
+                            >
+                              Cancel
+                            </Button>
+                            <Button 
+                              onClick={() => handleRegenerateToken(domain.id)}
+                              disabled={domainIsRegenerating}
+                              className="bg-amber-600 hover:bg-amber-700"
+                            >
+                              {domainIsRegenerating ? (
+                                <span className="flex items-center">
+                                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                  Regenerating...
+                                </span>
+                              ) : (
+                                "Regenerate Token"
+                              )}
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Regenerate verification token</p>
@@ -618,7 +681,7 @@ export default function DomainsPage() {
   };
 
   const renderVerificationDetails = (domain: Domain) => {
-    if ((domain.verificationStatus !== "PENDING" && domain.verificationStatus !== "FAILED") || expandedDomainId !== domain.id) return null;
+    if ((domain.verificationStatus !== "PENDING" && domain.verificationStatus !== "FAILED") || !expandedDomains.has(domain.id)) return null;
     
     const domainVerificationResult = verificationResult[domain.id];
     const verificationToken = domain.verificationToken;
@@ -629,103 +692,140 @@ export default function DomainsPage() {
       <TableRow>
         <TableCell colSpan={5} className="!p-0">
           <div className="rounded-lg border bg-muted/60 p-6 my-2 mx-1 flex flex-col gap-6">
-            {/* Verification steps */}
-            <div className="flex flex-col gap-4">
-              <h4 className="font-medium text-base mb-1">
-                {isFailed ? "Verification Failed" : "Verification Required"}
+            {/* Header with status indicator */}
+            <div className="flex items-center gap-3">
+              <div className={`h-3 w-3 rounded-full ${isFailed ? 'bg-red-500' : 'bg-yellow-500'}`} />
+              <h4 className="font-medium text-base">
+                {isFailed ? "Verification Failed - Action Required" : "Domain Verification Required"}
               </h4>
-              
-              {/* Step-by-step guidance */}
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="bg-primary/10 rounded-full h-6 w-6 flex items-center justify-center mt-0.5">
-                    <span className="text-xs font-medium text-primary">1</span>
+            </div>
+            
+            {/* Step-by-step guidance with improved visual hierarchy */}
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
+                <div className="bg-primary rounded-full h-8 w-8 flex items-center justify-center mt-0.5 flex-shrink-0">
+                  <span className="text-sm font-medium text-primary-foreground">1</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium mb-3">Add this TXT record to your DNS settings</p>
+                  <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full bg-background rounded-md p-4 border-2 border-dashed border-primary/20">
+                    <CopyField label="Name / Host" value={host} onCopy={() => copyToClipboard(host)} />
+                    <CopyField label="Value" value={verificationToken || ""} onCopy={() => copyToClipboard(verificationToken || "")} />
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium mb-1">Add this TXT record to your DNS settings</p>
-                    <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full bg-background rounded-md p-3 border">
-                      <CopyField label="Name / Host" value={host} onCopy={() => copyToClipboard(host)} />
-                      <CopyField label="Value" value={verificationToken || ""} onCopy={() => copyToClipboard(verificationToken || "")} />
-                    </div>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      Example: <code className="bg-background rounded px-1">{host} IN TXT "{verificationToken}"</code>
-                    </div>
+                  <div className="mt-3 p-3 bg-blue-50 rounded-md border border-blue-200">
+                    <p className="text-xs text-blue-800 font-medium mb-1">DNS Record Example:</p>
+                    <code className="text-xs text-blue-700 break-all">{host} IN TXT "{verificationToken}"</code>
                   </div>
                 </div>
-                
-                <div className="flex items-start gap-3">
-                  <div className="bg-primary/10 rounded-full h-6 w-6 flex items-center justify-center mt-0.5">
-                    <span className="text-xs font-medium text-primary">2</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium mb-1">Wait for DNS propagation</p>
-                    <p className="text-xs text-muted-foreground">
-                      DNS changes can take up to 24-48 hours to propagate worldwide, but often complete within 15-30 minutes.
+              </div>
+              
+              <div className="flex items-start gap-4">
+                <div className="bg-primary rounded-full h-8 w-8 flex items-center justify-center mt-0.5 flex-shrink-0">
+                  <span className="text-sm font-medium text-primary-foreground">2</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium mb-2">Wait for DNS propagation</p>
+                  <p className="text-xs text-muted-foreground">
+                    DNS changes typically take 15-30 minutes but can take up to 24-48 hours to propagate worldwide.
+                  </p>
+                  <div className="mt-2 p-2 bg-amber-50 rounded border border-amber-200">
+                    <p className="text-xs text-amber-800">
+                      💡 <strong>Tip:</strong> You can check if your DNS record is live using{" "}
+                      <a 
+                        href={`https://mxtoolbox.com/TXTLookup.aspx?domain=${host}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-primary hover:underline font-medium"
+                      >
+                        this DNS lookup tool
+                      </a>
                     </p>
                   </div>
                 </div>
-                
-                <div className="flex items-start gap-3">
-                  <div className="bg-primary/10 rounded-full h-6 w-6 flex items-center justify-center mt-0.5">
-                    <span className="text-xs font-medium text-primary">3</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium mb-1">Verify your domain</p>
-                    <div className="flex items-center gap-2 mt-1">
+              </div>
+              
+              <div className="flex items-start gap-4">
+                <div className="bg-primary rounded-full h-8 w-8 flex items-center justify-center mt-0.5 flex-shrink-0">
+                  <span className="text-sm font-medium text-primary-foreground">3</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium mb-3">Verify your domain</p>
+                  <div className="flex items-center gap-3">
+                    <Button 
+                      size="sm" 
+                      onClick={() => handleVerifyDomain(domain.id)}
+                      disabled={isVerifying[domain.id]}
+                      className="h-9"
+                    >
+                      {isVerifying[domain.id] ? (
+                        <span className="flex items-center">
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          Verifying... {verificationProgress[domain.id] || 0}%
+                        </span>
+                      ) : (
+                        <span className="flex items-center">
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Verify Domain
+                        </span>
+                      )}
+                    </Button>
+                    {isFailed && (
                       <Button 
                         size="sm" 
-                        onClick={() => handleVerifyDomain(domain.id)}
-                        disabled={isVerifying[domain.id]}
-                        className="h-8"
+                        variant="outline"
+                        onClick={() => handleRetryFailedDomain(domain.id)}
+                        disabled={isRegenerating[domain.id]}
+                        className="h-9"
                       >
-                        {isVerifying[domain.id] ? (
-                          <span className="flex items-center">
-                            <RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                            Verifying...
-                          </span>
-                        ) : (
-                          "Verify Domain"
-                        )}
+                        <RefreshCw className={`h-4 w-4 mr-2 ${isRegenerating[domain.id] ? "animate-spin" : ""}`} />
+                        Reset & Try Again
                       </Button>
-                      {isFailed && (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleRetryFailedDomain(domain.id)}
-                          disabled={isRegenerating[domain.id]}
-                          className="h-8"
-                        >
-                          <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isRegenerating[domain.id] ? "animate-spin" : ""}`} />
-                          Reset & Try Again
-                        </Button>
-                      )}
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
             
-            {/* Troubleshooting section */}
+            {/* Troubleshooting section with better organization */}
             {isFailed && (
-              <div className="mt-2 border-t pt-4 border-border">
-                <h5 className="font-medium text-sm mb-2">Troubleshooting</h5>
-                <ul className="text-xs text-muted-foreground space-y-1.5 list-disc pl-4">
-                  <li>Make sure the TXT record is added to the correct domain zone</li>
-                  <li>Verify the host/name field includes the underscore: <code className="bg-background rounded px-1">_databuddy</code></li>
-                  <li>Check that the value matches exactly (copy/paste recommended)</li>
-                  <li>Some DNS providers may require you to enter only <code className="bg-background rounded px-1">_databuddy</code> as the host</li>
-                  <li>Try using a <a href="https://mxtoolbox.com/TXTLookup.aspx" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">DNS lookup tool</a> to verify your record is visible</li>
-                </ul>
+              <div className="mt-4 border-t pt-6 border-border">
+                <div className="flex items-center gap-2 mb-4">
+                  <AlertCircle className="h-5 w-5 text-amber-600" />
+                  <h5 className="font-medium text-sm">Troubleshooting Guide</h5>
+                </div>
+                <div className="grid gap-3">
+                  <div className="p-3 bg-red-50 rounded border border-red-200">
+                    <p className="text-xs font-medium text-red-800 mb-1">Common Issues:</p>
+                    <ul className="text-xs text-red-700 space-y-1 list-disc pl-4">
+                      <li>TXT record not added to the correct domain zone</li>
+                      <li>Missing underscore in host field: should be <code className="bg-red-100 rounded px-1">_databuddy</code></li>
+                      <li>Token value doesn't match exactly (copy/paste recommended)</li>
+                    </ul>
+                  </div>
+                  <div className="p-3 bg-blue-50 rounded border border-blue-200">
+                    <p className="text-xs font-medium text-blue-800 mb-1">DNS Provider Notes:</p>
+                    <ul className="text-xs text-blue-700 space-y-1 list-disc pl-4">
+                      <li>Some providers require only <code className="bg-blue-100 rounded px-1">_databuddy</code> as the host (without domain)</li>
+                      <li>Others need the full host: <code className="bg-blue-100 rounded px-1">{host}</code></li>
+                      <li>Cloudflare users: Make sure the record is not proxied (gray cloud)</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             )}
             
-            {/* Error message */}
+            {/* Error message with better styling */}
             {domainVerificationResult && !domainVerificationResult.verified && (
-              <Alert variant="destructive" className="mt-2">
+              <Alert variant="destructive" className="mt-4">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Verification Failed</AlertTitle>
-                <AlertDescription>
+                <AlertDescription className="mt-2">
                   {domainVerificationResult.message}
+                  {domainVerificationResult.lastChecked && (
+                    <div className="text-xs mt-2 opacity-75">
+                      Last checked: {formatDistanceToNow(domainVerificationResult.lastChecked, { addSuffix: true })}
+                    </div>
+                  )}
                 </AlertDescription>
               </Alert>
             )}
