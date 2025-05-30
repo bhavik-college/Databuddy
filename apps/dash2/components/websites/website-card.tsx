@@ -27,8 +27,6 @@ type VerifiedDomain = {
 
 interface WebsiteCardProps {
   website: Website;
-  onUpdate: (id: string, name: string) => void;
-  isUpdating: boolean;
   verifiedDomains: VerifiedDomain[];
   data?: MiniChartDataPoint[];
   isLoading?: boolean;
@@ -37,8 +35,6 @@ interface WebsiteCardProps {
 
 export function WebsiteCard({
   website,
-  onUpdate,
-  isUpdating,
   verifiedDomains,
   data,
   isLoading,
@@ -46,9 +42,7 @@ export function WebsiteCard({
 }: WebsiteCardProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   
-  const domainValue = typeof website.domain === 'string' 
-    ? website.domain 
-    : website.domain?.name || '';
+  const domainValue = website.domain;
 
   const isLocalhost = domainValue.includes('localhost') || domainValue.includes('127.0.0.1');
 
@@ -165,7 +159,6 @@ export function WebsiteCard({
         verifiedDomains={verifiedDomains}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        isLoading={isUpdating}
       />
     </Card>
   );

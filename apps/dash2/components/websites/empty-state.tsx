@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { WebsiteDialog } from "@/components/website-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { domains } from "@databuddy/db";
+import type { CreateWebsiteData } from "@/hooks/use-websites";
 type Domain = typeof domains.$inferSelect;
 
 interface EmptyStateProps {
-  onCreateWebsite: (data: any) => void;
+  onCreateWebsite: (data: CreateWebsiteData) => void;
   isCreating: boolean;
   hasVerifiedDomains?: boolean;
   verifiedDomains?: Domain[];
@@ -60,7 +61,6 @@ export function EmptyState({
       <WebsiteDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        isLoading={isCreating}
         verifiedDomains={verifiedDomains}
       />
     </div>

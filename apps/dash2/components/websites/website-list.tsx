@@ -78,9 +78,7 @@ function WebsiteRow({
   const [dialogOpen, setDialogOpen] = useState(false);
   const router = useRouter();
   
-  const domainValue = typeof website.domain === 'string' 
-    ? website.domain 
-    : website.domain?.name || '';
+  const domainValue = website.domain;
 
   const isLocalhost = domainValue.includes('localhost') || domainValue.includes('127.0.0.1');
 
@@ -94,11 +92,14 @@ function WebsiteRow({
       };
     }
     
-    const domain = typeof website.domain === 'string' 
-      ? verifiedDomains.find(d => d.name === website.domain)
-      : verifiedDomains.find(d => d.id === website.domainId);
+    let domainDetail: VerifiedDomain | undefined;
+    if (website.domainId) {
+      domainDetail = verifiedDomains.find(d => d.id === website.domainId);
+    } else if (website.domain) {
+      domainDetail = verifiedDomains.find(d => d.name === website.domain);
+    }
     
-    if (!domain) {
+    if (!domainDetail) {
       return {
         label: "Unknown",
         variant: "outline" as const,
@@ -106,7 +107,7 @@ function WebsiteRow({
       };
     }
     
-    switch (domain.verificationStatus) {
+    switch (domainDetail.verificationStatus) {
       case "VERIFIED":
         return {
           label: "Verified",
@@ -201,7 +202,6 @@ function WebsiteRow({
         verifiedDomains={verifiedDomains}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        isLoading={isUpdating}
       />
     </>
   );
