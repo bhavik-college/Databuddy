@@ -11,9 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { Website } from "@/stores/use-websites-store";
-import { useWebsitesStore } from "@/stores/use-websites-store";
-
+import type { Website } from "@/hooks/use-websites";
 // Helper to extract domain string from domain object or string
 function getDomainString(domain: string | { name: string } | any): string {
   if (typeof domain === 'string') {
@@ -53,8 +51,6 @@ export const VerificationDialog = memo(function VerificationDialog({
   isRegenerating,
 }: VerificationDialogProps) {
   const [displayToken, setDisplayToken] = useState<string>('');
-  const setSelectedWebsite = useWebsitesStore(state => state.setSelectedWebsite);
-  const setShowVerificationDialog = useWebsitesStore(state => state.setShowVerificationDialog);
   
   // Reset token when dialog closes
   useEffect(() => {
@@ -107,10 +103,8 @@ export const VerificationDialog = memo(function VerificationDialog({
   }, [website, onRegenerateToken]);
 
   const handleClose = useCallback(() => {
-    setSelectedWebsite(null);
-    setShowVerificationDialog(false);
     onOpenChange(false);
-  }, [setSelectedWebsite, setShowVerificationDialog, onOpenChange]);
+  }, [onOpenChange]);
 
   const isVerified = website?.verificationStatus === "VERIFIED";
   

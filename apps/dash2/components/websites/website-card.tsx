@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/card";
 import { WebsiteDialog } from "@/components/website-dialog";
 import type { Website } from "@/hooks/use-websites";
-import { useWebsitesStore } from "@/stores/use-websites-store";
 import { MiniChart } from "@/components/websites/mini-chart";
 import type { MiniChartDataPoint } from "@/hooks/use-analytics";
 import { cn } from "@/lib/utils";
@@ -45,7 +44,6 @@ export function WebsiteCard({
   isLoading,
   isError
 }: WebsiteCardProps) {
-  const setSelectedWebsite = useWebsitesStore(state => state.setSelectedWebsite);
   const [dialogOpen, setDialogOpen] = useState(false);
   
   const domainValue = typeof website.domain === 'string' 
@@ -57,7 +55,6 @@ export function WebsiteCard({
   const handleOpenDialog = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setSelectedWebsite(website);
     setDialogOpen(true);
   };
 

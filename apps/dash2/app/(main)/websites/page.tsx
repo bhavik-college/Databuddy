@@ -242,7 +242,6 @@ function WebsitesPage() {
           isLoading={isCreating}
           verifiedDomains={verifiedDomains}
           initialValues={initialValues}
-          onCreate={createWebsite}
         />
       </Suspense>
     </div>
