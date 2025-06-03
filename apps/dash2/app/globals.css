@@ -459,5 +459,58 @@
 }
 
 .table-modern tbody tr:hover {
-  background-color: color-mix(in oklch, var(--muted), var(--primary) 2%);
+  background-color: color-mix(in oklch, var(--muted), var(--primary) 4%);
+}
+
+/* Theme Toggle Transition using View Transitions API */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 999;
+}
+
+.dark::view-transition-old(root) {
+  z-index: 999;
+}
+
+.dark::view-transition-new(root) {
+  z-index: 1;
+}
+
+@keyframes theme-transition {
+  0% {
+    clip-path: circle(0px at var(--x, 50%) var(--y, 50%));
+  }
+  50% {
+    clip-path: circle(calc(var(--d, 100%) * 0.7) at var(--x, 50%) var(--y, 50%));
+    filter: blur(1px);
+  }
+  100% {
+    clip-path: circle(var(--d, 100%) at var(--x, 50%) var(--y, 50%));
+    filter: blur(0px);
+  }
+}
+
+/* Apply the animation to the new theme */
+::view-transition-new(root) {
+  animation: theme-transition 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Ensure smooth transition for theme toggle button icon */
+[data-theme-toggle] {
+  view-transition-name: theme-toggle-icon;
+}
+
+::view-transition-old(theme-toggle-icon),
+::view-transition-new(theme-toggle-icon) {
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
 }
