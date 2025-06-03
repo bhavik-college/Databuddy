@@ -3,7 +3,9 @@
 import React, { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { WebsiteDataTabProps } from "../_components/utils/types";
+import { useParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { getWebsiteById } from "@/app/actions/websites";
 
 // Lazy load the main AI assistant component
 const AIAssistantMain = dynamic(
@@ -57,10 +59,40 @@ function AIAssistantLoadingSkeleton() {
   );
 }
 
-export default function Page(props: WebsiteDataTabProps) {
+export default function AssistantPage() {
+  const { id } = useParams();
+  
+  // Fetch website data
+  const { data: websiteData, isLoading } = useQuery({
+    queryKey: ["website", id],
+    queryFn: async () => {
+      const result = await getWebsiteById(id as string);
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      return result.data;
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  if (isLoading || !websiteData) {
+    return <AIAssistantLoadingSkeleton />;
+  }
+
   return (
-    <Suspense fallback={<AIAssistantLoadingSkeleton />}>
-      <AIAssistantMain {...props} />
-    </Suspense>
+    <div className="p-3 sm:p-4 max-w-[1600px] mx-auto">
+      <Suspense fallback={<AIAssistantLoadingSkeleton />}>
+        <AIAssistantMain 
+          websiteId={id as string}
+          websiteData={websiteData}
+          dateRange={{
+            start_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+            end_date: new Date().toISOString(),
+            granularity: 'daily'
+          }}
+        />
+      </Suspense>
+    </div>
   );
 } 
