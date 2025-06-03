@@ -16,7 +16,7 @@ export function createSessionsBuilder(websiteId: string, startDate: string, endD
     session_id: 'session_id',
     first_visit: 'MIN(time) as first_visit',
     last_visit: 'MAX(time) as last_visit',
-    duration: 'dateDiff(\'second\', MIN(time), MAX(time)) as duration',
+    duration: 'LEAST(dateDiff(\'second\', MIN(time), MAX(time)), 28800) as duration', // Cap at 8 hours max
     page_views: 'countIf(event_name = \'screen_view\') as page_views',
     visitor_id: 'any(anonymous_id) as visitor_id',
     user_agent: 'any(user_agent) as user_agent',
@@ -55,7 +55,7 @@ export function createSessionDetailBuilder(websiteId: string, sessionId: string)
     session_id: 'session_id',
     first_visit: 'MIN(time) as first_visit',
     last_visit: 'MAX(time) as last_visit',
-    duration: 'dateDiff(\'second\', MIN(time), MAX(time)) as duration',
+    duration: 'LEAST(dateDiff(\'second\', MIN(time), MAX(time)), 28800) as duration', // Cap at 8 hours max
     page_views: 'countIf(event_name = \'screen_view\') as page_views',
     visitor_id: 'any(anonymous_id) as visitor_id',
     user_agent: 'any(user_agent) as user_agent',
