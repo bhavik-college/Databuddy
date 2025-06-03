@@ -121,13 +121,13 @@ export const getOSIcon = (os: string): string => {
   return '/operating-systems/Ubuntu.svg';
 };
 
-// Process device data with percentages
 export const processDeviceData = (deviceTypes: DeviceTypeEntry[]): TechnologyTableEntry[] => {
   const deviceGroups: Record<string, number> = {};
   
   for (const item of deviceTypes) {
     const deviceType = item.device_type || 'Unknown';
-    deviceGroups[deviceType] = (deviceGroups[deviceType] || 0) + (item.visitors || 0);
+    const capitalizedType = deviceType.charAt(0).toUpperCase() + deviceType.slice(1);
+    deviceGroups[capitalizedType] = (deviceGroups[capitalizedType] || 0) + (item.visitors || 0);
   }
   
   const totalVisitors = Object.values(deviceGroups).reduce((sum, count) => sum + count, 0);
