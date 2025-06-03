@@ -1,33 +1,75 @@
 services:
-  api:
-    build:
-      context: .
-      dockerfile: api.Dockerfile
-    develop:
-      watch:
-        - path: ./apps/api/src
-          target: /app/apps/api/src
-          action: sync
-        - path: ./apps/api/package.json
-          target: /app/apps/api/package.json
-          action: sync+restart
-        - path: ./packages
-          target: /app/packages
-          action: sync
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17
+    container_name: databuddy-postgres
     environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
-      - QUEUE_REDIS_URL=${QUEUE_REDIS_URL}
-      - CLICKHOUSE_URL=${CLICKHOUSE_URL}
-      - CLICKHOUSE_DATABASE=${CLICKHOUSE_DATABASE}
-      - IPINFO_TOKEN=${IPINFO_TOKEN}
-      - BETTER_AUTH_URL=${BETTER_AUTH_URL}
-      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
-      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
-      - PORT=${PORT}
-      
+      POSTGRES_DB: databuddy
+      POSTGRES_USER: databuddy
+      POSTGRES_PASSWORD: databuddy_dev_password
     ports:
-      - 4000:4000
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U databuddy -d databuddy"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ClickHouse for Analytics
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.3.1-alpine
+    container_name: databuddy-clickhouse
+    environment:
+      CLICKHOUSE_DB: databuddy_analytics
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    ports:
+      - "8123:8123"  # HTTP interface
+      - "9000:9000"  # Native interface
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./scripts/clickhouse-init.sql:/docker-entrypoint-initdb.d/clickhouse-init.sql
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis for Caching and Sessions
+  redis:
+    image: redis:7-alpine
+    container_name: databuddy-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  clickhouse_data:
+    driver: local
+  redis_data:
+    driver: local
+  redis_queue_data:
+    driver: local
+
+networks:
+  databuddy-network:
+    driver: bridge
