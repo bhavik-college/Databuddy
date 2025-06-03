@@ -197,8 +197,6 @@ function WebsitesPage() {
         {!isLoading && websites.length > 0 && (
           <WebsiteList
             websites={websites}
-            onUpdate={(id: string, name: string) => updateWebsite({ id, name })}
-            isUpdating={isUpdating}
             verifiedDomains={verifiedDomains}
           />
         )}
