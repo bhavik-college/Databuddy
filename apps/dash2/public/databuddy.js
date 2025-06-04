@@ -164,7 +164,7 @@
         }
         
         generateAnonymousId() {
-            return `anon_${crypto.randomUUID()}`;
+            return `anon_${Math.random().toString(36).substring(2, 15)}_${Math.random().toString(36).substring(2, 15)}`;
         }
         
         getOrCreateSessionId() {
@@ -173,29 +173,17 @@
             }
 
             const storedId = sessionStorage.getItem('did_session');
-            const sessionTimestamp = sessionStorage.getItem('did_session_timestamp');
-            
-            if (storedId && sessionTimestamp) {
-                const sessionAge = Date.now() - Number.parseInt(sessionTimestamp, 10);
-                const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
-                
-                if (sessionAge < SESSION_TIMEOUT) {
-                    sessionStorage.setItem('did_session_timestamp', Date.now().toString());
-                    return storedId;
-                }
-                sessionStorage.removeItem('did_session');
-                sessionStorage.removeItem('did_session_timestamp');
-                sessionStorage.removeItem('did_session_start');
+            if (storedId) {
+                return storedId;
             }
             
             const newId = this.generateSessionId();
             sessionStorage.setItem('did_session', newId);
-            sessionStorage.setItem('did_session_timestamp', Date.now().toString());
             return newId;
         }
         
         generateSessionId() {
-            return `sess_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 18)}`;
+            return `sess_${this.anonymousId.substring(5, 10)}_${Date.now().toString(36)}`;
         }
         
         getSessionStartTime() {
