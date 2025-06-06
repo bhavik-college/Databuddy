@@ -575,152 +575,195 @@ export function WebsiteAudienceTab({
       </div>
 
       {/* Screen Resolutions */}
-      <div className="rounded-xl border shadow-sm bg-card">
-        <div className="px-3 pt-3 pb-0.5">
-          <h3 className="text-xs font-medium">Screen Resolutions</h3>
-          <p className="text-xs text-muted-foreground">Visitors by screen size</p>
-        </div>
+      <Card className="w-full border-0 shadow-sm bg-card/50 backdrop-blur-sm overflow-hidden">
+        <CardHeader className="px-3 pb-2">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-foreground text-sm truncate">
+                Screen Resolutions
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                Visitors by screen size and device type
+              </p>
+            </div>
+          </div>
+        </CardHeader>
         
-        <div className="p-3">
+        <CardContent className="px-3 pb-2 overflow-hidden">
           {isLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-32 w-full" />
-              <Skeleton className="h-32 w-full" />
+            <div className="space-y-3 animate-pulse" style={{ minHeight: 400 }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={`skeleton-resolution-card-${index+1}`} className="bg-muted/20 rounded-lg p-4 space-y-3">
+                    <Skeleton className="h-4 w-24 rounded-md" />
+                    <Skeleton className="h-32 w-full rounded-lg" />
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <Skeleton className="h-3 w-16 rounded-sm" />
+                        <Skeleton className="h-3 w-8 rounded-sm" />
+                      </div>
+                      <Skeleton className="h-2 w-full rounded-full" />
+                      <Skeleton className="h-3 w-12 rounded-sm ml-auto" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : !analytics.screen_resolutions?.length ? (
-            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-              <p className="text-sm">No screen resolution data available</p>
+            <div className="flex flex-col items-center justify-center py-16 text-center" style={{ minHeight: 400 }}>
+              <div className="mb-4">
+                <div className="w-16 h-16 rounded-2xl bg-muted/20 flex items-center justify-center mb-3 mx-auto">
+                  <Monitor className="h-7 w-7 text-muted-foreground/50" />
+                </div>
+              </div>
+              <h4 className="text-base font-medium text-foreground mb-2">
+                No screen resolution data available
+              </h4>
+              <p className="text-sm text-muted-foreground max-w-[280px]">
+                Resolution data will appear here when visitors start using your website.
+              </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {analytics.screen_resolutions?.slice(0, 6).map((item, index) => {
-                const resolution = (item as any).resolution || item.screen_resolution;
-                if (!resolution) return null; // Skip items with undefined resolution
-                const [width, height] = resolution.split('x').map(Number);
-                const isValid = !Number.isNaN(width) && !Number.isNaN(height);
-                
-                // Calculate percentage of total visitors
-                const totalVisitors = analytics.screen_resolutions?.reduce(
-                  (sum, item) => sum + item.visitors, 0) || 1;
-                const percentage = Math.round((item.visitors / totalVisitors) * 100);
-                
-                // Determine device type based on resolution
-                let deviceType = "Unknown";
-                if (isValid) {
-                  if (width <= 480) {
-                    deviceType = "Mobile";
-                  } else if (width <= 1024) {
-                    deviceType = "Tablet";
-                  } else if (width <= 1440) {
-                    deviceType = "Laptop";
-                  } else {
-                    deviceType = "Desktop";
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {analytics.screen_resolutions?.slice(0, 6).map((item) => {
+                  const resolution = (item as any).resolution || item.screen_resolution;
+                  if (!resolution) return null;
+                  const [width, height] = resolution.split('x').map(Number);
+                  const isValid = !Number.isNaN(width) && !Number.isNaN(height);
+                  
+                  const totalVisitors = analytics.screen_resolutions?.reduce(
+                    (sum, item) => sum + item.visitors, 0) || 1;
+                  const percentage = Math.round((item.visitors / totalVisitors) * 100);
+                  
+                  let deviceType = "Unknown";
+                  let deviceIcon = <Monitor className="h-4 w-4 text-muted-foreground" />;
+                  
+                  if (isValid) {
+                    if (width <= 480) {
+                      deviceType = "Mobile";
+                      deviceIcon = <Smartphone className="h-4 w-4 text-blue-500" />;
+                    } else if (width <= 1024) {
+                      deviceType = "Tablet";
+                      deviceIcon = <Tablet className="h-4 w-4 text-purple-500" />;
+                    } else if (width <= 1440) {
+                      deviceType = "Laptop";
+                      deviceIcon = <Laptop className="h-4 w-4 text-green-500" />;
+                    } else {
+                      deviceType = "Desktop";
+                      deviceIcon = <Monitor className="h-4 w-4 text-primary" />;
+                    }
                   }
-                }
-                
-                // Create aspect ratio-correct box
-                const aspectRatio = isValid ? width / height : 16/9;
-                
-                return (
-                  <div 
-                    key={resolution} 
-                    className="border rounded-lg p-4 flex flex-col"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <div className="font-medium">{resolution}</div>
-                        <div className="text-xs text-muted-foreground">{deviceType}</div>
-                      </div>
-                    </div>
-                    
-                    {/* Screen visualization with perspective */}
-                    <div className="flex justify-center mb-4 h-40 relative perspective">
-                      <div 
-                        className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 border-2 border-primary/20 rounded-lg shadow-md flex items-center justify-center transform-gpu"
-                        style={{
-                          width: `${Math.min(250, 120 * Math.sqrt(aspectRatio))}px`,
-                          height: `${Math.min(200, 120 / Math.sqrt(aspectRatio))}px`,
-                          transformStyle: 'preserve-3d',
-                          transform: 'rotateY(-10deg) rotateX(5deg)',
-                          margin: 'auto'
-                        }}
-                      >
-                        {isValid && (
-                          <div 
-                            className="text-xs font-mono text-primary font-medium transform-gpu" 
-                            style={{ transform: 'translateZ(5px)' }}
-                          >
-                            {width} × {height}
+                  
+                  // Create aspect ratio-correct box
+                  const aspectRatio = isValid ? width / height : 16/9;
+                  
+                  return (
+                    <div 
+                      key={`resolution-${resolution}-${item.visitors}`}
+                      className="border border-border/50 rounded-lg p-4 bg-background/50 hover:bg-background/80 transition-all duration-200 flex flex-col"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          {deviceIcon}
+                          <div>
+                            <div className="font-medium text-sm">{resolution}</div>
+                            <div className="text-xs text-muted-foreground">{deviceType}</div>
                           </div>
-                        )}
-                        
-                        {/* Screen content simulation */}
-                        <div 
-                          className="absolute inset-2 rounded opacity-80"
-                          style={{ transform: 'translateZ(2px)' }}
-                        />
-                        
-                        {/* Screen UI elements simulation */}
-                        <div 
-                          className="absolute top-3 left-3 right-3 h-2 bg-primary/20 rounded-full"
-                          style={{ transform: 'translateZ(3px)' }}
-                        />
-                        <div 
-                          className="absolute top-7 left-3 w-1/2 h-2 bg-primary/15 rounded-full"
-                          style={{ transform: 'translateZ(3px)' }}
-                        />
-                        <div 
-                          className="absolute bottom-6 inset-x-3 grid grid-cols-3 gap-1"
-                          style={{ transform: 'translateZ(3px)' }}
-                        >
-                          <div className="h-2 bg-primary/10 rounded-full" />
-                          <div className="h-2 bg-primary/15 rounded-full" />
-                          <div className="h-2 bg-primary/10 rounded-full" />
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-medium">{percentage}%</div>
                         </div>
                       </div>
                       
-                      {/* Stand or base for desktop/laptop */}
-                      {(deviceType === "Desktop" || deviceType === "Laptop") && (
+                      {/* Enhanced Screen visualization with perspective */}
+                      <div className="flex justify-center mb-4 h-32 relative perspective">
                         <div 
-                          className="absolute bottom-0 w-1/3 h-4 bg-muted rounded-b-lg mx-auto"
+                          className="relative bg-gradient-to-br from-primary/8 to-primary/12 border-2 border-primary/20 rounded-lg shadow-lg flex items-center justify-center transform-gpu hover:shadow-xl transition-all duration-300"
                           style={{
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            borderTop: 'none',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                            width: `${Math.min(200, 100 * Math.sqrt(aspectRatio))}px`,
+                            height: `${Math.min(160, 100 / Math.sqrt(aspectRatio))}px`,
+                            transformStyle: 'preserve-3d',
+                            transform: 'rotateY(-8deg) rotateX(3deg)',
+                            margin: 'auto'
                           }}
-                        />
-                      )}
+                        >
+                          {isValid && (
+                            <div 
+                              className="text-xs font-mono text-primary font-semibold transform-gpu" 
+                              style={{ transform: 'translateZ(5px)' }}
+                            >
+                              {width} × {height}
+                            </div>
+                          )}
+                          
+                          {/* Enhanced Screen content simulation */}
+                          <div 
+                            className="absolute inset-2 rounded bg-background/20"
+                            style={{ transform: 'translateZ(2px)' }}
+                          />
+                          
+                          {/* Browser-like UI elements */}
+                          <div 
+                            className="absolute top-2 left-2 right-2 h-1.5 bg-primary/30 rounded-full"
+                            style={{ transform: 'translateZ(3px)' }}
+                          />
+                          <div 
+                            className="absolute top-5 left-2 w-1/2 h-1 bg-primary/20 rounded-full"
+                            style={{ transform: 'translateZ(3px)' }}
+                          />
+                          <div 
+                            className="absolute bottom-4 inset-x-2 grid grid-cols-3 gap-1"
+                            style={{ transform: 'translateZ(3px)' }}
+                          >
+                            <div className="h-1 bg-primary/15 rounded-full" />
+                            <div className="h-1 bg-primary/20 rounded-full" />
+                            <div className="h-1 bg-primary/15 rounded-full" />
+                          </div>
+                        </div>
+                        
+                        {/* Stand or base for desktop/laptop */}
+                        {(deviceType === "Desktop" || deviceType === "Laptop") && (
+                          <div 
+                            className="absolute bottom-0 w-1/4 h-3 bg-muted/60 rounded-b-md mx-auto"
+                            style={{
+                              left: '50%',
+                              transform: 'translateX(-50%)',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                            }}
+                          />
+                        )}
+                      </div>
+                      
+                      <div className="mt-auto space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="font-medium">{item.visitors.toLocaleString()} visitors</span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-muted/40 overflow-hidden">
+                          <div 
+                            className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                        <div className="flex justify-between items-center text-xs text-muted-foreground">
+                          <span>{item.count?.toLocaleString() || '0'} pageviews</span>
+                          <span>{percentage}% share</span>
+                        </div>
+                      </div>
                     </div>
-                    
-                    <div className="mt-auto w-full">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="font-medium">{item.visitors} visitors</span>
-                        <span className="font-medium">{percentage}%</span>
-                      </div>
-                      <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
-                        <div 
-                          className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1 text-right">
-                        {item.count} pageviews
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+              
+              {analytics.screen_resolutions && analytics.screen_resolutions.length > 6 && (
+                <div className="text-xs text-center text-muted-foreground pt-2 border-t border-border/30">
+                  Showing top 6 of {analytics.screen_resolutions.length} screen resolutions
+                </div>
+              )}
             </div>
           )}
-          
-          {!isLoading && analytics.screen_resolutions && analytics.screen_resolutions.length > 6 && (
-            <div className="text-xs text-center text-muted-foreground mt-4">
-              Showing top 6 of {analytics.screen_resolutions.length} screen resolutions
-            </div>
-          )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 } 
