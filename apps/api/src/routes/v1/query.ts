@@ -49,6 +49,13 @@ queryRouter.use('*', authMiddleware)
 queryRouter.use('*', websiteAuthHook)
 queryRouter.use('*', timezoneMiddleware)
 
+const processLanguageData = (data: any[]) => 
+  data.map(item => ({
+    ...item,
+    name: getLanguageName(item.name) !== 'Unknown' ? getLanguageName(item.name) : item.name,
+    code: item.name
+  }))
+
 // Dynamic parameter registry - easily extensible
 const PARAMETER_BUILDERS = {
   // Device & Browser
@@ -153,13 +160,15 @@ const PARAMETER_BUILDERS = {
     SELECT 
       language as name,
       COUNT(DISTINCT anonymous_id) as visitors,
-      COUNT(*) as pageviews
+      COUNT(*) as pageviews,
+      COUNT(DISTINCT session_id) as sessions
     FROM analytics.events
     WHERE client_id = '${websiteId}'
       AND time >= '${startDate}'
       AND time <= '${endDate}'
       AND event_name = 'screen_view'
       AND language != ''
+      AND language IS NOT NULL
     GROUP BY language
     ORDER BY visitors DESC
     LIMIT ${limit} OFFSET ${offset}
@@ -295,7 +304,7 @@ function buildUnifiedQuery(
     
     for (const parameter of parameters) {
       const builder = PARAMETER_BUILDERS[parameter as keyof typeof PARAMETER_BUILDERS]
-      if (!builder) return
+      if (!builder) continue
       
       let sql = builder(websiteId, startDate, endDate, limit, offset)
       
@@ -381,11 +390,7 @@ function processUnifiedResults(
       let processedData = rawData
       
       if (parameter === 'language') {
-        processedData = rawData.map(item => ({
-          ...item,
-          name: getLanguageName(item.name?.split('-')[0] || item.name) || item.name,
-          code: item.name
-        }))
+        processedData = processLanguageData(rawData)
       } else if (parameter === 'timezone') {
         processedData = rawData.map(item => {
           const tz = item.name
@@ -547,7 +552,15 @@ async function processBatchQueries(
               }
 
               const result = await chQuery<Record<string, any>>(sql)
-              return { parameter, data: result, success: true }
+              
+              // Post-process data based on parameter type (same as unified processing)
+              let processedData = result
+              
+              if (parameter === 'language') {
+                processedData = processLanguageData(result)
+              }
+              
+              return { parameter, data: processedData, success: true }
             })
           )
 
