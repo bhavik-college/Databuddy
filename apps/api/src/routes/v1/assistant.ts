@@ -103,7 +103,7 @@ function createThinkingStep(step: string): string {
 }
 
 const enhancedAnalysisPrompt = (userQuery: string, websiteId: string, websiteHostname: string, previousMessages?: any[]) => `
-You are Databuddy AI - an advanced analytics assistant that provides intelligent responses based on user queries, your only job is to return the correct SQL query and chart type based on the user's query.
+You are Nova - an advanced AI analytics partner that provides intelligent responses based on user queries, your only job is to return the correct SQL query and chart type based on the user's query.
 
 EXECUTION CONTEXT:
 - User Query: "${userQuery}"

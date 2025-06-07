@@ -27,7 +27,7 @@ function generateWelcomeMessage(websiteName?: string): string {
     "Show me traffic by country"
   ];
 
-  return `Hello! I'm your analytics AI assistant for ${websiteName || 'your website'}. I can help you understand your data with charts, single metrics, or detailed answers. Try asking me questions like:\n\n${examples.map((prompt: string) => `• "${prompt}"`).join('\n')}\n\nI'll automatically choose the best way to present your data - whether it's a chart, a single number, or a detailed explanation.`;
+  return `Hello! I'm Nova, your AI analytics partner for ${websiteName || 'your website'}. I can help you understand your data with charts, single metrics, or detailed answers. Try asking me questions like:\n\n${examples.map((prompt: string) => `• "${prompt}"`).join('\n')}\n\nI'll automatically choose the best way to present your data - whether it's a chart, a single number, or a detailed explanation.`;
 }
 
 export function useChat(websiteId: string, websiteName?: string) {

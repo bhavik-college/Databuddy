@@ -129,7 +129,7 @@ export default function ChatSection({
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h2 className="font-semibold text-lg truncate">AI Analytics Assistant</h2>
+              <h2 className="font-semibold text-lg truncate">Nova</h2>
               {hasMessages && (
                 <Badge variant="secondary" className="text-xs px-2 py-0.5">
                   {messageStats.total} {messageStats.total === 1 ? 'query' : 'queries'}
@@ -137,7 +137,7 @@ export default function ChatSection({
               )}
             </div>
             <p className="text-sm text-muted-foreground truncate">
-              {isLoading ? 'Analyzing your data...' : `Ask questions about ${websiteData?.name || 'your website'} analytics`}
+              {isLoading ? 'Nova is analyzing your data...' : `Your AI analytics partner for ${websiteData?.name || 'your website'}`}
             </p>
           </div>
         </div>
@@ -176,9 +176,9 @@ export default function ChatSection({
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
                     <Sparkles className="h-8 w-8 text-primary" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">Welcome to Your Analytics Assistant</h3>
+                  <h3 className="text-lg font-semibold mb-2">Welcome to Nova</h3>
                   <p className="text-muted-foreground text-sm max-w-md mx-auto">
-                    I can help you understand your website data through charts, metrics, and insights. Just ask me anything!
+                    I'm Nova, your AI analytics partner. I can help you understand your website data through charts, metrics, and insights. Just ask me anything!
                   </p>
                 </div>
                 
@@ -253,9 +253,9 @@ export default function ChatSection({
               onFocus={() => setInputFocused(true)}
               onBlur={() => setInputFocused(false)}
               placeholder={
-                isLoading ? "AI is thinking..." : 
+                isLoading ? "Nova is thinking..." : 
                 isRateLimited ? "Rate limited - please wait..." :
-                "Ask about your analytics data..."
+                "Ask Nova about your analytics data..."
               }
               disabled={isLoading || isRateLimited}
               className={cn(

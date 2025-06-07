@@ -16,7 +16,7 @@ export function LoadingMessage() {
             <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.15s]" />
             <div className="w-2 h-2 bg-current rounded-full animate-bounce" />
           </div>
-          <span className="text-muted-foreground">Analyzing...</span>
+          <span className="text-muted-foreground">Nova is analyzing...</span>
         </div>
       </div>
     </div>
