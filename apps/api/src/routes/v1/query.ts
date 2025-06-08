@@ -49,10 +49,7 @@ queryRouter.use('*', authMiddleware)
 queryRouter.use('*', websiteAuthHook)
 queryRouter.use('*', timezoneMiddleware)
 
-interface QueryAndParams {
-  sql: string;
-  params: Record<string, string | number>;
-}
+
 
 type ParameterBuilder = (
   websiteId: string,
@@ -60,7 +57,7 @@ type ParameterBuilder = (
   endDate: string,
   limit: number,
   offset: number
-) => QueryAndParams;
+) => string;
 
 const processLanguageData = (data: any[]) => 
   data.map(item => ({
@@ -68,6 +65,15 @@ const processLanguageData = (data: any[]) =>
     name: getLanguageName(item.name) !== 'Unknown' ? getLanguageName(item.name) : item.name,
     code: item.name
   }))
+
+// SQL escaping function to prevent injection
+function escapeSqlString(value: string | number): string {
+  if (typeof value === 'number') {
+    return value.toString()
+  }
+  // Escape single quotes by doubling them
+  return `'${String(value).replace(/'/g, "''")}'`
+}
 
 // Define reusable metric sets
 const METRICS = {
@@ -112,13 +118,13 @@ interface BuilderConfig {
 function createQueryBuilder(config: BuilderConfig): ParameterBuilder {
   return (websiteId, startDate, endDate, limit, offset) => {
     const whereClauses = [
-      'client_id = {websiteId:String}',
-      'time >= {startDate:String}',
-      'time <= {endDate:String}'
+      `client_id = ${escapeSqlString(websiteId)}`,
+      `time >= ${escapeSqlString(startDate)}`,
+      `time <= ${escapeSqlString(endDate)}`
     ];
     
     if (config.eventName) {
-      whereClauses.push(`event_name = '${config.eventName}'`);
+      whereClauses.push(`event_name = ${escapeSqlString(config.eventName)}`);
     }
 
     if (config.extraWhere) {
@@ -133,424 +139,209 @@ function createQueryBuilder(config: BuilderConfig): ParameterBuilder {
       WHERE ${whereClauses.join(' AND ')}
       GROUP BY ${config.groupByColumns.join(', ')}
       ORDER BY ${config.orderBy}
-      LIMIT {limit:UInt64} OFFSET {offset:UInt64}
+      LIMIT ${limit} OFFSET ${offset}
     `;
 
-    return {
-      sql,
-      params: {
-        websiteId,
-        startDate,
-        endDate,
-        limit,
-        offset
-      }
-    };
+    return sql;
   };
 }
 
 // Dynamic parameter registry - now with parameterized queries and reduced duplication
 const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
   // Device & Browser
-  device_type: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      device_type as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      COUNT(*) as pageviews,
-      COUNT(DISTINCT session_id) as sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND device_type != ''
-    GROUP BY device_type
-    ORDER BY visitors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  device_type: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: 'device_type',
+    groupByColumns: ['device_type'],
+    eventName: 'screen_view',
+    extraWhere: "device_type != ''",
+    orderBy: 'visitors DESC'
+  }),
 
-  browser_name: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      browser_name as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      COUNT(*) as pageviews,
-      COUNT(DISTINCT session_id) as sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND browser_name != ''
-    GROUP BY browser_name
-    ORDER BY visitors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  browser_name: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: 'browser_name',
+    groupByColumns: ['browser_name'],
+    eventName: 'screen_view',
+    extraWhere: "browser_name != ''",
+    orderBy: 'visitors DESC'
+  }),
 
-  os_name: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      os_name as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      COUNT(*) as pageviews,
-      COUNT(DISTINCT session_id) as sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND os_name != ''
-    GROUP BY os_name
-    ORDER BY visitors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  os_name: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: 'os_name',
+    groupByColumns: ['os_name'],
+    eventName: 'screen_view',
+    extraWhere: "os_name != ''",
+    orderBy: 'visitors DESC'
+  }),
 
   // Geography
-  country: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      country as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      COUNT(*) as pageviews,
-      COUNT(DISTINCT session_id) as sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND country != ''
-    GROUP BY country
-    ORDER BY visitors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  country: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: 'country',
+    groupByColumns: ['country'],
+    eventName: 'screen_view',
+    extraWhere: "country != ''",
+    orderBy: 'visitors DESC'
+  }),
 
-  region: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      CONCAT(region, ', ', country) as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      COUNT(*) as pageviews,
-      COUNT(DISTINCT session_id) as sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND region != ''
-    GROUP BY region, country
-    ORDER BY visitors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  region: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: "CONCAT(region, ', ', country)",
+    groupByColumns: ['region', 'country'],
+    eventName: 'screen_view',
+    extraWhere: "region != ''",
+    orderBy: 'visitors DESC'
+  }),
   
-  timezone: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      timezone as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      COUNT(*) as pageviews,
-      COUNT(DISTINCT session_id) as sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND timezone != ''
-    GROUP BY timezone
-    ORDER BY visitors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  timezone: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: 'timezone',
+    groupByColumns: ['timezone'],
+    eventName: 'screen_view',
+    extraWhere: "timezone != ''",
+    orderBy: 'visitors DESC'
+  }),
 
-  language: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      language as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      COUNT(*) as pageviews,
-      COUNT(DISTINCT session_id) as sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND language != ''
-      AND language IS NOT NULL
-    GROUP BY language
-    ORDER BY visitors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  language: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: 'language',
+    groupByColumns: ['language'],
+    eventName: 'screen_view',
+    extraWhere: "language != '' AND language IS NOT NULL",
+    orderBy: 'visitors DESC'
+  }),
 
   // Pages
-  top_pages: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      path as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      COUNT(*) as pageviews,
-      COUNT(DISTINCT session_id) as sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND path != ''
-    GROUP BY path
-    ORDER BY pageviews DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  top_pages: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: 'path',
+    groupByColumns: ['path'],
+    eventName: 'screen_view',
+    extraWhere: "path != ''",
+    orderBy: 'pageviews DESC'
+  }),
 
-  exit_page: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      path as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      COUNT(*) as exits,
-      COUNT(DISTINCT session_id) as sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND exit_intent = 1
-      AND path != ''
-    GROUP BY path
-    ORDER BY exits DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  exit_page: createQueryBuilder({
+    metricSet: METRICS.exits,
+    nameColumn: 'path',
+    groupByColumns: ['path'],
+    extraWhere: "exit_intent = 1 AND path != ''",
+    orderBy: 'exits DESC'
+  }),
 
   // UTM
-  utm_source: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      utm_source as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      COUNT(*) as pageviews,
-      COUNT(DISTINCT session_id) as sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND utm_source != ''
-    GROUP BY utm_source
-    ORDER BY visitors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  utm_source: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: 'utm_source',
+    groupByColumns: ['utm_source'],
+    eventName: 'screen_view',
+    extraWhere: "utm_source != ''",
+    orderBy: 'visitors DESC'
+  }),
 
-  utm_medium: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      utm_medium as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      COUNT(*) as pageviews,
-      COUNT(DISTINCT session_id) as sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND utm_medium != ''
-    GROUP BY utm_medium
-    ORDER BY visitors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  utm_medium: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: 'utm_medium',
+    groupByColumns: ['utm_medium'],
+    eventName: 'screen_view',
+    extraWhere: "utm_medium != ''",
+    orderBy: 'visitors DESC'
+  }),
 
-  utm_campaign: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      utm_campaign as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      COUNT(*) as pageviews,
-      COUNT(DISTINCT session_id) as sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND utm_campaign != ''
-    GROUP BY utm_campaign
-    ORDER BY visitors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  utm_campaign: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: 'utm_campaign',
+    groupByColumns: ['utm_campaign'],
+    eventName: 'screen_view',
+    extraWhere: "utm_campaign != ''",
+    orderBy: 'visitors DESC'
+  }),
 
-  utm_content: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      utm_content as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      COUNT(*) as pageviews,
-      COUNT(DISTINCT session_id) as sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND utm_content != ''
-    GROUP BY utm_content
-    ORDER BY visitors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  utm_content: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: 'utm_content',
+    groupByColumns: ['utm_content'],
+    eventName: 'screen_view',
+    extraWhere: "utm_content != ''",
+    orderBy: 'visitors DESC'
+  }),
 
-  utm_term: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT
-      utm_term as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      COUNT(*) as pageviews,
-      COUNT(DISTINCT session_id) as sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND utm_term != ''
-    GROUP BY utm_term
-    ORDER BY visitors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  utm_term: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: 'utm_term',
+    groupByColumns: ['utm_term'],
+    eventName: 'screen_view',
+    extraWhere: "utm_term != ''",
+    orderBy: 'visitors DESC'
+  }),
 
   // Referrers
-  referrer: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      referrer as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      COUNT(*) as pageviews,
-      COUNT(DISTINCT session_id) as sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND referrer != ''
-    GROUP BY referrer
-    ORDER BY visitors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  referrer: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: 'referrer',
+    groupByColumns: ['referrer'],
+    eventName: 'screen_view',
+    extraWhere: "referrer != ''",
+    orderBy: 'visitors DESC'
+  }),
 
-  slow_pages: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      path as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      avgIf(load_time, load_time > 0) as avg_load_time,
-      avgIf(ttfb, ttfb > 0) as avg_ttfb,
-      avgIf(dom_ready_time, dom_ready_time > 0) as avg_dom_ready_time,
-      avgIf(render_time, render_time > 0) as avg_render_time,
-      avgIf(fcp, fcp > 0) as avg_fcp,
-      avgIf(lcp, lcp > 0) as avg_lcp,
-      avgIf(cls, cls >= 0) as avg_cls
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND load_time > 0
-      AND path != ''
-    GROUP BY path
-    ORDER BY avg_load_time DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  slow_pages: createQueryBuilder({
+    metricSet: METRICS.performance,
+    nameColumn: 'path',
+    groupByColumns: ['path'],
+    eventName: 'screen_view',
+    extraWhere: "load_time > 0 AND path != ''",
+    orderBy: 'avg_load_time DESC'
+  }),
 
-  performance_by_country: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      country as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      avgIf(load_time, load_time > 0) as avg_load_time,
-      avgIf(ttfb, ttfb > 0) as avg_ttfb,
-      avgIf(dom_ready_time, dom_ready_time > 0) as avg_dom_ready_time,
-      avgIf(render_time, render_time > 0) as avg_render_time,
-      avgIf(fcp, fcp > 0) as avg_fcp,
-      avgIf(lcp, lcp > 0) as avg_lcp,
-      avgIf(cls, cls >= 0) as avg_cls
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND load_time > 0
-      AND country != ''
-    GROUP BY country
-    ORDER BY avg_load_time DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  performance_by_country: createQueryBuilder({
+    metricSet: METRICS.performance,
+    nameColumn: 'country',
+    groupByColumns: ['country'],
+    eventName: 'screen_view',
+    extraWhere: "load_time > 0 AND country != ''",
+    orderBy: 'avg_load_time DESC'
+  }),
 
-  performance_by_device: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      device_type as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      avgIf(load_time, load_time > 0) as avg_load_time,
-      avgIf(ttfb, ttfb > 0) as avg_ttfb,
-      avgIf(dom_ready_time, dom_ready_time > 0) as avg_dom_ready_time,
-      avgIf(render_time, render_time > 0) as avg_render_time,
-      avgIf(fcp, fcp > 0) as avg_fcp,
-      avgIf(lcp, lcp > 0) as avg_lcp,
-      avgIf(cls, cls >= 0) as avg_cls
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND load_time > 0
-      AND device_type != ''
-    GROUP BY device_type
-    ORDER BY avg_load_time DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  performance_by_device: createQueryBuilder({
+    metricSet: METRICS.performance,
+    nameColumn: 'device_type',
+    groupByColumns: ['device_type'],
+    eventName: 'screen_view',
+    extraWhere: "load_time > 0 AND device_type != ''",
+    orderBy: 'avg_load_time DESC'
+  }),
 
-  performance_by_browser: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      browser_name as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      avgIf(load_time, load_time > 0) as avg_load_time,
-      avgIf(ttfb, ttfb > 0) as avg_ttfb,
-      avgIf(dom_ready_time, dom_ready_time > 0) as avg_dom_ready_time,
-      avgIf(render_time, render_time > 0) as avg_render_time,
-      avgIf(fcp, fcp > 0) as avg_fcp,
-      avgIf(lcp, lcp > 0) as avg_lcp,
-      avgIf(cls, cls >= 0) as avg_cls
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND load_time > 0
-      AND browser_name != ''
-    GROUP BY browser_name
-    ORDER BY avg_load_time DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  performance_by_browser: createQueryBuilder({
+    metricSet: METRICS.performance,
+    nameColumn: 'browser_name',
+    groupByColumns: ['browser_name'],
+    eventName: 'screen_view',
+    extraWhere: "load_time > 0 AND browser_name != ''",
+    orderBy: 'avg_load_time DESC'
+  }),
 
-  performance_by_os: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      os_name as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      avgIf(load_time, load_time > 0) as avg_load_time,
-      avgIf(ttfb, ttfb > 0) as avg_ttfb,
-      avgIf(dom_ready_time, dom_ready_time > 0) as avg_dom_ready_time,
-      avgIf(render_time, render_time > 0) as avg_render_time,
-      avgIf(fcp, fcp > 0) as avg_fcp,
-      avgIf(lcp, lcp > 0) as avg_lcp,
-      avgIf(cls, cls >= 0) as avg_cls
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND load_time > 0
-      AND os_name != ''
-    GROUP BY os_name
-    ORDER BY avg_load_time DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  performance_by_os: createQueryBuilder({
+    metricSet: METRICS.performance,
+    nameColumn: 'os_name',
+    groupByColumns: ['os_name'],
+    eventName: 'screen_view',
+    extraWhere: "load_time > 0 AND os_name != ''",
+    orderBy: 'avg_load_time DESC'
+  }),
 
-  performance_by_region: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      CONCAT(region, ', ', country) as name,
-      COUNT(DISTINCT anonymous_id) as visitors,
-      avgIf(load_time, load_time > 0) as avg_load_time,
-      avgIf(ttfb, ttfb > 0) as avg_ttfb,
-      avgIf(dom_ready_time, dom_ready_time > 0) as avg_dom_ready_time,
-      avgIf(render_time, render_time > 0) as avg_render_time,
-      avgIf(fcp, fcp > 0) as avg_fcp,
-      avgIf(lcp, lcp > 0) as avg_lcp,
-      avgIf(cls, cls >= 0) as avg_cls
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'screen_view'
-      AND load_time > 0
-      AND region != ''
-    GROUP BY region, country
-    ORDER BY avg_load_time DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  performance_by_region: createQueryBuilder({
+    metricSet: METRICS.performance,
+    nameColumn: "CONCAT(region, ', ', country)",
+    groupByColumns: ['region', 'country'],
+    eventName: 'screen_view',
+    extraWhere: "load_time > 0 AND region != ''",
+    orderBy: 'avg_load_time DESC'
+  }),
 
-  // Error-related queries
+  // Error-related queries (special cases that don't fit the standard builder)
   recent_errors: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
     SELECT 
       error_message,
@@ -563,11 +354,11 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
       os_name,
       device_type,
       country,
-      region,
+      region
     FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
+    WHERE client_id = ${escapeSqlString(websiteId)}
+      AND time >= ${escapeSqlString(startDate)}
+      AND time <= ${escapeSqlString(endDate)}
       AND event_name = 'error'
       AND error_message != ''
     ORDER BY time DESC
@@ -578,14 +369,14 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     SELECT 
       error_message as name,
       COUNT(*) as total_occurrences,
-      COUNT(DISTINCT anonymous_id) as affected_users,
-      COUNT(DISTINCT session_id) as affected_sessions,
+      uniq(anonymous_id) as affected_users,
+      uniq(session_id) as affected_sessions,
       MAX(time) as last_occurrence,
       MIN(time) as first_occurrence
     FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
+    WHERE client_id = ${escapeSqlString(websiteId)}
+      AND time >= ${escapeSqlString(startDate)}
+      AND time <= ${escapeSqlString(endDate)}
       AND event_name = 'error'
       AND error_message != ''
     GROUP BY error_message
@@ -593,112 +384,62 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     LIMIT ${limit} OFFSET ${offset}
   `,
 
-  errors_by_page: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      path as name,
-      COUNT(*) as total_errors,
-      COUNT(DISTINCT error_message) as unique_error_types,
-      COUNT(DISTINCT anonymous_id) as affected_users,
-      COUNT(DISTINCT session_id) as affected_sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'error'
-      AND error_message != ''
-      AND path != ''
-    GROUP BY path
-    ORDER BY total_errors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  errors_by_page: createQueryBuilder({
+    metricSet: METRICS.errors,
+    nameColumn: 'path',
+    groupByColumns: ['path'],
+    eventName: 'error',
+    extraWhere: "error_message != '' AND path != ''",
+    orderBy: 'total_errors DESC'
+  }),
 
-  errors_by_browser: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      browser_name as name,
-      COUNT(*) as total_errors,
-      COUNT(DISTINCT error_message) as unique_error_types,
-      COUNT(DISTINCT anonymous_id) as affected_users,
-      COUNT(DISTINCT session_id) as affected_sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'error'
-      AND error_message != ''
-      AND browser_name != ''
-    GROUP BY browser_name
-    ORDER BY total_errors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  errors_by_browser: createQueryBuilder({
+    metricSet: METRICS.errors,
+    nameColumn: 'browser_name',
+    groupByColumns: ['browser_name'],
+    eventName: 'error',
+    extraWhere: "error_message != '' AND browser_name != ''",
+    orderBy: 'total_errors DESC'
+  }),
 
-  errors_by_os: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      os_name as name,
-      COUNT(*) as total_errors,
-      COUNT(DISTINCT error_message) as unique_error_types,
-      COUNT(DISTINCT anonymous_id) as affected_users,
-      COUNT(DISTINCT session_id) as affected_sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'error'
-      AND error_message != ''
-      AND os_name != ''
-    GROUP BY os_name
-    ORDER BY total_errors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  errors_by_os: createQueryBuilder({
+    metricSet: METRICS.errors,
+    nameColumn: 'os_name',
+    groupByColumns: ['os_name'],
+    eventName: 'error',
+    extraWhere: "error_message != '' AND os_name != ''",
+    orderBy: 'total_errors DESC'
+  }),
 
-  errors_by_country: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      country as name,
-      COUNT(*) as total_errors,
-      COUNT(DISTINCT error_message) as unique_error_types,
-      COUNT(DISTINCT anonymous_id) as affected_users,
-      COUNT(DISTINCT session_id) as affected_sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'error'
-      AND error_message != ''
-      AND country != ''
-    GROUP BY country
-    ORDER BY total_errors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  errors_by_country: createQueryBuilder({
+    metricSet: METRICS.errors,
+    nameColumn: 'country',
+    groupByColumns: ['country'],
+    eventName: 'error',
+    extraWhere: "error_message != '' AND country != ''",
+    orderBy: 'total_errors DESC'
+  }),
 
-  errors_by_device: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
-    SELECT 
-      device_type as name,
-      COUNT(*) as total_errors,
-      COUNT(DISTINCT error_message) as unique_error_types,
-      COUNT(DISTINCT anonymous_id) as affected_users,
-      COUNT(DISTINCT session_id) as affected_sessions
-    FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
-      AND event_name = 'error'
-      AND error_message != ''
-      AND device_type != ''
-    GROUP BY device_type
-    ORDER BY total_errors DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `,
+  errors_by_device: createQueryBuilder({
+    metricSet: METRICS.errors,
+    nameColumn: 'device_type',
+    groupByColumns: ['device_type'],
+    eventName: 'error',
+    extraWhere: "error_message != '' AND device_type != ''",
+    orderBy: 'total_errors DESC'
+  }),
 
   error_trends: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
     SELECT 
       toDate(time) as date,
       COUNT(*) as total_errors,
       COUNT(DISTINCT error_message) as unique_error_types,
-      COUNT(DISTINCT anonymous_id) as affected_users,
-      COUNT(DISTINCT session_id) as affected_sessions
+      uniq(anonymous_id) as affected_users,
+      uniq(session_id) as affected_sessions
     FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
+    WHERE client_id = ${escapeSqlString(websiteId)}
+      AND time >= ${escapeSqlString(startDate)}
+      AND time <= ${escapeSqlString(endDate)}
       AND event_name = 'error'
       AND error_message != ''
     GROUP BY toDate(time)
@@ -708,14 +449,33 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
 
   sessions_summary: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
     SELECT
-      COUNT(DISTINCT session_id) as total_sessions,
-      COUNT(DISTINCT anonymous_id) as total_users
+      uniq(session_id) as total_sessions,
+      uniq(anonymous_id) as total_users
     FROM analytics.events
-    WHERE client_id = '${websiteId}'
-      AND time >= '${startDate}'
-      AND time <= '${endDate}'
+    WHERE client_id = ${escapeSqlString(websiteId)}
+      AND time >= ${escapeSqlString(startDate)}
+      AND time <= ${escapeSqlString(endDate)}
       AND event_name = 'screen_view'
-  `
+  `,
+
+  // Category aliases for simplified parameter names
+  pages: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => 
+    PARAMETER_BUILDERS.top_pages(websiteId, startDate, endDate, limit, offset),
+  
+  countries: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => 
+    PARAMETER_BUILDERS.country(websiteId, startDate, endDate, limit, offset),
+    
+  devices: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => 
+    PARAMETER_BUILDERS.device_type(websiteId, startDate, endDate, limit, offset),
+    
+  browsers: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => 
+    PARAMETER_BUILDERS.browser_name(websiteId, startDate, endDate, limit, offset),
+    
+  operating_systems: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => 
+    PARAMETER_BUILDERS.os_name(websiteId, startDate, endDate, limit, offset),
+    
+  regions: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => 
+    PARAMETER_BUILDERS.region(websiteId, startDate, endDate, limit, offset)
 }
 
 // Helper function to build a unified query for multiple parameters
@@ -739,11 +499,16 @@ function buildUnifiedQuery(
       if (filters.length > 0) {
         const filterClauses = filters.map((filter: any) => {
           switch (filter.operator) {
-            case 'eq': return `${filter.field} = '${filter.value}'`
-            case 'ne': return `${filter.field} != '${filter.value}'`
-            case 'in': return `${filter.field} IN (${Array.isArray(filter.value) ? filter.value.map((v: any) => `'${v}'`).join(',') : `'${filter.value}'`})`
-            case 'contains': return `${filter.field} LIKE '%${filter.value}%'`
-            case 'starts_with': return `${filter.field} LIKE '${filter.value}%'`
+            case 'eq': return `${filter.field} = ${escapeSqlString(filter.value)}`
+            case 'ne': return `${filter.field} != ${escapeSqlString(filter.value)}`
+            case 'in': 
+              if (Array.isArray(filter.value)) {
+                const inValues = filter.value.map((v: any) => escapeSqlString(v)).join(',')
+                return `${filter.field} IN (${inValues})`
+              }
+              return `${filter.field} = ${escapeSqlString(filter.value)}`
+            case 'contains': return `${filter.field} LIKE CONCAT('%', ${escapeSqlString(filter.value)}, '%')`
+            case 'starts_with': return `${filter.field} LIKE CONCAT(${escapeSqlString(filter.value)}, '%')`
             default: return ''
           }
         }).filter(Boolean)
@@ -964,11 +729,11 @@ async function processBatchQueries(
               if (filters.length > 0) {
                 const filterClauses = filters.map((filter: any) => {
                   switch (filter.operator) {
-                    case 'eq': return `${filter.field} = '${filter.value}'`
-                    case 'ne': return `${filter.field} != '${filter.value}'`
-                    case 'in': return `${filter.field} IN (${Array.isArray(filter.value) ? filter.value.map((v: any) => `'${v}'`).join(',') : `'${filter.value}'`})`
-                    case 'contains': return `${filter.field} LIKE '%${filter.value}%'`
-                    case 'starts_with': return `${filter.field} LIKE '${filter.value}%'`
+                    case 'eq': return `${filter.field} = ${escapeSqlString(filter.value)}`
+                    case 'ne': return `${filter.field} != ${escapeSqlString(filter.value)}`
+                    case 'in': return `${filter.field} IN (${Array.isArray(filter.value) ? filter.value.map((v: any) => escapeSqlString(v)).join(',') : escapeSqlString(filter.value)})`
+                    case 'contains': return `${filter.field} LIKE '%${escapeSqlString(filter.value)}%'`
+                    case 'starts_with': return `${filter.field} LIKE '${escapeSqlString(filter.value)}%'`
                     default: return ''
                   }
                 }).filter(Boolean)
