@@ -202,7 +202,6 @@ function WebsiteDetailsPage() {
     { id: "audience", label: "Audience" },
     { id: "content", label: "Content" },
     { id: "performance", label: "Performance" },
-    { id: "errors", label: "Errors" },
     { id: "settings", label: "Settings" },
   ] : [
     { id: "tracking-setup", label: "Setup Tracking" },
