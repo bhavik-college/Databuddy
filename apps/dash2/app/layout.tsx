@@ -124,6 +124,7 @@ export default function RootLayout({
       /> */}
       <Databuddy
         clientId={isLocalhost ? "5ced32e5-0219-4e75-a18a-ad9826f85698" : "3ed1fce1-5a56-4cb6-a977-66864f6d18e3"}
+        scriptUrl="http://localhost:3000/databuddy.js"
         trackWebVitals={true}
       />
       <body className="antialiased h-full min-h-screen bg-background text-foreground flex flex-col">
