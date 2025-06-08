@@ -681,7 +681,13 @@
 
         cleanupWebVitals() {
             if (this.webVitalObservers) {
-                this.webVitalObservers.forEach(o => { try { o.disconnect() } catch (e) {} });
+                for (const o of this.webVitalObservers) {
+                    try {
+                        o.disconnect();
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
                 this.webVitalObservers = [];
             }
             if (this.webVitalsReportTimeoutId) {

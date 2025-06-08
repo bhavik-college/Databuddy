@@ -2,7 +2,6 @@
 
 import type React from 'react';
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import type { DomainRankData } from "@/hooks/use-domain-info";
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -10,6 +9,16 @@ import { Separator } from '@/components/ui/separator';
 import { Globe, TrendingUp, Target, Award, BarChart3, Users, Activity, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getTierInfo, formatRank } from '../utils';
+
+// Use the correct type from the backend API
+interface DomainRankData {
+  status_code: number;
+  error: string;
+  page_rank_integer: number;
+  page_rank_decimal: number;
+  rank: string | null;
+  domain: string;
+}
 
 interface DomainRankDetailsProps {
   isOpen: boolean;
@@ -286,22 +295,11 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
             {/* Footer Actions */}
             <div className="flex justify-between items-center pt-4">
               <div className="text-xs text-muted-foreground">
-                Data provided by OpenPageRank • Updated periodically
+                Data provided by <a href="https://www.domcop.com/openpagerank/what-is-openpagerank" target="_blank" rel="noopener noreferrer" className="underline">OpenPageRank</a> • Updated periodically
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={onClose}>
                   Close
-                </Button>
-                <Button variant="outline" size="sm" asChild>
-                  <a 
-                    href={`https://www.openpagerank.com/website/${domainName}`}
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1"
-                  >
-                    View on OpenPageRank
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
                 </Button>
               </div>
             </div>
@@ -310,4 +308,4 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
       </DrawerContent>
     </Drawer>
   );
-}; 
+} 

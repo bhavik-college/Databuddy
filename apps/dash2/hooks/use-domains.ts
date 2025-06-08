@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
-import { useDomainsStore } from '@/stores/use-domains-store';
-import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import type { domains } from '@databuddy/db';
 
 type Domain = typeof domains.$inferSelect;
@@ -118,6 +116,7 @@ interface CreateDomainData {
 
 interface UpdateDomainData {
   name?: string;
+  verificationStatus?: string;
 }
 
 interface VerificationResult {
@@ -126,12 +125,10 @@ interface VerificationResult {
 }
 
 export function useDomains() {
-  const store = useDomainsStore();
   const queryClient = useQueryClient();
-  const previousDataRef = useRef<Domain[] | null>(null);
   
   // Fetch domains with React Query
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data: domains = [], isLoading, isError, refetch } = useQuery({
     queryKey: domainKeys.lists(),
     queryFn: async () => {
       try {
@@ -144,29 +141,11 @@ export function useDomains() {
     staleTime: 30000, // 30 seconds
     refetchOnWindowFocus: false,
   });
-  
-  // Update store when data changes, but only if data has actually changed
-  useEffect(() => {
-    if (data && JSON.stringify(data) !== JSON.stringify(previousDataRef.current)) {
-      previousDataRef.current = data;
-      store.setDomains(data);
-    }
-  }, [data, store]);
-
-  // Show toast on error
-  useEffect(() => {
-    if (isError) {
-      toast.error('Failed to fetch domains');
-    }
-  }, [isError]);
 
   // Create domain mutation
   const createMutation = useMutation({
     mutationFn: async (data: CreateDomainData) => {
       return await domainApi.create(data);
-    },
-    onMutate: () => {
-      store.setIsCreating(true);
     },
     onSuccess: () => {
       toast.success("Domain created successfully");
@@ -174,9 +153,6 @@ export function useDomains() {
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to create domain');
-    },
-    onSettled: () => {
-      store.setIsCreating(false);
     }
   });
 
@@ -185,18 +161,12 @@ export function useDomains() {
     mutationFn: async ({ id, data }: { id: string; data: UpdateDomainData }) => {
       return await domainApi.update(id, data);
     },
-    onMutate: () => {
-      store.setIsUpdating(true);
-    },
     onSuccess: () => {
       toast.success("Domain updated successfully");
       queryClient.invalidateQueries({ queryKey: domainKeys.lists() });
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to update domain');
-    },
-    onSettled: () => {
-      store.setIsUpdating(false);
     }
   });
 
@@ -206,18 +176,12 @@ export function useDomains() {
       const result = await domainApi.delete(id);
       return { data: result, id };
     },
-    onMutate: () => {
-      store.setIsDeleting(true);
-    },
     onSuccess: () => {
       toast.success("Domain deleted successfully");
       queryClient.invalidateQueries({ queryKey: domainKeys.lists() });
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to delete domain');
-    },
-    onSettled: () => {
-      store.setIsDeleting(false);
     }
   });
 
@@ -225,9 +189,6 @@ export function useDomains() {
   const verifyMutation = useMutation({
     mutationFn: async (id: string) => {
       return await domainApi.verify(id);
-    },
-    onMutate: () => {
-      store.setIsVerifying(true);
     },
     onSuccess: (data: VerificationResult) => {
       if (data?.verified) {
@@ -239,9 +200,6 @@ export function useDomains() {
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to verify domain');
-    },
-    onSettled: () => {
-      store.setIsVerifying(false);
     }
   });
 
@@ -250,31 +208,24 @@ export function useDomains() {
     mutationFn: async (id: string) => {
       return await domainApi.regenerateToken(id);
     },
-    onMutate: () => {
-      store.setIsRegenerating(true);
-    },
     onSuccess: () => {
       toast.success("Verification token regenerated successfully");
       queryClient.invalidateQueries({ queryKey: domainKeys.lists() });
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to regenerate verification token');
-    },
-    onSettled: () => {
-      store.setIsRegenerating(false);
     }
   });
 
   // Extract verified domains
-  const verifiedDomains = (data || []).filter(
+  const verifiedDomains = domains.filter(
     domain => domain.verificationStatus === "VERIFIED"
   );
 
   return {
     // Data
-    domains: data || [],
+    domains,
     verifiedDomains,
-    selectedDomain: store.selectedDomain,
     
     // UI States
     isLoading,
@@ -285,12 +236,7 @@ export function useDomains() {
     isVerifying: verifyMutation.isPending,
     isRegenerating: regenerateMutation.isPending,
     
-    // Dialogs
-    showVerificationDialog: store.showVerificationDialog,
-    setShowVerificationDialog: store.setShowVerificationDialog,
-    
     // Actions
-    setSelectedDomain: store.setSelectedDomain,
     createDomain: createMutation.mutate,
     updateDomain: updateMutation.mutate,
     deleteDomain: deleteMutation.mutate,

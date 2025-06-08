@@ -9,7 +9,7 @@ import { TrendingUp, RefreshCw, AlertCircle, TrendingDown, Globe } from "lucide-
 import { FaviconImage } from "@/components/analytics/favicon-image";
 import { useDomainManagement } from "../hooks/use-domain-management";
 import { useDomainRanks } from "@/hooks/use-domain-info";
-import { getRankColor } from "../utils";
+import { getRankColor, getTierInfo } from "../utils";
 import { DomainRankDetails } from "./domain-rank-details";
 
 // Loading skeleton for domain rank cards
@@ -212,15 +212,6 @@ export function DomainRanksTab() {
                             domain={domain.name} 
                             className="h-10 w-10 rounded-full ring-2 ring-border" 
                           />
-                          {hasData && (
-                            <div className="absolute -bottom-1 -right-1 bg-background border rounded-full w-5 h-5 flex items-center justify-center">
-                              <div className={`w-2 h-2 rounded-full ${
-                                rankData.page_rank_decimal >= 70 ? 'bg-green-500' :
-                                rankData.page_rank_decimal >= 40 ? 'bg-blue-500' :
-                                rankData.page_rank_decimal >= 20 ? 'bg-yellow-500' : 'bg-red-500'
-                              }`} />
-                            </div>
-                          )}
                           {isLoading && (
                             <div className="absolute -bottom-1 -right-1 bg-background border rounded-full w-5 h-5 flex items-center justify-center">
                               <RefreshCw className="h-2 w-2 animate-spin text-muted-foreground" />
@@ -282,9 +273,7 @@ export function DomainRanksTab() {
                               </Button>
                               {domain.verificationStatus === "VERIFIED" && hasData && (
                                 <Badge variant="secondary" className="text-xs">
-                                  {rankData.page_rank_decimal >= 70 ? 'Excellent' :
-                                   rankData.page_rank_decimal >= 40 ? 'Good' :
-                                   rankData.page_rank_decimal >= 20 ? 'Fair' : 'Poor'}
+                                  {getTierInfo(rankData.page_rank_decimal).tier}
                                 </Badge>
                               )}
                             </>

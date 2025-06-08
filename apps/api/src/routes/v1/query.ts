@@ -603,18 +603,65 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     PARAMETER_BUILDERS.region(websiteId, startDate, endDate, limit, offset)
 }
 
+// Helper function to get metric type for a parameter
+function getMetricType(parameter: string): string {
+  const performanceParams = [
+    'slow_pages', 'performance_by_country', 'performance_by_device', 
+    'performance_by_browser', 'performance_by_os', 'performance_by_region'
+  ]
+  
+  const errorParams = [
+    'recent_errors', 'error_types', 'errors_by_page', 'errors_by_browser',
+    'errors_by_os', 'errors_by_country', 'errors_by_device', 'error_trends'
+  ]
+  
+  const exitParams = ['exit_page']
+  
+  const specialParams = ['sessions_summary']
+  
+  if (performanceParams.includes(parameter)) return 'performance'
+  if (errorParams.includes(parameter)) return 'errors'
+  if (exitParams.includes(parameter)) return 'exits'
+  if (specialParams.includes(parameter)) return 'special'
+  
+  return 'standard'
+}
+
 // Helper function to build a unified query for multiple parameters
 function buildUnifiedQuery(
   queries: Array<z.infer<typeof singleQuerySchema> & { id: string }>,
   websiteId: string
 ): string {
-  const subQueries: string[] = []
+  // Group queries by metric type to avoid UNION ALL column mismatch
+  const metricGroups: Record<string, Array<{
+    query: z.infer<typeof singleQuerySchema> & { id: string },
+    parameter: string
+  }>> = {}
   
   for (const query of queries) {
-    const { startDate, endDate, parameters, limit, page, filters } = query
-    const offset = (page - 1) * limit
+    const { parameters } = query
     
     for (const parameter of parameters) {
+      const metricType = getMetricType(parameter)
+      
+      if (!metricGroups[metricType]) {
+        metricGroups[metricType] = []
+      }
+      
+      metricGroups[metricType].push({ query, parameter })
+    }
+  }
+  
+  // Build separate UNION queries for each metric type
+  const metricQueries: string[] = []
+  
+  for (const [metricType, items] of Object.entries(metricGroups)) {
+    const subQueries: string[] = []
+    
+    for (const { query, parameter } of items) {
+      const { startDate, endDate, limit, page, filters } = query
+      const offset = (page - 1) * limit
+      
       const builder = PARAMETER_BUILDERS[parameter as keyof typeof PARAMETER_BUILDERS]
       if (!builder) continue
       
@@ -648,6 +695,7 @@ function buildUnifiedQuery(
         SELECT 
           '${query.id}' as query_id,
           '${parameter}' as parameter,
+          '${metricType}' as metric_type,
           *
         FROM (
           ${sql}
@@ -656,9 +704,18 @@ function buildUnifiedQuery(
       
       subQueries.push(wrappedQuery)
     }
+    
+    if (subQueries.length > 0) {
+      metricQueries.push(subQueries.join('\nUNION ALL\n'))
+    }
   }
   
-  return subQueries.join('\nUNION ALL\n')
+  // If we have multiple metric types, we can't union them - fall back to individual queries
+  if (metricQueries.length > 1) {
+    throw new Error('Cannot unify queries with different metric types')
+  }
+  
+  return metricQueries[0] || ''
 }
 
 // Helper function to process data after unified query
@@ -670,7 +727,7 @@ function processUnifiedResults(
   const groupedResults: Record<string, Record<string, any[]>> = {}
   
   for (const row of rawResults) {
-    const { query_id, parameter, ...data } = row
+    const { query_id, parameter, metric_type, ...data } = row
     
     if (!groupedResults[query_id]) {
       groupedResults[query_id] = {}
@@ -765,6 +822,11 @@ async function processBatchQueries(
     // Build unified query
     const unifiedQuery = buildUnifiedQuery(queries, websiteId)
     
+    // If unified query is empty (no compatible queries), fall back immediately
+    if (!unifiedQuery) {
+      throw new Error('No unifiable queries found')
+    }
+    
     // Execute single query
     const rawResults = await chQuery<Record<string, any>>(unifiedQuery)
     
@@ -772,11 +834,17 @@ async function processBatchQueries(
     return processUnifiedResults(rawResults, queries)
     
   } catch (error: any) {
-    // If unified query fails, fall back to individual queries for error isolation
-    logger.error('Unified query failed, falling back to individual queries', {
-      error: error.message,
-      queries_count: queries.length
-    })
+    // If unified query fails (e.g., different metric types), fall back to individual queries
+    if (error.message?.includes('Cannot unify queries with different metric types')) {
+      logger.info('Using individual queries due to mixed metric types', {
+        queries_count: queries.length
+      })
+    } else {
+      logger.error('Unified query failed, falling back to individual queries', {
+        error: error.message,
+        queries_count: queries.length
+      })
+    }
     
     return Promise.all(
       queries.map(async (query) => {
