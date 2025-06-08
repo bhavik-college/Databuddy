@@ -5,6 +5,7 @@ import { db, websites, domains, projectAccess, eq, and, or, inArray } from '@dat
 import { authMiddleware } from '../../middleware/auth';
 import { logger } from '../../lib/logger';
 import { nanoid } from 'nanoid';
+import { cacheable } from '@databuddy/redis/cacheable';
 import type { AppVariables } from '../../types';
 
 // Validation schemas
@@ -34,8 +35,8 @@ export const websitesRouter = new Hono<WebsitesContext>();
 // Apply auth middleware to all routes
 websitesRouter.use('*', authMiddleware);
 
-// Helper functions
-async function getUserProjectIds(userId: string): Promise<string[]> {
+// Helper functions - Redis cached
+async function _getUserProjectIds(userId: string): Promise<string[]> {
   try {
     const projects = await db.query.projectAccess.findMany({
       where: eq(projectAccess.userId, userId),
@@ -50,6 +51,14 @@ async function getUserProjectIds(userId: string): Promise<string[]> {
     return [];
   }
 }
+
+// Cache user project IDs for 5 minutes with stale-while-revalidate
+const getUserProjectIds = cacheable(_getUserProjectIds, {
+  expireInSec: 300, // 5 minutes
+  prefix: 'user_projects',
+  staleWhileRevalidate: true,
+  staleTime: 60 // Revalidate if cache is older than 1 minute
+});
 
 async function checkWebsiteAccess(id: string, userId: string) {
   try {
@@ -75,7 +84,7 @@ async function checkWebsiteAccess(id: string, userId: string) {
   }
 }
 
-async function verifyDomainAccess(domainId: string, userId: string): Promise<boolean> {
+async function _verifyDomainAccess(domainId: string, userId: string): Promise<boolean> {
   if (!domainId || !userId) return false;
   
   try {
@@ -84,7 +93,10 @@ async function verifyDomainAccess(domainId: string, userId: string): Promise<boo
         eq(domains.id, domainId),
         eq(domains.verificationStatus, "VERIFIED"),
         eq(domains.userId, userId)
-      )
+      ),
+      columns: {
+        id: true
+      }
     });
 
     return !!domain;
@@ -93,6 +105,14 @@ async function verifyDomainAccess(domainId: string, userId: string): Promise<boo
     return false;
   }
 }
+
+// Cache domain verification for 2 minutes (shorter TTL for security)
+const verifyDomainAccess = cacheable(_verifyDomainAccess, {
+  expireInSec: 120, // 2 minutes
+  prefix: 'domain_access',
+  staleWhileRevalidate: true,
+  staleTime: 30 // Revalidate if cache is older than 30 seconds
+});
 
 // CREATE - POST /websites
 websitesRouter.post('/', zValidator('json', createWebsiteSchema), async (c) => {
