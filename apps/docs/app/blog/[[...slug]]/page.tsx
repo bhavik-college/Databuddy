@@ -26,30 +26,36 @@ export default async function BlogPage(props: {
   const wordCount = page.data.description?.split(' ').length || 0;
   const readingTime = Math.ceil(wordCount / wordsPerMinute) || 1;
 
+  // Safely extract string values with fallbacks
+  const title = String(page.data.title || 'Databuddy Blog');
+  const description = String(page.data.description || 'Privacy-first analytics insights');
+  const author = String(page.data.author || 'Databuddy Team');
+  const category = String(page.data.category || 'General');
+
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
       {/* Enhanced header with better visual hierarchy */}
       <div className="mb-12">
         <DocsTitle className="text-4xl sm:text-5xl font-bold leading-tight mb-6">
-          {page.data.title}
+          {title}
         </DocsTitle>
         <DocsDescription className="text-xl text-muted-foreground leading-relaxed mb-8">
-          {page.data.description}
+          {description}
         </DocsDescription>
         
         {/* Enhanced metadata section with better styling */}
         <div className="bg-gradient-to-r from-muted/50 to-muted/30 rounded-xl p-6 border">
           <div className="flex flex-wrap items-center gap-6 text-sm">
             {/* Author info with avatar placeholder */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                {page.data.author.charAt(0)}
-              </div>
-              <div>
-                                 <div className="font-semibold text-foreground">{page.data.author || 'Databuddy Team'}</div>
-                <div className="text-xs text-muted-foreground">Author</div>
-              </div>
-            </div>
+                         <div className="flex items-center gap-3">
+               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                 {author.charAt(0)}
+               </div>
+               <div>
+                 <div className="font-semibold text-foreground">{author}</div>
+                 <div className="text-xs text-muted-foreground">Author</div>
+               </div>
+             </div>
             
             {/* Publication date */}
             <div className="flex items-center gap-2">
@@ -105,7 +111,7 @@ export default async function BlogPage(props: {
             <div className="flex items-center gap-2">
               <span className="text-xs font-medium text-muted-foreground">Category:</span>
               <span className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold border border-primary/20">
-                {page.data.category || 'General'}
+                {category}
               </span>
               {page.data.featured && (
                 <span className="px-3 py-1.5 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 text-sm font-semibold border border-yellow-200 dark:border-yellow-800">
@@ -156,7 +162,7 @@ export default async function BlogPage(props: {
             {/* Enhanced sharing buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(page.data.title || '')}&url=${encodeURIComponent(`https://databuddy.cc/blog/${params.slug?.join('/') || ''}`)}&via=databuddyps`}
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(`https://databuddy.cc/blog/${params.slug?.join('/') || ''}`)}&via=databuddyps`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
@@ -187,14 +193,14 @@ export default async function BlogPage(props: {
         <div className="bg-gradient-to-r from-muted/30 to-muted/10 rounded-xl p-8 border">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-              {(page.data.author || 'Databuddy Team').charAt(0)}
+              {author.charAt(0)}
             </div>
             <div className="flex-1">
-              <h4 className="text-xl font-bold mb-2">About {page.data.author || 'Databuddy Team'}</h4>
+              <h4 className="text-xl font-bold mb-2">About {author}</h4>
               <p className="text-muted-foreground mb-4">
-                {(page.data.author || 'Databuddy Team') === 'Databuddy Team' 
+                {author === 'Databuddy Team' 
                   ? 'The Databuddy team is passionate about privacy-first analytics and helping businesses grow while respecting user privacy. We build tools that make GDPR compliance simple and automatic.'
-                  : `${page.data.author || 'Anonymous'} is a privacy advocate and analytics expert, focused on helping businesses transition to privacy-first data collection practices.`
+                  : `${author} is a privacy advocate and analytics expert, focused on helping businesses transition to privacy-first data collection practices.`
                 }
               </p>
               <div className="flex items-center gap-4">
@@ -258,29 +264,34 @@ export async function generateMetadata(props: {
   const page = blogSource.getPage(params.slug);
   if (!page) notFound();
 
+  // Safely extract metadata with fallbacks
+  const title = String(page.data.title || 'Databuddy Blog');
+  const description = String(page.data.description || 'Privacy-first analytics insights');
+  const author = String(page.data.author || 'Databuddy Team');
+
   return {
-    title: page.data.title || 'Databuddy Blog',
-    description: page.data.description || 'Privacy-first analytics insights',
-    authors: [{ name: page.data.author || 'Databuddy Team' }],
+    title,
+    description,
+    authors: [{ name: author }],
     publishedTime: page.data.publishedAt,
     modifiedTime: page.data.lastModified,
     tags: page.data.tags,
     category: page.data.category,
     openGraph: {
-      title: page.data.title || 'Databuddy Blog',
-      description: page.data.description || 'Privacy-first analytics insights',
+      title,
+      description,
       type: 'article',
       publishedTime: page.data.publishedAt,
       modifiedTime: page.data.lastModified,
-      authors: [page.data.author || 'Databuddy Team'],
+      authors: [author],
       tags: page.data.tags,
       url: `https://databuddy.cc/blog/${params.slug?.join('/') || ''}`,
       siteName: 'Databuddy',
     },
     twitter: {
       card: 'summary_large_image',
-      title: page.data.title || 'Databuddy Blog',
-      description: page.data.description || 'Privacy-first analytics insights',
+      title,
+      description,
       site: '@databuddyps',
       creator: '@databuddyps',
     },
