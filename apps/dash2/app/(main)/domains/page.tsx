@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { Suspense } from "react";
 import dynamic from "next/dynamic";
+import { useQueryState } from "nuqs";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -50,7 +51,11 @@ function TabSkeleton() {
 }
 
 export default function DomainsPage() {
-  const [activeTab, setActiveTab] = useState("domains");
+  const [activeTab, setActiveTab] = useQueryState('tab', {
+    defaultValue: 'domains',
+    clearOnDefault: true
+  });
+  
   const {
     domain,
     setDomain,

@@ -18,7 +18,7 @@ export const validateDomainFormat = (domain: string): boolean => {
   return domainRegex.test(domain);
 };
 
-export const formatRank = (rank: string | undefined): string => {
+export const formatRank = (rank: string | undefined | null): string => {
   if (!rank) return 'N/A';
   const num = Number.parseInt(rank, 10);
   if (Number.isNaN(num)) return 'N/A';
