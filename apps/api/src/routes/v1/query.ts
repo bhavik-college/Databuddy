@@ -11,7 +11,7 @@ import { getLanguageName } from '@databuddy/shared'
 
 // Single query schema
 const singleQuerySchema = z.object({
-  id: z.string().optional(), // Optional ID to identify the query in the batch
+  id: z.string().optional(),
   startDate: z.string(),
   endDate: z.string(),
   timeZone: z.string().default('UTC'),
@@ -25,10 +25,9 @@ const singleQuerySchema = z.object({
   })).default([])
 })
 
-// Batch query schema - supports both single query and array of queries
 const batchQuerySchema = z.union([
-  singleQuerySchema, // Single query (backward compatibility)
-  z.array(singleQuerySchema).min(1).max(10) // Array of queries (max 10 for performance)
+  singleQuerySchema,
+  z.array(singleQuerySchema).min(1).max(10)
 ])
 
 interface Website {
@@ -782,7 +781,36 @@ async function processBatchQueries(
 
 queryRouter.post(
   '/',
-  zValidator('json', batchQuerySchema),
+  zValidator('json', z.union([
+    z.object({
+      id: z.string().optional(),
+      startDate: z.string(),
+      endDate: z.string(),
+      timeZone: z.string().default('UTC'),
+      parameters: z.array(z.string()).min(1),
+      limit: z.number().min(1).max(1000).default(100),
+      page: z.number().min(1).default(1),
+      filters: z.array(z.object({
+        field: z.string(),
+        operator: z.enum(['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in', 'not_in', 'contains', 'starts_with']),
+        value: z.union([z.string(), z.number(), z.array(z.union([z.string(), z.number()]))])
+      })).default([])
+    }),
+    z.array(z.object({
+      id: z.string().optional(),
+      startDate: z.string(),
+      endDate: z.string(),
+      timeZone: z.string().default('UTC'),
+      parameters: z.array(z.string()).min(1),
+      limit: z.number().min(1).max(1000).default(100),
+      page: z.number().min(1).default(1),
+      filters: z.array(z.object({
+        field: z.string(),
+        operator: z.enum(['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in', 'not_in', 'contains', 'starts_with']),
+        value: z.union([z.string(), z.number(), z.array(z.union([z.string(), z.number()]))])
+      })).default([])
+    })).min(1).max(10)
+  ])),
   async (c) => {
     const requestData = c.req.valid('json')
     const website = c.get('website')

@@ -4,8 +4,7 @@ import React, { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { getWebsiteById } from "@/app/actions/websites";
+import { useWebsite } from "@/hooks/use-websites";
 
 const AIAssistantMain = dynamic(
   () => import("./components/ai-assistant-main"),
@@ -55,18 +54,7 @@ function AIAssistantLoadingSkeleton() {
 export default function AssistantPage() {
   const { id } = useParams();
   
-  const { data: websiteData, isLoading } = useQuery({
-    queryKey: ["website", id],
-    queryFn: async () => {
-      const result = await getWebsiteById(id as string);
-      if (result.error) {
-        throw new Error(result.error);
-      }
-      return result.data;
-    },
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
+  const { data: websiteData, isLoading } = useWebsite(id as string);
 
   // This div structure is crucial for correct layout and scrolling
   return (

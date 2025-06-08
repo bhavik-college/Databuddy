@@ -1,22 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import type { WebsiteDataTabProps, TrackingOptions } from "../utils/types";
 import { Check, Clipboard, Code, ExternalLink, Globe, Info, Laptop, Settings2, Zap, HelpCircle, ChevronRight, AlertCircle, Pencil, FileCode, BookOpen, Activity, Sliders, BarChart, TableProperties, Server, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { WebsiteDialog } from "@/components/website-dialog";
-import { updateWebsite } from "@/app/actions/websites";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+
 import { Slider } from "@/components/ui/slider";
 import { useRouter } from "next/navigation";
 import {

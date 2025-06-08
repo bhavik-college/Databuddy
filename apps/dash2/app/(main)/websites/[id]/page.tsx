@@ -11,8 +11,8 @@ import { RefreshCw, Calendar, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getWebsiteById } from "@/app/actions/websites";
 import { useQuery } from "@tanstack/react-query";
+import { useWebsite } from "@/hooks/use-websites";
 import { useWebsiteAnalytics } from "@/hooks/use-analytics";
 import { format, subDays, subHours } from "date-fns";
 import type { DateRange as DayPickerRange } from "react-day-picker";
@@ -100,22 +100,7 @@ function WebsiteDetailsPage() {
     }
   }, [setDateRangeAction]);
 
-  const { data, isLoading, isError, error, refetch: refetchWebsiteData } = useQuery({
-    queryKey: ["website", id],
-    queryFn: async () => {
-      const result = await getWebsiteById(id as string);
-      if (result.error) {
-        throw new Error(result.error);
-      }
-      return result.data;
-    },
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchInterval: false,
-    retry: 1,
-    retryDelay: 3000,
-  });
+  const { data, isLoading, isError, error, refetch: refetchWebsiteData } = useWebsite(id as string);
 
   // Always call the analytics hook with the websiteId to maintain hook order
   const { analytics: analyticsData, loading: analyticsLoading } = useWebsiteAnalytics(

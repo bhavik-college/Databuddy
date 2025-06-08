@@ -2,13 +2,6 @@
 
 import { useEffect } from 'react';
 import { toast } from 'sonner';
-import { 
-  createWebsite as createWebsiteAction, 
-  deleteWebsite as deleteWebsiteAction, 
-  getUserWebsites,
-  updateWebsite as updateWebsiteAction,
-  getWebsiteById
-} from "@/app/actions/websites";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export interface Website {
@@ -31,6 +24,81 @@ export interface CreateWebsiteData {
   subdomain?: string;
 }
 
+// API client functions
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+
+async function apiRequest<T>(
+  endpoint: string, 
+  options: RequestInit = {}
+): Promise<{ success: boolean; data?: T; error?: string }> {
+  const response = await fetch(`${API_BASE_URL}/v1${endpoint}`, {
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  });
+
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(data.error || `HTTP error! status: ${response.status}`);
+  }
+  
+  return data;
+}
+
+// API functions
+const websiteApi = {
+  getAll: async (): Promise<Website[]> => {
+    const result = await apiRequest<Website[]>('/websites');
+    if (result.error) throw new Error(result.error);
+    return result.data || [];
+  },
+
+  getById: async (id: string): Promise<Website | null> => {
+    const result = await apiRequest<Website>(`/websites/${id}`);
+    if (result.error) throw new Error(result.error);
+    return result.data || null;
+  },
+
+  getByProject: async (projectId: string): Promise<Website[]> => {
+    const result = await apiRequest<Website[]>(`/websites/project/${projectId}`);
+    if (result.error) throw new Error(result.error);
+    return result.data || [];
+  },
+
+  create: async (data: CreateWebsiteData): Promise<Website> => {
+    const result = await apiRequest<Website>('/websites', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    if (result.error) throw new Error(result.error);
+    if (!result.data) throw new Error('No data returned from create website');
+    return result.data;
+  },
+
+  update: async (id: string, name: string): Promise<Website> => {
+    const result = await apiRequest<Website>(`/websites/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ name }),
+    });
+    if (result.error) throw new Error(result.error);
+    if (!result.data) throw new Error('No data returned from update website');
+    return result.data;
+  },
+
+  delete: async (id: string): Promise<{ success: boolean }> => {
+    const result = await apiRequest<{ success: boolean }>(`/websites/${id}`, {
+      method: 'DELETE',
+    });
+    if (result.error) throw new Error(result.error);
+    if (!result.data) throw new Error('No data returned from delete website');
+    return result.data;
+  },
+};
+
 // Query keys
 export const websiteKeys = {
   all: ['websites'] as const,
@@ -40,6 +108,32 @@ export const websiteKeys = {
   detail: (id: string) => [...websiteKeys.details(), id] as const,
 };
 
+// Helper hook for getting a single website
+export function useWebsite(id: string) {
+  return useQuery({
+    queryKey: websiteKeys.detail(id),
+    queryFn: async () => {
+      return await websiteApi.getById(id);
+    },
+    enabled: !!id,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+// Helper hook for getting project websites
+export function useProjectWebsites(projectId: string) {
+  return useQuery({
+    queryKey: [...websiteKeys.lists(), 'project', projectId],
+    queryFn: async () => {
+      return await websiteApi.getByProject(projectId);
+    },
+    enabled: !!projectId,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
+  });
+}
+
 export function useWebsites() {
   const queryClient = useQueryClient();
   
@@ -47,9 +141,7 @@ export function useWebsites() {
     queryKey: websiteKeys.lists(),
     queryFn: async () => {
       try {
-        const result = await getUserWebsites();
-        if (result.error) throw new Error(result.error);
-        return result.data || [];
+        return await websiteApi.getAll();
       } catch (error) {
         console.error('Error fetching websites:', error);
         throw error;
@@ -66,14 +158,12 @@ export function useWebsites() {
   }, [isError]);
 
   const createMutation = useMutation<
-    Website | undefined,
+    Website,
     Error,
     CreateWebsiteData
   >({
     mutationFn: async (data: CreateWebsiteData) => {
-      const result = await createWebsiteAction(data);
-      if (result.error) throw new Error(result.error);
-      return result.data as Website | undefined;
+      return await websiteApi.create(data);
     },
     onMutate: () => {
     },
@@ -90,9 +180,7 @@ export function useWebsites() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, name }: { id: string; name: string }) => {
-      const result = await updateWebsiteAction(id, name);
-      if (result.error) throw new Error(result.error);
-      return result.data;
+      return await websiteApi.update(id, name);
     },
     onMutate: () => {
     },
@@ -109,10 +197,8 @@ export function useWebsites() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const result = await deleteWebsiteAction(id);
-      if (result.error) throw new Error(result.error);
-      // Pass id to onSuccess to use it for store update
-      return { data: result.data, id }; 
+      const result = await websiteApi.delete(id);
+      return { data: result, id }; 
     },
     onMutate: () => {
     },
@@ -140,3 +226,6 @@ export function useWebsites() {
     refetch,
   };
 }
+
+// Export API functions for direct use if needed
+export { websiteApi };

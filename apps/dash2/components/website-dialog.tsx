@@ -8,9 +8,8 @@ import { toast } from "sonner";
 import { Globe, Terminal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { Website } from "@/hooks/use-websites";
-import { createWebsite as createWebsiteAction, updateWebsite } from "@/app/actions/websites";
 import type { CreateWebsiteData } from "@/hooks/use-websites";
-import type { UseMutateFunction } from "@tanstack/react-query";
+import { useWebsites } from "@/hooks/use-websites";
 
 import {
   Dialog,
@@ -72,6 +71,242 @@ interface WebsiteDialogProps {
   onUpdateSuccess?: () => void;
 }
 
+// Separate components to avoid TypeScript server crashes
+function CreateWebsiteForm({
+  onClose,
+  verifiedDomains,
+  initialValues,
+  onCreationSuccess,
+}: {
+  onClose: () => void;
+  verifiedDomains: VerifiedDomain[];
+  initialValues?: { name?: string; domainId?: string; } | null;
+  onCreationSuccess?: () => void;
+}) {
+  const { createWebsite, isCreating } = useWebsites();
+  
+  const form = useForm<CreateFormData>({
+    resolver: zodResolver(createFormSchema),
+    defaultValues: {
+      name: initialValues?.name || "",
+      subdomain: "",
+      domainId: initialValues?.domainId || "",
+    },
+  });
+
+  const handleSubmit = async (data: CreateFormData) => {
+    const selectedDomain = verifiedDomains.find(d => d.id === data.domainId);
+    if (!selectedDomain) {
+      toast.error("Please select a verified domain");
+      return;
+    }
+
+    createWebsite({
+      name: data.name,
+      domainId: data.domainId,
+      domain: selectedDomain.name,
+      subdomain: data.subdomain,
+    }, {
+      onSuccess: () => {
+        toast.success("Website created successfully");
+        if (onCreationSuccess) {
+          onCreationSuccess();
+        }
+        onClose();
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      }
+    });
+  };
+
+  const selectedDomain = verifiedDomains.find(d => d.id === form.watch("domainId"));
+  const verifiedDomainsList = verifiedDomains.filter(domain => domain.verificationStatus === "VERIFIED");
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-xs font-medium">Name</FormLabel>
+              <FormControl>
+                <Input placeholder="My Website" {...field} className="h-9" />
+              </FormControl>
+              <FormMessage className="text-xs" />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="domainId"
+          render={({ field }) => (
+            <FormItem>
+              <div className="flex items-center justify-between mb-1.5">
+                <FormLabel className="text-xs font-medium">Domain</FormLabel>
+                {field.value && selectedDomain?.verificationStatus === "VERIFIED" && (
+                  <Badge variant="outline" className="h-5 px-1.5 text-xs font-normal">
+                    Verified
+                  </Badge>
+                )}
+              </div>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value}
+                defaultValue={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="Select a verified domain" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {verifiedDomainsList.length === 0 ? (
+                    <div className="p-2 text-sm text-muted-foreground">
+                      No verified domains available
+                    </div>
+                  ) : (
+                    verifiedDomainsList.map((domain) => (
+                      <SelectItem key={domain.id} value={domain.id}>
+                        {domain.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              <FormMessage className="text-xs" />
+            </FormItem>
+          )}
+        />
+        
+        {selectedDomain && (
+          <FormField
+            control={form.control}
+            name="subdomain"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs font-medium">Subdomain (Optional)</FormLabel>
+                <div className="flex items-center">
+                  <FormControl>
+                    <Input 
+                      placeholder="blog" 
+                      {...field} 
+                      className="h-9 rounded-r-none border-r-0"
+                    />
+                  </FormControl>
+                  <div className="flex h-9 items-center rounded-r-md border bg-muted px-3 text-sm text-muted-foreground">
+                    .{selectedDomain.name}
+                  </div>
+                </div>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+        )}
+        
+        <DialogFooter className="pt-2">
+          <div className="flex w-full gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isCreating}
+              className="flex-1 h-9"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isCreating}
+              className="flex-1 h-9"
+            >
+              {isCreating ? "Creating..." : "Create"}
+            </Button>
+          </div>
+        </DialogFooter>
+      </form>
+    </Form>
+  );
+}
+
+function EditWebsiteForm({
+  website,
+  onClose,
+  onUpdateSuccess,
+}: {
+  website: Website;
+  onClose: () => void;
+  onUpdateSuccess?: () => void;
+}) {
+  const { updateWebsite, isUpdating } = useWebsites();
+  
+  const form = useForm<EditFormData>({
+    resolver: zodResolver(editFormSchema),
+    defaultValues: {
+      name: website.name || "",
+    },
+  });
+
+  const handleSubmit = async (data: EditFormData) => {
+    updateWebsite({ id: website.id, name: data.name }, {
+      onSuccess: () => {
+        toast.success("Website updated successfully");
+        if (onUpdateSuccess) {
+          onUpdateSuccess();
+        }
+        onClose();
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      }
+    });
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-xs font-medium">Name</FormLabel>
+              <FormControl>
+                <Input placeholder="My Website" {...field} className="h-9" />
+              </FormControl>
+              <FormMessage className="text-xs" />
+            </FormItem>
+          )}
+        />
+        
+        <DialogFooter className="pt-2">
+          <div className="flex w-full gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isUpdating}
+              className="flex-1 h-9"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isUpdating}
+              className="flex-1 h-9"
+            >
+              {isUpdating ? "Updating..." : "Update"}
+            </Button>
+          </div>
+        </DialogFooter>
+      </form>
+    </Form>
+  );
+}
+
 export function WebsiteDialog({
   website,
   open,
@@ -82,89 +317,14 @@ export function WebsiteDialog({
   onCreationSuccess,
   onUpdateSuccess,
 }: WebsiteDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = !!website;
-
-  const form = useForm<CreateFormData | EditFormData>({
-    resolver: zodResolver(isEditing ? editFormSchema : createFormSchema),
-    defaultValues: {
-      name: initialValues?.name || website?.name || "",
-      ...(isEditing ? {} : {
-        subdomain: "",
-        domainId: initialValues?.domainId || "",
-      }),
-    },
-  });
-
-  useEffect(() => {
-    if (open) {
-      form.reset({
-        name: initialValues?.name || website?.name || "",
-        ...(isEditing ? {} : {
-          subdomain: "",
-          domainId: initialValues?.domainId || "",
-        }),
-      });
-    }
-  }, [form, initialValues, website, open, isEditing]);
 
   const handleClose = () => {
     onOpenChange(false);
   };
 
-  const handleSubmit = async (data: CreateFormData | EditFormData) => {
-    setIsSubmitting(true);
-    try {
-      if (!website) {
-        const createData = data as CreateFormData;
-        const selectedDomain = verifiedDomains.find(d => d.id === createData.domainId);
-        if (!selectedDomain) {
-          toast.error("Please select a verified domain");
-          setIsSubmitting(false);
-          return;
-        }
-
-        const result = await createWebsiteAction({
-          name: createData.name,
-          domainId: createData.domainId,
-          domain: selectedDomain.name,
-          subdomain: createData.subdomain,
-        });
-
-        if (result.error) {
-          toast.error(result.error);
-        } else {
-          toast.success("Website created successfully");
-          if (onCreationSuccess) {
-            onCreationSuccess();
-          }
-          handleClose();
-        }
-      } else {
-        const editData = data as EditFormData;
-        const result = await updateWebsite(website.id, editData.name);
-
-        if (result.error) {
-          toast.error(result.error);
-        } else {
-          toast.success("Website updated successfully");
-          if (onUpdateSuccess) {
-            onUpdateSuccess();
-          }
-          handleClose();
-        }
-      }
-    } catch (error) {
-      console.error("[WebsiteDialog] Unexpected error:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to save website");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const selectedDomain = verifiedDomains.find(d => d.id === (form.watch("domainId") as string));
+  const selectedDomain = verifiedDomains.find(d => d.id === initialValues?.domainId);
   const isLocalhost = selectedDomain?.name.includes('localhost') || selectedDomain?.name.includes('127.0.0.1');
-  const verifiedDomainsList = verifiedDomains.filter(domain => domain.verificationStatus === "VERIFIED");
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -182,115 +342,20 @@ export function WebsiteDialog({
           </DialogDescription>
         </DialogHeader>
         
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs font-medium">Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="My Website" {...field} className="h-9" />
-                  </FormControl>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )}
-            />
-            
-            {!isEditing && (
-              <>
-                <FormField
-                  control={form.control}
-                  name="domainId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <FormLabel className="text-xs font-medium">Domain</FormLabel>
-                        {field.value && selectedDomain?.verificationStatus === "VERIFIED" && (
-                          <Badge variant="outline" className="h-5 px-1.5 text-xs font-normal">
-                            Verified
-                          </Badge>
-                        )}
-                      </div>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="h-9">
-                            <SelectValue placeholder="Select a verified domain" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {verifiedDomainsList.length === 0 ? (
-                            <div className="p-2 text-sm text-muted-foreground">
-                              No verified domains available
-                            </div>
-                          ) : (
-                            verifiedDomainsList.map((domain) => (
-                              <SelectItem key={domain.id} value={domain.id}>
-                                {domain.name}
-                              </SelectItem>
-                            ))
-                          )}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage className="text-xs" />
-                    </FormItem>
-                  )}
-                />
-                
-                {selectedDomain && (
-                  <FormField
-                    control={form.control}
-                    name="subdomain"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-medium">Subdomain (Optional)</FormLabel>
-                        <div className="flex items-center">
-                          <FormControl>
-                            <Input 
-                              placeholder="blog" 
-                              {...field} 
-                              className="h-9 rounded-r-none border-r-0"
-                            />
-                          </FormControl>
-                          <div className="flex h-9 items-center rounded-r-md border bg-muted px-3 text-sm text-muted-foreground">
-                            .{selectedDomain.name}
-                          </div>
-                        </div>
-                        <FormMessage className="text-xs" />
-                      </FormItem>
-                    )}
-                  />
-                )}
-              </>
-            )}
-            
-            <DialogFooter className="pt-2">
-              <div className="flex w-full gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleClose}
-                  disabled={isSubmitting}
-                  className="flex-1 h-9"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 h-9"
-                >
-                  {isSubmitting ? "Saving..." : "Save"}
-                </Button>
-              </div>
-            </DialogFooter>
-          </form>
-        </Form>
+        {isEditing && website ? (
+          <EditWebsiteForm
+            website={website}
+            onClose={handleClose}
+            onUpdateSuccess={onUpdateSuccess}
+          />
+        ) : (
+          <CreateWebsiteForm
+            onClose={handleClose}
+            verifiedDomains={verifiedDomains}
+            initialValues={initialValues}
+            onCreationSuccess={onCreationSuccess}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

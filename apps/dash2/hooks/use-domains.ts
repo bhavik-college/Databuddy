@@ -3,20 +3,104 @@
 import { useEffect, useRef } from 'react';
 import { useDomainsStore } from '@/stores/use-domains-store';
 import { toast } from 'sonner';
-import { 
-  getUserDomains,
-  createDomain as createDomainAction,
-  deleteDomain as deleteDomainAction,
-  updateDomain as updateDomainAction,
-  checkDomainVerification as checkDomainVerificationAction,
-  regenerateVerificationToken as regenerateVerificationTokenAction
-} from '@/app/actions/domains';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-
-// Use the Domain type from the store
 import type { domains } from '@databuddy/db';
 
 type Domain = typeof domains.$inferSelect;
+
+// API client functions
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+
+async function apiRequest<T>(
+  endpoint: string, 
+  options: RequestInit = {}
+): Promise<{ success: boolean; data?: T; error?: string }> {
+  const response = await fetch(`${API_BASE_URL}/v1${endpoint}`, {
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  });
+
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(data.error || `HTTP error! status: ${response.status}`);
+  }
+  
+  return data;
+}
+
+// API functions
+const domainApi = {
+  getAll: async (): Promise<Domain[]> => {
+    const result = await apiRequest<Domain[]>('/domains');
+    if (result.error) throw new Error(result.error);
+    return result.data || [];
+  },
+
+  getById: async (id: string): Promise<Domain | null> => {
+    const result = await apiRequest<Domain>(`/domains/${id}`);
+    if (result.error) throw new Error(result.error);
+    return result.data || null;
+  },
+
+  getByProject: async (projectId: string): Promise<Domain[]> => {
+    const result = await apiRequest<Domain[]>(`/domains/project/${projectId}`);
+    if (result.error) throw new Error(result.error);
+    return result.data || [];
+  },
+
+  create: async (data: CreateDomainData): Promise<Domain> => {
+    const result = await apiRequest<Domain>('/domains', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    if (result.error) throw new Error(result.error);
+    if (!result.data) throw new Error('No data returned from create domain');
+    return result.data;
+  },
+
+  update: async (id: string, data: UpdateDomainData): Promise<Domain> => {
+    const result = await apiRequest<Domain>(`/domains/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+    if (result.error) throw new Error(result.error);
+    if (!result.data) throw new Error('No data returned from update domain');
+    return result.data;
+  },
+
+  delete: async (id: string): Promise<{ success: boolean }> => {
+    const result = await apiRequest<{ success: boolean }>(`/domains/${id}`, {
+      method: 'DELETE',
+    });
+    if (result.error) throw new Error(result.error);
+    if (!result.data) throw new Error('No data returned from delete domain');
+    return result.data;
+  },
+
+  verify: async (id: string): Promise<VerificationResult> => {
+    const result = await apiRequest<VerificationResult>(`/domains/${id}/verify`, {
+      method: 'POST',
+    });
+    if (result.error) throw new Error(result.error);
+    if (!result.data) throw new Error('No data returned from verify domain');
+    return result.data;
+  },
+
+  regenerateToken: async (id: string): Promise<Domain> => {
+    const result = await apiRequest<Domain>(`/domains/${id}/regenerate-token`, {
+      method: 'POST',
+    });
+    if (result.error) throw new Error(result.error);
+    if (!result.data) throw new Error('No data returned from regenerate token');
+    return result.data;
+  },
+};
+
 // Query keys
 export const domainKeys = {
   all: ['domains'] as const,
@@ -28,6 +112,8 @@ export const domainKeys = {
 
 interface CreateDomainData {
   name: string;
+  userId?: string;
+  projectId?: string;
 }
 
 interface UpdateDomainData {
@@ -49,9 +135,7 @@ export function useDomains() {
     queryKey: domainKeys.lists(),
     queryFn: async () => {
       try {
-        const result = await getUserDomains();
-        if (result.error) throw new Error(result.error);
-        return result.data || [];
+        return await domainApi.getAll();
       } catch (error) {
         console.error('Error fetching domains:', error);
         throw error;
@@ -79,9 +163,7 @@ export function useDomains() {
   // Create domain mutation
   const createMutation = useMutation({
     mutationFn: async (data: CreateDomainData) => {
-      const result = await createDomainAction(data);
-      if (result.error) throw new Error(result.error);
-      return result.data;
+      return await domainApi.create(data);
     },
     onMutate: () => {
       store.setIsCreating(true);
@@ -101,9 +183,7 @@ export function useDomains() {
   // Update domain mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateDomainData }) => {
-      const result = await updateDomainAction(id, data);
-      if (result.error) throw new Error(result.error);
-      return result.data;
+      return await domainApi.update(id, data);
     },
     onMutate: () => {
       store.setIsUpdating(true);
@@ -123,10 +203,8 @@ export function useDomains() {
   // Delete domain mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const result = await deleteDomainAction(id);
-      if (result.error) throw new Error(result.error);
-      // Return success flag if available, otherwise just return an empty object
-      return result.success !== undefined ? { success: result.success } : {};
+      const result = await domainApi.delete(id);
+      return { data: result, id };
     },
     onMutate: () => {
       store.setIsDeleting(true);
@@ -146,9 +224,7 @@ export function useDomains() {
   // Verify domain mutation
   const verifyMutation = useMutation({
     mutationFn: async (id: string) => {
-      const result = await checkDomainVerificationAction(id);
-      if (result.error) throw new Error(result.error);
-      return result.data as VerificationResult;
+      return await domainApi.verify(id);
     },
     onMutate: () => {
       store.setIsVerifying(true);
@@ -172,9 +248,7 @@ export function useDomains() {
   // Regenerate token mutation
   const regenerateMutation = useMutation({
     mutationFn: async (id: string) => {
-      const result = await regenerateVerificationTokenAction(id);
-      if (result.error) throw new Error(result.error);
-      return result.data;
+      return await domainApi.regenerateToken(id);
     },
     onMutate: () => {
       store.setIsRegenerating(true);
@@ -228,21 +302,29 @@ export function useDomains() {
 
 // Hook to get a single domain by ID
 export function useDomain(id: string) {
-  const queryClient = useQueryClient();
-  
   return useQuery({
     queryKey: domainKeys.detail(id),
     queryFn: async () => {
-      if (!id) return null;
-      
-      // First check if we already have the domain data in cache
-      const domainsData = queryClient.getQueryData<Domain[]>(domainKeys.lists());
-      const cachedDomain = domainsData?.find(domain => domain.id === id);
-      if (cachedDomain) return cachedDomain;
-      
-      // If not found in cache, could implement a getDomainById fetch here
-      return null;
+      return await domainApi.getById(id);
     },
     enabled: !!id,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
-} 
+}
+
+// Helper hook for getting project domains
+export function useProjectDomains(projectId: string) {
+  return useQuery({
+    queryKey: [...domainKeys.lists(), 'project', projectId],
+    queryFn: async () => {
+      return await domainApi.getByProject(projectId);
+    },
+    enabled: !!projectId,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+// Export API functions for direct use if needed
+export { domainApi }; 
