@@ -479,7 +479,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
       device_type,
       country,
       region,
-      city
     FROM analytics.events
     WHERE client_id = '${websiteId}'
       AND time >= '${startDate}'
