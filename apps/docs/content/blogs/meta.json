@@ -1,0 +1,10 @@
+{
+  "title": "Blog",
+  "description": "Insights, updates, and guides on privacy-first analytics",
+  "icon": "BookOpen",
+  "root": true,
+  "pages": [
+    "index",
+    "we-are-gdpr-compliant"
+  ]
+} 

@@ -4,12 +4,34 @@ import {
   frontmatterSchema,
   metaSchema,
 } from 'fumadocs-mdx/config';
+import { z } from 'zod';
+
+// Blog frontmatter schema
+const blogFrontmatterSchema = frontmatterSchema.extend({
+  author: z.string(),
+  publishedAt: z.string(),
+  lastModified: z.string().optional(),
+  featured: z.boolean().optional().default(false),
+  category: z.string(),
+  tags: z.array(z.string()).optional().default([]),
+});
 
 // You can customise Zod schemas for frontmatter and `meta.json` here
 // see https://fumadocs.vercel.app/docs/mdx/collections#define-docs
 export const docs = defineDocs({
+  dir: 'content/docs',
   docs: {
     schema: frontmatterSchema,
+  },
+  meta: {
+    schema: metaSchema,
+  },
+});
+
+export const blogs = defineDocs({
+  dir: 'content/blogs',
+  docs: {
+    schema: blogFrontmatterSchema,
   },
   meta: {
     schema: metaSchema,

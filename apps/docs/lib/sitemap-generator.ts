@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { source } from '@/lib/source'
+import { blogSource } from '@/lib/blog-source'
 
 export function generateSitemapEntries(): MetadataRoute.Sitemap {
   const baseUrl = 'https://www.databuddy.cc'
@@ -9,6 +10,7 @@ export function generateSitemapEntries(): MetadataRoute.Sitemap {
   try {
     // Get all pages from the source
     const pages = source.getPages()
+    const blogPages = blogSource.getPages()
     const nonDocPages = [
       '/privacy',
       '/demo',
@@ -59,7 +61,16 @@ export function generateSitemapEntries(): MetadataRoute.Sitemap {
       })
     }
 
-    for (const page of nonDocPages) {
+    for (const page of blogPages) {
+      entries.push({
+        url: `${baseUrl}${page.url}`,
+        lastModified,
+        changeFrequency: 'weekly',
+        priority: 0.5,
+      })
+    }
+
+      for (const page of nonDocPages) {
       entries.push({
         url: `${baseUrl}${page}`,
         lastModified,
