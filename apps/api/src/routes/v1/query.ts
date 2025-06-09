@@ -223,8 +223,9 @@ function createQueryBuilder(config: BuilderConfig): ParameterBuilder {
   return (websiteId, startDate, endDate, limit, offset) => {
     const whereClauses = [
       `client_id = ${escapeSqlString(websiteId)}`,
-      `time >= ${escapeSqlString(startDate)}`,
-      `time <= ${escapeSqlString(endDate)}`
+      `toDate(time) >= ${escapeSqlString(startDate)}`,
+      `toDate(time) <= ${escapeSqlString(endDate)}`,
+      `event_name = 'screen_view'`
     ];
     
     if (config.eventName) {
@@ -257,7 +258,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'device_type',
     groupByColumns: ['device_type'],
-    eventName: 'screen_view',
     extraWhere: "device_type != ''",
     orderBy: 'visitors DESC'
   }),
@@ -266,13 +266,13 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: "CONCAT(browser_name, ' ', browser_version)",
     groupByColumns: ['browser_name', 'browser_version'],
-    eventName: 'screen_view',
     extraWhere: "browser_name != '' AND browser_version IS NOT NULL AND browser_version != ''",
     orderBy: 'visitors DESC'
   }),
 
   browsers_grouped: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
     SELECT 
+      CONCAT(browser_name, ' ', browser_version) as name,
       browser_name,
       browser_version,
       uniq(anonymous_id) as visitors,
@@ -280,8 +280,8 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
       uniq(session_id) as sessions
     FROM analytics.events
     WHERE client_id = ${escapeSqlString(websiteId)}
-      AND time >= ${escapeSqlString(startDate)}
-      AND time <= ${escapeSqlString(endDate)}
+      AND toDate(time) >= ${escapeSqlString(startDate)}
+      AND toDate(time) <= ${escapeSqlString(endDate)}
       AND event_name = 'screen_view'
       AND browser_name != ''
       AND browser_version IS NOT NULL 
@@ -295,8 +295,23 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'os_name',
     groupByColumns: ['os_name'],
-    eventName: 'screen_view',
     extraWhere: "os_name != ''",
+    orderBy: 'visitors DESC'
+  }),
+
+  screen_resolution: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: 'screen_resolution',
+    groupByColumns: ['screen_resolution'],
+    extraWhere: "screen_resolution != '' AND screen_resolution IS NOT NULL",
+    orderBy: 'visitors DESC'
+  }),
+
+  connection_type: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: 'connection_type',
+    groupByColumns: ['connection_type'],
+    extraWhere: "connection_type != '' AND connection_type IS NOT NULL",
     orderBy: 'visitors DESC'
   }),
 
@@ -305,7 +320,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'country',
     groupByColumns: ['country'],
-    eventName: 'screen_view',
     extraWhere: "country != ''",
     orderBy: 'visitors DESC'
   }),
@@ -314,7 +328,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: "CONCAT(region, ', ', country)",
     groupByColumns: ['region', 'country'],
-    eventName: 'screen_view',
     extraWhere: "region != ''",
     orderBy: 'visitors DESC'
   }),
@@ -323,7 +336,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'timezone',
     groupByColumns: ['timezone'],
-    eventName: 'screen_view',
     extraWhere: "timezone != ''",
     orderBy: 'visitors DESC'
   }),
@@ -332,7 +344,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'language',
     groupByColumns: ['language'],
-    eventName: 'screen_view',
     extraWhere: "language != '' AND language IS NOT NULL",
     orderBy: 'visitors DESC'
   }),
@@ -342,7 +353,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'path',
     groupByColumns: ['path'],
-    eventName: 'screen_view',
     extraWhere: "path != ''",
     orderBy: 'pageviews DESC'
   }),
@@ -360,7 +370,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'utm_source',
     groupByColumns: ['utm_source'],
-    eventName: 'screen_view',
     extraWhere: "utm_source != ''",
     orderBy: 'visitors DESC'
   }),
@@ -369,7 +378,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'utm_medium',
     groupByColumns: ['utm_medium'],
-    eventName: 'screen_view',
     extraWhere: "utm_medium != ''",
     orderBy: 'visitors DESC'
   }),
@@ -378,7 +386,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'utm_campaign',
     groupByColumns: ['utm_campaign'],
-    eventName: 'screen_view',
     extraWhere: "utm_campaign != ''",
     orderBy: 'visitors DESC'
   }),
@@ -387,7 +394,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'utm_content',
     groupByColumns: ['utm_content'],
-    eventName: 'screen_view',
     extraWhere: "utm_content != ''",
     orderBy: 'visitors DESC'
   }),
@@ -396,7 +402,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'utm_term',
     groupByColumns: ['utm_term'],
-    eventName: 'screen_view',
     extraWhere: "utm_term != ''",
     orderBy: 'visitors DESC'
   }),
@@ -406,7 +411,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'referrer',
     groupByColumns: ['referrer'],
-    eventName: 'screen_view',
     extraWhere: "referrer != ''",
     orderBy: 'visitors DESC'
   }),
@@ -415,7 +419,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.performance,
     nameColumn: 'path',
     groupByColumns: ['path'],
-    eventName: 'screen_view',
     extraWhere: "load_time > 0 AND path != ''",
     orderBy: 'avg_load_time DESC'
   }),
@@ -424,7 +427,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.performance,
     nameColumn: 'country',
     groupByColumns: ['country'],
-    eventName: 'screen_view',
     extraWhere: "load_time > 0 AND country != ''",
     orderBy: 'avg_load_time DESC'
   }),
@@ -433,7 +435,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.performance,
     nameColumn: 'device_type',
     groupByColumns: ['device_type'],
-    eventName: 'screen_view',
     extraWhere: "load_time > 0 AND device_type != ''",
     orderBy: 'avg_load_time DESC'
   }),
@@ -442,7 +443,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.performance,
     nameColumn: "CONCAT(browser_name, ' ', browser_version)",
     groupByColumns: ['browser_name', 'browser_version'],
-    eventName: 'screen_view',
     extraWhere: "load_time > 0 AND browser_name != '' AND browser_version IS NOT NULL AND browser_version != ''",
     orderBy: 'avg_load_time DESC'
   }),
@@ -451,7 +451,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.performance,
     nameColumn: 'os_name',
     groupByColumns: ['os_name'],
-    eventName: 'screen_view',
     extraWhere: "load_time > 0 AND os_name != ''",
     orderBy: 'avg_load_time DESC'
   }),
@@ -460,7 +459,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.performance,
     nameColumn: "CONCAT(region, ', ', country)",
     groupByColumns: ['region', 'country'],
-    eventName: 'screen_view',
     extraWhere: "load_time > 0 AND region != ''",
     orderBy: 'avg_load_time DESC'
   }),
@@ -482,8 +480,8 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
       region
     FROM analytics.events
     WHERE client_id = ${escapeSqlString(websiteId)}
-      AND time >= ${escapeSqlString(startDate)}
-      AND time <= ${escapeSqlString(endDate)}
+      AND toDate(time) >= ${escapeSqlString(startDate)}
+      AND toDate(time) <= ${escapeSqlString(endDate)}
       AND event_name = 'error'
       AND error_message != ''
     ORDER BY time DESC
@@ -500,8 +498,8 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
       MIN(time) as first_occurrence
     FROM analytics.events
     WHERE client_id = ${escapeSqlString(websiteId)}
-      AND time >= ${escapeSqlString(startDate)}
-      AND time <= ${escapeSqlString(endDate)}
+      AND toDate(time) >= ${escapeSqlString(startDate)}
+      AND toDate(time) <= ${escapeSqlString(endDate)}
       AND event_name = 'error'
       AND error_message != ''
     GROUP BY error_message
@@ -563,8 +561,8 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
       uniq(session_id) as affected_sessions
     FROM analytics.events
     WHERE client_id = ${escapeSqlString(websiteId)}
-      AND time >= ${escapeSqlString(startDate)}
-      AND time <= ${escapeSqlString(endDate)}
+      AND toDate(time) >= ${escapeSqlString(startDate)}
+      AND toDate(time) <= ${escapeSqlString(endDate)}
       AND event_name = 'error'
       AND error_message != ''
     GROUP BY toDate(time)
@@ -578,8 +576,22 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
       uniq(anonymous_id) as total_users
     FROM analytics.events
     WHERE client_id = ${escapeSqlString(websiteId)}
-      AND time >= ${escapeSqlString(startDate)}
-      AND time <= ${escapeSqlString(endDate)}
+      AND toDate(time) >= ${escapeSqlString(startDate)}
+      AND toDate(time) <= ${escapeSqlString(endDate)}
+      AND event_name = 'screen_view'
+  `,
+
+  // Test query to check if there's any data at all
+  test_data: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
+    SELECT 
+      'test' as name,
+      COUNT(DISTINCT anonymous_id) as visitors,
+      COUNT(*) as pageviews,
+      COUNT(DISTINCT session_id) as sessions
+    FROM analytics.events
+    WHERE client_id = ${escapeSqlString(websiteId)}
+      AND toDate(time) >= ${escapeSqlString(startDate)}
+      AND toDate(time) <= ${escapeSqlString(endDate)}
       AND event_name = 'screen_view'
   `,
 
@@ -600,7 +612,13 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     PARAMETER_BUILDERS.os_name(websiteId, startDate, endDate, limit, offset),
     
   regions: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => 
-    PARAMETER_BUILDERS.region(websiteId, startDate, endDate, limit, offset)
+    PARAMETER_BUILDERS.region(websiteId, startDate, endDate, limit, offset),
+    
+  screen_resolutions: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => 
+    PARAMETER_BUILDERS.screen_resolution(websiteId, startDate, endDate, limit, offset),
+    
+  connection_types: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => 
+    PARAMETER_BUILDERS.connection_type(websiteId, startDate, endDate, limit, offset)
 }
 
 // Helper function to get metric type for a parameter
@@ -1024,7 +1042,7 @@ queryRouter.get('/parameters', async (c) => {
     success: true,
     parameters: Object.keys(PARAMETER_BUILDERS),
     categories: {
-      device: ['device_type', 'browser_name', 'browsers_grouped', 'os_name'],
+      device: ['device_type', 'browser_name', 'browsers_grouped', 'os_name', 'screen_resolution', 'connection_type'],
       geography: ['country', 'region', 'timezone', 'language'],
       pages: ['top_pages', 'exit_page'],
       utm: ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'],

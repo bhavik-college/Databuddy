@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useCallback } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { DataTable } from "@/components/analytics/data-table";
-import { useWebsiteAnalytics } from "@/hooks/use-analytics";
-import { useEnhancedGeographicData, useDeviceData, useDynamicQuery } from "@/hooks/use-dynamic-query";
+
+import { useBatchDynamicQuery } from "@/hooks/use-dynamic-query";
 import type { FullTabProps } from "../utils/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardHeader, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
@@ -71,159 +71,178 @@ export function WebsiteAudienceTab({
   isRefreshing,
   setIsRefreshing
 }: FullTabProps) {
-  // Fetch analytics data for legacy components
-  const {
-    analytics,
-    loading,
-    refetch: refetchAnalytics
-  } = useWebsiteAnalytics(websiteId, dateRange);
-
-  // Fetch enhanced geographic data using batch queries
-  const {
-    results: geographicResults,
-    isLoading: isLoadingGeographic,
-    refetch: refetchGeographic,
-    error: geographicError
-  } = useEnhancedGeographicData(websiteId, dateRange);
-
-  const {
-    data: techData,
-    isLoading: isLoadingTech,
-    refetch: refetchTech
-  } = useDeviceData(websiteId, dateRange);
-
-  // Fetch grouped browser data with versions
-  const { 
-    data: groupedBrowserData, 
-    isLoading: isLoadingBrowsers, 
-    refetch: refetchBrowsers 
-  } = useDynamicQuery(
-    websiteId,
-    dateRange,
+  // Consolidate all dynamic queries into a single batch request
+  const batchQueries = useMemo(() => [
+    {
+      id: 'geographic-data',
+      parameters: ['country', 'region', 'timezone', 'language'],
+      limit: 100,
+    },
+    {
+      id: 'device-data',
+      parameters: ['device_type', 'browser_name', 'os_name', 'screen_resolution', 'connection_type'],
+      limit: 50,
+    },
     {
       id: 'browsers-grouped',
       parameters: ['browsers_grouped'],
       limit: 50,
-    }
-  );
+    },
+  ], []); // Empty dependency array since these queries don't change
 
-  // Handle refresh - coordinate both data sources
-  useEffect(() => {
-    let isMounted = true;
+  const {
+    results: batchResults,
+    isLoading: isBatchLoading,
+    refetch: refetchBatch,
+    error: batchError
+  } = useBatchDynamicQuery(websiteId, dateRange, batchQueries);
+
+  // Debug: Check if we have any data at all
+  const testResult = batchResults?.find(r => r.queryId === 'test-data');
+  console.log('Test data result:', testResult);
+  console.log('Date range being used:', dateRange);
+
+  // Memoized refresh function to prevent unnecessary re-renders
+  const handleRefresh = useCallback(async () => {
+    if (!isRefreshing) return;
     
-    if (isRefreshing) {
-      const doRefresh = async () => {
-        try {
-          // Refresh all data sources simultaneously
-          const [analyticsResult, geographicResult, techResult, browserResult] = await Promise.allSettled([
-            refetchAnalytics(),
-            refetchGeographic(),
-            refetchTech(),
-            refetchBrowsers()
-          ]);
-          
-          // Log any specific failures for debugging
-          if (analyticsResult.status === 'rejected') {
-            console.error("Failed to refresh analytics data:", analyticsResult.reason);
-          }
-          if (geographicResult.status === 'rejected') {
-            console.error("Failed to refresh geographic data:", geographicResult.reason);
-          }
-          if (techResult.status === 'rejected') {
-            console.error("Failed to refresh tech data:", techResult.reason);
-          }
-          if (browserResult.status === 'rejected') {
-            console.error("Failed to refresh browser data:", browserResult.reason);
-          }
-        } catch (error) {
-          console.error("Failed to refresh data:", error);
-        } finally {
-          if (isMounted) {
-            setIsRefreshing(false);
-          }
-        }
-      };
-      
-      doRefresh();
+    try {
+      // Execute batch refetch operation
+      await refetchBatch();
+    } catch (error) {
+      console.error("Failed to refresh audience data:", error);
+    } finally {
+      setIsRefreshing(false);
     }
-    
-    return () => {
-      isMounted = false;
+  }, [isRefreshing, refetchBatch, setIsRefreshing]);
+
+  // Handle refresh with improved logic
+  useEffect(() => {
+    if (isRefreshing) {
+      handleRefresh();
+    }
+  }, [isRefreshing, handleRefresh]);
+
+  // Process batch results into organized data
+  const processedData = useMemo(() => {
+    if (!batchResults?.length) {
+      return {
+        geographic: { countries: [], regions: [], timezones: [], languages: [] },
+        device: { device_type: [], browser_name: [], os_name: [], screen_resolution: [], connection_type: [] },
+        browsers: []
+      };
+    }
+
+    const geographicResult = batchResults.find(r => r.queryId === 'geographic-data');
+    const deviceResult = batchResults.find(r => r.queryId === 'device-data');
+    const browsersResult = batchResults.find(r => r.queryId === 'browsers-grouped');
+
+    return {
+      geographic: {
+        countries: addPercentages(geographicResult?.data?.country || []),
+        regions: addPercentages(geographicResult?.data?.region || []),
+        timezones: addPercentages(geographicResult?.data?.timezone || []),
+        languages: addPercentages(geographicResult?.data?.language || []),
+      },
+      device: {
+        device_type: deviceResult?.data?.device_type || [],
+        browser_name: deviceResult?.data?.browser_name || [],
+        os_name: deviceResult?.data?.os_name || [],
+        screen_resolution: deviceResult?.data?.screen_resolution || [],
+        connection_type: deviceResult?.data?.connection_type || [],
+      },
+      browsers: browsersResult?.data?.browsers_grouped || []
     };
-  }, [isRefreshing, refetchAnalytics, refetchGeographic, refetchTech, refetchBrowsers, setIsRefreshing]);
+  }, [batchResults]);
 
   // Process grouped browser data with versions for expandable table
   const processedBrowserData = useMemo(() => {
-    const rawData = groupedBrowserData?.browsers_grouped || [];
+    const rawData = processedData.browsers;
     
-    // Add market share calculation and format for UI
-    const totalVisitors = rawData.reduce((sum: number, browser: any) => sum + (browser.visitors || 0), 0);
+    // If the data is already grouped with versions (new format), use it directly
+    if (rawData.length > 0 && rawData[0].versions) {
+      const totalVisitors = rawData.reduce((sum: number, browser: any) => sum + (browser.visitors || 0), 0);
+      
+      return rawData.map((browser: any) => {
+        const marketShare = totalVisitors > 0 
+          ? Math.round((browser.visitors / totalVisitors) * 100)
+          : 0;
+        
+        return {
+          ...browser,
+          browserName: browser.name,
+          id: browser.name,
+          percentage: marketShare,
+          marketShare: marketShare.toString(),
+          versions: browser.versions.sort((a: any, b: any) => (b.visitors || 0) - (a.visitors || 0))
+        };
+      }).sort((a: any, b: any) => (b.visitors || 0) - (a.visitors || 0));
+    }
     
-    return rawData.map((browser: any) => {
+    // Fallback: Group browsers by name and aggregate versions (legacy format)
+    const browserGroups = rawData.reduce((acc: any, browser: any) => {
+      const browserName = browser.browser_name;
+      if (!acc[browserName]) {
+        acc[browserName] = {
+          name: browserName,
+          browserName: browserName,
+          visitors: 0,
+          pageviews: 0,
+          sessions: 0,
+          versions: []
+        };
+      }
+      
+      acc[browserName].visitors += browser.visitors || 0;
+      acc[browserName].pageviews += browser.pageviews || 0;
+      acc[browserName].sessions += browser.sessions || 0;
+      acc[browserName].versions.push({
+        version: browser.browser_version,
+        visitors: browser.visitors || 0,
+        pageviews: browser.pageviews || 0,
+        sessions: browser.sessions || 0
+      });
+      
+      return acc;
+    }, {});
+
+    // Convert to array and add market share
+    const browserArray = Object.values(browserGroups);
+    const totalVisitors = browserArray.reduce((sum: number, browser: any) => sum + (browser.visitors || 0), 0);
+    
+    return browserArray.map((browser: any) => {
       const marketShare = totalVisitors > 0 
         ? Math.round((browser.visitors / totalVisitors) * 100)
         : 0;
       
       return {
+        ...browser,
         id: browser.name,
-        browserName: browser.name,
-        name: browser.name,
-        visitors: browser.visitors || 0,
-        pageviews: browser.pageviews || 0,
-        sessions: browser.sessions || 0,
         percentage: marketShare,
         marketShare: marketShare.toString(),
-        versions: (browser.versions || []).map((v: any) => ({
-          ...v,
-          name: v.version || 'Unknown Version',
-          version: v.version || 'Unknown Version'
-        }))
+        versions: browser.versions.sort((a: any, b: any) => (b.visitors || 0) - (a.visitors || 0))
       };
-    });
-  }, [groupedBrowserData]);
+    }).sort((a: any, b: any) => (b.visitors || 0) - (a.visitors || 0));
+  }, [processedData.browsers]);
 
   // Process connection types data with percentages
   const processedConnectionData = useMemo((): ConnectionEntry[] => {
-    if (!analytics.connection_types?.length) return [];
+    const connectionData = processedData.device.connection_type;
+    if (!connectionData?.length) return [];
     
-    const totalVisitors = analytics.connection_types.reduce((sum, item) => sum + item.visitors, 0);
+    const totalVisitors = connectionData.reduce((sum, item) => sum + item.visitors, 0);
     
-    return analytics.connection_types.map(item => ({
-      name: item.connection_type || 'Unknown',
+    return connectionData.map(item => ({
+      name: item.name || 'Unknown',
       visitors: item.visitors,
       percentage: totalVisitors > 0 ? Math.round((item.visitors / totalVisitors) * 100) : 0,
-      iconComponent: getConnectionIcon(item.connection_type || ''),
+      iconComponent: getConnectionIcon(item.name || ''),
       category: 'connection' as const
     })).sort((a, b) => b.visitors - a.visitors);
-  }, [analytics.connection_types]);
+  }, [processedData.device.connection_type]);
 
-  // Process geographic data from batch query results
-  const processedGeographicData = useMemo(() => {
-    if (!geographicResults?.length) {
-      return {
-        countries: [],
-        regions: [],
-        cities: [],
-        timezones: [],
-        languages: []
-      };
-    }
-
-    const countriesResult = geographicResults.find(r => r.queryId === 'countries');
-    const regionsResult = geographicResults.find(r => r.queryId === 'regions');
-    const timezonesResult = geographicResults.find(r => r.queryId === 'timezones');
-    const languagesResult = geographicResults.find(r => r.queryId === 'languages');
-
-    return {
-      countries: addPercentages(countriesResult?.data?.country || []),
-      regions: addPercentages(regionsResult?.data?.region || []),
-      timezones: addPercentages(timezonesResult?.data?.timezone || []),
-      languages: addPercentages(languagesResult?.data?.language || []),
-    };
-  }, [geographicResults]);
-
-  // Combine loading states - ensure all data sources are synchronized
-  const isLoading = loading.summary || isLoadingGeographic || isLoadingTech || isLoadingBrowsers || isRefreshing;
+  // Combine loading states
+  const isLoading = isBatchLoading || isRefreshing;
 
   // Browser table columns with expandable functionality
   const browserColumns = useMemo((): ColumnDef<any, unknown>[] => [
@@ -509,7 +528,7 @@ export function WebsiteAudienceTab({
     {
       id: 'countries',
       label: 'Countries',
-      data: processedGeographicData.countries.map((item, index) => ({
+      data: processedData.geographic.countries.map((item, index) => ({
         ...item,
         _uniqueKey: `country-${item.name}-${index}` // Ensure unique row keys
       })),
@@ -518,7 +537,7 @@ export function WebsiteAudienceTab({
     {
       id: 'regions',
       label: 'Regions',
-      data: processedGeographicData.regions.map((item, index) => ({
+      data: processedData.geographic.regions.map((item, index) => ({
         ...item,
         _uniqueKey: `region-${item.name}-${index}` // Ensure unique row keys
       })),
@@ -527,7 +546,7 @@ export function WebsiteAudienceTab({
     {
       id: 'timezones',
       label: 'Timezones',
-      data: processedGeographicData.timezones.map((item, index) => ({
+      data: processedData.geographic.timezones.map((item, index) => ({
         ...item,
         _uniqueKey: `timezone-${item.name}-${index}` // Ensure unique row keys
       })),
@@ -536,17 +555,17 @@ export function WebsiteAudienceTab({
     {
       id: 'languages',
       label: 'Languages',
-      data: processedGeographicData.languages.map((item, index) => ({
+      data: processedData.geographic.languages.map((item, index) => ({
         ...item,
         _uniqueKey: `language-${item.name}-${index}` // Ensure unique row keys
       })),
       columns: languageColumns,
     },
   ], [
-    processedGeographicData.countries,
-    processedGeographicData.regions,
-    processedGeographicData.timezones,
-    processedGeographicData.languages,
+    processedData.geographic.countries,
+    processedData.geographic.regions,
+    processedData.geographic.timezones,
+    processedData.geographic.languages,
     countryColumns,
     geographicColumns,
     timezoneColumns,
@@ -670,7 +689,7 @@ export function WebsiteAudienceTab({
                 ))}
               </div>
             </div>
-          ) : !analytics.screen_resolutions?.length ? (
+          ) : !processedData.device.screen_resolution?.length ? (
             <div className="flex flex-col items-center justify-center py-16 text-center" style={{ minHeight: 400 }}>
               <div className="mb-4">
                 <div className="w-16 h-16 rounded-2xl bg-muted/20 flex items-center justify-center mb-3 mx-auto">
@@ -687,13 +706,13 @@ export function WebsiteAudienceTab({
           ) : (
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {analytics.screen_resolutions?.slice(0, 6).map((item) => {
-                  const resolution = (item as any).resolution || item.screen_resolution;
+                {processedData.device.screen_resolution?.slice(0, 6).map((item) => {
+                  const resolution = item.name;
                   if (!resolution) return null;
                   const [width, height] = resolution.split('x').map(Number);
                   const isValid = !Number.isNaN(width) && !Number.isNaN(height);
                   
-                  const totalVisitors = analytics.screen_resolutions?.reduce(
+                  const totalVisitors = processedData.device.screen_resolution?.reduce(
                     (sum, item) => sum + item.visitors, 0) || 1;
                   const percentage = Math.round((item.visitors / totalVisitors) * 100);
                   
@@ -807,7 +826,7 @@ export function WebsiteAudienceTab({
                           />
                         </div>
                         <div className="flex justify-between items-center text-xs text-muted-foreground">
-                          <span>{item.count?.toLocaleString() || '0'} pageviews</span>
+                          <span>{item.pageviews?.toLocaleString() || '0'} pageviews</span>
                           <span>{percentage}% share</span>
                         </div>
                       </div>
@@ -816,9 +835,9 @@ export function WebsiteAudienceTab({
                 })}
               </div>
               
-              {analytics.screen_resolutions && analytics.screen_resolutions.length > 6 && (
+              {processedData.device.screen_resolution && processedData.device.screen_resolution.length > 6 && (
                 <div className="text-xs text-center text-muted-foreground pt-2 border-t border-border/30">
-                  Showing top 6 of {analytics.screen_resolutions.length} screen resolutions
+                  Showing top 6 of {processedData.device.screen_resolution.length} screen resolutions
                 </div>
               )}
             </div>

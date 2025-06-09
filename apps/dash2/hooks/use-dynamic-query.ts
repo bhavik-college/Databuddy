@@ -206,6 +206,8 @@ export type ParameterDataMap = {
   browser_name: BrowserData;
   browsers_grouped: GroupedBrowserData;
   os_name: BrowserData;
+  screen_resolution: DeviceTypeData; // Same structure as device_type
+  connection_type: DeviceTypeData; // Same structure as device_type
   country: CountryData;
   region: RegionData;
   city: CountryData;
