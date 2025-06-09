@@ -40,7 +40,7 @@ async function fetchIpGeo(ip: string): Promise<GeoLocation> {
     });
 
     if (!response.ok) {
-      logger.warn('Failed to fetch geo location', { status: response.status });
+      logger.warn(new Error(`Failed to fetch geo location: ${response.status}`));
       return DEFAULT_GEO;
     }
 
@@ -48,13 +48,13 @@ async function fetchIpGeo(ip: string): Promise<GeoLocation> {
     const parsed = GeoLocationSchema.safeParse(data);
 
     if (!parsed.success) {
-      logger.warn('Invalid geo location data', { error: parsed.error });
+      logger.warn(new Error(`Invalid geo location data: ${parsed.error}`));
       return DEFAULT_GEO;
     }
 
     return parsed.data;
   } catch (error) {
-    logger.error('Error fetching geo location', { error });
+    logger.error(new Error(`Error fetching geo location: ${error}`));
     return DEFAULT_GEO;
   }
 }

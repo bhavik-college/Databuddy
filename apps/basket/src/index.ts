@@ -25,6 +25,7 @@ app.get('/health', (c) => c.json({ status: 'ok', version: '1.0.0' }));
 
 app.onError((err) => {
   logger.error({
+    name: err.name,
     message: err.message,
     stack: err.stack,
   });
