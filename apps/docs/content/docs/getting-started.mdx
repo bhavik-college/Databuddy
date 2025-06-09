@@ -241,33 +241,58 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 ## 🎯 Custom Event Tracking
 
-Track custom events for deeper insights:
+Track custom events with rich properties for comprehensive analytics:
 
 <Tabs items={['React/Next.js', 'Script Tag']}>
 <Tab value="React/Next.js">
 
-```tsx title="Custom Events in React"
+```tsx title="Custom Events with Rich Properties"
 import { useEffect } from 'react';
 
 function SignupForm() {
-  const handleSignup = () => {
-    // Track conversion event
+  const handleSignup = (plan: string) => {
+    // Track conversion event with detailed context
     window.databuddy?.track('signup_completed', {
       source: 'landing_page',
-      plan: 'free'
+      plan: plan,
+      trial_days: plan === 'pro' ? 14 : 7,
+      form_type: 'inline',
+      utm_source: new URLSearchParams(window.location.search).get('utm_source'),
+      referrer_domain: document.referrer ? new URL(document.referrer).hostname : null
+    });
+  };
+
+  const handleFormInteraction = (fieldName: string) => {
+    // Track form engagement
+    window.databuddy?.track('form_field_focused', {
+      form_type: 'signup',
+      field_name: fieldName,
+      page: window.location.pathname,
+      user_agent_mobile: /Mobile|Android/i.test(navigator.userAgent)
     });
   };
 
   useEffect(() => {
-    // Track form view
+    // Track form view with context
     window.databuddy?.track('signup_form_viewed', {
-      page: window.location.pathname
+      page: window.location.pathname,
+      form_position: 'hero_section',
+      visit_source: document.referrer || 'direct',
+      viewport_width: window.innerWidth
     });
   }, []);
 
   return (
-    <form onSubmit={handleSignup}>
-      {/* Your form */}
+    <form onSubmit={() => handleSignup('free')}>
+      <input 
+        type="email" 
+        onFocus={() => handleFormInteraction('email')}
+        placeholder="Enter your email" 
+      />
+      <button type="submit">Sign Up Free</button>
+      <button type="button" onClick={() => handleSignup('pro')}>
+        Start Pro Trial
+      </button>
     </form>
   );
 }
@@ -276,31 +301,60 @@ function SignupForm() {
 </Tab>
 <Tab value="Script Tag">
 
-```html title="Custom Events with Script Tag"
+```html title="Custom Events with Detailed Properties"
 <script>
-// Track button clicks
-function trackSignup() {
+// Track button clicks with comprehensive context
+function trackSignup(plan) {
   db.track('signup_completed', {
     source: 'landing_page',
-    plan: 'free'
+    plan: plan,
+    trial_days: plan === 'pro' ? 14 : 7,
+    button_position: 'hero',
+    page_scroll_depth: Math.round((window.pageYOffset / document.body.scrollHeight) * 100),
+    session_page_count: sessionStorage.getItem('page_count') || 1
   });
 }
 
-// Track page interactions
-function trackFeatureUsed(feature) {
+// Track feature usage with user context
+function trackFeatureUsed(feature, context) {
   db.track('feature_used', {
     feature: feature,
-    page: window.location.pathname
+    page: window.location.pathname,
+    user_tier: context?.tier || 'free',
+    feature_category: context?.category || 'general',
+    previous_page: document.referrer || 'direct',
+    time_on_page: Date.now() - window.pageLoadTime
   });
 }
+
+// Track product interactions
+function trackProductView(productId, category) {
+  db.track('product_viewed', {
+    product_id: productId,
+    product_category: category,
+    view_source: 'product_grid',
+    page: window.location.pathname,
+    user_returning: localStorage.getItem('returning_user') === 'true'
+  });
+}
+
+// Store page load time for time-on-page calculations
+window.pageLoadTime = Date.now();
 </script>
 
-<button onclick="trackSignup()">Sign Up</button>
-<button onclick="trackFeatureUsed('export')">Export Data</button>
+<button onclick="trackSignup('free')">Sign Up Free</button>
+<button onclick="trackSignup('pro')">Start Pro Trial</button>
+<button onclick="trackFeatureUsed('export', {tier: 'premium', category: 'data'})">
+  Export Data
+</button>
 ```
 
 </Tab>
 </Tabs>
+
+<Callout type="info">
+**Property Analytics**: Your custom event properties are automatically analyzed in the dashboard with expandable breakdowns, showing property distributions and value percentages in an interactive tree structure.
+</Callout>
 
 ## 🎉 What's Next?
 
