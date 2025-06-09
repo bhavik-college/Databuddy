@@ -13,6 +13,10 @@ import { zValidator } from "@hono/zod-validator";
 
 const profilesRouter = new Hono<{ Variables: AppVariables }>();
 
+const mapCountryCode = (country: string): string => {
+  return country === 'IL' ? 'PS' : country;
+};
+
 // Apply timezone middleware
 profilesRouter.use('*', timezoneMiddleware);
 
@@ -148,6 +152,7 @@ profilesRouter.get('/', zValidator('query', analyticsQuerySchema), async (c) => 
             browser: userAgentInfo.browser_name,
             os: userAgentInfo.os_name,
             duration_formatted: durationFormatted,
+            country: mapCountryCode(session.country || ''),
             referrer_parsed: referrerParsed,
             visitor_id: visitor.visitor_id,
             is_returning_visitor: visitor.session_count > 1,
@@ -170,7 +175,7 @@ profilesRouter.get('/', zValidator('query', analyticsQuerySchema), async (c) => 
           device: latestSession?.device || 'Unknown',
           browser: latestSession?.browser || 'Unknown',
           os: latestSession?.os || 'Unknown',
-          country: latestSession?.country || 'Unknown',
+          country: mapCountryCode(latestSession?.country || 'Unknown'),
           region: latestSession?.region || 'Unknown',
           sessions: formattedSessions
         };
