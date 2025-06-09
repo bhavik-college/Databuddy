@@ -68,7 +68,7 @@ export default function DomainsPage() {
   return (
     <div className="h-full flex flex-col animate-fadeIn">
       {/* Compact header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:px-4 sm:py-4 border-b gap-3 sm:gap-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:px-4 sm:py-4 border-b gap-3 sm:gap-0 sm:p-0">
         <div className="min-w-0 flex-1">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground truncate">
             Domains
@@ -121,7 +121,7 @@ export default function DomainsPage() {
       </div>
 
       {/* Tabbed content area */}
-      <div className="flex-1 overflow-y-auto p-3 sm:px-4 sm:pt-4 sm:pb-6">
+      <div className="flex-1 overflow-y-auto p-3 sm:px-4 sm:pt-4 sm:pb-6 sm:p-0">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
           <div className="border-b relative mb-4">
             <TabsList className="h-10 bg-transparent p-0 w-full justify-start overflow-x-auto">

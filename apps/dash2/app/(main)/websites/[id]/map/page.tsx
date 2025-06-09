@@ -25,9 +25,9 @@ function WebsiteMapPage() {
   const unknownVisitors = locationData?.countries?.find(c => !c.country || c.country.trim() === "")?.visitors || 0;
 
   return (
-    <div className="h-[calc(100vh-7rem)] flex flex-col space-y-4">
+    <div className="h-[calc(100vh-7rem)] flex flex-col space-y-4 p-4">
       {/* Header with proper spacing */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg">
             <Globe className="h-5 w-5 text-primary" />
@@ -69,9 +69,9 @@ function WebsiteMapPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex gap-4 overflow-hidden min-h-0">
+      <div className="flex-1 flex flex-col md:flex-row gap-4 overflow-hidden min-h-0">
         {/* Map */}
-        <Card className="flex-1 flex flex-col overflow-hidden min-h-0 rounded">
+        <Card className="flex-1 flex flex-col overflow-hidden min-h-0 rounded pt-4 pb-0">
           <CardHeader className="pb-3 flex-shrink-0">
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2">
@@ -89,7 +89,7 @@ function WebsiteMapPage() {
         </Card>
         
         {/* Countries List */}
-        <Card className="w-72 flex flex-col overflow-hidden min-h-0 rounded">
+        <Card className="md:w-72 flex-1 md:flex-none flex flex-col overflow-hidden min-h-0 rounded">
           <CardHeader className="pb-3 flex-shrink-0">
             <CardTitle className="flex items-center gap-2">
               <Globe className="h-4 w-4" />

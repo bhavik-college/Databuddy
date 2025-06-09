@@ -11,15 +11,15 @@ interface CopyFieldProps {
 
 export function CopyField({ label, value, onCopy }: CopyFieldProps) {
   return (
-    <div className="space-y-2">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <div className="flex items-center gap-2">
-        <code className="block p-2 sm:p-3 bg-muted/50 rounded text-xs sm:text-sm break-all flex-1 min-w-0">
+    <div className="space-y-1.5 sm:space-y-2">
+      <span className="text-xs text-muted-foreground font-medium">{label}</span>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+        <code className="block p-2 bg-muted/50 rounded text-xs break-all flex-1 min-w-0 w-full font-mono">
           {value}
         </code>
-        <Button size="sm" variant="outline" onClick={onCopy} className="flex-shrink-0">
-          <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
-          <span className="sr-only">Copy</span>
+        <Button size="sm" variant="outline" onClick={onCopy} className="flex-shrink-0 w-full sm:w-auto h-8">
+          <Copy className="h-3 w-3" />
+          <span className="ml-1.5 sm:sr-only">Copy</span>
         </Button>
       </div>
     </div>

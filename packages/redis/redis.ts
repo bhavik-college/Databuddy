@@ -96,12 +96,10 @@ export function getRedisCache(): ExtendedRedis {
     
     redisInstance = createRedisClient(redisUrl, options);
     
-    // Handle graceful shutdown
+    // Handle graceful shutdown - but allow reconnection
     process.on('SIGINT', () => {
-      if (redisInstance) {
-        redisInstance.disconnect();
-        redisInstance = null;
-      }
+      // Don't disconnect Redis on SIGINT as it may be used for hot reloads
+      // Only disconnect on actual process termination
     });
     
     process.on('SIGTERM', () => {

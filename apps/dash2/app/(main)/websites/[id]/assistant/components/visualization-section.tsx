@@ -19,14 +19,6 @@ interface VisualizationSectionProps extends WebsiteDataTabProps {
   hasVisualization?: boolean;
 }
 
-const quickInsights = [
-  "Show me mobile vs desktop traffic by day",
-  "Page load times by browser over time", 
-  "Traffic sources breakdown this month",
-  "How many page views yesterday?",
-  "What's my bounce rate?",
-  "Top 10 pages by traffic"
-];
 
 const getChartIcon = (chartType: string) => {
   switch (chartType?.toLowerCase()) {
@@ -74,10 +66,7 @@ interface TransformResult {
 }
 
 export default function VisualizationSection({ 
-  websiteData, 
   latestVisualization,
-  onQuickInsight,
-  currentMessage,
   hasVisualization = false
 }: VisualizationSectionProps) {
   const rawAiData = useMemo(() => {
@@ -261,30 +250,6 @@ export default function VisualizationSection({
             {renderChartContent()}
           </div>
         </ScrollArea>
-      </div>
-        
-      <div className={`border-t p-3 flex-shrink-0 transition-all duration-300 ${hasVisualization ? 'bg-muted/20' : 'bg-muted/10'}`}>
-        <div className="flex items-center gap-1.5 mb-1.5">
-          <Sparkles className={`h-3.5 w-3.5 flex-shrink-0 transition-all duration-300 ${hasVisualization ? 'text-primary' : 'text-muted-foreground/60'}`} />
-          <h3 className={`text-xs font-medium transition-all duration-300 ${hasVisualization ? 'text-foreground' : 'text-muted-foreground/80'}`}>
-            Quick Insights
-          </h3>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-          {quickInsights.map((insight, index) => (
-            <Button
-              key={insight}
-              variant="ghost"
-              size="sm"
-              className={`text-xs justify-start h-auto py-1.5 px-2 text-left font-normal hover:bg-muted truncate transition-all duration-300 ${hasVisualization ? 'opacity-100' : 'opacity-80'}`}
-              onClick={() => onQuickInsight?.(insight)}
-              title={insight}
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              {insight}
-            </Button>
-          ))}
-        </div>
       </div>
     </div>
   );

@@ -167,6 +167,8 @@ export async function getAnalyticsOverviewData() {
       eventsOverTime = eventsOverTimeResult || [];
       events24hOverTime = events24hOverTimeResult || [];
       recentActivity = recentActivityResult || [];
+      
+      // Debug: Log the actual data to see what we're getting
       topCountries = topCountriesResult || [];
 
       // Process top websites with additional info

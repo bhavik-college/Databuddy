@@ -42,7 +42,7 @@ export function MiniChart({
   
   const total = useMemo(() => {
     if (!displayData || displayData.length === 0) return 0;
-    return displayData.reduce((sum, item) => sum + item.value, 0);
+    return displayData.reduce((sum: number, item: any) => sum + item.value, 0);
   }, [displayData]);
 
   const trend = useMemo(() => {
@@ -55,13 +55,13 @@ export function MiniChart({
     const newHalf = displayData.slice(halfLength);
     
     if (newHalf.length === 0 && oldHalf.length > 0) {
-        const oldAvgSingle = oldHalf.reduce((sum, item) => sum + item.value, 0) / oldHalf.length;
+        const oldAvgSingle = oldHalf.reduce((sum: number, item: any) => sum + item.value, 0) / oldHalf.length;
         return oldAvgSingle > 0 ? 100 : (oldAvgSingle < 0 ? -100 : 0);
     }
     if (newHalf.length === 0 && oldHalf.length === 0) return 0;
 
-    const oldAvg = oldHalf.reduce((sum, item) => sum + item.value, 0) / oldHalf.length;
-    const newAvg = newHalf.reduce((sum, item) => sum + item.value, 0) / newHalf.length;
+          const oldAvg = oldHalf.reduce((sum: number, item: any) => sum + item.value, 0) / oldHalf.length;
+      const newAvg = newHalf.reduce((sum: number, item: any) => sum + item.value, 0) / newHalf.length;
     
     if (oldAvg === 0) return newAvg > 0 ? 100 : (newAvg < 0 ? -100 : 0);
     return Math.round(((newAvg - oldAvg) / Math.abs(oldAvg)) * 100);

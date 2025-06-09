@@ -40,7 +40,7 @@ export function DomainRowActions({
   const regenerateDialogOpen = actions.regenerateDialogOpen[domain.id] || false;
 
   return (
-    <div className="flex justify-end space-x-2">
+    <div className="flex flex-col sm:flex-row justify-end gap-2">
       {domain.verificationStatus === "PENDING" && (
         <>
           <TooltipProvider>
@@ -51,11 +51,13 @@ export function DomainRowActions({
                   variant="outline" 
                   onClick={onVerify}
                   disabled={domainIsVerifying}
+                  className="w-full sm:w-auto text-xs sm:text-sm transition-all duration-200 hover:shadow-sm"
                 >
                   {domainIsVerifying ? (
                     <span className="flex items-center">
-                      <RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                      {domainVerificationProgress}%
+                      <RefreshCw className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1.5 animate-spin" />
+                      <span className="hidden sm:inline">{domainVerificationProgress}%</span>
+                      <span className="sm:hidden">Verifying</span>
                     </span>
                   ) : (
                     "Verify"
@@ -82,12 +84,13 @@ export function DomainRowActions({
                       size="sm" 
                       variant="outline" 
                       disabled={domainIsRegenerating}
-                      className="text-amber-600 hover:text-amber-800 border-amber-200 hover:border-amber-300"
+                      className="text-amber-600 hover:text-amber-800 border-amber-200 hover:border-amber-300 w-full sm:w-auto transition-all duration-200 hover:shadow-sm"
                     >
-                      <RefreshCw className={`h-4 w-4 ${domainIsRegenerating ? "animate-spin" : ""}`} />
+                      <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${domainIsRegenerating ? "animate-spin" : ""} sm:mr-0`} />
+                      <span className="ml-2 sm:hidden">Regenerate</span>
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                       <DialogTitle>Regenerate Verification Token</DialogTitle>
                       <DialogDescription>
@@ -103,19 +106,20 @@ export function DomainRowActions({
                         Make sure to update it with the new token immediately.
                       </AlertDescription>
                     </Alert>
-                    <DialogFooter>
+                    <DialogFooter className="flex-col sm:flex-row gap-2">
                       <Button 
                         variant="outline" 
                         onClick={() => updateActions({ 
                           regenerateDialogOpen: { ...actions.regenerateDialogOpen, [domain.id]: false }
                         })}
+                        className="w-full sm:w-auto"
                       >
                         Cancel
                       </Button>
                       <Button 
                         onClick={onRegenerate}
                         disabled={domainIsRegenerating}
-                        className="bg-amber-600 hover:bg-amber-700"
+                        className="bg-amber-600 hover:bg-amber-700 w-full sm:w-auto"
                       >
                         {domainIsRegenerating ? (
                           <span className="flex items-center">
@@ -147,8 +151,9 @@ export function DomainRowActions({
                 variant="default" 
                 onClick={onRetry}
                 disabled={domainIsRegenerating || isRetrying}
+                className="w-full sm:w-auto text-xs sm:text-sm transition-all duration-200 hover:shadow-sm"
               >
-                <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${domainIsRegenerating || isRetrying ? "animate-spin" : ""}`} />
+                <RefreshCw className={`h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1.5 ${domainIsRegenerating || isRetrying ? "animate-spin" : ""}`} />
                 Retry
               </Button>
             </TooltipTrigger>
@@ -167,9 +172,9 @@ export function DomainRowActions({
                 size="sm" 
                 variant="outline" 
                 onClick={onCreate}
-                className="text-green-600 hover:text-green-800"
+                className="text-green-600 hover:text-green-800 w-full sm:w-auto text-xs sm:text-sm transition-all duration-200 hover:shadow-sm border-green-200 hover:border-green-300"
               >
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                 Website
               </Button>
             </TooltipTrigger>
@@ -190,23 +195,36 @@ export function DomainRowActions({
               })}
             >
               <DialogTrigger asChild>
-                <Button size="sm" variant="outline" className="text-red-500 hover:text-red-700">
-                  <Trash2 className="h-4 w-4" />
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="text-red-500 hover:text-red-700 w-full sm:w-auto border-red-200 hover:border-red-300 transition-all duration-200 hover:shadow-sm"
+                >
+                  <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="ml-2 sm:hidden">Delete</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>Delete Domain</DialogTitle>
                   <DialogDescription>
-                    Are you sure you want to delete {domain.name}? This action cannot be undone.
+                    Are you sure you want to delete <strong>{domain.name}</strong>? This action cannot be undone.
                   </DialogDescription>
                 </DialogHeader>
-                <DialogFooter>
+                <Alert className="my-4 border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  <AlertTitle className="text-red-600">Warning</AlertTitle>
+                  <AlertDescription className="text-red-700 dark:text-red-300">
+                    This will permanently delete the domain and all associated websites and analytics data.
+                  </AlertDescription>
+                </Alert>
+                <DialogFooter className="flex-col sm:flex-row gap-2">
                   <Button 
                     variant="outline" 
                     onClick={() => updateActions({ 
                       deleteDialogOpen: { ...actions.deleteDialogOpen, [domain.id]: false }
                     })}
+                    className="w-full sm:w-auto"
                   >
                     Cancel
                   </Button>
@@ -214,8 +232,16 @@ export function DomainRowActions({
                     variant="destructive" 
                     onClick={onDelete}
                     disabled={domainIsDeleting}
+                    className="w-full sm:w-auto"
                   >
-                    {domainIsDeleting ? "Deleting..." : "Delete"}
+                    {domainIsDeleting ? (
+                      <span className="flex items-center">
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Deleting...
+                      </span>
+                    ) : (
+                      "Delete"
+                    )}
                   </Button>
                 </DialogFooter>
               </DialogContent>

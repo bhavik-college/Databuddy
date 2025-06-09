@@ -169,7 +169,7 @@ export function ChatHistorySidebar({
         role="button"
         tabIndex={0}
       />
-      <div className="fixed left-0 top-0 h-full w-80 bg-background border-r shadow-lg z-50 flex flex-col">
+      <div className="fixed left-0 top-0 h-full w-full sm:w-80 bg-background border-r shadow-lg z-50 flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-3">
@@ -209,7 +209,7 @@ export function ChatHistorySidebar({
             {isLoading ? (
               <div className="space-y-3">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={`skeleton-${i+1}`} className="p-3 rounded-lg border">
+                  <div key={`skeleton-${i+1}`} className="p-3 rounded border">
                     <div className="flex items-start gap-3">
                       <Skeleton className="w-8 h-8 rounded" />
                       <div className="flex-1 space-y-2">
@@ -234,7 +234,7 @@ export function ChatHistorySidebar({
                   <div
                     key={chat.websiteId}
                     className={cn(
-                      "group p-3 rounded-lg border cursor-pointer transition-all duration-200",
+                      "group p-3 rounded border cursor-pointer transition-all duration-200",
                       "hover:bg-muted/50 hover:border-primary/20",
                       chat.websiteId === currentWebsiteId && "bg-primary/5 border-primary/30"
                     )}

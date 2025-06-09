@@ -172,24 +172,24 @@ const performanceColumns = [
     header: 'Load Time',
     cell: (info: any) => <PerformanceMetricCell value={info.getValue()} />,
   },
-  {
-    id: 'avg_fcp',
-    accessorKey: 'avg_fcp',
-    header: 'FCP',
-    cell: (info: any) => <PerformanceMetricCell value={info.getValue()} />,
-  },
-  {
-    id: 'avg_lcp',
-    accessorKey: 'avg_lcp',
-    header: 'LCP',
-    cell: (info: any) => <PerformanceMetricCell value={info.getValue()} />,
-  },
-  {
-    id: 'avg_cls',
-    accessorKey: 'avg_cls',
-    header: 'CLS',
-    cell: (info: any) => <PerformanceMetricCell value={info.getValue()} type="cls" />,
-  },
+  // {
+  //   id: 'avg_fcp',
+  //   accessorKey: 'avg_fcp',
+  //   header: 'FCP',
+  //   cell: (info: any) => <PerformanceMetricCell value={info.getValue()} />,
+  // },
+  // {
+  //   id: 'avg_lcp',
+  //   accessorKey: 'avg_lcp',
+  //   header: 'LCP',
+  //   cell: (info: any) => <PerformanceMetricCell value={info.getValue()} />,
+  // },
+  // {
+  //   id: 'avg_cls',
+  //   accessorKey: 'avg_cls',
+  //   header: 'CLS',
+  //   cell: (info: any) => <PerformanceMetricCell value={info.getValue()} type="cls" />,
+  // },
   {
     id: 'avg_ttfb',
     accessorKey: 'avg_ttfb',
@@ -230,12 +230,18 @@ export function WebsitePerformanceTab({
     }
 
     return {
-      pages: normalizeData(performanceResults.find(r => r.queryId === 'pages')?.data?.slow_pages),
-      countries: normalizeData(performanceResults.find(r => r.queryId === 'countries')?.data?.performance_by_country),
-      devices: normalizeData(performanceResults.find(r => r.queryId === 'devices')?.data?.performance_by_device),
-      browsers: normalizeData(performanceResults.find(r => r.queryId === 'browsers')?.data?.performance_by_browser),
-      operating_systems: normalizeData(performanceResults.find(r => r.queryId === 'operating_systems')?.data?.performance_by_os),
-      regions: normalizeData(performanceResults.find(r => r.queryId === 'regions')?.data?.performance_by_region),
+      pages: normalizeData(performanceResults.find(r => r.queryId === 'pages')?.data?.slow_pages)
+        ?.sort((a, b) => a.avg_load_time - b.avg_load_time), // Sort by fastest first
+      countries: normalizeData(performanceResults.find(r => r.queryId === 'countries')?.data?.performance_by_country)
+        ?.sort((a, b) => a.avg_load_time - b.avg_load_time),
+      devices: normalizeData(performanceResults.find(r => r.queryId === 'devices')?.data?.performance_by_device)
+        ?.sort((a, b) => a.avg_load_time - b.avg_load_time),
+      browsers: normalizeData(performanceResults.find(r => r.queryId === 'browsers')?.data?.performance_by_browser)
+        ?.sort((a, b) => a.avg_load_time - b.avg_load_time),
+      operating_systems: normalizeData(performanceResults.find(r => r.queryId === 'operating_systems')?.data?.performance_by_os)
+        ?.sort((a, b) => a.avg_load_time - b.avg_load_time),
+      regions: normalizeData(performanceResults.find(r => r.queryId === 'regions')?.data?.performance_by_region)
+        ?.sort((a, b) => a.avg_load_time - b.avg_load_time),
     };
   }, [performanceResults]);
 
@@ -246,7 +252,7 @@ export function WebsitePerformanceTab({
       return { avgLoadTime: 0, fastPages: 0, slowPages: 0, totalPages: 0, performanceScore: 0 };
     }
 
-    const totalLoadTime = pages.reduce((sum, page) => sum + page.avg_load_time, 0);
+    const totalLoadTime = pages.reduce((sum: number, page: PerformanceEntry) => sum + page.avg_load_time, 0);
     const avgLoadTime = totalLoadTime / pages.length;
     const fastPages = pages.filter(page => page.avg_load_time < 1000).length;
     const slowPages = pages.filter(page => page.avg_load_time > 3000).length;

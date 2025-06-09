@@ -42,10 +42,26 @@ const basketRouter = new Hono<{ Variables: AppVariables & { enriched?: any } }>(
 basketRouter.use(websiteAuthHook());
 
 const enrichEvent = (properties: Record<string, any>, enriched: any) => {
-  // Validate and sanitize all properties first
-  const validatedProperties = validateProperties(properties);
+  const customProperties: Record<string, any> = {};
+  const standardProperties: Record<string, any> = {};
+
+  for (const key in properties) {
+    if (Object.prototype.hasOwnProperty.call(properties, key)) {
+      if (key.startsWith('__')) {
+        standardProperties[key] = properties[key];
+      } else {
+        const standardKeys = ['screen_resolution', 'viewport_size', 'language', 'timezone', 'timezone_offset', 'connection_type', 'connection_speed', 'rtt', 'load_time', 'dom_ready_time', 'ttfb', 'redirect_time', 'domain_lookup_time', 'connection_time', 'request_time', 'render_time', 'fcp', 'lcp', 'cls', 'page_size', 'time_on_page', 'page_count', 'scroll_depth', 'interaction_count', 'exit_intent', 'sessionId', 'sessionStartTime', 'is_bounce'];
+        if (standardKeys.includes(key)) {
+          standardProperties[key] = properties[key];
+        } else {
+          customProperties[key] = properties[key];
+        }
+      }
+    }
+  }
+
+  const validatedProperties = validateProperties(standardProperties);
   
-  // Get the current domain from the URL with safe parsing
   let currentDomain = '';
   try {
     const urlPath = validatedProperties.__path || enriched.path;
@@ -53,16 +69,15 @@ const enrichEvent = (properties: Record<string, any>, enriched: any) => {
       currentDomain = new URL(urlPath).hostname;
     }
   } catch (e) {
-    logger.warn('Invalid URL path provided', { path: validatedProperties.__path || enriched.path });
+    logger.warn(new Error(`Invalid URL path provided: ${validatedProperties.__path || enriched.path}`));
     currentDomain = '';
   }
   
-  // Check if referrer is from the same domain
   let referrer = validatedProperties.__referrer || enriched.referrer;
   let referrerType = validatedProperties.__referrer_type;
   let referrerName = validatedProperties.__referrer_name;
   
-  if (referrer && currentDomain) {
+  if (referrer && currentDomain && referrer !== 'direct') {
     try {
       const referrerUrl = new URL(referrer as string);
       if (referrerUrl.hostname === currentDomain) {
@@ -71,8 +86,7 @@ const enrichEvent = (properties: Record<string, any>, enriched: any) => {
         referrerName = 'Direct';
       }
     } catch (e) {
-      logger.warn('Invalid referrer URL', { referrer });
-      // If URL parsing fails, keep the original referrer
+      logger.warn(new Error(`Invalid referrer URL: ${referrer}`));
     }
   }
 
@@ -111,8 +125,8 @@ const enrichEvent = (properties: Record<string, any>, enriched: any) => {
     referrer_name: sanitizeString(referrerName, VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH),
     sdk_name: sanitizeString(validatedProperties.__sdk_name || (validatedProperties.__enriched as any)?.sdk_name, VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH),
     sdk_version: sanitizeString(validatedProperties.__sdk_version || (validatedProperties.__enriched as any)?.sdk_version, VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH),
-    __raw_properties: validatedProperties,
-    __enriched: enriched
+    __raw_properties: customProperties,
+    __enriched: null
   };
 };
 
@@ -224,11 +238,12 @@ basketRouter.post('/', async (c) => {
     const enriched = c.get('enriched');
     const properties = validationResult.data.payload.properties || {};
     
+    const enrichedProperties = enrichEvent(properties, enriched);
     const mappedEvent = {
       ...validationResult.data,
       payload: {
         ...validationResult.data.payload,
-        ...enrichEvent(properties, enriched)
+        properties: enrichedProperties
       }
     } as TrackingEvent;
     
@@ -272,11 +287,12 @@ basketRouter.post('/batch', async (c) => {
     for (const event of events) {
       const properties = event.payload.properties || {};
       
+      const enrichedProperties = enrichEvent(properties, enriched);
       const mappedEvent = {
         ...event,
         payload: {
           ...event.payload,
-          ...enrichEvent(properties, enriched)
+          properties: enrichedProperties
         }
       } as TrackingEvent;
       
@@ -309,7 +325,7 @@ basketRouter.post('/batch', async (c) => {
       processed: results
     }, 200);
   } catch (error) {
-    logger.error('Error processing batch events', { error: error instanceof Error ? error.message : String(error) });
+    logger.error({ message: `Error processing batch events: ${error instanceof Error ? error.message : String(error)}` });
     return c.json({ 
       status: 'error', 
       message: 'Failed to process batch events'

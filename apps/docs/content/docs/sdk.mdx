@@ -467,40 +467,56 @@ interface DatabuddyConfig {
 
 ## 🎯 Custom Event Tracking
 
-Track custom business events using the global API:
+Track custom business events with detailed properties for comprehensive analytics:
 
 <Tabs items={['React/Next.js', 'Script Tag']}>
 <Tab value="React/Next.js">
 
-```tsx title="Custom Events in React"
+```tsx title="Custom Events with Properties"
 import { useEffect } from 'react';
 
 function ProductPage({ product }: { product: Product }) {
   useEffect(() => {
-    // Track product view
+    // Track product view with detailed properties
     window.databuddy?.track('product_viewed', {
       product_id: product.id,
       product_name: product.name,
       category: product.category,
-      price: product.price
+      price: product.price,
+      currency: 'USD',
+      brand: product.brand,
+      in_stock: product.availability > 0
     });
   }, [product]);
 
   const handlePurchase = () => {
-    // Track conversion
+    // Track conversion with purchase details
     window.databuddy?.track('purchase_completed', {
       product_id: product.id,
       revenue: product.price,
-      currency: 'USD'
+      currency: 'USD',
+      payment_method: 'credit_card',
+      shipping_method: 'standard',
+      coupon_used: false
+    });
+  };
+
+  const handleAddToCart = (quantity: number) => {
+    // Track cart actions with context
+    window.databuddy?.track('add_to_cart', {
+      product_id: product.id,
+      quantity: quantity,
+      value: product.price * quantity,
+      currency: 'USD',
+      source: 'product_page'
     });
   };
 
   return (
     <div>
       <h1>{product.name}</h1>
-      <button onClick={handlePurchase}>
-        Buy Now - ${product.price}
-      </button>
+      <button onClick={() => handleAddToCart(1)}>Add to Cart</button>
+      <button onClick={handlePurchase}>Buy Now - ${product.price}</button>
     </div>
   );
 }
@@ -509,7 +525,7 @@ function ProductPage({ product }: { product: Product }) {
 **Alternative Object Syntax:**
 
 ```tsx
-// Both syntaxes work
+// Both syntaxes work identically
 db.track('event_name', { key: 'value' });
 window.databuddy?.track('event_name', { key: 'value' });
 ```
@@ -517,36 +533,56 @@ window.databuddy?.track('event_name', { key: 'value' });
 </Tab>
 <Tab value="Script Tag">
 
-```html title="Custom Events with Script Tag"
+```html title="Custom Events with Rich Properties"
 <script>
-// Track user actions
-function trackSignup(plan) {
+// Track user actions with detailed context
+function trackSignup(plan, source) {
   db.track('signup_completed', {
     plan: plan,
-    source: 'pricing_page',
-    timestamp: Date.now()
+    source: source,
+    trial_days: plan === 'pro' ? 14 : 7,
+    referrer: document.referrer,
+    utm_source: new URLSearchParams(window.location.search).get('utm_source')
   });
 }
 
-function trackFeatureUsage(feature) {
+function trackFeatureUsage(feature, context) {
   db.track('feature_used', {
     feature: feature,
     page: window.location.pathname,
-    user_agent: navigator.userAgent
+    user_tier: context.userTier,
+    session_duration: context.sessionTime,
+    previous_action: context.lastAction
   });
 }
 
-// Track form interactions
-document.getElementById('contact-form').addEventListener('submit', () => {
+// Track complex interactions
+function trackVideoEngagement(videoId, action, timestamp) {
+  db.track('video_engagement', {
+    video_id: videoId,
+    action: action, // 'play', 'pause', 'complete', 'seek'
+    timestamp: timestamp,
+    duration: document.querySelector('#video').duration,
+    quality: document.querySelector('#video').videoQuality,
+    fullscreen: document.fullscreenElement !== null
+  });
+}
+
+// Track form interactions with validation context
+document.getElementById('contact-form').addEventListener('submit', (e) => {
+  const formData = new FormData(e.target);
   db.track('contact_form_submitted', {
     form_id: 'contact-form',
-    page: window.location.pathname
+    fields_completed: Array.from(formData.keys()).length,
+    inquiry_type: formData.get('inquiry_type'),
+    page: window.location.pathname,
+    time_to_complete: Date.now() - window.formStartTime
   });
 });
 </script>
 
-<button onclick="trackSignup('pro')">Upgrade to Pro</button>
-<button onclick="trackFeatureUsage('export')">Export Data</button>
+<button onclick="trackSignup('pro', 'pricing_page')">Upgrade to Pro</button>
+<button onclick="trackFeatureUsage('export', {userTier: 'premium'})">Export Data</button>
 ```
 
 </Tab>
@@ -556,37 +592,102 @@ document.getElementById('contact-form').addEventListener('submit', () => {
 
 <Callout type="info">
 **Event Naming**: Use snake_case for event names (e.g., `signup_completed`, `product_viewed`)
-**Properties**: Include relevant context but avoid PII (personally identifiable information)
+**Properties**: Include rich context for detailed analytics but avoid PII (personally identifiable information)
+**Property Keys**: Use consistent naming across events for better analysis
 </Callout>
 
 <Cards>
-  <Card title="Good Events" icon="✅">
+  <Card title="Rich Property Tracking" icon="✅">
     ```tsx
-    db.track('signup_completed', {
-      plan: 'pro',
-      source: 'landing_page'
+    // ✅ Detailed properties for comprehensive analysis
+    db.track('purchase_completed', {
+      product_category: 'software',    // Groupable property
+      payment_method: 'credit_card',   // Behavior analysis
+      plan_type: 'annual',            // Business metric
+      discount_applied: true,         // Conversion tracking
+      value: 299.99,                 // Revenue tracking
+      currency: 'USD',               // Standardization
+      source: 'pricing_page'         // Attribution
     });
     
-    db.track('video_played', {
-      video_id: 'intro_2024',
-      duration: 120,
-      position: 'hero'
+    // ✅ Consistent property names across events
+    db.track('add_to_cart', {
+      product_category: 'software',   // Same key as purchase
+      value: 299.99,                // Same key format
+      currency: 'USD',              // Consistent currency
+      source: 'product_page'        // Consistent attribution
     });
     ```
   </Card>
-  <Card title="Avoid These" icon="❌">
+  <Card title="Avoid These Patterns" icon="❌">
     ```tsx
-    // Don't include PII
+    // ❌ Don't include PII
     db.track('signup', {
-      email: 'user@example.com',  // ❌ PII
-      ip_address: '192.168.1.1'  // ❌ PII
+      email: 'user@example.com',     // PII violation
+      phone: '+1234567890',         // PII violation
+      ip_address: '192.168.1.1'     // PII violation
     });
     
-    // Don't use spaces in event names
-    db.track('Sign Up Completed'); // ❌ Use snake_case
+    // ❌ Don't use inconsistent naming
+    db.track('purchase', {
+      productCat: 'software',        // camelCase instead of snake_case
+      'payment method': 'card',      // spaces in keys
+      Price: 299.99                 // inconsistent capitalization
+    });
+    
+    // ❌ Don't use vague event names
+    db.track('click');              // Too generic
+    db.track('User Action');        // Spaces + vague
     ```
   </Card>
 </Cards>
+
+### 📊 Property Breakdown Analytics
+
+Your custom event properties are automatically analyzed in the dashboard with:
+
+<Tabs items={['Property Categories', 'Interactive Breakdowns']}>
+<Tab value="Property Categories">
+
+**Automatic Property Analysis:**
+- 🏷️ **Property keys** - All custom properties are extracted and categorized
+- 📊 **Value distributions** - See how property values are distributed
+- 🎯 **Usage frequency** - Track which properties appear most often
+- 📈 **Trend analysis** - Monitor how property values change over time
+
+**Example Dashboard View:**
+```
+Event: purchase_completed (247 events)
+├── 📂 product_category (247 values)
+│   ├── software: 156 (63%)
+│   ├── hardware: 78 (32%)
+│   └── services: 13 (5%)
+├── 📂 payment_method (247 values)  
+│   ├── credit_card: 198 (80%)
+│   ├── paypal: 35 (14%)
+│   └── bank_transfer: 14 (6%)
+└── 📂 plan_type (247 values)
+    ├── annual: 186 (75%)
+    └── monthly: 61 (25%)
+```
+
+</Tab>
+<Tab value="Interactive Breakdowns">
+
+**Dashboard Features:**
+- 🔍 **Expandable categories** - Click to explore property breakdowns
+- 📊 **Scrollable lists** - Handle large property value lists efficiently
+- 🎯 **Individual toggles** - Open/close each property category independently
+- 📈 **Percentage calculations** - Automatic percentage distribution
+- 🔢 **Value counts** - Total occurrences for each property value
+
+**Visual Hierarchy:**
+- **Event Level** - Overall event metrics and counts
+- **Property Level** - Property categories with aggregate counts
+- **Value Level** - Individual property values with percentages
+
+</Tab>
+</Tabs>
 
 ## 📋 Configuration Reference
 

@@ -2,7 +2,6 @@
 
 import type React from 'react';
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import type { DomainRankData } from "@/hooks/use-domain-info";
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -10,6 +9,16 @@ import { Separator } from '@/components/ui/separator';
 import { Globe, TrendingUp, Target, Award, BarChart3, Users, Activity, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getTierInfo, formatRank } from '../utils';
+
+// Use the correct type from the backend API
+interface DomainRankData {
+  status_code: number;
+  error: string;
+  page_rank_integer: number;
+  page_rank_decimal: number;
+  rank: string | null;
+  domain: string;
+}
 
 interface DomainRankDetailsProps {
   isOpen: boolean;
@@ -34,16 +43,16 @@ const StatCard = ({
   className?: string;
 }) => (
   <Card className={className}>
-    <CardContent className="p-4">
-      <div className="flex items-start justify-between mb-3">
+    <CardContent className="p-3 sm:p-4">
+      <div className="flex items-start justify-between mb-2 sm:mb-3">
         <div className="flex items-center gap-2">
           {icon}
-          <span className="text-sm font-medium">{title}</span>
+          <span className="text-xs sm:text-sm font-medium">{title}</span>
         </div>
       </div>
       <div className="space-y-1">
-        <div className="text-2xl font-bold">{value}</div>
-        {subtitle && <div className="text-sm text-muted-foreground">{subtitle}</div>}
+        <div className="text-lg sm:text-2xl font-bold">{value}</div>
+        {subtitle && <div className="text-xs sm:text-sm text-muted-foreground">{subtitle}</div>}
         {description && <div className="text-xs text-muted-foreground mt-2">{description}</div>}
       </div>
     </CardContent>
@@ -61,8 +70,8 @@ const ScoreIndicator = ({ score, maxScore = 100 }: { score: number; maxScore?: n
   };
 
   return (
-    <div className="relative w-24 h-24 mx-auto">
-      <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 36 36">
+    <div className="relative w-16 h-16 sm:w-24 sm:h-24 mx-auto">
+      <svg className="w-16 h-16 sm:w-24 sm:h-24 transform -rotate-90" viewBox="0 0 36 36">
         <title>Domain Rank Score Indicator</title>
         <path
           d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
@@ -82,7 +91,7 @@ const ScoreIndicator = ({ score, maxScore = 100 }: { score: number; maxScore?: n
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-xl font-bold">{score.toFixed(1)}</div>
+          <div className="text-sm sm:text-xl font-bold">{score.toFixed(1)}</div>
           <div className="text-xs text-muted-foreground">/{maxScore}</div>
         </div>
       </div>
@@ -96,22 +105,22 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
       <Drawer open={isOpen} onOpenChange={onClose}>
         <DrawerContent className="max-h-[85vh]">
           <div className="mx-auto w-full max-w-4xl">
-            <DrawerHeader className="text-center">
-              <DrawerTitle className="flex items-center justify-center gap-2">
-                <TrendingUp className="h-5 w-5" />
+            <DrawerHeader className="text-center px-4 sm:px-6">
+              <DrawerTitle className="flex items-center justify-center gap-2 text-lg sm:text-xl">
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
                 Domain Rank Details
               </DrawerTitle>
-              <DrawerDescription>
+              <DrawerDescription className="text-sm">
                 Ranking data for <span className="font-mono font-medium">{domainName}</span>
               </DrawerDescription>
             </DrawerHeader>
             
-            <div className="p-6 text-center">
+            <div className="p-4 sm:p-6 text-center">
               <div className="text-muted-foreground mb-4">
-                <Globe className="h-16 w-16 mx-auto mb-4 opacity-30" />
+                <Globe className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 opacity-30" />
               </div>
-              <h3 className="text-lg font-medium mb-2">No Ranking Data Available</h3>
-              <p className="text-muted-foreground mb-4">
+              <h3 className="text-base sm:text-lg font-medium mb-2">No Ranking Data Available</h3>
+              <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
                 {rankData?.error || "Unable to retrieve ranking data for this domain. This may be because the domain is new, not indexed, or not publicly accessible."}
               </p>
               <Button variant="outline" onClick={onClose}>Close</Button>
@@ -128,38 +137,38 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
     <Drawer open={isOpen} onOpenChange={onClose}>
       <DrawerContent className="max-h-[85vh]">
         <div className="mx-auto w-full max-w-4xl overflow-y-auto">
-          <DrawerHeader className="text-center">
-            <DrawerTitle className="flex items-center justify-center gap-2">
-              <TrendingUp className="h-5 w-5" />
+          <DrawerHeader className="text-center px-4 sm:px-6">
+            <DrawerTitle className="flex items-center justify-center gap-2 text-lg sm:text-xl">
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
               Domain Rank Analysis
             </DrawerTitle>
-            <DrawerDescription>
+            <DrawerDescription className="text-sm">
               Comprehensive ranking metrics for <span className="font-mono font-medium">{domainName}</span>
             </DrawerDescription>
           </DrawerHeader>
           
-          <div className="p-6 space-y-6">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             {/* Hero Section with Score */}
             <Card className="relative overflow-hidden">
               <div className={`absolute inset-0 ${tierInfo.color} opacity-5`} />
-              <CardContent className="p-8 text-center relative">
-                <div className="mb-6">
+              <CardContent className="p-4 sm:p-8 text-center relative">
+                <div className="mb-4 sm:mb-6">
                   <ScoreIndicator score={rankData.page_rank_decimal} />
                 </div>
-                <h2 className="text-3xl font-bold mb-2">Domain Rank {rankData.page_rank_decimal.toFixed(1)}</h2>
-                <Badge className={`${tierInfo.color} text-white mb-3`}>
+                <h2 className="text-xl sm:text-3xl font-bold mb-2">Domain Rank {rankData.page_rank_decimal.toFixed(1)}</h2>
+                <Badge className={`${tierInfo.color} text-white mb-2 sm:mb-3 text-xs sm:text-sm`}>
                   {tierInfo.tier}
                 </Badge>
-                <p className="text-muted-foreground max-w-md mx-auto">
+                <p className="text-muted-foreground max-w-md mx-auto text-sm">
                   {tierInfo.description}
                 </p>
               </CardContent>
             </Card>
 
             {/* Key Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <StatCard
-                icon={<Target className="h-4 w-4 text-blue-500" />}
+                icon={<Target className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />}
                 title="Domain Authority"
                 value={`${rankData.page_rank_decimal.toFixed(1)}/100`}
                 subtitle="Authority score"
@@ -167,7 +176,7 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
               />
               
               <StatCard
-                icon={<Globe className="h-4 w-4 text-green-500" />}
+                icon={<Globe className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />}
                 title="Global Rank"
                 value={`#${formatRank(rankData.rank)}`}
                 subtitle="Worldwide position"
@@ -175,7 +184,7 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
               />
               
               <StatCard
-                icon={<BarChart3 className="h-4 w-4 text-purple-500" />}
+                icon={<BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 text-purple-500" />}
                 title="Authority Score"
                 value={`${Math.round(rankData.page_rank_decimal)}%`}
                 subtitle="Domain strength"
@@ -183,7 +192,7 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
               />
               
               <StatCard
-                icon={<Activity className="h-4 w-4 text-orange-500" />}
+                icon={<Activity className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500" />}
                 title="Status"
                 value="Active"
                 subtitle="Ranking available"
@@ -192,19 +201,19 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
             </div>
 
             {/* Detailed Breakdown */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Score Breakdown */}
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4" />
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
                     Score Breakdown
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Domain Authority</span>
+                <CardContent className="space-y-3 sm:space-y-4">
+                  <div className="space-y-2 sm:space-y-3">
+                    <div className="flex justify-between items-center text-sm">
+                      <span>Domain Authority</span>
                       <span className="font-medium">{rankData.page_rank_decimal.toFixed(1)}/100</span>
                     </div>
                     <Progress value={Math.min(100, rankData.page_rank_decimal)} className="h-2" />
@@ -212,14 +221,14 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
                   
                   <Separator />
                   
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-2 text-xs sm:text-sm">
                     <div className="flex justify-between">
                       <span>Precise Score:</span>
                       <span className="font-mono">{rankData.page_rank_decimal.toFixed(3)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Tier Classification:</span>
-                      <Badge variant="outline">{tierInfo.tier}</Badge>
+                      <Badge variant="outline" className="text-xs">{tierInfo.tier}</Badge>
                     </div>
                   </div>
                 </CardContent>
@@ -227,16 +236,16 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
 
               {/* Ranking Context */}
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                     Ranking Context
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3 sm:space-y-4">
                   <div className="p-3 bg-muted/50 rounded-lg">
-                    <div className="text-sm font-medium mb-1">Global Position</div>
-                    <div className="text-2xl font-bold">#{formatRank(rankData.rank)}</div>
+                    <div className="text-xs sm:text-sm font-medium mb-1">Global Position</div>
+                    <div className="text-xl sm:text-2xl font-bold">#{formatRank(rankData.rank)}</div>
                     <div className="text-xs text-muted-foreground">
                       Among all websites worldwide
                     </div>
@@ -253,14 +262,14 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
 
             {/* What This Means */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="h-4 w-4" />
+              <CardHeader className="pb-3 sm:pb-4">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <Award className="h-3 w-3 sm:h-4 sm:w-4" />
                   Understanding Your Domain Rank
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
                   <div>
                     <h4 className="font-medium mb-2">What Domain Rank Measures:</h4>
                     <ul className="space-y-1 text-muted-foreground">
@@ -284,24 +293,13 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
             </Card>
 
             {/* Footer Actions */}
-            <div className="flex justify-between items-center pt-4">
-              <div className="text-xs text-muted-foreground">
-                Data provided by OpenPageRank • Updated periodically
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center pt-4 gap-4">
+              <div className="text-xs text-muted-foreground text-center sm:text-left">
+                Data provided by <a href="https://www.domcop.com/openpagerank/what-is-openpagerank" target="_blank" rel="noopener noreferrer" className="underline">OpenPageRank</a> • Updated periodically
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={onClose}>
+              <div className="flex gap-2 justify-center sm:justify-end">
+                <Button variant="outline" size="sm" onClick={onClose} className="w-full sm:w-auto">
                   Close
-                </Button>
-                <Button variant="outline" size="sm" asChild>
-                  <a 
-                    href={`https://www.openpagerank.com/website/${domainName}`}
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1"
-                  >
-                    View on OpenPageRank
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
                 </Button>
               </div>
             </div>
@@ -310,4 +308,4 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
       </DrawerContent>
     </Drawer>
   );
-}; 
+} 

@@ -64,9 +64,16 @@ export async function executeAnalyticsQueries(params: QueryParams) {
  * Check if tracking has been set up
  */
 export function hasTrackingData(summaryData: any[], todayData: any[], eventsByDate: any[]): boolean {
-  return (summaryData[0]?.pageviews > 0) || 
-         (todayData[0]?.pageviews > 0) || 
-         (eventsByDate.length > 0 && eventsByDate.some((event: any) => event.pageviews > 0));
+  // Check if there are any pageviews (screen_view events)
+  const hasPageviews = (summaryData[0]?.pageviews > 0) || 
+                      (todayData[0]?.pageviews > 0) || 
+                      (eventsByDate.length > 0 && eventsByDate.some((event: any) => event.pageviews > 0));
+  
+  // Also check for any events at all (not just pageviews)
+  const hasAnyEvents = (summaryData[0]?.total_events > 0) || 
+                       (todayData[0]?.total_events > 0);
+  
+  return hasPageviews || hasAnyEvents;
 }
 
 /**

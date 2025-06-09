@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -41,7 +41,7 @@ export function WebsiteActions({ website }: { website: { id: string; name: strin
 
   const handleEdit = async () => {
     if (!name.trim()) return;
-    
+
     setLoading(true);
     try {
       await updateWebsiteName(website.id, name);
@@ -66,6 +66,15 @@ export function WebsiteActions({ website }: { website: { id: string; name: strin
     });
   };
 
+  const handleCopyId = async () => {
+    try {
+      await navigator.clipboard.writeText(website.id);
+      toast.success("Website ID copied to clipboard");
+    } catch (error) {
+      toast.error("Failed to copy website ID");
+    }
+  };
+
   return (
     <>
       <DropdownMenu>
@@ -75,12 +84,17 @@ export function WebsiteActions({ website }: { website: { id: string; name: strin
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-40">
+          <DropdownMenuItem onClick={handleCopyId}>
+            <Copy className="mr-2 h-4 w-4" />
+            Copy ID
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => { setName(website.name || ""); setShowEdit(true); }}>
             <Pencil className="mr-2 h-4 w-4" />
             Edit Name
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem 
+          <DropdownMenuItem
             onClick={() => setShowDelete(true)}
             className="text-destructive focus:text-destructive"
           >

@@ -45,7 +45,7 @@ import { getInitials } from "@/lib/utils";
 
 function formatNumber(val: number | null | undefined) {
   if (typeof val !== 'number' || Number.isNaN(val)) return '0';
-  
+
   if (val >= 1000000) {
     return `${(val / 1000000).toFixed(1)}M`;
   }
@@ -71,18 +71,18 @@ function getTrendIcon(trend: 'up' | 'down' | 'neutral') {
   }
 }
 
-function MetricCard({ 
-  icon: Icon, 
-  title, 
-  value, 
-  subtitle, 
+function MetricCard({
+  icon: Icon,
+  title,
+  value,
+  subtitle,
   trend = 'neutral',
-  tooltip 
-}: { 
-  icon: any; 
-  title: string; 
-  value: number; 
-  subtitle: string; 
+  tooltip
+}: {
+  icon: any;
+  title: string;
+  value: number;
+  subtitle: string;
   trend?: 'up' | 'down' | 'neutral';
   tooltip?: string;
 }) {
@@ -165,7 +165,7 @@ export default async function AdminAnalyticsOverviewPage() {
           <p className="text-muted-foreground">Real-time platform insights and performance metrics</p>
           <div className="flex items-center justify-center gap-2 mt-3 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
-                             <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+              <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
               Live data
             </div>
             <span>•</span>
@@ -301,12 +301,12 @@ export default async function AdminAnalyticsOverviewPage() {
             <CardContent className="pt-0">
               {data.events24hOverTime && data.events24hOverTime.length > 0 ? (
                 <div className="h-[200px] sm:h-[220px] bg-muted/10 rounded-lg p-3 sm:p-4">
-                  <LineChart data={data.events24hOverTime.map(item => ({ 
-                    date: new Date(item.hour).toLocaleTimeString('en-US', { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    }), 
-                    value: item.value 
+                  <LineChart data={data.events24hOverTime.map(item => ({
+                    date: new Date(item.hour).toLocaleTimeString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    }),
+                    value: item.value
                   }))} />
                 </div>
               ) : (
@@ -340,12 +340,12 @@ export default async function AdminAnalyticsOverviewPage() {
             <CardContent className="pt-0">
               {data.eventsOverTime && data.eventsOverTime.length > 0 ? (
                 <div className="h-[200px] sm:h-[220px] bg-muted/10 rounded-lg p-3 sm:p-4">
-                  <LineChart data={data.eventsOverTime.map(item => ({ 
-                    date: new Date(item.date).toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      day: 'numeric' 
-                    }), 
-                    value: item.value 
+                  <LineChart data={data.eventsOverTime.map(item => ({
+                    date: new Date(item.date).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric'
+                    }),
+                    value: item.value
                   }))} />
                 </div>
               ) : (
@@ -382,7 +382,7 @@ export default async function AdminAnalyticsOverviewPage() {
                   {data.recentActivity.slice(0, 4).map((activity, index) => (
                     <div key={activity.event_name} className="flex items-center justify-between text-sm p-2 rounded-lg hover:bg-muted/50 transition-colors group">
                       <div className="flex items-center gap-2">
-                                                 <div className="w-1.5 h-1.5 bg-primary rounded-full opacity-70" />
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full opacity-70" />
                         <span className="capitalize truncate font-medium">{activity.event_name}</span>
                       </div>
                       <span className="font-bold text-primary group-hover:scale-110 transition-transform">

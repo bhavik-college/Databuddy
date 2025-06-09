@@ -10,6 +10,12 @@ import { chQuery } from '@databuddy/db'
 import { getLanguageName } from '@databuddy/shared'
 
 // Single query schema
+const filterSchema = z.object({
+  field: z.string(),
+  operator: z.enum(['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in', 'not_in', 'contains', 'starts_with']),
+  value: z.union([z.string(), z.number(), z.array(z.union([z.string(), z.number()]))])
+});
+
 const singleQuerySchema = z.object({
   id: z.string().optional(),
   startDate: z.string(),
@@ -18,17 +24,13 @@ const singleQuerySchema = z.object({
   parameters: z.array(z.string()).min(1),
   limit: z.number().min(1).max(1000).default(100),
   page: z.number().min(1).default(1),
-  filters: z.array(z.object({
-    field: z.string(),
-    operator: z.enum(['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in', 'not_in', 'contains', 'starts_with']),
-    value: z.union([z.string(), z.number(), z.array(z.union([z.string(), z.number()]))])
-  })).default([])
-})
+  filters: z.array(filterSchema).default([])
+});
 
 const batchQuerySchema = z.union([
   singleQuerySchema,
   z.array(singleQuerySchema).min(1).max(10)
-])
+]);
 
 interface Website {
   id: string;
@@ -64,6 +66,78 @@ const processLanguageData = (data: any[]) =>
     name: getLanguageName(item.name) !== 'Unknown' ? getLanguageName(item.name) : item.name,
     code: item.name
   }))
+
+// Helper function to transform country codes
+const processCountryData = (data: any[]) => 
+  data.map(item => ({
+    ...item,
+    name: item.name === 'IL' ? 'PS' : item.name,
+    country: item.country === 'IL' ? 'PS' : item.country
+  }))
+
+// Helper function to process custom events data
+const processCustomEventsData = (data: any[]) => 
+  data.map(item => {
+    const { property_keys_arrays, ...rest } = item;
+    let property_keys: string[] = [];
+
+    if (property_keys_arrays) {
+      const allKeys = (property_keys_arrays as any[]).flat();
+      const filteredKeys = allKeys.filter((key: string) => 
+        !key.startsWith('__') && 
+        !['sessionId', 'sessionStartTime'].includes(key)
+      );
+      property_keys = [...new Set(filteredKeys)];
+    }
+
+    return {
+      ...rest,
+      property_keys,
+      country: item.country === 'IL' ? 'PS' : item.country,
+      // Parse event types if it's an array string
+      event_types: typeof item.event_types === 'string' ? 
+        JSON.parse(item.event_types) : item.event_types,
+      // Format timestamps
+      last_occurrence: item.last_occurrence ? new Date(item.last_occurrence).toISOString() : null,
+      first_occurrence: item.first_occurrence ? new Date(item.first_occurrence).toISOString() : null,
+      last_event_time: item.last_event_time ? new Date(item.last_event_time).toISOString() : null,
+      first_event_time: item.first_event_time ? new Date(item.first_event_time).toISOString() : null,
+    };
+  })
+
+// Helper function to process custom event details with expanded properties
+const processCustomEventDetailsData = (data: any[]) => 
+  data.map(item => {
+    let properties: Record<string, any> = {};
+    let propertyKeys: string[] = [];
+    
+    if (item.properties_json) {
+      try {
+        properties = JSON.parse(item.properties_json);
+        propertyKeys = Object.keys(properties).filter(key => 
+          !key.startsWith('__') && 
+          !['sessionId', 'sessionStartTime'].includes(key)
+        );
+      } catch {
+        // If parsing fails, keep empty
+      }
+    }
+    
+    return {
+      ...item,
+      country: item.country === 'IL' ? 'PS' : item.country,
+      time: new Date(item.time).toISOString(),
+      properties,
+      custom_property_keys: propertyKeys,
+      // Add expandable properties as subrows data
+      _subRows: propertyKeys.map(key => ({
+        name: key,
+        value: properties[key],
+        type: typeof properties[key],
+        _isProperty: true
+      }))
+    };
+  })
 
 // Helper function to group browser version data
 function processBrowserGroupedData(rawData: any[]): any[] {
@@ -223,8 +297,9 @@ function createQueryBuilder(config: BuilderConfig): ParameterBuilder {
   return (websiteId, startDate, endDate, limit, offset) => {
     const whereClauses = [
       `client_id = ${escapeSqlString(websiteId)}`,
-      `time >= ${escapeSqlString(startDate)}`,
-      `time <= ${escapeSqlString(endDate)}`
+      `toDate(time) >= ${escapeSqlString(startDate)}`,
+      `toDate(time) <= ${escapeSqlString(endDate)}`,
+      `event_name = 'screen_view'`
     ];
     
     if (config.eventName) {
@@ -257,7 +332,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'device_type',
     groupByColumns: ['device_type'],
-    eventName: 'screen_view',
     extraWhere: "device_type != ''",
     orderBy: 'visitors DESC'
   }),
@@ -266,13 +340,13 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: "CONCAT(browser_name, ' ', browser_version)",
     groupByColumns: ['browser_name', 'browser_version'],
-    eventName: 'screen_view',
     extraWhere: "browser_name != '' AND browser_version IS NOT NULL AND browser_version != ''",
     orderBy: 'visitors DESC'
   }),
 
   browsers_grouped: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
     SELECT 
+      CONCAT(browser_name, ' ', browser_version) as name,
       browser_name,
       browser_version,
       uniq(anonymous_id) as visitors,
@@ -280,8 +354,8 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
       uniq(session_id) as sessions
     FROM analytics.events
     WHERE client_id = ${escapeSqlString(websiteId)}
-      AND time >= ${escapeSqlString(startDate)}
-      AND time <= ${escapeSqlString(endDate)}
+      AND toDate(time) >= ${escapeSqlString(startDate)}
+      AND toDate(time) <= ${escapeSqlString(endDate)}
       AND event_name = 'screen_view'
       AND browser_name != ''
       AND browser_version IS NOT NULL 
@@ -295,8 +369,23 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'os_name',
     groupByColumns: ['os_name'],
-    eventName: 'screen_view',
     extraWhere: "os_name != ''",
+    orderBy: 'visitors DESC'
+  }),
+
+  screen_resolution: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: 'screen_resolution',
+    groupByColumns: ['screen_resolution'],
+    extraWhere: "screen_resolution != '' AND screen_resolution IS NOT NULL",
+    orderBy: 'visitors DESC'
+  }),
+
+  connection_type: createQueryBuilder({
+    metricSet: METRICS.standard,
+    nameColumn: 'connection_type',
+    groupByColumns: ['connection_type'],
+    extraWhere: "connection_type != '' AND connection_type IS NOT NULL",
     orderBy: 'visitors DESC'
   }),
 
@@ -305,7 +394,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'country',
     groupByColumns: ['country'],
-    eventName: 'screen_view',
     extraWhere: "country != ''",
     orderBy: 'visitors DESC'
   }),
@@ -314,7 +402,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: "CONCAT(region, ', ', country)",
     groupByColumns: ['region', 'country'],
-    eventName: 'screen_view',
     extraWhere: "region != ''",
     orderBy: 'visitors DESC'
   }),
@@ -323,7 +410,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'timezone',
     groupByColumns: ['timezone'],
-    eventName: 'screen_view',
     extraWhere: "timezone != ''",
     orderBy: 'visitors DESC'
   }),
@@ -332,7 +418,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'language',
     groupByColumns: ['language'],
-    eventName: 'screen_view',
     extraWhere: "language != '' AND language IS NOT NULL",
     orderBy: 'visitors DESC'
   }),
@@ -342,7 +427,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'path',
     groupByColumns: ['path'],
-    eventName: 'screen_view',
     extraWhere: "path != ''",
     orderBy: 'pageviews DESC'
   }),
@@ -360,7 +444,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'utm_source',
     groupByColumns: ['utm_source'],
-    eventName: 'screen_view',
     extraWhere: "utm_source != ''",
     orderBy: 'visitors DESC'
   }),
@@ -369,7 +452,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'utm_medium',
     groupByColumns: ['utm_medium'],
-    eventName: 'screen_view',
     extraWhere: "utm_medium != ''",
     orderBy: 'visitors DESC'
   }),
@@ -378,7 +460,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'utm_campaign',
     groupByColumns: ['utm_campaign'],
-    eventName: 'screen_view',
     extraWhere: "utm_campaign != ''",
     orderBy: 'visitors DESC'
   }),
@@ -387,7 +468,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'utm_content',
     groupByColumns: ['utm_content'],
-    eventName: 'screen_view',
     extraWhere: "utm_content != ''",
     orderBy: 'visitors DESC'
   }),
@@ -396,7 +476,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'utm_term',
     groupByColumns: ['utm_term'],
-    eventName: 'screen_view',
     extraWhere: "utm_term != ''",
     orderBy: 'visitors DESC'
   }),
@@ -406,7 +485,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.standard,
     nameColumn: 'referrer',
     groupByColumns: ['referrer'],
-    eventName: 'screen_view',
     extraWhere: "referrer != ''",
     orderBy: 'visitors DESC'
   }),
@@ -415,7 +493,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.performance,
     nameColumn: 'path',
     groupByColumns: ['path'],
-    eventName: 'screen_view',
     extraWhere: "load_time > 0 AND path != ''",
     orderBy: 'avg_load_time DESC'
   }),
@@ -424,7 +501,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.performance,
     nameColumn: 'country',
     groupByColumns: ['country'],
-    eventName: 'screen_view',
     extraWhere: "load_time > 0 AND country != ''",
     orderBy: 'avg_load_time DESC'
   }),
@@ -433,7 +509,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.performance,
     nameColumn: 'device_type',
     groupByColumns: ['device_type'],
-    eventName: 'screen_view',
     extraWhere: "load_time > 0 AND device_type != ''",
     orderBy: 'avg_load_time DESC'
   }),
@@ -442,7 +517,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.performance,
     nameColumn: "CONCAT(browser_name, ' ', browser_version)",
     groupByColumns: ['browser_name', 'browser_version'],
-    eventName: 'screen_view',
     extraWhere: "load_time > 0 AND browser_name != '' AND browser_version IS NOT NULL AND browser_version != ''",
     orderBy: 'avg_load_time DESC'
   }),
@@ -451,7 +525,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.performance,
     nameColumn: 'os_name',
     groupByColumns: ['os_name'],
-    eventName: 'screen_view',
     extraWhere: "load_time > 0 AND os_name != ''",
     orderBy: 'avg_load_time DESC'
   }),
@@ -460,7 +533,6 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     metricSet: METRICS.performance,
     nameColumn: "CONCAT(region, ', ', country)",
     groupByColumns: ['region', 'country'],
-    eventName: 'screen_view',
     extraWhere: "load_time > 0 AND region != ''",
     orderBy: 'avg_load_time DESC'
   }),
@@ -482,8 +554,8 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
       region
     FROM analytics.events
     WHERE client_id = ${escapeSqlString(websiteId)}
-      AND time >= ${escapeSqlString(startDate)}
-      AND time <= ${escapeSqlString(endDate)}
+      AND toDate(time) >= ${escapeSqlString(startDate)}
+      AND toDate(time) <= ${escapeSqlString(endDate)}
       AND event_name = 'error'
       AND error_message != ''
     ORDER BY time DESC
@@ -500,8 +572,8 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
       MIN(time) as first_occurrence
     FROM analytics.events
     WHERE client_id = ${escapeSqlString(websiteId)}
-      AND time >= ${escapeSqlString(startDate)}
-      AND time <= ${escapeSqlString(endDate)}
+      AND toDate(time) >= ${escapeSqlString(startDate)}
+      AND toDate(time) <= ${escapeSqlString(endDate)}
       AND event_name = 'error'
       AND error_message != ''
     GROUP BY error_message
@@ -563,12 +635,133 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
       uniq(session_id) as affected_sessions
     FROM analytics.events
     WHERE client_id = ${escapeSqlString(websiteId)}
-      AND time >= ${escapeSqlString(startDate)}
-      AND time <= ${escapeSqlString(endDate)}
+      AND toDate(time) >= ${escapeSqlString(startDate)}
+      AND toDate(time) <= ${escapeSqlString(endDate)}
       AND event_name = 'error'
       AND error_message != ''
     GROUP BY toDate(time)
     ORDER BY date DESC
+    LIMIT ${limit} OFFSET ${offset}
+  `,
+
+  // Custom Events queries
+  custom_events: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
+    SELECT 
+      event_name as name,
+      COUNT(*) as total_events,
+      uniq(anonymous_id) as unique_users,
+      uniq(session_id) as unique_sessions,
+      MAX(time) as last_occurrence,
+      MIN(time) as first_occurrence,
+      COUNT(DISTINCT path) as unique_pages,
+      groupArray(JSONExtractKeys(properties)) as property_keys_arrays
+    FROM analytics.events
+    WHERE client_id = ${escapeSqlString(websiteId)}
+      AND toDate(time) >= ${escapeSqlString(startDate)}
+      AND toDate(time) <= ${escapeSqlString(endDate)}
+      AND event_name NOT IN ('screen_view', 'page_exit', 'error', 'web_vitals')
+      AND event_name != ''
+    GROUP BY event_name
+    ORDER BY total_events DESC
+    LIMIT ${limit} OFFSET ${offset}
+  `,
+
+  custom_event_details: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
+    SELECT 
+      event_name,
+      time,
+      path,
+      anonymous_id,
+      session_id,
+      country,
+      region,
+      device_type,
+      browser_name,
+      os_name,
+      JSONExtractKeys(CAST(properties AS String)) as property_keys,
+      CAST(properties AS String) as properties_json
+    FROM analytics.events
+    WHERE client_id = ${escapeSqlString(websiteId)}
+      AND toDate(time) >= ${escapeSqlString(startDate)}
+      AND toDate(time) <= ${escapeSqlString(endDate)}
+      AND event_name NOT IN ('screen_view', 'page_exit', 'error', 'web_vitals')
+      AND event_name != ''
+    ORDER BY time DESC
+    LIMIT ${limit} OFFSET ${offset}
+  `,
+
+  custom_events_by_page: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
+    SELECT 
+      path as name,
+      COUNT(*) as total_events,
+      COUNT(DISTINCT event_name) as unique_event_types,
+      uniq(anonymous_id) as unique_users,
+      uniq(session_id) as unique_sessions,
+      groupArray(DISTINCT event_name) as event_types
+    FROM analytics.events
+    WHERE client_id = ${escapeSqlString(websiteId)}
+      AND toDate(time) >= ${escapeSqlString(startDate)}
+      AND toDate(time) <= ${escapeSqlString(endDate)}
+      AND event_name NOT IN ('screen_view', 'page_exit', 'error', 'web_vitals')
+      AND event_name != ''
+      AND path != ''
+    GROUP BY path
+    ORDER BY total_events DESC
+    LIMIT ${limit} OFFSET ${offset}
+  `,
+
+  custom_events_by_user: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
+    SELECT 
+      anonymous_id as name,
+      COUNT(*) as total_events,
+      COUNT(DISTINCT event_name) as unique_event_types,
+      COUNT(DISTINCT session_id) as unique_sessions,
+      COUNT(DISTINCT path) as unique_pages,
+      groupArray(DISTINCT event_name) as event_types,
+      MAX(time) as last_event_time,
+      MIN(time) as first_event_time
+    FROM analytics.events
+    WHERE client_id = ${escapeSqlString(websiteId)}
+      AND toDate(time) >= ${escapeSqlString(startDate)}
+      AND toDate(time) <= ${escapeSqlString(endDate)}
+      AND event_name NOT IN ('screen_view', 'page_exit', 'error', 'web_vitals')
+      AND event_name != ''
+    GROUP BY anonymous_id
+    ORDER BY total_events DESC
+    LIMIT ${limit} OFFSET ${offset}
+  `,
+
+  custom_event_properties: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
+    WITH property_analysis AS (
+      SELECT 
+        event_name,
+        JSONExtractKeys(CAST(properties AS String)) as keys
+      FROM analytics.events
+      WHERE client_id = ${escapeSqlString(websiteId)}
+        AND toDate(time) >= ${escapeSqlString(startDate)}
+        AND toDate(time) <= ${escapeSqlString(endDate)}
+        AND event_name NOT IN ('screen_view', 'page_exit', 'error', 'web_vitals')
+        AND event_name != ''
+        AND properties IS NOT NULL
+        AND properties != '{}'
+    ),
+    flattened_properties AS (
+      SELECT 
+        event_name,
+        arrayJoin(keys) as property_key
+      FROM property_analysis
+      WHERE length(keys) > 0
+    )
+    SELECT 
+      CONCAT(event_name, ':', property_key) as name,
+      event_name,
+      property_key,
+      COUNT(*) as usage_count,
+      COUNT(DISTINCT event_name) as event_types_count
+    FROM flattened_properties
+    WHERE property_key NOT IN ('__path', '__title', '__referrer', '__timestamp_ms', 'sessionId', 'sessionStartTime', 'screen_resolution', 'viewport_size', 'timezone', 'language', 'connection_type')
+    GROUP BY event_name, property_key
+    ORDER BY usage_count DESC
     LIMIT ${limit} OFFSET ${offset}
   `,
 
@@ -578,8 +771,22 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
       uniq(anonymous_id) as total_users
     FROM analytics.events
     WHERE client_id = ${escapeSqlString(websiteId)}
-      AND time >= ${escapeSqlString(startDate)}
-      AND time <= ${escapeSqlString(endDate)}
+      AND toDate(time) >= ${escapeSqlString(startDate)}
+      AND toDate(time) <= ${escapeSqlString(endDate)}
+      AND event_name = 'screen_view'
+  `,
+
+  // Test query to check if there's any data at all
+  test_data: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => `
+    SELECT 
+      'test' as name,
+      COUNT(DISTINCT anonymous_id) as visitors,
+      COUNT(*) as pageviews,
+      COUNT(DISTINCT session_id) as sessions
+    FROM analytics.events
+    WHERE client_id = ${escapeSqlString(websiteId)}
+      AND toDate(time) >= ${escapeSqlString(startDate)}
+      AND toDate(time) <= ${escapeSqlString(endDate)}
       AND event_name = 'screen_view'
   `,
 
@@ -600,7 +807,66 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     PARAMETER_BUILDERS.os_name(websiteId, startDate, endDate, limit, offset),
     
   regions: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => 
-    PARAMETER_BUILDERS.region(websiteId, startDate, endDate, limit, offset)
+    PARAMETER_BUILDERS.region(websiteId, startDate, endDate, limit, offset),
+    
+  screen_resolutions: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => 
+    PARAMETER_BUILDERS.screen_resolution(websiteId, startDate, endDate, limit, offset),
+    
+  connection_types: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number) => 
+    PARAMETER_BUILDERS.connection_type(websiteId, startDate, endDate, limit, offset),
+
+  custom_event_property_values: (websiteId, startDate, endDate, limit, offset, filters = []) => {
+    const eventNameFilter = filters.find(f => f.field === 'event_name');
+    const propertyKeyFilter = filters.find(f => f.field === 'property_key');
+
+    if (!eventNameFilter || !propertyKeyFilter || typeof eventNameFilter.value !== 'string' || typeof propertyKeyFilter.value !== 'string') {
+      return `SELECT '' as name, 0 as total_events, 0 as unique_users WHERE 1=0`;
+    }
+
+    const eventName = eventNameFilter.value;
+    const propertyKey = propertyKeyFilter.value;
+
+    return `
+      SELECT
+        JSONExtractString(properties, ${escapeSqlString(propertyKey)}) as name,
+        COUNT(*) as total_events,
+        uniq(anonymous_id) as unique_users
+      FROM analytics.events
+      WHERE client_id = ${escapeSqlString(websiteId)}
+        AND toDate(time) >= ${escapeSqlString(startDate)}
+        AND toDate(time) <= ${escapeSqlString(endDate)}
+        AND event_name = ${escapeSqlString(eventName)}
+        AND JSONHas(properties, ${escapeSqlString(propertyKey)})
+        AND JSONExtractString(properties, ${escapeSqlString(propertyKey)}) != ''
+      GROUP BY name
+      ORDER BY total_events DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+  },
+}
+
+// Helper function to get metric type for a parameter
+function getMetricType(parameter: string): string {
+  const performanceParams = [
+    'slow_pages', 'performance_by_country', 'performance_by_device', 
+    'performance_by_browser', 'performance_by_os', 'performance_by_region'
+  ]
+  
+  const errorParams = [
+    'recent_errors', 'error_types', 'errors_by_page', 'errors_by_browser',
+    'errors_by_os', 'errors_by_country', 'errors_by_device', 'error_trends'
+  ]
+  
+  const exitParams = ['exit_page']
+  
+  const specialParams = ['sessions_summary']
+  
+  if (performanceParams.includes(parameter)) return 'performance'
+  if (errorParams.includes(parameter)) return 'errors'
+  if (exitParams.includes(parameter)) return 'exits'
+  if (specialParams.includes(parameter)) return 'special'
+  
+  return 'standard'
 }
 
 // Helper function to build a unified query for multiple parameters
@@ -608,13 +874,36 @@ function buildUnifiedQuery(
   queries: Array<z.infer<typeof singleQuerySchema> & { id: string }>,
   websiteId: string
 ): string {
-  const subQueries: string[] = []
+  // Group queries by metric type to avoid UNION ALL column mismatch
+  const metricGroups: Record<string, Array<{
+    query: z.infer<typeof singleQuerySchema> & { id: string },
+    parameter: string
+  }>> = {}
   
   for (const query of queries) {
-    const { startDate, endDate, parameters, limit, page, filters } = query
-    const offset = (page - 1) * limit
+    const { parameters } = query
     
     for (const parameter of parameters) {
+      const metricType = getMetricType(parameter)
+      
+      if (!metricGroups[metricType]) {
+        metricGroups[metricType] = []
+      }
+      
+      metricGroups[metricType].push({ query, parameter })
+    }
+  }
+  
+  // Build separate UNION queries for each metric type
+  const metricQueries: string[] = []
+  
+  for (const [metricType, items] of Object.entries(metricGroups)) {
+    const subQueries: string[] = []
+    
+    for (const { query, parameter } of items) {
+      const { startDate, endDate, limit, page, filters } = query
+      const offset = (page - 1) * limit
+      
       const builder = PARAMETER_BUILDERS[parameter as keyof typeof PARAMETER_BUILDERS]
       if (!builder) continue
       
@@ -648,6 +937,7 @@ function buildUnifiedQuery(
         SELECT 
           '${query.id}' as query_id,
           '${parameter}' as parameter,
+          '${metricType}' as metric_type,
           *
         FROM (
           ${sql}
@@ -656,9 +946,18 @@ function buildUnifiedQuery(
       
       subQueries.push(wrappedQuery)
     }
+    
+    if (subQueries.length > 0) {
+      metricQueries.push(subQueries.join('\nUNION ALL\n'))
+    }
   }
   
-  return subQueries.join('\nUNION ALL\n')
+  // If we have multiple metric types, we can't union them - fall back to individual queries
+  if (metricQueries.length > 1) {
+    throw new Error('Cannot unify queries with different metric types')
+  }
+  
+  return metricQueries[0] || ''
 }
 
 // Helper function to process data after unified query
@@ -670,7 +969,7 @@ function processUnifiedResults(
   const groupedResults: Record<string, Record<string, any[]>> = {}
   
   for (const row of rawResults) {
-    const { query_id, parameter, ...data } = row
+    const { query_id, parameter, metric_type, ...data } = row
     
     if (!groupedResults[query_id]) {
       groupedResults[query_id] = {}
@@ -719,6 +1018,26 @@ function processUnifiedResults(
           processedData = processTimezoneData(rawData)
           break
           
+        case 'country':
+        case 'countries':
+        case 'region':
+        case 'regions':
+        case 'performance_by_country':
+        case 'errors_by_country':
+          processedData = processCountryData(rawData)
+          break
+          
+        case 'custom_events':
+        case 'custom_events_by_page':
+        case 'custom_events_by_user':
+        case 'custom_event_properties':
+          processedData = processCustomEventsData(rawData)
+          break
+          
+        case 'custom_event_details':
+          processedData = processCustomEventDetailsData(rawData)
+          break
+          
         default:
           processedData = rawData
           break
@@ -765,6 +1084,11 @@ async function processBatchQueries(
     // Build unified query
     const unifiedQuery = buildUnifiedQuery(queries, websiteId)
     
+    // If unified query is empty (no compatible queries), fall back immediately
+    if (!unifiedQuery) {
+      throw new Error('No unifiable queries found')
+    }
+    
     // Execute single query
     const rawResults = await chQuery<Record<string, any>>(unifiedQuery)
     
@@ -772,11 +1096,17 @@ async function processBatchQueries(
     return processUnifiedResults(rawResults, queries)
     
   } catch (error: any) {
-    // If unified query fails, fall back to individual queries for error isolation
-    logger.error('Unified query failed, falling back to individual queries', {
-      error: error.message,
-      queries_count: queries.length
-    })
+    // If unified query fails (e.g., different metric types), fall back to individual queries
+    if (error.message?.includes('Cannot unify queries with different metric types')) {
+      logger.info('Using individual queries due to mixed metric types', {
+        queries_count: queries.length
+      })
+    } else {
+      logger.error('Unified query failed, falling back to individual queries', {
+        error: error.message,
+        queries_count: queries.length
+      })
+    }
     
     return Promise.all(
       queries.map(async (query) => {
@@ -837,6 +1167,26 @@ async function processBatchQueries(
                   processedData = processTimezoneData(result)
                   break
                   
+                case 'country':
+                case 'countries':
+                case 'region':
+                case 'regions':
+                case 'performance_by_country':
+                case 'errors_by_country':
+                  processedData = processCountryData(result)
+                  break
+                  
+                case 'custom_events':
+                case 'custom_events_by_page':
+                case 'custom_events_by_user':
+                case 'custom_event_properties':
+                  processedData = processCustomEventsData(result)
+                  break
+                  
+                case 'custom_event_details':
+                  processedData = processCustomEventDetailsData(result)
+                  break
+                  
                 default:
                   processedData = result
                   break
@@ -872,36 +1222,7 @@ async function processBatchQueries(
 
 queryRouter.post(
   '/',
-  zValidator('json', z.union([
-    z.object({
-      id: z.string().optional(),
-      startDate: z.string(),
-      endDate: z.string(),
-      timeZone: z.string().default('UTC'),
-      parameters: z.array(z.string()).min(1),
-      limit: z.number().min(1).max(1000).default(100),
-      page: z.number().min(1).default(1),
-      filters: z.array(z.object({
-        field: z.string(),
-        operator: z.enum(['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in', 'not_in', 'contains', 'starts_with']),
-        value: z.union([z.string(), z.number(), z.array(z.union([z.string(), z.number()]))])
-      })).default([])
-    }),
-    z.array(z.object({
-      id: z.string().optional(),
-      startDate: z.string(),
-      endDate: z.string(),
-      timeZone: z.string().default('UTC'),
-      parameters: z.array(z.string()).min(1),
-      limit: z.number().min(1).max(1000).default(100),
-      page: z.number().min(1).default(1),
-      filters: z.array(z.object({
-        field: z.string(),
-        operator: z.enum(['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in', 'not_in', 'contains', 'starts_with']),
-        value: z.union([z.string(), z.number(), z.array(z.union([z.string(), z.number()]))])
-      })).default([])
-    })).min(1).max(10)
-  ])),
+  zValidator('json', batchQuerySchema),
   async (c) => {
     const requestData = c.req.valid('json')
     const website = c.get('website')
@@ -956,13 +1277,14 @@ queryRouter.get('/parameters', async (c) => {
     success: true,
     parameters: Object.keys(PARAMETER_BUILDERS),
     categories: {
-      device: ['device_type', 'browser_name', 'browsers_grouped', 'os_name'],
+      device: ['device_type', 'browser_name', 'browsers_grouped', 'os_name', 'screen_resolution', 'connection_type'],
       geography: ['country', 'region', 'timezone', 'language'],
       pages: ['top_pages', 'exit_page'],
       utm: ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'],
       referrers: ['referrer'],
       performance: ['slow_pages', 'performance_by_country', 'performance_by_device', 'performance_by_browser', 'performance_by_os', 'performance_by_region'],
-      errors: ['recent_errors', 'error_types', 'errors_by_page', 'errors_by_browser', 'errors_by_os', 'errors_by_country', 'errors_by_device', 'error_trends', 'sessions_summary']
+      errors: ['recent_errors', 'error_types', 'errors_by_page', 'errors_by_browser', 'errors_by_os', 'errors_by_country', 'errors_by_device', 'error_trends', 'sessions_summary'],
+      custom_events: ['custom_events', 'custom_event_details', 'custom_events_by_page', 'custom_events_by_user', 'custom_event_properties', 'custom_event_property_values']
     }
   })
 })

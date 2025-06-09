@@ -23,5 +23,8 @@
     }
   },
   "include": ["next-env.d.ts", "types/**/*.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "components/ui"]
+  "exclude": ["node_modules", "components/ui", "ui", ".next", "dist", ".turbo", ".turbo"],
+  "skipLibCheck": true,
+  "noImplicitAny": false,
+  "incremental": true
 }

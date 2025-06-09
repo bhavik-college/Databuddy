@@ -4,9 +4,9 @@ import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from "@
 export function LoadingState() {
   // Create a fixed array of unique IDs for the loading rows
   const loadingRowIds = ['loading-row-1', 'loading-row-2', 'loading-row-3'];
-  
+
   return (
-    <div className="rounded-xl border border-border bg-card/80 shadow-lg overflow-x-auto">
+    <div className="rounded border border-border bg-card/80 shadow-lg overflow-x-auto">
       <Table className="min-w-full text-sm">
         <TableHeader>
           <TableRow className="bg-muted/80 border-b border-border/60">
@@ -16,9 +16,9 @@ export function LoadingState() {
         </TableHeader>
         <TableBody>
           {loadingRowIds.map((id, index) => (
-            <TableRow key={id} 
+            <TableRow key={id}
               className="border-b border-border/50"
-              style={{ 
+              style={{
                 animationDelay: `${index * 100}ms`,
                 opacity: 0,
                 animation: 'fadeIn 0.5s ease forwards'

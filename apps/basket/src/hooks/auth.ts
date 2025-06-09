@@ -27,42 +27,201 @@ export const getWebsiteById = cacheable(
   }
 );
 
-// Simplified isValidOrigin - relies on www. and protocol stripping, checks exact and subdomain
-export function isValidOrigin(originHeader: string, dbDomain: string): boolean {
-  if (!originHeader) return true; 
+/**
+ * Validates if an origin header matches or is a subdomain of the allowed domain
+ * 
+ * @param originHeader - The Origin header value from the request
+ * @param allowedDomain - The domain to validate against (can include protocol, port, www prefix)
+ * @returns true if origin is valid, false otherwise
+ * 
+ * @example
+ * isValidOrigin('https://app.example.com', 'example.com') // true
+ * isValidOrigin('https://example.com', 'https://www.example.com:3000') // true  
+ * isValidOrigin('https://malicious.com', 'example.com') // false
+ * isValidOrigin('http://localhost:3000', 'localhost') // true
+ */
+export function isValidOrigin(originHeader: string, allowedDomain: string): boolean {
+  // Allow requests without Origin header (same-origin requests, some mobile apps, etc.)
+  if (!originHeader?.trim()) {
+    return true;
+  }
 
-  try {
-    let normalizedDbDomain = dbDomain;
-    // Strip protocol if present
-    if (normalizedDbDomain.startsWith('http://') || normalizedDbDomain.startsWith('https://')) {
-      normalizedDbDomain = new URL(normalizedDbDomain).hostname;
-    } else {
-      // If no protocol, it might be domain:port, so split and take the domain part
-      normalizedDbDomain = normalizedDbDomain.split(':')[0];
-    }
-    normalizedDbDomain = normalizedDbDomain.replace(/^www\./, '');
-
-    const originUrl = new URL(originHeader);
-    let normalizedOriginHostname = originUrl.hostname; // .hostname already strips port
-    normalizedOriginHostname = normalizedOriginHostname.replace(/^www\./, '');
-
-    // Use a generic logger here or pass execCtx if refactoring isValidOrigin to be called by other Hono handlers
-    logger.debug('[isValidOrigin Check]', {
-      requestOrigin: originHeader,
-      normalizedRequestHostname: normalizedOriginHostname,
-      databaseDomain: dbDomain,
-      normalizedDatabaseDomain: normalizedDbDomain
-    });
-
-    if (normalizedOriginHostname === normalizedDbDomain) return true;
-    // Subdomain check should be against a pure hostname
-    if (normalizedOriginHostname.endsWith(`.${normalizedDbDomain}`)) return true;
-    
-    return false;
-  } catch (error) {
-    logger.error('[isValidOrigin Error]', { originHeader, dbDomain, error: error instanceof Error ? error.message : String(error) });
+  // Validate inputs
+  if (!allowedDomain?.trim()) {
+    logger.warn(new Error('[isValidOrigin] No allowed domain provided'));
     return false;
   }
+
+  try {
+    const normalizedAllowedDomain = normalizeDomain(allowedDomain.trim());
+    const originUrl = new URL(originHeader.trim());
+    const normalizedOriginDomain = normalizeDomain(originUrl.hostname);
+
+    // Exact match
+    if (normalizedOriginDomain === normalizedAllowedDomain) {
+      return true;
+    }
+
+    // Subdomain match - ensure we're checking against the root domain
+    if (isSubdomain(normalizedOriginDomain, normalizedAllowedDomain)) {
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    // Log detailed error information for debugging
+    logger.error(new Error(`[isValidOrigin] Validation failed: ${error instanceof Error ? error.message : String(error)}`));
+    
+    // Fail closed - reject invalid origins for security
+    return false;
+  }
+}
+
+/**
+ * Normalizes a domain by removing protocol, port, and www prefix
+ * 
+ * @param domain - Domain string to normalize
+ * @returns Normalized domain string
+ */
+function normalizeDomain(domain: string): string {
+  let normalized = domain.toLowerCase();
+
+  // Remove protocol if present
+  if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
+    normalized = new URL(normalized).hostname;
+  } else {
+    // Handle domain:port format by splitting on colon
+    normalized = normalized.split(':')[0];
+  }
+
+  // Remove www prefix
+  normalized = normalized.replace(/^www\./, '');
+
+  // Validate the result is a reasonable domain
+  if (!isValidDomainFormat(normalized)) {
+    throw new Error(`Invalid domain format after normalization: ${normalized}`);
+  }
+
+  return normalized;
+}
+
+/**
+ * Checks if originDomain is a subdomain of allowedDomain
+ * 
+ * @param originDomain - The origin domain to check
+ * @param allowedDomain - The allowed parent domain
+ * @returns true if originDomain is a subdomain of allowedDomain
+ */
+function isSubdomain(originDomain: string, allowedDomain: string): boolean {
+  // Prevent subdomain bypass attacks like "evilexample.com" matching "example.com"
+  return originDomain.endsWith(`.${allowedDomain}`) && 
+         originDomain.length > allowedDomain.length + 1;
+}
+
+/**
+ * Basic domain format validation
+ * 
+ * @param domain - Domain to validate
+ * @returns true if domain appears to be valid format
+ */
+function isValidDomainFormat(domain: string): boolean {
+  // Basic checks - not exhaustive but catches obvious issues
+  return domain.length > 0 && 
+         domain.length <= 253 && // RFC limit
+         !domain.startsWith('.') && 
+         !domain.endsWith('.') &&
+         !domain.includes('..') &&
+         /^[a-zA-Z0-9.-]+$/.test(domain);
+}
+
+// Enhanced version with additional security features
+export function isValidOriginSecure(
+  originHeader: string, 
+  allowedDomain: string,
+  options: {
+    allowLocalhost?: boolean;
+    allowedSubdomains?: string[];
+    blockedSubdomains?: string[];
+    requireHttps?: boolean;
+  } = {}
+): boolean {
+  const {
+    allowLocalhost = false,
+    allowedSubdomains = [],
+    blockedSubdomains = [],
+    requireHttps = false
+  } = options;
+
+  if (!originHeader?.trim()) {
+    return true;
+  }
+
+  if (!allowedDomain?.trim()) {
+    return false;
+  }
+
+  try {
+    const originUrl = new URL(originHeader.trim());
+    
+    // HTTPS requirement check
+    if (requireHttps && originUrl.protocol !== 'https:') {
+      return false;
+    }
+
+    // Localhost handling
+    if (isLocalhost(originUrl.hostname)) {
+      return allowLocalhost;
+    }
+
+    const normalizedAllowedDomain = normalizeDomain(allowedDomain.trim());
+    const normalizedOriginDomain = normalizeDomain(originUrl.hostname);
+
+    // Exact match
+    if (normalizedOriginDomain === normalizedAllowedDomain) {
+      return true;
+    }
+
+    // Subdomain checks
+    if (isSubdomain(normalizedOriginDomain, normalizedAllowedDomain)) {
+      const subdomain = normalizedOriginDomain.replace(`.${normalizedAllowedDomain}`, '');
+      
+      // Check blocked subdomains
+      if (blockedSubdomains.includes(subdomain)) {
+        return false;
+      }
+      
+      // Check allowed subdomains (if specified, only these are allowed)
+      if (allowedSubdomains.length > 0) {
+        return allowedSubdomains.includes(subdomain);
+      }
+      
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    logger.error(new Error(`[isValidOriginSecure] Validation failed: ${error instanceof Error ? error.message : String(error)}`));
+    
+    return false;
+  }
+}
+
+/**
+ * Checks if a hostname is localhost
+ */
+function isLocalhost(hostname: string): boolean {
+  const localhostPatterns = [
+    'localhost',
+    '127.0.0.1',
+    '::1',
+    '0.0.0.0'
+  ];
+  
+  return localhostPatterns.includes(hostname.toLowerCase()) ||
+         hostname.match(/^127\.\d+\.\d+\.\d+$/) !== null ||
+         hostname.match(/^192\.168\.\d+\.\d+$/) !== null ||
+         hostname.match(/^10\.\d+\.\d+\.\d+$/) !== null ||
+         hostname.match(/^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/) !== null;
 }
 
 export const websiteAuthHook = (): MiddlewareHandler<{
@@ -107,7 +266,7 @@ export const websiteAuthHook = (): MiddlewareHandler<{
       c.set('website', website as any);
       await next();
     } catch (error) {
-      logger.error('[AuthHook] Error validating website', { 
+      logger.error({ message: `[AuthHook] Error validating website: ${error instanceof Error ? error.message : String(error)}`, 
         clientId, 
         origin: requestOrigin, 
         error: error instanceof Error ? error.message : String(error) 

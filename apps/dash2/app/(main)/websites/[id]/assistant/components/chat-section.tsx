@@ -31,7 +31,7 @@ interface ChatSectionProps extends WebsiteDataTabProps {
 
 export function ChatSkeleton() {
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-background to-muted/10 border rounded-lg shadow-lg overflow-hidden backdrop-blur-sm">
+    <div className="flex flex-col h-full bg-gradient-to-br from-background to-muted/10 border rounded shadow-lg overflow-hidden backdrop-blur-sm">
       {/* Header Skeleton */}
       <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-primary/5 to-accent/5 flex-shrink-0">
         <div className="flex items-center gap-3">
@@ -114,7 +114,7 @@ export default function ChatSection({
   const hasMessages = messages.length > 1;
 
   return (
-    <div className="flex flex-col flex-1 bg-gradient-to-br from-background to-muted/10 border rounded-lg shadow-lg overflow-hidden min-h-0 backdrop-blur-sm">
+    <div className="flex flex-col flex-1 bg-gradient-to-br from-background to-muted/10 border rounded shadow-lg overflow-hidden min-h-0 backdrop-blur-sm">
       {/* Enhanced Header */}
       <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-primary/5 to-accent/5 flex-shrink-0">
         <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -288,7 +288,7 @@ export default function ChatSection({
           </div>
           
           {/* Helper text */}
-          <div className="flex items-center justify-between mt-3 text-xs">
+          <div className="flex flex-wrap items-center justify-between mt-3 text-xs gap-2">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Sparkles className="h-3 w-3 flex-shrink-0" />
               <span>Ask about trends, comparisons, or specific metrics</span>

@@ -52,8 +52,8 @@ export default function AIAssistantMain(props: WebsiteDataTabProps) {
         className={cn(
           "flex flex-col overflow-hidden transition-all duration-500 ease-in-out",
           shouldShowVisualization 
-            ? "flex-[2_2_0%]" 
-            : "flex-[1_1_0%] lg:flex-[3_3_0%]"
+            ? "flex-[3_3_0%]" 
+            : "flex-1"
         )}
       >
         <Suspense fallback={<ChatSkeleton />}>
@@ -79,12 +79,10 @@ export default function AIAssistantMain(props: WebsiteDataTabProps) {
       {/* Visualization Section - smoothly slides in/out based on need */}
       <div 
         className={cn(
-          "flex flex-col overflow-hidden transition-all duration-500 ease-in-out transform",
+          "flex-col overflow-hidden transition-all duration-500 ease-in-out transform",
           shouldShowVisualization 
-            ? "flex-[3_3_0%] translate-x-0 opacity-100" 
-            : hasRecentActivity 
-              ? "flex-[2_2_0%] lg:flex-[1_1_0%] translate-x-0 opacity-60"
-              : "flex-[2_2_0%] lg:flex-[1_1_0%] translate-x-0 opacity-40"
+            ? "flex flex-[2_2_0%] translate-x-0 opacity-100" 
+            : "hidden"
         )}
       >
         <Suspense fallback={<VisualizationSkeleton />}>

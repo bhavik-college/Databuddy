@@ -75,13 +75,13 @@ function WebsiteDetailsPage() {
     from: currentDateRange.startDate,
     to: currentDateRange.endDate,
   }), [currentDateRange]);
-  
+
   const quickRanges = useMemo(() => [
     { label: "24h", fullLabel: "Last 24 hours", hours: 24 },
     { label: "7d", fullLabel: "Last 7 days", days: 7 },
     { label: "30d", fullLabel: "Last 30 days", days: 30 },
   ], []);
-  
+
   const handleQuickRangeSelect = useCallback((range: typeof quickRanges[0]) => {
     const now = new Date();
     const start = range.hours ? subHours(now, range.hours) : subDays(now, range.days || 7);
@@ -104,7 +104,7 @@ function WebsiteDetailsPage() {
 
   // Always call the analytics hook with the websiteId to maintain hook order
   const { analytics: analyticsData, loading: analyticsLoading } = useWebsiteAnalytics(
-    id as string, 
+    id as string,
     memoizedDateRangeForTabs
   );
 
@@ -130,7 +130,7 @@ function WebsiteDetailsPage() {
   }, []);
 
   const renderTabContent = useCallback((tabId: TabId) => {
-    if (tabId !== activeTab) return null; 
+    if (tabId !== activeTab) return null;
 
     const key = `${tabId}-${id as string}`;
     const settingsProps: WebsiteDataTabProps = {
@@ -200,139 +200,139 @@ function WebsiteDetailsPage() {
         {isTrackingSetup && (
           <div className="flex flex-col gap-3 mt-3 bg-muted/30 rounded-lg p-2.5 border">
             <div className="flex items-center justify-between gap-3">
-            <div className="bg-background rounded-md border overflow-hidden flex shadow-sm h-8">
+              <div className="bg-background rounded-md border overflow-hidden flex shadow-sm h-8">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`h-8 text-xs px-2 sm:px-3 rounded-none cursor-pointer touch-manipulation ${currentGranularity === 'daily' ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground'}`}
+                  onClick={() => setCurrentGranularityAtomState('daily')}
+                  title="View daily aggregated data"
+                >
+                  Daily
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`h-8 text-xs px-2 sm:px-3 rounded-none cursor-pointer touch-manipulation ${currentGranularity === 'hourly' ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground'}`}
+                  onClick={() => setCurrentGranularityAtomState('hourly')}
+                  title="View hourly data (best for 24h periods)"
+                >
+                  Hourly
+                </Button>
+              </div>
+
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className={`h-8 text-xs px-2 sm:px-3 rounded-none cursor-pointer touch-manipulation ${currentGranularity === 'daily' ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground'}`}
-                onClick={() => setCurrentGranularityAtomState('daily')}
-                title="View daily aggregated data"
+                className="h-8 text-xs gap-1.5 bg-background shadow-sm font-medium touch-manipulation cursor-pointer"
+                onClick={handleRefresh}
+                disabled={isRefreshing || isLoading}
               >
-                Daily
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-8 text-xs px-2 sm:px-3 rounded-none cursor-pointer touch-manipulation ${currentGranularity === 'hourly' ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground'}`}
-                onClick={() => setCurrentGranularityAtomState('hourly')}
-                title="View hourly data (best for 24h periods)"
-              >
-                Hourly
+                <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">
+                  {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                </span>
               </Button>
             </div>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs gap-1.5 bg-background shadow-sm font-medium touch-manipulation cursor-pointer"
-              onClick={handleRefresh}
-              disabled={isRefreshing || isLoading}
-            >
-              <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">
-                {isRefreshing ? 'Refreshing...' : 'Refresh'}
-              </span>
-            </Button>
-          </div>
-          
-          <div className="flex items-center gap-2 bg-background rounded-md p-1 border shadow-sm overflow-x-auto">
-            {quickRanges.map((range) => {
-              const now = new Date();
-              const start = range.hours ? subHours(now, range.hours) : subDays(now, range.days || 7);
-              const dayPickerCurrentRange = dayPickerSelectedRange;
-              const isActive = dayPickerCurrentRange?.from && dayPickerCurrentRange?.to &&
-                format(dayPickerCurrentRange.from, 'yyyy-MM-dd') === format(start, 'yyyy-MM-dd') &&
-                format(dayPickerCurrentRange.to, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd');
-              
-              return (
-                <Button 
-                  key={range.label}
-                  variant={isActive ? 'default' : 'ghost'} 
-                  size="sm" 
-                  className={`h-6 cursor-pointer text-xs whitespace-nowrap px-2 sm:px-2.5 touch-manipulation ${isActive ? 'shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-                  onClick={() => handleQuickRangeSelect(range)}
-                  title={range.fullLabel}
-                >
-                  <span className="sm:hidden">{range.label}</span>
-                  <span className="hidden sm:inline">{range.fullLabel}</span>
-                </Button>
-              );
-            })}
-            
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-6 text-xs gap-1 sm:gap-1.5 whitespace-nowrap px-2 sm:px-2.5 border-l border-border/50 ml-1 pl-2 sm:pl-3 touch-manipulation"
-                >
-                  <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary flex-shrink-0" />
-                  <span className="font-medium text-xs truncate">
-                    {dayPickerSelectedRange?.from ? format(dayPickerSelectedRange.from, 'MMM d') : ''} - {dayPickerSelectedRange?.to ? format(dayPickerSelectedRange.to, 'MMM d') : ''}
-                  </span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-2 border shadow-lg" align="end">
-                <div className="grid gap-2">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
-                    <span className="text-sm font-medium">Select date range</span>
-                    <div className="flex gap-1 flex-wrap">
-                      {quickRanges.map((range) => (
-                        <Button 
-                          key={range.label}
-                          variant="outline"
-                          size="sm" 
-                          className="h-7 text-xs touch-manipulation"
-                          onClick={() => handleQuickRangeSelect(range)}
-                        >
-                          {range.label}
-                        </Button>
-                      ))}
+
+            <div className="flex items-center gap-2 bg-background rounded-md p-1 border shadow-sm overflow-x-auto">
+              {quickRanges.map((range) => {
+                const now = new Date();
+                const start = range.hours ? subHours(now, range.hours) : subDays(now, range.days || 7);
+                const dayPickerCurrentRange = dayPickerSelectedRange;
+                const isActive = dayPickerCurrentRange?.from && dayPickerCurrentRange?.to &&
+                  format(dayPickerCurrentRange.from, 'yyyy-MM-dd') === format(start, 'yyyy-MM-dd') &&
+                  format(dayPickerCurrentRange.to, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd');
+
+                return (
+                  <Button
+                    key={range.label}
+                    variant={isActive ? 'default' : 'ghost'}
+                    size="sm"
+                    className={`h-6 cursor-pointer text-xs whitespace-nowrap px-2 sm:px-2.5 touch-manipulation ${isActive ? 'shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                    onClick={() => handleQuickRangeSelect(range)}
+                    title={range.fullLabel}
+                  >
+                    <span className="sm:hidden">{range.label}</span>
+                    <span className="hidden sm:inline">{range.fullLabel}</span>
+                  </Button>
+                );
+              })}
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-xs gap-1 sm:gap-1.5 whitespace-nowrap px-2 sm:px-2.5 border-l border-border/50 ml-1 pl-2 sm:pl-3 touch-manipulation"
+                  >
+                    <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary flex-shrink-0" />
+                    <span className="font-medium text-xs truncate">
+                      {dayPickerSelectedRange?.from ? format(dayPickerSelectedRange.from, 'MMM d') : ''} - {dayPickerSelectedRange?.to ? format(dayPickerSelectedRange.to, 'MMM d') : ''}
+                    </span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-2 border shadow-lg" align="end">
+                  <div className="grid gap-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+                      <span className="text-sm font-medium">Select date range</span>
+                      <div className="flex gap-1 flex-wrap">
+                        {quickRanges.map((range) => (
+                          <Button
+                            key={range.label}
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs touch-manipulation"
+                            onClick={() => handleQuickRangeSelect(range)}
+                          >
+                            {range.label}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                    <CalendarComponent
+                      initialFocus
+                      mode="range"
+                      defaultMonth={dayPickerSelectedRange?.from}
+                      selected={dayPickerSelectedRange}
+                      onSelect={handleDateRangeChange}
+                      numberOfMonths={window.innerWidth < 640 ? 1 : 2}
+                      disabled={(d) => d > new Date() || d < new Date(2020, 0, 1)}
+                      className="rounded-md border"
+                    />
+                    <div className="flex justify-end">
+                      <Button
+                        size="sm"
+                        className="mt-2 touch-manipulation"
+                        onClick={() => {
+                          if (dayPickerSelectedRange?.from && dayPickerSelectedRange?.to) {
+                            setDateRangeAction({ startDate: dayPickerSelectedRange.from, endDate: dayPickerSelectedRange.to });
+                          }
+                        }}
+                      >
+                        Apply Range
+                      </Button>
                     </div>
                   </div>
-                  <CalendarComponent
-                    initialFocus
-                    mode="range"
-                    defaultMonth={dayPickerSelectedRange?.from}
-                    selected={dayPickerSelectedRange}
-                    onSelect={handleDateRangeChange}
-                    numberOfMonths={window.innerWidth < 640 ? 1 : 2}
-                    disabled={(d) => d > new Date() || d < new Date(2020, 0, 1)}
-                    className="rounded-md border"
-                  />
-                  <div className="flex justify-end">
-                    <Button 
-                      size="sm" 
-                      className="mt-2 touch-manipulation"
-                      onClick={() => {
-                        if (dayPickerSelectedRange?.from && dayPickerSelectedRange?.to) {
-                           setDateRangeAction({ startDate: dayPickerSelectedRange.from, endDate: dayPickerSelectedRange.to });
-                        }
-                      }}
-                    >
-                      Apply Range
-                    </Button>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
-        </div>
         )}
       </header>
 
-      <Tabs 
-        defaultValue="overview" 
-        value={activeTab} 
-        onValueChange={(value) => setActiveTab(value as TabId)} 
+      <Tabs
+        defaultValue="overview"
+        value={activeTab}
+        onValueChange={(value) => setActiveTab(value as TabId)}
         className="space-y-4"
       >
         <div className="border-b relative">
           <TabsList className="h-10 bg-transparent p-0 w-full justify-start overflow-x-auto">
             {tabs.map((tab) => (
-              <TabsTrigger 
-                key={tab.id} 
-                value={tab.id} 
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
                 className="text-xs sm:text-sm h-10 px-2 sm:px-4 rounded-none touch-manipulation hover:bg-muted/50 relative transition-colors whitespace-nowrap cursor-pointer"
                 onClick={() => setActiveTab(tab.id)}
               >
@@ -346,9 +346,9 @@ function WebsiteDetailsPage() {
         </div>
 
         {tabs.map((tab) => (
-          <TabsContent 
-            key={tab.id} 
-            value={tab.id} 
+          <TabsContent
+            key={tab.id}
+            value={tab.id}
             className={`${tab.className || ''} transition-all duration-200 animate-fadeIn`}
           >
             {renderTabContent(tab.id)}
@@ -357,11 +357,11 @@ function WebsiteDetailsPage() {
       </Tabs>
     </div>
   );
-} 
+}
 
 function TabLoadingSkeleton() {
   return (
-    <div className="space-y-6 py-8">
+    <div className="space-y-6 py-8 p-4">
       {/* Key metrics cards skeleton */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {[1, 2, 3, 4, 5, 6].map((num) => (
@@ -376,7 +376,7 @@ function TabLoadingSkeleton() {
       </div>
 
       {/* Chart skeleton */}
-      <div className="rounded-xl border shadow-sm">
+      <div className="rounded border shadow-sm">
         <div className="p-4 border-b flex flex-col sm:flex-row justify-between items-start gap-3">
           <div className="space-y-2">
             <Skeleton className="h-5 w-32" />
@@ -449,11 +449,11 @@ function TabLoadingSkeleton() {
 }
 
 export default function Page() {
-    return (
-        <Suspense fallback={<PageLoadingSkeleton />}>
-            <WebsiteDetailsPage />
-        </Suspense>
-    )
+  return (
+    <Suspense fallback={<PageLoadingSkeleton />}>
+      <WebsiteDetailsPage />
+    </Suspense>
+  )
 }
 
 function PageLoadingSkeleton() {
@@ -468,7 +468,7 @@ function PageLoadingSkeleton() {
           </div>
           <Skeleton className="h-9 w-24" />
         </div>
-        
+
         {/* Date range controls skeleton */}
         <div className="bg-muted/30 rounded-lg p-3 border space-y-3">
           <div className="flex items-center justify-between gap-3">
@@ -496,7 +496,7 @@ function PageLoadingSkeleton() {
             ))}
           </div>
         </div>
-        
+
         {/* Tab content skeleton */}
         <TabLoadingSkeleton />
       </div>

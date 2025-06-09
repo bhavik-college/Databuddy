@@ -1,4 +1,4 @@
-import { redis } from './redis';
+import { getRedisCache } from './redis';
 
 const logger = console;
 
@@ -37,6 +37,7 @@ export async function getCache<T>(
   let retries = 0;
   while (retries < maxRetries) {
     try {
+      const redis = getRedisCache();
       const hit = await redis.get(key);
       if (hit) {
         const data = deserialize(hit) as T;
@@ -47,6 +48,7 @@ export async function getCache<T>(
             // Return stale data and revalidate in background
             fn().then(async (freshData: T) => {
               if (freshData !== undefined && freshData !== null) {
+                const redis = getRedisCache();
                 await redis.setex(key, expireInSec, serialize(freshData));
               }
             }).catch((error: unknown) => {
@@ -122,6 +124,7 @@ export function cacheable<T extends (...args: any) => any>(
     
     while (retries < maxRetries) {
       try {
+        const redis = getRedisCache();
         const cached = await redis.get(key);
         if (cached) {
           const data = deserialize(cached) as Awaited<ReturnType<T>>;
@@ -132,6 +135,7 @@ export function cacheable<T extends (...args: any) => any>(
               // Return stale data and revalidate in background
               fn(...args).then(async (freshData: Awaited<ReturnType<T>>) => {
                 if (freshData !== undefined && freshData !== null) {
+                  const redis = getRedisCache();
                   await redis.setex(key, expireInSec, serialize(freshData));
                 }
               }).catch((error: unknown) => {
@@ -164,10 +168,12 @@ export function cacheable<T extends (...args: any) => any>(
   cachedFn.getKey = getKey;
   cachedFn.clear = async (...args: Parameters<T>) => {
     const key = getKey(...args);
+    const redis = getRedisCache();
     return redis.del(key);
   };
 
   cachedFn.clearAll = async () => {
+    const redis = getRedisCache();
     const keys = await redis.keys(`${cachePrefix}:*`);
     if (keys.length > 0) {
       return redis.del(...keys);
@@ -178,6 +184,7 @@ export function cacheable<T extends (...args: any) => any>(
     const key = getKey(...args);
     const result = await fn(...args);
     if (result !== undefined && result !== null) {
+      const redis = getRedisCache();
       await redis.setex(key, expireInSec, serialize(result));
     }
     return result;

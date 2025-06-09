@@ -74,7 +74,7 @@ export default function Hero() {
 						>
 							<div className="h-2 w-2 rounded-full bg-green-500" />
 							<span className="text-xs text-neutral-300">
-								Privacy-First & GDPR Compliant
+								GDPR & CCPA COMPLIANT
 							</span>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -96,19 +96,19 @@ export default function Hero() {
 						</Link>
 
 						<h1 className="mb-6 text-5xl font-bold leading-tight tracking-tight lg:text-6xl">
-							<span className="text-white">Blazing-fast analytics</span>
+							<span className="text-white">Privacy-First Analytics</span>
 							<br />
-							<span className="text-white">that don't slow you down.</span>
+							<span className="text-white">that Outperforms Google</span>
 						</h1>
 
 						<p className="mx-auto mb-8 max-w-lg text-lg leading-relaxed text-neutral-400 lg:mx-0">
-							Privacy-first analytics that's 65x faster than Google Analytics. 
-							Zero cookies, full data ownership.
+							Gain powerful insights without compromising user privacy. 65x faster than Google Analytics, 
+							with zero cookies required and complete data ownership.
 						</p>
 
 						<div className="flex flex-col sm:flex-row justify-center gap-4 lg:justify-start">
 							<Link
-								href="https://app.databuddy.cc/register"
+								href="https://app.databuddy.cc"
 								className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white transition-all duration-200 bg-neutral-800 border border-neutral-700 rounded-xl hover:bg-neutral-700 pointer-events-auto shadow-lg hover:shadow-xl transform hover:scale-105"
 							>
 								Get Started Free
@@ -117,7 +117,7 @@ export default function Hero() {
 								href="/demo"
 								className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-neutral-400 transition-all duration-200 hover:text-white pointer-events-auto"
 							>
-								View demo →
+								View Live Demo →
 							</Link>
 						</div>
 					</div>

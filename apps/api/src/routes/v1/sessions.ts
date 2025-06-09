@@ -14,6 +14,10 @@ import { parseReferrer } from "../../utils/referrer";
 
 const sessionsRouter = new Hono<{ Variables: AppVariables }>();
 
+const mapCountryCode = (country: string): string => {
+  return country === 'IL' ? 'PS' : country;
+};
+
 // Apply timezone middleware
 sessionsRouter.use('*', timezoneMiddleware);
 
@@ -42,6 +46,7 @@ const formatSessionObject = (session: any, visitorSessionCount: number) => {
     browser: userAgentInfo.browser_name,
     os: userAgentInfo.os_name,
     duration_formatted: durationFormatted,
+    country: mapCountryCode(session.country || ''),
     referrer_parsed: session.referrer ? {
       type: referrerInfo.type,
       name: referrerInfo.name,
@@ -154,7 +159,8 @@ sessionsRouter.get('/:session_id', zValidator('query', z.object({
         ...eventWithoutUserAgent,
         device_type: eventUserAgentInfo.device_type,
         browser: eventUserAgentInfo.browser_name,
-        os: eventUserAgentInfo.os_name
+        os: eventUserAgentInfo.os_name,
+        country: mapCountryCode(event.country || '')
       };
     });
     

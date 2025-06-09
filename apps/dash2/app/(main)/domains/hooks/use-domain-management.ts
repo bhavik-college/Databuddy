@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useDomains } from "@/hooks/use-domains";
@@ -10,12 +10,15 @@ import { cleanDomainInput, validateDomainFormat } from "../utils";
 export const useDomainManagement = () => {
   const router = useRouter();
   const domainsHook = useDomains();
+  const refetchRef = useRef(domainsHook.refetch);
 
-  // State
-  const [state, setState] = useState<DomainState>({
-    domains: [],
-    isLoading: true,
-    hasError: false,
+  // Update ref when refetch changes
+  useEffect(() => {
+    refetchRef.current = domainsHook.refetch;
+  }, [domainsHook.refetch]);
+
+  // State - simplified to only UI state, not duplicating server state
+  const [state, setState] = useState<Omit<DomainState, 'domains' | 'isLoading' | 'hasError'>>({
     currentPage: 1,
     searchQuery: "",
     filterStatus: "all",
@@ -38,26 +41,32 @@ export const useDomainManagement = () => {
   const [domain, setDomain] = useState("");
   const domainsPerPage = 10;
 
-  // Update state when domains data changes
-  useEffect(() => {
-    const domains = domainsHook.domains || [];
-    const domainsNeedingVerification = domains
+  // Get domains from the hook directly
+  const domains = domainsHook.domains || [];
+  const isLoading = domainsHook.isLoading;
+  const hasError = domainsHook.isError;
+
+  // Memoize domains needing verification to avoid recreating on every render
+  const domainsNeedingVerification = useMemo(() => {
+    return domains
       .filter(domain => domain.verificationStatus === "PENDING" || domain.verificationStatus === "FAILED")
       .map(domain => domain.id);
-      
-    setState(prev => ({
-      ...prev,
-      domains,
-      isLoading: domainsHook.isLoading,
-      hasError: domainsHook.isError,
-      expandedDomains: domains.length > 0 ? new Set(domainsNeedingVerification) : prev.expandedDomains
-    }));
-  }, [domainsHook.domains, domainsHook.isLoading, domainsHook.isError]);
+  }, [domains]);
+
+  // Initialize expanded domains for pending/failed domains
+  useEffect(() => {
+    if (domains.length > 0 && domainsNeedingVerification.length > 0) {
+      setState(prev => ({
+        ...prev,
+        expandedDomains: new Set(domainsNeedingVerification)
+      }));
+    }
+  }, [domains.length, domainsNeedingVerification]);
 
   // Fetch domains (now just refetch from the hook)
   const fetchDomains = useCallback(() => {
-    domainsHook.refetch();
-  }, [domainsHook.refetch]);
+    refetchRef.current?.();
+  }, []);
 
   // Add domain
   const handleAddDomain = async () => {
@@ -95,7 +104,7 @@ export const useDomainManagement = () => {
       verificationProgress: { ...prev.verificationProgress, [domainId]: 25 }
     }));
     
-    const domainToVerify = state.domains.find(d => d.id === domainId);
+    const domainToVerify = domains.find(d => d.id === domainId);
     
     if (domainToVerify?.verificationStatus === "FAILED") {
       setActions(prev => ({ 
@@ -279,8 +288,8 @@ export const useDomainManagement = () => {
     });
   };
 
-  // Update state setters
-  const updateState = (updates: Partial<DomainState>) => {
+  // Update state helpers
+  const updateState = (updates: Partial<typeof state>) => {
     setState(prev => ({ ...prev, ...updates }));
   };
 
@@ -289,8 +298,13 @@ export const useDomainManagement = () => {
   };
 
   return {
-    // State
-    state,
+    // State - combining server state with UI state
+    state: {
+      domains,
+      isLoading,
+      hasError,
+      ...state
+    },
     actions,
     domain,
     setDomain,
@@ -309,6 +323,6 @@ export const useDomainManagement = () => {
     handleCreateWebsite,
     toggleExpanded,
     updateState,
-    updateActions
+    updateActions,
   };
 }; 

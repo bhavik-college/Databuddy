@@ -186,6 +186,17 @@ export interface SessionsSummaryData {
   total_users: number;
 }
 
+// Custom Events data interfaces
+export interface CustomEventData {
+  name: string; // event name
+  total_events: number;
+  unique_users: number;
+  unique_sessions: number;
+  last_occurrence: string;
+  first_occurrence: string;
+  unique_pages: number;
+}
+
 // Parameter type mapping for better type safety
 export interface GroupedBrowserData {
   name: string; // browser name (e.g., "Chrome", "Firefox")
@@ -206,6 +217,8 @@ export type ParameterDataMap = {
   browser_name: BrowserData;
   browsers_grouped: GroupedBrowserData;
   os_name: BrowserData;
+  screen_resolution: DeviceTypeData; // Same structure as device_type
+  connection_type: DeviceTypeData; // Same structure as device_type
   country: CountryData;
   region: RegionData;
   city: CountryData;
@@ -233,6 +246,13 @@ export type ParameterDataMap = {
   errors_by_device: ErrorBreakdownData;
   error_trends: ErrorTrendData;
   sessions_summary: SessionsSummaryData;
+  // Custom Events parameters
+  custom_events: CustomEventData;
+  custom_event_details: any; // Complex structure with properties
+  custom_events_by_page: any;
+  custom_events_by_user: any;
+  custom_event_properties: any;
+  custom_event_property_values: { name: string; total_events: number; unique_users: number };
 };
 
 // Helper type to extract data types from parameters

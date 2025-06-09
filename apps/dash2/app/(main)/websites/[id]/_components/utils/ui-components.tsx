@@ -11,11 +11,11 @@ import { PERFORMANCE_THRESHOLDS } from "./analytics-helpers";
 
 // Consistent border radius values
 export const BORDER_RADIUS = {
-  sm: "rounded-md", // Small components like buttons
-  md: "rounded-lg", // Cards, panels
-  lg: "rounded-xl", // Large containers
-  card: "rounded-2xl", // Standard card component
-  container: "rounded-2xl", // Containers that hold cards
+  sm: "rounded", // Small components like buttons
+  md: "rounded", // Cards, panels
+  lg: "rounded", // Large containers
+  card: "rounded", // Standard card component
+  container: "rounded", // Containers that hold cards
 };
 
 interface MetricToggleProps {
@@ -35,7 +35,7 @@ export const MetricToggle: React.FC<MetricToggleProps> = ({
   color,
   description
 }) => {
-  
+
   // Get proper hex values for the colors
   const getColorMap = (colorName: string) => {
     const colorMap: Record<string, string> = {
@@ -50,19 +50,19 @@ export const MetricToggle: React.FC<MetricToggleProps> = ({
       'orange-500': '#f97316',
       'sky-500': '#0ea5e9',
     };
-    
+
     return colorMap[colorName] || '#3b82f6'; // Default to blue if color not found
   };
-  
+
   const colorHex = getColorMap(color);
-  
+
   return (
     <button
       type="button"
       className={cn(
-        "group flex items-center gap-2.5 px-3.5 py-2 rounded-lg transition-all duration-200 cursor-pointer border",
-        checked 
-          ? "bg-primary/5 border-primary/20 shadow-sm hover:bg-primary/10 hover:border-primary/30" 
+        "group flex items-center gap-2.5 px-3.5 py-2 rounded transition-all duration-200 cursor-pointer border",
+        checked
+          ? "bg-primary/5 border-primary/20 shadow-sm hover:bg-primary/10 hover:border-primary/30"
           : "border-border/50 bg-transparent hover:bg-muted/30 hover:border-border"
       )}
       onClick={onChange}
@@ -75,12 +75,12 @@ export const MetricToggle: React.FC<MetricToggleProps> = ({
         }
       }}
     >
-      <div 
+      <div
         className={cn(
-          "w-2.5 h-2.5 rounded-full transition-all duration-200", 
+          "w-2.5 h-2.5 rounded-full transition-all duration-200",
           checked ? "scale-100 shadow-sm" : "scale-75 opacity-50 group-hover:scale-90 group-hover:opacity-75"
         )}
-        style={{ 
+        style={{
           backgroundColor: colorHex,
           boxShadow: checked ? `0 0 0 2px ${colorHex}20` : 'none'
         }}
@@ -152,7 +152,7 @@ export const ExternalLinkButton: React.FC<ExternalLinkButtonProps> = ({
   showTooltip = true
 }) => {
   const content = (
-    <a 
+    <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
@@ -196,14 +196,14 @@ export const EmptyState: React.FC<{
 );
 
 // Tooltip for performance metrics
-export const MetricTooltip = ({ 
-  metricKey, 
+export const MetricTooltip = ({
+  metricKey,
   label,
-  children 
-}: { 
-  metricKey: keyof typeof PERFORMANCE_THRESHOLDS, 
+  children
+}: {
+  metricKey: keyof typeof PERFORMANCE_THRESHOLDS,
   label?: string,
-  children: React.ReactNode 
+  children: React.ReactNode
 }) => {
   const threshold = PERFORMANCE_THRESHOLDS[metricKey];
   return (

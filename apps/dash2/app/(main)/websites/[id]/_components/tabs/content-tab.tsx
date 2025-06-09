@@ -180,11 +180,10 @@ export function WebsiteContentTab({
     },
   ], [websiteData?.domain]);
 
-  // Process top pages with percentage calculations
   const processedTopPages = useMemo(() => {
     if (!analytics.top_pages?.length) return [];
     
-    const totalPageviews = analytics.top_pages.reduce((sum, page) => sum + (page.pageviews || 0), 0);
+    const totalPageviews = analytics.top_pages.reduce((sum: number, page: any) => sum + (page.pageviews || 0), 0);
     
     return analytics.top_pages.map(page => ({
       ...page,
@@ -192,29 +191,26 @@ export function WebsiteContentTab({
     }));
   }, [analytics.top_pages]);
 
-  // Process entry pages with percentages
   const processedEntryPages = useMemo(() => {
     if (!analytics.entry_pages?.length) return [];
     
     return analytics.entry_pages.map(page => ({
       ...page,
-      pageviews: page.entries, // Use entries as pageviews for consistency
+      pageviews: page.entries,
       visitors: page.visitors
     }));
   }, [analytics.entry_pages]);
 
-  // Process exit pages with percentages  
   const processedExitPages = useMemo(() => {
     if (!analytics.exit_pages?.length) return [];
     
     return analytics.exit_pages.map(page => ({
       ...page,
-      pageviews: page.exits, // Use exits as pageviews for consistency
+      pageviews: page.exits,
       visitors: page.visitors
     }));
   }, [analytics.exit_pages]);
 
-  // Combined pages tabs (top pages, entry pages, exit pages)
   const pagesTabs = useTableTabs({
     top_pages: {
       data: processedTopPages,
@@ -236,13 +232,11 @@ export function WebsiteContentTab({
     }
   });
 
-  // Custom cell for referrers (special case)
   const referrerCustomCell = useCallback((info: any) => {
     const cellData: ReferrerSourceCellData = info.row.original;
     return <ReferrerSourceCell {...cellData} />;
   }, []);
 
-  // Simple tab configuration using utility
   const referrerTabs = useTableTabs({
     referrers: {
       data: analytics.top_referrers || [],

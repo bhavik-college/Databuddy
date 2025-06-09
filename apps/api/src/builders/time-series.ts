@@ -35,38 +35,25 @@ export function createEventsByDateBuilder(
   
   // For hourly data, we need to generate hourly intervals instead of daily
   if (granularity === 'hourly') {
-    // For hourly data, we should limit the range to avoid generating too many rows
-    // Check if date range is more than 2 days and adjust if needed
-    const startDateTime = new Date(startDate);
-    const endDateTime = new Date(endDate);
-    const diffInDays = Math.ceil((endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60 * 24));
-    
-    // If more than 2 days, limit to the last 48 hours from the end date
-    let adjustedStartDate = startDate;
-    if (diffInDays > 2) {
-      const adjustedStart = new Date(endDateTime);
-      adjustedStart.setHours(adjustedStart.getHours() - 48);
-      adjustedStartDate = adjustedStart.toISOString().split('T')[0];
-    }
-    
     const sql = `
       WITH hour_range AS (
         SELECT arrayJoin(arrayMap(
-          h -> toDateTime('${adjustedStartDate} 00:00:00') + (h * 3600),
-          range(toUInt32(dateDiff('hour', toDateTime('${adjustedStartDate} 00:00:00'), toDateTime('${endDate} 23:59:59')) + 1))
+          h -> toDateTime('${startDate} 00:00:00') + (h * 3600),
+          range(toUInt32(dateDiff('hour', toDateTime('${startDate} 00:00:00'), toDateTime('${endDate} 23:59:59')) + 1))
         )) AS datetime
       ),
       session_metrics AS (
-        SELECT 
+        SELECT
           toStartOfHour(time) as event_hour,
           session_id,
+          anonymous_id,
           countIf(event_name = 'screen_view') as page_count
         FROM analytics.events
         WHERE 
           client_id = '${websiteId}'
-          AND time >= parseDateTimeBestEffort('${adjustedStartDate} 00:00:00')
+          AND time >= parseDateTimeBestEffort('${startDate}')
           AND time <= parseDateTimeBestEffort('${endDate} 23:59:59')
-        GROUP BY event_hour, session_id
+        GROUP BY event_hour, session_id, anonymous_id
       ),
       hourly_visitors AS (
         SELECT
@@ -75,25 +62,25 @@ export function createEventsByDateBuilder(
         FROM analytics.events
         WHERE 
           client_id = '${websiteId}'
-          AND time >= parseDateTimeBestEffort('${adjustedStartDate} 00:00:00')
+          AND time >= parseDateTimeBestEffort('${startDate}')
           AND time <= parseDateTimeBestEffort('${endDate} 23:59:59')
           AND event_name = 'screen_view'
         GROUP BY event_hour
       ),
       session_durations AS (
-        SELECT 
+        SELECT
           toStartOfHour(min_time) as event_hour,
           session_id,
           dateDiff('second', min_time, max_time) as duration
         FROM (
           SELECT 
-            session_id, 
-            MIN(time) as min_time, 
+            session_id,
+            MIN(time) as min_time,
             MAX(time) as max_time
           FROM analytics.events
           WHERE 
             client_id = '${websiteId}'
-            AND time >= parseDateTimeBestEffort('${adjustedStartDate} 00:00:00')
+            AND time >= parseDateTimeBestEffort('${startDate}')
             AND time <= parseDateTimeBestEffort('${endDate} 23:59:59')
           GROUP BY session_id
           HAVING min_time < max_time

@@ -58,13 +58,33 @@ export function PublicIcon({
     icon.toLowerCase() === normalizedName.toLowerCase()
   );
   
+  // Special mapping for OS icons
+  let mappedName = normalizedName;
+  if (type === "os") {
+    const osMap: Record<string, string> = {
+      'linux': 'Ubuntu',
+      'ios': 'Apple',
+      'darwin': 'macOS',
+      'mac': 'macOS'
+    };
+    const lowerName = normalizedName.toLowerCase();
+    if (osMap[lowerName]) {
+      mappedName = osMap[lowerName];
+    }
+  }
+  
+  // Check with mapped name
+  const mappedMatch = availableIcons.find(icon => 
+    icon.toLowerCase() === mappedName.toLowerCase()
+  );
+  
   // If no exact match, try partial matching
   const partialMatch = availableIcons.find(icon => 
     icon.toLowerCase().includes(normalizedName.toLowerCase()) ||
     normalizedName.toLowerCase().includes(icon.toLowerCase())
   );
   
-  const iconName = exactMatch || partialMatch;
+  const iconName = exactMatch || mappedMatch || partialMatch;
   
   if (!iconName) {
     // Return fallback if provided, otherwise a default icon

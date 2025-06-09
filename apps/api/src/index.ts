@@ -46,7 +46,7 @@ app.use('*', cors({
     'Cookie',
     'X-Website-Id',
   ],
-  allowMethods: ['POST', 'OPTIONS', 'GET'],
+  allowMethods: ['POST', 'OPTIONS', 'GET', 'DELETE', 'PUT', 'PATCH', 'HEAD'],
   credentials: true,
   exposeHeaders: ['Content-Type', 'Set-Cookie'],
   maxAge: 600,
