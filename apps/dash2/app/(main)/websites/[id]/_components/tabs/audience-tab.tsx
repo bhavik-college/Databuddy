@@ -221,7 +221,7 @@ export function WebsiteAudienceTab({
     }
     
     // Fallback: Group browsers by name and aggregate versions (legacy format)
-    const browserGroups = rawData.reduce((acc: Record<string, BrowserDataItem>, browser: BrowserDataItem) => {
+    const browserGroups = rawData.reduce((acc: Record<string, ProcessedBrowserData>, browser: BrowserDataItem) => {
       const browserName = browser.browser_name || 'Unknown';
       if (!acc[browserName]) {
         acc[browserName] = {
@@ -230,6 +230,7 @@ export function WebsiteAudienceTab({
           visitors: 0,
           pageviews: 0,
           sessions: 0,
+          percentage: 0,
           versions: []
         };
       }
@@ -249,9 +250,9 @@ export function WebsiteAudienceTab({
 
     // Convert to array and add market share
           const browserArray = Object.values(browserGroups);
-      const totalVisitors = browserArray.reduce((sum: number, browser: BrowserDataItem) => sum + (browser.visitors || 0), 0);
+      const totalVisitors = browserArray.reduce((sum: number, browser: ProcessedBrowserData) => sum + (browser.visitors || 0), 0);
     
-          return browserArray.map((browser: BrowserDataItem): ProcessedBrowserData => {
+          return browserArray.map((browser: ProcessedBrowserData): ProcessedBrowserData => {
       const marketShare = totalVisitors > 0 
         ? Math.round((browser.visitors / totalVisitors) * 100)
         : 0;
