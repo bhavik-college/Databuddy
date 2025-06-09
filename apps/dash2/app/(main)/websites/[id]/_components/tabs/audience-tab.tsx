@@ -63,8 +63,8 @@ interface ScreenResolutionItem {
 }
 
 interface ProcessedBrowserData {
-  name?: string;
-  browserName?: string;
+  name: string;
+  browserName: string;
   id?: string;
   visitors: number;
   pageviews?: number;
@@ -214,8 +214,9 @@ export function WebsiteAudienceTab({
         
         return {
           ...browser,
-          browserName: browser.name,
-          id: browser.name,
+          name: browser.name || 'Unknown',
+          browserName: browser.name || 'Unknown',
+          id: browser.name || 'Unknown',
           percentage: marketShare,
           marketShare: marketShare.toString(),
           versions: browser.versions?.sort((a, b) => (b.visitors || 0) - (a.visitors || 0)) || []
@@ -263,12 +264,14 @@ export function WebsiteAudienceTab({
         ? Math.round((browser.visitors / totalVisitors) * 100)
         : 0;
       
-      return {
-        ...browser,
-        id: browser.name,
-        percentage: marketShare,
-        marketShare: marketShare.toString(),
-        versions: browser.versions?.sort((a, b) => (b.visitors || 0) - (a.visitors || 0)) || []
+              return {
+          ...browser,
+          name: browser.name || 'Unknown',
+          browserName: browser.browserName || 'Unknown',
+          id: browser.name || 'Unknown',
+          percentage: marketShare,
+          marketShare: marketShare.toString(),
+          versions: browser.versions?.sort((a, b) => (b.visitors || 0) - (a.visitors || 0)) || []
         };
       }).sort((a, b) => (b.visitors || 0) - (a.visitors || 0));
   }, [processedData.browsers]);
