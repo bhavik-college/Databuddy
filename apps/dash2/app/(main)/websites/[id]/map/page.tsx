@@ -71,7 +71,7 @@ function WebsiteMapPage() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col md:flex-row gap-4 overflow-hidden min-h-0">
         {/* Map */}
-        <Card className="flex-1 flex flex-col overflow-hidden min-h-0 rounded">
+        <Card className="flex-1 flex flex-col overflow-hidden min-h-0 rounded pt-4 pb-0">
           <CardHeader className="pb-3 flex-shrink-0">
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2">
