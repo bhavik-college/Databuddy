@@ -65,17 +65,48 @@ export function filterAndMap<T, R>(
  * Process pages data from enhanced pages builder
  */
 export function processPages(pagesData: any[]): any[] {
-  return pagesData.map(page => {
-    const cleanPath = formatCleanPath(page.path);
-    return {
-      path: cleanPath,
-      title: page.title || cleanPath,
-      pageviews: page.pageviews,
-      visitors: page.visitors,
-      avg_time_on_page: page.avg_time_on_page,
-      avg_time_on_page_formatted: formatTime(page.avg_time_on_page)
-    };
+  // Create a map to merge duplicate paths
+  const pathMap = new Map();
+  
+  pagesData.forEach(page => {
+    const cleanPath = formatCleanPath(page.path) || '/';
+    
+    if (pathMap.has(cleanPath)) {
+      // Merge with existing entry
+      const existing = pathMap.get(cleanPath);
+      existing.pageviews += page.pageviews || 0;
+      existing.visitors += page.visitors || 0;
+      
+      // For avg_time_on_page, we need to calculate weighted average
+      const existingTime = existing.avg_time_on_page || 0;
+      const newTime = page.avg_time_on_page || 0;
+      const existingViews = existing.pageviews - (page.pageviews || 0);
+      const newViews = page.pageviews || 0;
+      const totalViews = existingViews + newViews;
+      
+      if (totalViews > 0) {
+        existing.avg_time_on_page = ((existingTime * existingViews) + (newTime * newViews)) / totalViews;
+      }
+    } else {
+      // Create new entry
+      pathMap.set(cleanPath, {
+        path: cleanPath,
+        title: page.title || cleanPath,
+        pageviews: page.pageviews || 0,
+        visitors: page.visitors || 0,
+        avg_time_on_page: page.avg_time_on_page,
+        avg_time_on_page_formatted: formatTime(page.avg_time_on_page)
+      });
+    }
   });
+  
+  // Convert map back to array and sort by pageviews
+  return Array.from(pathMap.values())
+    .sort((a, b) => b.pageviews - a.pageviews)
+    .map(page => ({
+      ...page,
+      avg_time_on_page_formatted: formatTime(page.avg_time_on_page)
+    }));
 }
 
 /**
