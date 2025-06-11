@@ -1,0 +1,21 @@
+when:
+  - event: push
+    branch: master
+
+steps:
+  - name: Build API
+    image: woodpeckerci/plugin-docker-buildx:6.0.0
+    settings:
+      repo: databuddy-analytics/api
+      dockerfile: api.dockerfile
+      tag: latest
+      dry-run: false
+      context: apps/api
+  - name: Build Basket
+    image: woodpeckerci/plugin-docker-buildx:6.0.0
+    settings:
+      repo: databuddy-analytics/basket
+      dockerfile: basket.dockerfile
+      tag: latest
+      dry-run: false
+      context: apps/basket
