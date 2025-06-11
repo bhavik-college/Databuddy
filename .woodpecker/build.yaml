@@ -7,7 +7,7 @@ steps:
     image: woodpeckerci/plugin-docker-buildx:6.0.0
     settings:
       repo: databuddy-analytics/api
-      dockerfile: api.dockerfile
+      dockerfile: api.Dockerfile
       tag: latest
       dry-run: false
       context: apps/api
@@ -15,7 +15,7 @@ steps:
     image: woodpeckerci/plugin-docker-buildx:6.0.0
     settings:
       repo: databuddy-analytics/basket
-      dockerfile: basket.dockerfile
+      dockerfile: basket.Dockerfile
       tag: latest
       dry-run: false
       context: apps/basket
