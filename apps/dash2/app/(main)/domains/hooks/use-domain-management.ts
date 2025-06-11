@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useDomains } from "@/hooks/use-domains";
-import type { Domain, VerificationResult, DomainState, DomainActions } from "../types";
+import type { DomainState, DomainActions } from "../types";
 import { cleanDomainInput, validateDomainFormat } from "../utils";
 
 export const useDomainManagement = () => {
@@ -12,12 +12,10 @@ export const useDomainManagement = () => {
   const domainsHook = useDomains();
   const refetchRef = useRef(domainsHook.refetch);
 
-  // Update ref when refetch changes
   useEffect(() => {
     refetchRef.current = domainsHook.refetch;
   }, [domainsHook.refetch]);
 
-  // State - simplified to only UI state, not duplicating server state
   const [state, setState] = useState<Omit<DomainState, 'domains' | 'isLoading' | 'hasError'>>({
     currentPage: 1,
     searchQuery: "",

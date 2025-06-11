@@ -15,18 +15,15 @@ const logger = console;
 
   export const CLICKHOUSE_OPTIONS: NodeClickHouseClientConfigOptions = {
     max_open_connections: 30,
-    request_timeout: 60000,
+    request_timeout: 30000,
     keep_alive: {
       enabled: true,
       idle_socket_ttl: 8000,
     },
     compression: {
       request: true,
+      response: true,
     },
-    clickhouse_settings: {
-      date_time_input_format: 'best_effort',
-    },
-
   };
 
   export const clickHouseOG = createClient({
