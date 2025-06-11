@@ -1,10 +1,7 @@
 import { createSqlBuilder } from "../../builders/analytics";
 
 import { Hono } from "hono";
-import { zValidator } from "@hono/zod-validator";
 import type { AppVariables } from "../../types";
-import { timezoneQuerySchema } from "../../middleware/timezone";
-import { z } from "zod";
 import { logger } from "../../lib/logger";
 import { chQuery } from "@databuddy/db";
 
@@ -12,18 +9,11 @@ import { chQuery } from "@databuddy/db";
 
 export const locationsRouter = new Hono<{ Variables: AppVariables }>();
 
-const analyticsQuerySchema = z.object({
-    website_id: z.string().min(1, 'Website ID is required'),
-    start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)').optional(),
-    end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)').optional(),
-    interval: z.enum(['day', 'week', 'month', 'auto']).default('day'),
-    granularity: z.enum(['daily', 'hourly']).default('daily'),
-    limit: z.coerce.number().int().min(1).max(1000).default(30),
-  }).merge(timezoneQuerySchema);
+
   
 
-locationsRouter.get('/', zValidator('query', analyticsQuerySchema), async (c) => {
-    const params = c.req.valid('query');
+locationsRouter.get('/', async (c) => {
+    const params = await c.req.query();
   
     try {
       const endDate = params.end_date || new Date().toISOString().split('T')[0];
@@ -52,7 +42,7 @@ locationsRouter.get('/', zValidator('query', analyticsQuerySchema), async (c) =>
         visitors: 'visitors DESC'
       };
       
-      countryBuilder.sb.limit = params.limit;
+      countryBuilder.sb.limit = Number(params.limit);
       
       // Create SQL builder for region data - directly from events table
       const regionBuilder = createSqlBuilder('events');
@@ -80,7 +70,7 @@ locationsRouter.get('/', zValidator('query', analyticsQuerySchema), async (c) =>
         visitors: 'visitors DESC'
       };
       
-      regionBuilder.sb.limit = params.limit;
+      regionBuilder.sb.limit = Number(params.limit);
       
       const countries = await chQuery(countryBuilder.getSql());
       const regions = await chQuery(regionBuilder.getSql());

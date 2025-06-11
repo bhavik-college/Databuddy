@@ -51,7 +51,7 @@ miniChartRouter.get('/:website_id', async (c) => {
    * GET /analytics/batch-mini-charts?ids=id1,id2,id3
    */
   miniChartRouter.get('/batch-mini-charts', async (c) => {
-    const ids = c.req.query('ids');
+    const ids = await c.req.query('ids');
     const user = c.get('user');
     const timezoneInfo = useTimezone(c);
     

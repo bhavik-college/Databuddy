@@ -1291,7 +1291,7 @@ function buildUnifiedQuery(
       const builder = PARAMETER_BUILDERS[parameter as keyof typeof PARAMETER_BUILDERS]
       if (!builder) continue
       
-      let sql = builder(websiteId, adjStartDate, `${adjEndDate} 23:59:59`, limit, offset, filters)
+      let sql = builder(websiteId, adjStartDate, `${adjEndDate} 23:59:59`, limit, offset)
       
       // Apply filters if provided
       if (filters.length > 0) {
@@ -1516,7 +1516,7 @@ async function processBatchQueries(
           const results = await Promise.all(
             parameters.map(async (parameter: string) => {
               const builder = PARAMETER_BUILDERS[parameter as keyof typeof PARAMETER_BUILDERS]
-              let sql = builder(websiteId, adjStartDate, `${adjEndDate} 23:59:59`, limit, offset, filters)
+              let sql = builder(websiteId, adjStartDate, `${adjEndDate} 23:59:59`, limit, offset)
               
               if (filters.length > 0) {
                 const filterClauses = filters.map((filter: any) => {
@@ -1608,9 +1608,8 @@ async function processBatchQueries(
 
 queryRouter.post(
   '/',
-  zValidator('json', batchQuerySchema),
   async (c) => {
-    const requestData = c.req.valid('json')
+    const requestData = await c.req.json()
     const website = c.get('website')
 
     try {

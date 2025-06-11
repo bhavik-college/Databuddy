@@ -9,7 +9,6 @@ import { timezoneMiddleware, useTimezone, timezoneQuerySchema } from "../../midd
 import { Hono } from "hono";
 import type { AppVariables } from "../../types";
 import { z } from "zod";
-import { zValidator } from "@hono/zod-validator";
 
 const profilesRouter = new Hono<{ Variables: AppVariables }>();
 
@@ -31,8 +30,8 @@ const analyticsQuerySchema = z.object({
 }).merge(timezoneQuerySchema);
 
 // GET /analytics/profiles - retrieves visitor profiles with their sessions
-profilesRouter.get('/', zValidator('query', analyticsQuerySchema), async (c) => {
-    const params = c.req.valid('query');
+profilesRouter.get('/', async (c) => {
+    const params = await c.req.query();
     const timezoneInfo = useTimezone(c);
     
     try {

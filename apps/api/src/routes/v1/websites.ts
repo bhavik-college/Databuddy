@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { zValidator } from '@hono/zod-validator';
 import { db, websites, domains, projectAccess, eq, and, or, inArray } from '@databuddy/db';
 import { authMiddleware } from '../../middleware/auth';
 import { logger } from '../../lib/logger';
@@ -115,9 +114,9 @@ const verifyDomainAccess = cacheable(_verifyDomainAccess, {
 });
 
 // CREATE - POST /websites
-websitesRouter.post('/', zValidator('json', createWebsiteSchema), async (c) => {
+websitesRouter.post('/', async (c) => {
   const user = c.get('user');
-  const data = c.req.valid('json');
+  const data = await c.req.json();
 
   if (!user) {
     return c.json({ success: false, error: "Unauthorized" }, 401);
@@ -185,10 +184,10 @@ websitesRouter.post('/', zValidator('json', createWebsiteSchema), async (c) => {
 });
 
 // UPDATE - PATCH /websites/:id
-websitesRouter.patch('/:id', zValidator('json', updateWebsiteSchema), async (c) => {
+websitesRouter.patch('/:id', async (c) => {
   const user = c.get('user');
   const id = c.req.param('id');
-  const { name } = c.req.valid('json');
+  const { name } = await c.req.json();
 
   if (!user) {
     return c.json({ success: false, error: "Unauthorized" }, 401);

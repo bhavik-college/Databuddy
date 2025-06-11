@@ -1,5 +1,4 @@
 import { logger } from "../../lib/logger";
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import type { AppVariables } from "../../types";
 import { chQuery } from "@databuddy/db";
@@ -57,8 +56,8 @@ const formatSessionObject = (session: any, visitorSessionCount: number) => {
   };
 };
 
-sessionsRouter.get('/', zValidator('query', analyticsQuerySchema), async (c) => {
-  const params = c.req.valid('query');
+sessionsRouter.get('/', async (c) => {
+  const params = await c.req.query();
   const timezoneInfo = useTimezone(c);
   
 
@@ -102,9 +101,7 @@ sessionsRouter.get('/', zValidator('query', analyticsQuerySchema), async (c) => 
   }
 });
 
-sessionsRouter.get('/:session_id', zValidator('query', z.object({
-  website_id: z.string().min(1, 'Website ID is required')
-}).merge(timezoneQuerySchema)), async (c) => {
+sessionsRouter.get('/:session_id', async (c) => {
   const { session_id } = c.req.param();
   const user = c.get('user');
   const website = c.get('website');

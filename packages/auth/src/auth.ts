@@ -88,15 +88,15 @@ export const auth = betterAuth({
     },
     secondaryStorage: {
         get: async (key) => {
-            const value = await getRedisCache().get(key);
+            const value = await getRedisCache()?.get(key);
             return value ? value : null;
         },
         set: async (key, value, ttl) => {
-            if (ttl) await getRedisCache().setex(key, ttl, value);
-            else await getRedisCache().set(key, value);
+            if (ttl) await getRedisCache()?.setex(key, ttl, value);
+            else await getRedisCache()?.set(key, value);
         },
         delete: async (key) => {
-            await getRedisCache().del(key);
+            await getRedisCache()?.del(key);
         },
     },
     plugins: [
