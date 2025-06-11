@@ -13,6 +13,7 @@ RUN bun install
 
 # build dash2
 WORKDIR /app/dash2
+RUN bun install 
 RUN bun run build
 
 # Production stage
