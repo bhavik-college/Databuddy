@@ -27,7 +27,7 @@ export function ErrorBoundary({ children, fallback }: ErrorBoundaryProps) {
 
   if (hasError) {
     if (fallback) return <>{fallback}</>;
-    
+
     return (
       <div className="flex items-center justify-center w-full h-full min-h-[400px] p-6">
         <Card className="shadow-lg border-red-100 max-w-lg w-full">
