@@ -11,7 +11,6 @@ interface Website {
   id: string;
   name: string;
   domain: string;
-  is_public: boolean;
 }
 
 interface WebsiteCardProps {
