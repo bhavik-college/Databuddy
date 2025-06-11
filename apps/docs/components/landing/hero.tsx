@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Squares from "../bits/squares";
+import Image from "next/image";
 
 const codeSnippets = [
 	{
@@ -102,7 +103,7 @@ export default function Hero() {
 						</h1>
 
 						<p className="mx-auto mb-8 max-w-lg text-lg leading-relaxed text-neutral-400 lg:mx-0">
-							Gain powerful insights without compromising user privacy. 65x faster than Google Analytics, 
+							Gain powerful insights without compromising user privacy. 65x faster than Google Analytics,
 							with zero cookies required and complete data ownership.
 						</p>
 
@@ -144,11 +145,10 @@ export default function Hero() {
 												key={tab.name}
 												type="button"
 												onClick={() => setActiveTab(index)}
-												className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-													activeTab === index
-														? "bg-white text-black"
-														: "text-neutral-400 hover:text-white"
-												}`}
+												className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${activeTab === index
+													? "bg-white text-black"
+													: "text-neutral-400 hover:text-white"
+													}`}
 											>
 												{tab.name}
 											</button>
