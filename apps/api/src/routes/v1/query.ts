@@ -55,7 +55,9 @@ type ParameterBuilder = (
   endDate: string,
   limit: number,
   offset: number,
-  granularity?: 'hourly' | 'daily'
+  granularity?: 'hourly' | 'daily',
+  timezone?: string,
+  filters?: any[]
 ) => string;
 
 const processLanguageData = (data: any[]) => 
@@ -1029,20 +1031,20 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
   `,
 
   // Events by date (for charts)
-  events_by_date: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number, granularity: 'hourly' | 'daily' = 'daily') => {
+  events_by_date: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number, granularity: 'hourly' | 'daily' = 'daily', timezone: string = 'UTC') => {
     if (granularity === 'hourly') {
       return `
         WITH hour_range AS (
           SELECT 
-            toStartOfHour(parseDateTimeBestEffort(${escapeSqlString(startDate)})) + toIntervalHour(number) as hour
+            toStartOfHour(parseDateTimeBestEffort(${escapeSqlString(startDate)}), ${escapeSqlString(timezone)}) + toIntervalHour(number) as hour
           FROM numbers(dateDiff('hour', 
-            toStartOfHour(parseDateTimeBestEffort(${escapeSqlString(startDate)})), 
-            toStartOfHour(parseDateTimeBestEffort(${escapeSqlString(endDate)}))
+            toStartOfHour(parseDateTimeBestEffort(${escapeSqlString(startDate)}), ${escapeSqlString(timezone)}), 
+            toStartOfHour(parseDateTimeBestEffort(${escapeSqlString(endDate)}), ${escapeSqlString(timezone)})
           ) + 1)
         ),
         hourly_sessions AS (
           SELECT
-            toStartOfHour(time) as hour,
+            toStartOfHour(time, ${escapeSqlString(timezone)}) as hour,
             session_id,
             countIf(event_name = 'screen_view') as page_count,
             dateDiff('second', MIN(time), MAX(time)) as session_duration
@@ -1055,7 +1057,7 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
         ),
         hourly_visitors AS (
           SELECT
-            toStartOfHour(time) as hour,
+            toStartOfHour(time, ${escapeSqlString(timezone)}) as hour,
             count(distinct anonymous_id) as visitors
           FROM analytics.events
           WHERE 
@@ -1076,7 +1078,7 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
           GROUP BY hour
         )
         SELECT
-          formatDateTime(hr.hour, '%Y-%m-%d %H:00:00') as date,
+          formatDateTime(hr.hour, '%Y-%m-%d %H:00:00', ${escapeSqlString(timezone)}) as date,
           COALESCE(hm.pageviews, 0) as pageviews,
           COALESCE(hv.visitors, 0) as visitors,
           COALESCE(hm.sessions, 0) as sessions,
@@ -1095,15 +1097,15 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
       return `
         WITH date_range AS (
           SELECT 
-            toDate(parseDateTimeBestEffort(${escapeSqlString(startDate)})) + number as date
+            toDate(parseDateTimeBestEffort(${escapeSqlString(startDate)}), ${escapeSqlString(timezone)}) + number as date
           FROM numbers(dateDiff('day', 
-            toDate(parseDateTimeBestEffort(${escapeSqlString(startDate)})), 
-            toDate(parseDateTimeBestEffort(${escapeSqlString(endDate)}))
+            toDate(parseDateTimeBestEffort(${escapeSqlString(startDate)}), ${escapeSqlString(timezone)}), 
+            toDate(parseDateTimeBestEffort(${escapeSqlString(endDate)}), ${escapeSqlString(timezone)})
           ) + 1)
         ),
         daily_sessions AS (
           SELECT
-            toDate(time) as date,
+            toDate(time, ${escapeSqlString(timezone)}) as date,
             session_id,
             countIf(event_name = 'screen_view') as page_count,
             dateDiff('second', MIN(time), MAX(time)) as session_duration
@@ -1116,7 +1118,7 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
         ),
         daily_visitors AS (
           SELECT
-            toDate(time) as date,
+            toDate(time, ${escapeSqlString(timezone)}) as date,
             count(distinct anonymous_id) as visitors
           FROM analytics.events
           WHERE 
@@ -1137,7 +1139,7 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
           GROUP BY date
         )
         SELECT
-          formatDateTime(dr.date, '%Y-%m-%d') as date,
+          formatDateTime(dr.date, '%Y-%m-%d', ${escapeSqlString(timezone)}) as date,
           COALESCE(dm.pageviews, 0) as pageviews,
           COALESCE(dv.visitors, 0) as visitors,
           COALESCE(dm.sessions, 0) as sessions,
@@ -1211,7 +1213,7 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
   `,
 
 
-  custom_event_property_values: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number, granularity: 'hourly' | 'daily' = 'daily', filters: any[] = []) => {
+  custom_event_property_values: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number, granularity: 'hourly' | 'daily' = 'daily', timezone: string = 'UTC', filters: any[] = []) => {
     const eventNameFilter = filters.find((f: any) => f.field === 'event_name');
     const propertyKeyFilter = filters.find((f: any) => f.field === 'property_key');
 
@@ -1242,7 +1244,7 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
   },
 
   // Funnel Analysis queries
-  funnel_analysis: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number, granularity: 'hourly' | 'daily' = 'daily', filters: any[] = []) => {
+  funnel_analysis: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number, granularity: 'hourly' | 'daily' = 'daily', timezone: string = 'UTC', filters: any[] = []) => {
     const funnelStepsFilter = filters.find((f: any) => f.field === 'funnel_steps');
     if (!funnelStepsFilter || !Array.isArray(funnelStepsFilter.value)) {
       return `SELECT '' as step_name, 0 as step_number, 0 as users, 0 as conversion_rate WHERE 1=0`;
@@ -1345,7 +1347,7 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
   `,
 
   // Enhanced funnel analytics queries
-  funnel_steps_breakdown: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number, granularity: 'hourly' | 'daily' = 'daily', filters: any[] = []) => {
+  funnel_steps_breakdown: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number, granularity: 'hourly' | 'daily' = 'daily', timezone: string = 'UTC', filters: any[] = []) => { 
     const funnelIdFilter = filters.find((f: any) => f.field === 'funnel_id');
     if (!funnelIdFilter) {
       return `SELECT '' as step_name, 0 as step_number, 0 as users, 0 as total_users, 0 as conversion_rate, 0 as dropoffs, 0 as dropoff_rate WHERE 1=0`;
@@ -1396,7 +1398,7 @@ const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
     `;
   },
 
-  funnel_user_segments: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number, granularity: 'hourly' | 'daily' = 'daily', filters: any[] = []) => {
+  funnel_user_segments: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number, granularity: 'hourly' | 'daily' = 'daily', timezone: string = 'UTC', filters: any[] = []) => {
     const funnelIdFilter = filters.find((f: any) => f.field === 'funnel_id');
     if (!funnelIdFilter) {
       return `SELECT '' as segment_name, 0 as users, 0 as conversion_rate WHERE 1=0`;
@@ -1707,12 +1709,10 @@ function buildUnifiedQuery(
       const { startDate, endDate, limit, page, filters, timeZone, granularity } = query
       const offset = (page - 1) * limit
       
-      const { startDate: adjStartDate, endDate: adjEndDate } = adjustDateRangeForTimezone(startDate, endDate, timeZone);
-      
       const builder = PARAMETER_BUILDERS[parameter as keyof typeof PARAMETER_BUILDERS]
       if (!builder) continue
       
-      let sql = builder(websiteId, adjStartDate, `${adjEndDate} 23:59:59`, limit, offset, granularity)
+      let sql = builder(websiteId, startDate, `${endDate} 23:59:59`, limit, offset, granularity, timeZone)
       
       // Apply filters if provided
       if (filters.length > 0) {
@@ -1934,8 +1934,6 @@ async function processBatchQueries(
           const { startDate, endDate, parameters, limit, page, filters, timeZone, granularity } = query
           const offset = (page - 1) * limit
 
-          const { startDate: adjStartDate, endDate: adjEndDate } = adjustDateRangeForTimezone(startDate, endDate, timeZone);
-
           const unsupportedParams = parameters.filter((param: string) => 
             !PARAMETER_BUILDERS[param as keyof typeof PARAMETER_BUILDERS]
           )
@@ -1952,7 +1950,7 @@ async function processBatchQueries(
           const results = await Promise.all(
             parameters.map(async (parameter: string) => {
               const builder = PARAMETER_BUILDERS[parameter as keyof typeof PARAMETER_BUILDERS]
-              let sql = builder(websiteId, adjStartDate, `${adjEndDate} 23:59:59`, limit, offset, granularity)
+              let sql = builder(websiteId, startDate, `${endDate} 23:59:59`, limit, offset, granularity, timeZone)
               
               if (filters.length > 0) {
                 const filterClauses = filters.map((filter: any) => {
