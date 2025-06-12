@@ -1,36 +1,36 @@
-FROM oven/bun AS build
+# Build stage
+FROM oven/bun:1-slim AS builder
 
 WORKDIR /app
 
-# Cache packages installation
-COPY package.json package.json
-COPY apps/api/package.json ./apps/api/package.json
-
-# Copy workspace packages that api depends on
+# Copy dependency files
+COPY package.json bun.lock turbo.json ./
+COPY apps/api/package.json ./apps/api/
 COPY packages/ ./packages/
 
+# Install dependencies
 RUN bun install
 
-COPY apps/api/src ./apps/api/src
+# Copy source code
+COPY apps/api/ ./apps/api/
 
-ENV NODE_ENV=production
-
-RUN bun build \
-	--compile \
-	--minify-whitespace \
-	--minify-syntax \
-	--target bun \
-	--outfile server \
-	./apps/api/src/index.ts
-
-FROM gcr.io/distroless/base
+# Production stage
+FROM oven/bun:1-slim
 
 WORKDIR /app
 
-COPY --from=build /app/server server
+# Copy built files from builder
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/api ./apps/api
+COPY --from=builder /app/packages ./packages
 
-ENV NODE_ENV=production
+# Set environment variables
+ENV NODE_ENV=production \
+    PORT=4000 \
+    BUN_ENV=production
 
-CMD ["./server"]
-
+# Expose port
 EXPOSE 4000
+# Start API
+WORKDIR /app/apps/api
+CMD ["bun", "run", "src/index.ts"]

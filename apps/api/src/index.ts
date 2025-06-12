@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { auth, type User, type Session } from '../src/middleware/betterauth';
+import { auth, type User, type Session } from '@databuddy/auth';
 import analyticsRouter from './routes/v1/analytics';
 import assistantRouter from './routes/v1/assistant';
 import queryRouter from './routes/v1/query';
