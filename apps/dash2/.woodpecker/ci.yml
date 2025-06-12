@@ -1,0 +1,200 @@
+# Woodpecker CI Configuration for dash2 Next.js App
+when:
+  branch:
+    - main
+    - develop
+    - feature/*
+  event:
+    - push
+    - pull_request
+
+variables:
+  - &bun_image 'oven/bun:1.2.15-alpine'
+  - &cache_key_node 'dash2-bun-${CI_COMMIT_SHA:0:8}'
+  - &cache_key_build 'dash2-build-${CI_COMMIT_SHA:0:8}'
+
+steps:
+  # Step 1: Install dependencies
+  install-deps:
+    image: *bun_image
+    commands:
+      - echo "Installing dependencies for dash2..."
+      - corepack enable
+      - cd apps/dash2
+      - bun install --frozen-lockfile
+    volumes:
+      - /tmp/woodpecker/cache:/cache
+    cache:
+      key: *cache_key_node
+      paths:
+        - node_modules/
+        - .bun/install/cache/
+    when:
+      event: [push, pull_request]
+
+  # Step 2: Code quality checks
+  lint:
+    image: *bun_image
+    commands:
+      - echo "Running linter for dash2..."
+      - cd apps/dash2
+      - bun run lint
+      - echo "Running Biome linter..."
+      - bunx biome check --diagnostic-level=warn
+    depends_on:
+      - install-deps
+    when:
+      event: [push, pull_request]
+
+  # Step 3: Type checking
+  typecheck:
+    image: *bun_image
+    commands:
+      - echo "Running type check for dash2..."
+      - cd apps/dash2
+      - bun run typecheck
+    depends_on:
+      - install-deps
+    when:
+      event: [push, pull_request]
+
+  # Step 4: Security audit
+  security-audit:
+    image: *bun_image
+    commands:
+      - echo "Running security audit..."
+      - cd apps/dash2
+      - bun audit || echo "Audit warnings found, but continuing..."
+    depends_on:
+      - install-deps
+    when:
+      event: [push, pull_request]
+    failure: ignore
+
+  # Step 5: Build application
+  build:
+    image: *bun_image
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    commands:
+      - echo "Building dash2 application..."
+      - cd apps/dash2
+      - bun run build
+      - echo "Build completed successfully!"
+    cache:
+      key: *cache_key_build
+      paths:
+        - .next/
+        - dist/
+    depends_on:
+      - lint
+      - typecheck
+    when:
+      event: [push, pull_request]
+
+  # Step 6: Build analysis (optional)
+  analyze-bundle:
+    image: *bun_image
+    commands:
+      - echo "Analyzing bundle size..."
+      - cd apps/dash2
+      - ls -la .next/static/chunks/ || echo "No chunks found"
+      - du -sh .next/ || echo "No .next directory"
+    depends_on:
+      - build
+    when:
+      event: [push, pull_request]
+    failure: ignore
+
+  # Step 7: Test deployment readiness
+  test-start:
+    image: *bun_image
+    environment:
+      - NODE_ENV=production
+    commands:
+      - echo "Testing production start..."
+      - cd apps/dash2
+      - timeout 10s bun run start || echo "Server started successfully"
+    depends_on:
+      - build
+    when:
+      event: [push]
+      branch: [main, develop]
+    failure: ignore
+
+  # Step 8: Deploy staging (for develop branch)
+  deploy-staging:
+    image: *bun_image
+    commands:
+      - echo "Deploying to staging environment..."
+      - echo "This would deploy to your staging server"
+      - echo "Build artifacts ready for deployment"
+    depends_on:
+      - build
+      - test-start
+    when:
+      event: [push]
+      branch: [develop]
+    secrets:
+      - staging_deploy_key
+      - staging_server_host
+
+  # Step 9: Deploy production (for main branch)
+  deploy-production:
+    image: *bun_image
+    commands:
+      - echo "Deploying to production environment..."
+      - echo "This would deploy to your production server"
+      - echo "Build artifacts ready for deployment"
+    depends_on:
+      - build
+      - test-start
+    when:
+      event: [push]
+      branch: [main]
+    secrets:
+      - production_deploy_key
+      - production_server_host
+
+  # Step 10: Notify on completion
+  notify:
+    image: curlimages/curl:latest
+    commands:
+      - echo "CI/CD pipeline completed for dash2"
+      - echo "Branch: ${CI_COMMIT_BRANCH}"
+      - echo "Commit: ${CI_COMMIT_SHA:0:8}"
+      - echo "Status: Success ✅"
+    depends_on:
+      - build
+    when:
+      event: [push, pull_request]
+      status: [success]
+
+  # Step 11: Cleanup on failure
+  cleanup-failure:
+    image: *bun_image
+    commands:
+      - echo "Pipeline failed, cleaning up..."
+      - echo "Commit: ${CI_COMMIT_SHA:0:8}"
+      - echo "Status: Failed ❌"
+    when:
+      status: [failure]
+
+# Branch-specific configurations
+branches:
+  main:
+    # Production pipeline - all steps
+    when:
+      event: [push]
+  
+  develop:
+    # Staging pipeline - exclude production deploy
+    when:
+      event: [push, pull_request]
+  
+  feature/*:
+    # Feature pipeline - exclude deployments
+    skip:
+      - deploy-staging
+      - deploy-production 

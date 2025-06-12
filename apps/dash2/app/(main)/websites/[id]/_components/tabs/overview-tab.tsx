@@ -435,6 +435,7 @@ export function WebsiteOverviewTab({
   };
 
   const processedCustomEventsData = useMemo(() => {
+    console.log("Raw custom events data:", customEventsData);
 
     if (!customEventsData?.custom_events?.length) {
       return [];
@@ -442,6 +443,9 @@ export function WebsiteOverviewTab({
 
     const customEvents = customEventsData.custom_events;
     const eventDetails = customEventsData.custom_event_details || [];
+
+    console.log("Processing custom events:", customEvents);
+    console.log("Event details for sub-rows:", eventDetails);
 
     const totalEvents = customEvents.reduce((sum: number, event: any) => sum + (event.total_events || 0), 0);
 

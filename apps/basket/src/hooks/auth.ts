@@ -266,7 +266,11 @@ export const websiteAuthHook = (): MiddlewareHandler<{
       c.set('website', website as any);
       await next();
     } catch (error) {
-      logger.error(new Error(`[AuthHook] Error validating website: ${error instanceof Error ? error.message : String(error)}`));
+      logger.error({ message: `[AuthHook] Error validating website: ${error instanceof Error ? error.message : String(error)}`, 
+        clientId, 
+        origin: requestOrigin, 
+        error: error instanceof Error ? error.message : String(error) 
+      });
       return c.json({ error: 'Authentication error' }, 500);
     }
   };

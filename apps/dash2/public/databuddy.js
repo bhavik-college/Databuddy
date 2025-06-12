@@ -270,14 +270,15 @@
 
             if (this.options.trackErrors) {
                 window.addEventListener('error', (event) => {
-                    this.trackError({
-                        timestamp: Date.now(),
+                    this.track('error', {
                         message: event.message,
                         filename: event.filename,
                         lineno: event.lineno,
                         colno: event.colno,
                         stack: event.error?.stack,
-                        errorType: event.error?.name || 'Error'
+                        __path: window.location.href,
+                        __title: document.title,
+                        __referrer: document.referrer || 'direct'
                     });
                 });
             }
@@ -292,18 +293,17 @@
         }
         
         async send(event) {
-            const eventData = (event.type === "track" && event.payload) ? event.payload : event;
-            
-            if (this.options.disabled || (this.options.filter && !this.options.filter(eventData))) {
+            const pEvent = this.prepareEventData(event);
+            if (this.options.disabled || (this.options.filter && !this.options.filter(pEvent))) {
                 return Promise.resolve();
             }
             if (this.options.enableBatching && !event.isForceSend) {
-                return this.addToBatch(eventData);
+                return this.addToBatch(pEvent);
             }
             const fetchOptions = {
                 keepalive: true,
             };
-            return this.api.fetch("/", eventData, fetchOptions);
+            return this.api.fetch("/", pEvent, fetchOptions);
         }
         
         addToBatch(event) {
@@ -351,13 +351,8 @@
                 
                 if (isNetworkError) {
                     for (const event of batchEvents) {
-                        // Re-wrap the event for retry
-                        const originalEvent = {
-                            type: "track",
-                            payload: event,
-                            isForceSend: true
-                        };
-                        this.send(originalEvent);
+                        event.isForceSend = true;
+                        this.send(event);
                     }
                 } else {
                 }
@@ -417,14 +412,16 @@
                 finalProperties = { value: properties };
             }
             
-            // Collect base context data
-            const baseContext = this.getBaseContext();
+            const sessionData = {
+                sessionId: this.sessionId,
+                sessionStartTime: this.sessionStartTime,
+            };
             
-            // Collect performance data for page views
-            let performanceData = {};
             if (eventName === 'screen_view' || eventName === 'page_view') {
                 if (!this.isServer() && this.options.trackPerformance) {
-                    performanceData = this.collectNavigationTiming();
+                    const performanceData = this.collectNavigationTiming();
+                    
+                    Object.assign(finalProperties, performanceData);
                     
                     if (this.options.trackWebVitals) {
                         this.initWebVitalsObservers(eventName);
@@ -435,15 +432,13 @@
             const payload = {
                 type: "track",
                 payload: {
-                    eventId: crypto.randomUUID(),
                     name: eventName,
                     anonymousId: this.anonymousId,
-                    sessionId: this.sessionId,
-                    sessionStartTime: this.sessionStartTime,
-                    timestamp: Date.now(),
-                    ...baseContext,
-                    ...performanceData,
-                    ...finalProperties
+                    properties: {
+                        ...this.global ?? {},
+                        ...sessionData,
+                        ...finalProperties
+                    }
                 }
             };
 
@@ -466,9 +461,9 @@
             if (this.isServer()) return null;
             
             try {
-                const eventData = (event.type === "track" && event.payload) ? event.payload : event;
+                const pEvent = this.prepareEventData(event);
                 
-                if (this.options.disabled || (this.options.filter && !this.options.filter(eventData))) {
+                if (this.options.disabled || (this.options.filter && !this.options.filter(pEvent))) {
                     return null;
                 }
                 
@@ -476,6 +471,7 @@
                 if (!baseUrl) {
                     return null;
                 }
+
 
                 const clientId = this.options.clientId;
                 const sdkName = this.options.sdk || "web";
@@ -486,7 +482,8 @@
                 url.searchParams.set('sdk_name', sdkName);
                 url.searchParams.set('sdk_version', sdkVersion);
                 
-                const data = JSON.stringify(eventData);
+                
+                const data = JSON.stringify(pEvent);
                 
                 if (navigator.sendBeacon) {
                     try {
@@ -571,6 +568,15 @@
             }
         }
 
+        prepareEventData(event) {
+            if (event.payload) {
+                if (event.payload.properties) {
+                    event.payload.properties.sessionId = this.sessionId;
+                }
+            }
+            return event;
+        }
+
         getUtmParams() {
             if (typeof window === 'undefined') return {};
             
@@ -636,25 +642,32 @@
         trackExitData() {
             if (this.isServer()) return;
             
-            const baseContext = this.getBaseContext();
+            const exitData = {
+                time_on_page: Math.round((Date.now() - this.pageEngagementStart) / 1000),
+                scroll_depth: Math.round(this.maxScrollDepth),
+                interaction_count: this.interactionCount,
+                has_exit_intent: this.hasExitIntent,
+                page_count: this.pageCount,
+                is_bounce: this.pageCount <= 1 ? 1 : 0,
+                __path: window.location.href,
+                __title: document.title,
+                __timestamp_ms: Date.now(),
+                ...this.getUtmParams()
+            };
             
             const exitEvent = {
                 type: "track",
                 payload: {
-                    eventId: crypto.randomUUID(),
                     name: "page_exit",
                     anonymousId: this.anonymousId,
-                    sessionId: this.sessionId,
-                    sessionStartTime: this.sessionStartTime,
-                    timestamp: Date.now(),
-                    ...baseContext,
-                    time_on_page: Math.round((Date.now() - this.pageEngagementStart) / 1000),
-                    scroll_depth: Math.round(this.maxScrollDepth),
-                    interaction_count: this.interactionCount,
-                    has_exit_intent: this.hasExitIntent,
-                    page_count: this.pageCount,
-                    is_bounce: this.pageCount <= 1 ? 1 : 0,
-                }
+                    properties: {
+                        ...this.global ?? {},
+                        sessionId: this.sessionId,
+                        sessionStartTime: this.sessionStartTime,
+                        ...exitData
+                    }
+                },
+                priority: "high"
             };
             
             if (this.options.enableBatching) {
@@ -715,91 +728,124 @@
             }
 
             try {
-                const metrics = { fcp: null, lcp: null, cls: 0, fid: null, inp: null };
-                let reported = false;
+                const metrics = {
+                    fcp: null,
+                    lcp: null,
+                    cls: null,
+                    fid: null,
+                    inp: null,
+                    ttfb: null
+                };
 
-                const report = () => {
-                    if (reported || !Object.values(metrics).some(m => m !== null && m !== 0)) return;
-                    reported = true;
-                    this.trackWebVitals({ timestamp: Date.now(), ...metrics });
+                const reportWebVitals = () => {
+                    const hasMetrics = Object.values(metrics).some(m => m !== null);
+                    if (!hasMetrics) return;
+
+                    this.track('web_vitals', {
+                        __timestamp_ms: Date.now(),
+                        avg_fcp: metrics.fcp,
+                        avg_lcp: metrics.lcp,
+                        avg_cls: metrics.cls !== null ? Number(metrics.cls.toFixed(4)) : null,
+                        avg_fid: metrics.fid,
+                        avg_inp: metrics.inp,
+                        avg_ttfb: metrics.ttfb,
+                        __path: this.lastPath || window.location.pathname,
+                        __title: document.title,
+                        __referrer: this.global?.__referrer || document.referrer || 'direct',
+                        screen_resolution: `${window.screen.width}x${window.screen.height}`,
+                        viewport_size: `${window.innerWidth}x${window.innerHeight}`,
+                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        language: navigator.language,
+                        ...this.getConnectionInfo(),
+                    });
+                    
                     this.cleanupWebVitals();
                 };
+
+                try {
+                    const navEntries = window.performance.getEntriesByType('navigation');
+                    if (navEntries?.[0]) {
+                        metrics.ttfb = Math.round(navEntries[0].responseStart - navEntries[0].fetchStart);
+                    }
+                } catch (e) {}
 
                 const observe = (type, callback) => {
                     try {
                         if (PerformanceObserver.supportedEntryTypes?.includes(type)) {
-                            const observer = new PerformanceObserver(list => callback(list.getEntries()));
+                            const observer = new PerformanceObserver((list) => {
+                                callback(list.getEntries());
+                            });
                             observer.observe({ type, buffered: true });
                             this.webVitalObservers.push(observer);
                         }
                     } catch (e) {}
                 };
 
-                observe('paint', entries => {
+                observe('paint', (entries) => {
                     for (const entry of entries) {
-                        if (entry.name === 'first-contentful-paint' && !metrics.fcp) {
+                        if (entry.name === 'first-contentful-paint' && metrics.fcp === null) {
                             metrics.fcp = Math.round(entry.startTime);
                         }
                     }
                 });
 
-                observe('largest-contentful-paint', entries => {
-                    const entry = entries[entries.length - 1];
-                    if (entry) metrics.lcp = Math.round(entry.startTime);
-                });
-                
-                observe('layout-shift', entries => {
-                    for (const entry of entries) {
-                        if (!entry.hadRecentInput) {
-                            metrics.cls += entry.value;
-                        }
+                observe('largest-contentful-paint', (entries) => {
+                    const lcpEntry = entries[entries.length - 1];
+                    if (lcpEntry) {
+                        metrics.lcp = Math.round(lcpEntry.startTime);
                     }
                 });
+                
+                observe('layout-shift', (entries) => {
+                    let clsValue = 0;
+                    for (const entry of entries) {
+                        if (!entry.hadRecentInput) {
+                            clsValue += entry.value;
+                        }
+                    }
+                    metrics.cls = clsValue;
+                });
 
-                observe('first-input', entries => {
+                observe('first-input', (entries) => {
                     const entry = entries[0];
-                    if (entry && !metrics.fid) {
+                    if (entry && metrics.fid === null) {
                         metrics.fid = Math.round(entry.processingStart - entry.startTime);
                     }
                 });
 
-                observe('event', entries => {
+                observe('event', (entries) => {
+                    let maxInp = 0;
                     for (const entry of entries) {
-                        if (entry.interactionId && entry.duration > (metrics.inp || 0)) {
-                            metrics.inp = Math.round(entry.duration);
+                        if (entry.interactionId && entry.duration > maxInp) {
+                            maxInp = entry.duration;
                         }
+                    }
+                    if (maxInp > 0) {
+                        metrics.inp = Math.round(maxInp);
                     }
                 });
 
                 this.webVitalsVisibilityChangeHandler = () => {
-                    if (document.visibilityState === 'hidden') report();
+                    if (document.visibilityState === 'hidden') {
+                        reportWebVitals();
+                    }
                 };
                 document.addEventListener('visibilitychange', this.webVitalsVisibilityChangeHandler, { once: true });
                 
-                this.webVitalsPageHideHandler = report;
+                this.webVitalsPageHideHandler = () => reportWebVitals();
                 window.addEventListener('pagehide', this.webVitalsPageHideHandler, { once: true });
 
-                this.webVitalsReportTimeoutId = setTimeout(report, 10000);
+                this.webVitalsReportTimeoutId = setTimeout(reportWebVitals, 10000);
 
             } catch (e) {}
         }
 
 
         getConnectionInfo() {
-            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-            
-            if (!connection) {
-                return {
-                    connection_type: null,
-                    rtt: null,
-                    downlink: null
-                };
-            }
+            if (!navigator.connection) return {};
 
             return {
-                connection_type: connection.effectiveType || connection.type || null,
-                rtt: connection.rtt || null,
-                downlink: connection.downlink || null
+                connection_type: navigator.connection.effectiveType || navigator.connection.type || 'unknown'
             };
         }
 
@@ -815,106 +861,32 @@
                 finalProperties = { value: properties };
             }
             
-            // Use the standard track method with new schema
-            this.track(eventName, finalProperties);
-        }
+            const pageContext = {
+                __path: window.location.href,
+                __title: document.title,
+                __referrer: this.global?.__referrer || document.referrer || 'direct'
+            };
 
-        getBaseContext() {
-            if (this.isServer()) return {};
-            
-            const utmParams = this.getUtmParams();
-            const connectionInfo = this.getConnectionInfo();
-            
-            return {
-                // Page context
-                path: window.location.href,
-                title: document.title,
-                referrer: this.global?.referrer || document.referrer || 'direct',
-                // User context
+            const viewportInfo = {
                 screen_resolution: `${window.screen.width}x${window.screen.height}`,
-                viewport_size: `${window.innerWidth}x${window.innerHeight}`,
+                viewport_size: `${window.innerWidth}x${window.innerHeight}`
+            };
+
+            const timezoneInfo = {
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                language: navigator.language,
-                // Connection info
-                connection_type: connectionInfo.connection_type,
-                rtt: connectionInfo.rtt,
-                downlink: connectionInfo.downlink,
-                // UTM parameters
-                utm_source: utmParams.utm_source,
-                utm_medium: utmParams.utm_medium,
-                utm_campaign: utmParams.utm_campaign,
-                utm_term: utmParams.utm_term,
-                utm_content: utmParams.utm_content,
+                language: navigator.language
             };
-        }
 
-        async trackError(errorData) {
-            if (this.isServer()) return;
-            
-            const errorEvent = {
-                type: "error",
-                payload: {
-                    eventId: crypto.randomUUID(),
-                    anonymousId: this.anonymousId,
-                    sessionId: this.sessionId,
-                    timestamp: errorData.timestamp || Date.now(),
-                    path: window.location.pathname,
-                    message: errorData.message,
-                    filename: errorData.filename,
-                    lineno: errorData.lineno,
-                    colno: errorData.colno,
-                    stack: errorData.stack,
-                    errorType: errorData.errorType || 'Error'
-                }
-            };
-            
-            if (this.options.enableBatching) {
-                return this.send(errorEvent);
-            }
-            
-            try {
-                const beaconResult = await this.sendBeacon(errorEvent);
-                if (beaconResult) {
-                    return beaconResult;
-                }
-            } catch (e) {
-            }
-            
-            return this.send(errorEvent);
-        }
+            const connectionInfo = this.getConnectionInfo();
 
-        async trackWebVitals(vitalsData) {
-            if (this.isServer()) return;
-            
-            const webVitalsEvent = {
-                type: "web_vitals",
-                payload: {
-                    eventId: crypto.randomUUID(),
-                    anonymousId: this.anonymousId,
-                    sessionId: this.sessionId,
-                    timestamp: vitalsData.timestamp || Date.now(),
-                    path: window.location.pathname,
-                    fcp: vitalsData.fcp,
-                    lcp: vitalsData.lcp,
-                    cls: vitalsData.cls,
-                    fid: vitalsData.fid,
-                    inp: vitalsData.inp
-                }
-            };
-            
-            if (this.options.enableBatching) {
-                return this.send(webVitalsEvent);
-            }
-            
-            try {
-                const beaconResult = await this.sendBeacon(webVitalsEvent);
-                if (beaconResult) {
-                    return beaconResult;
-                }
-            } catch (e) {
-            }
-            
-            return this.send(webVitalsEvent);
+            this.track(eventName, {
+                __timestamp_ms: Date.now(),
+                ...finalProperties,
+                ...pageContext,
+                ...viewportInfo,
+                ...timezoneInfo,
+                ...connectionInfo,
+            });
         }
     };
 
@@ -931,6 +903,10 @@
             });
             
             if (this.isServer()) return;
+            
+            this.setGlobalProperties({
+                __anonymized: t.anonymized !== false
+            });
             
             if (this.options.trackScreenViews) {
                 this.trackScreenViews();
@@ -1002,7 +978,7 @@
             const i = () => this.debounce(() => {
                 const previous_path = this.lastPath || window.location.href;
                 this.setGlobalProperties({
-                    referrer: previous_path
+                    __referrer: previous_path
                 });
                 this.isInternalNavigation = true;
                 this.screenView();
@@ -1058,8 +1034,18 @@
                 this.pageCount++;
                 
                 const pageData = {
+                    ...n ?? {},
+                    __path: i,
+                    __title: document.title,
+                    __timestamp_ms: Date.now(),
                     page_count: this.pageCount,
-                    ...n ?? {}
+                    ...this.getUtmParams(),
+                    ...this.getConnectionInfo(),
+                    screen_resolution: `${window.screen.width}x${window.screen.height}`,
+                    viewport_size: `${window.innerWidth}x${window.innerHeight}`,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    language: navigator.language,
+                    __referrer: this.global?.__referrer || document.referrer || 'direct'
                 };
 
                 this.track("screen_view", pageData);

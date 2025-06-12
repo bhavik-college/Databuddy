@@ -5,7 +5,7 @@
  * and platform identification.
  */
 
-import { UAParser } from 'ua-parser-js';
+import { isBot } from '../lists';
 
 export interface UserAgentInfo {
   bot: {
@@ -21,50 +21,84 @@ export interface UserAgentInfo {
 /**
  * Parse user agent to extract useful information
  */
-export function parseUserAgent(userAgent: string): {
-  browserName?: string;
-  browserVersion?: string;
-  osName?: string;
-  osVersion?: string;
-  deviceType?: string;
-  deviceBrand?: string;
-  deviceModel?: string;
-} {
+export function parseUserAgent(userAgent: string): UserAgentInfo {
   if (!userAgent) {
     return {
-      browserName: undefined,
-      browserVersion: undefined,
-      osName: undefined,
-      osVersion: undefined,
-      deviceType: undefined,
-      deviceBrand: undefined,
-      deviceModel: undefined,
+      bot: { isBot: false },
+      device: 'unknown'
     };
   }
-
-  try {
-    const parser = new UAParser(userAgent);
-    const result = parser.getResult();
-
+  
+  // Check if it's a bot
+  const botInfo = isBot(userAgent);
+  
+  if (botInfo) {
     return {
-      browserName: result.browser.name || undefined,
-      browserVersion: result.browser.version || undefined,
-      osName: result.os.name || undefined,
-      osVersion: result.os.version || undefined,
-      deviceType: result.device.type || undefined,
-      deviceBrand: result.device.vendor || undefined,
-      deviceModel: result.device.model || undefined,
-    };
-  } catch (error) {
-    // If parsing fails, return undefined values
-    return {
-      browserName: undefined,
-      browserVersion: undefined,
-      osName: undefined,
-      osVersion: undefined,
-      deviceType: undefined,
-      deviceBrand: undefined,
-      deviceModel: undefined,
+      bot: {
+        isBot: true,
+        name: botInfo.name,
+        type: botInfo.category
+      },
+      device: 'unknown'
     };
   }
+  
+  // Simple browser detection
+  let browser = 'unknown';
+  if (userAgent.includes('Chrome') && !userAgent.includes('Edg/')) {
+    browser = 'Chrome';
+  } else if (userAgent.includes('Firefox')) {
+    browser = 'Firefox';
+  } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+    browser = 'Safari';
+  } else if (userAgent.includes('Edg/')) {
+    browser = 'Edge';
+  } else if (userAgent.includes('MSIE') || userAgent.includes('Trident/')) {
+    browser = 'Internet Explorer';
+  }
+  
+  // Simple OS detection
+  let os = 'unknown';
+  if (userAgent.includes('Windows')) {
+    os = 'Windows';
+  } else if (userAgent.includes('Mac OS')) {
+    os = 'macOS';
+  } else if (userAgent.includes('Linux')) {
+    os = 'Linux';
+  } else if (userAgent.includes('Android')) {
+    os = 'Android';
+  } else if (userAgent.includes('iOS') || userAgent.includes('iPhone') || userAgent.includes('iPad')) {
+    os = 'iOS';
+  }
+  
+  // Simple device type detection
+  let device: 'desktop' | 'mobile' | 'tablet' | 'unknown' = 'unknown';
+  if (userAgent.includes('iPhone') || userAgent.includes('Android') && !userAgent.includes('iPad') && !userAgent.includes('Tablet')) {
+    device = 'mobile';
+  } else if (userAgent.includes('iPad') || userAgent.includes('Tablet')) {
+    device = 'tablet';
+  } else if (os === 'Windows' || os === 'macOS' || os === 'Linux') {
+    device = 'desktop';
+  }
+  
+  return {
+    bot: { isBot: false },
+    browser,
+    os,
+    device
+  };
 }
+
+/**
+ * Detect if a user agent is from a bot/crawler
+ */
+export function detectBot(userAgent: string): { isBot: boolean; name?: string; type?: string } {
+  if (!userAgent) {
+    return { isBot: false };
+  }
+  
+  const botInfo = isBot(userAgent);
+  return botInfo 
+    ? { isBot: true, name: botInfo.name, type: botInfo.category } 
+    : { isBot: false };
+} 

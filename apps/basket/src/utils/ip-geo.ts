@@ -53,13 +53,13 @@ async function fetchIpGeo(ip: string): Promise<GeoLocation> {
     const parsed = GeoLocationSchema.safeParse(data);
 
     if (!parsed.success) {
-        logger.warn(new Error(`Invalid geo location data: ${parsed.error}`));
+        logger.warn({ message: `Invalid geo location data: ${parsed.error}` });
         return DEFAULT_GEO;
     }
 
     return parsed.data;
   } catch (error) {
-    logger.error(new Error(`Error fetching geo location: ${error}`));
+    logger.error({ message: `Error fetching geo location: ${error}` });
     return DEFAULT_GEO;
   }
 }
@@ -125,18 +125,6 @@ export async function getGeoData(ip: string): Promise<GeoLocation> {
     region: geo.region,
     country: geo.country,
     timezone: geo.timezone,
-  };
-}
-
-/**
- * Simple function to get anonymized IP, country, and region
- */
-export async function getGeo(ip: string): Promise<{ anonymizedIP: string; country?: string; region?: string }> {
-  const geo = await getGeoLocation(ip);
-  return {
-    anonymizedIP: anonymizeIp(ip),
-    country: geo.country,
-    region: geo.region,
   };
 }
 
