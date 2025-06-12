@@ -1,77 +1,26 @@
 import { pgTable, text, timestamp, integer, index, uniqueIndex, foreignKey, boolean, jsonb, primaryKey, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
-export const clientType = pgEnum("ClientType", ['INDIVIDUAL', 'COMPANY', 'NONPROFIT'])
-export const organizationRole = pgEnum("OrganizationRole", ['ADMIN', 'OWNER', 'MEMBER', 'VIEWER'])
-export const projectStatus = pgEnum("ProjectStatus", ['ACTIVE', 'COMPLETED', 'ON_HOLD', 'CANCELLED'])
-export const projectType = pgEnum("ProjectType", ['WEBSITE', 'MOBILE_APP', 'DESKTOP_APP', 'API'])
+export const clientType = pgEnum("ClientType", ['individual', 'company', 'nonprofit'])
+export const organizationRole = pgEnum("OrganizationRole", ['admin', 'owner', 'member', 'viewer'])
+export const projectStatus = pgEnum("ProjectStatus", ['active', 'completed', 'on_hold', 'cancelled'])
+export const projectType = pgEnum("ProjectType", ['website', 'mobile_app', 'desktop_app', 'api'])
 export const role = pgEnum("Role", ['ADMIN', 'USER', 'EARLY_ADOPTER', 'INVESTOR', 'BETA_TESTER', 'GUEST'])
-export const subscriptionStatus = pgEnum("SubscriptionStatus", ['ACTIVE', 'TRIALING', 'PAST_DUE', 'CANCELED', 'PAUSED', 'INCOMPLETE'])
+export const subscriptionStatus = pgEnum("SubscriptionStatus", ['active', 'trialing', 'past_due', 'canceled', 'paused', 'incomplete'])
 export const userStatus = pgEnum("UserStatus", ['ACTIVE', 'SUSPENDED', 'INACTIVE'])
 export const verificationStatus = pgEnum("VerificationStatus", ['PENDING', 'VERIFIED', 'FAILED'])
 export const websiteStatus = pgEnum("WebsiteStatus", ['ACTIVE', 'HEALTHY', 'UNHEALTHY', 'INACTIVE', 'PENDING'])
 export const funnelStepType = pgEnum("FunnelStepType", ['PAGE_VIEW', 'EVENT', 'CUSTOM'])
 export const funnelGoalType = pgEnum("FunnelGoalType", ['COMPLETION', 'STEP_CONVERSION', 'TIME_TO_CONVERT'])
-
-
-export const email = pgTable("Email", {
-	id: text().primaryKey().notNull(),
-	ipAddress: text(),
-	email: text().notNull(),
-	createdAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-});
-
-export const contacts = pgTable("contacts", {
-	id: text().primaryKey().notNull(),
-	name: text().notNull(),
-	email: text().notNull(),
-	phone: text(),
-	company: text(),
-	website: text(),
-	monthlyVisitors: integer(),
-	message: text().notNull(),
-	createdAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-	updatedAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-	repliedAt: timestamp({ precision: 3, mode: 'string' }),
-	status: text().default('new').notNull(),
-});
-
-export const posts = pgTable("posts", {
-	id: text().primaryKey().notNull(),
-	title: text().notNull(),
-	slug: text().notNull(),
-	content: text().notNull(),
-	excerpt: text(),
-	published: boolean().default(false).notNull(),
-	authorId: text().notNull(),
-	coverImage: text(),
-	createdAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-	updatedAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-	publishedAt: timestamp({ precision: 3, mode: 'string' }),
-	categoryId: text(),
-	deletedAt: timestamp({ precision: 3, mode: 'string' }),
-}, (table) => [
-	index("posts_authorId_idx").using("btree", table.authorId.asc().nullsLast().op("text_ops")),
-	uniqueIndex("posts_slug_key").using("btree", table.slug.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.authorId],
-			foreignColumns: [user.id],
-			name: "posts_authorId_fkey"
-		}).onUpdate("cascade").onDelete("restrict"),
-	foreignKey({
-			columns: [table.categoryId],
-			foreignColumns: [categories.id],
-			name: "posts_categoryId_fkey"
-		}).onUpdate("cascade").onDelete("set null"),
-]);
+export const memberRole = pgEnum("MemberRole", ['owner', 'admin', 'member', 'viewer'])
 
 export const verification = pgTable("verification", {
 	id: text('id').primaryKey(),
 	identifier: text('identifier').notNull(),
 	value: text('value').notNull(),
 	expiresAt: timestamp('expires_at').notNull(),
-	createdAt: timestamp('created_at'),
-	updatedAt: timestamp('updated_at'),
+	createdAt: timestamp('created_at').$defaultFn(() => new Date()),
+	updatedAt: timestamp('updated_at').$defaultFn(() => new Date()),
 });
 
 export const categories = pgTable("categories", {
@@ -109,6 +58,7 @@ export const websites = pgTable("websites", {
 	status: websiteStatus().default('ACTIVE').notNull(),
 	userId: text(),
 	projectId: text(),
+	organizationId: text('organization_id').references(() => organization.id, { onDelete: 'cascade' }),
 	createdAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	deletedAt: timestamp({ precision: 3, mode: 'string' }),
@@ -129,35 +79,28 @@ export const websites = pgTable("websites", {
 			name: "websites_projectId_fkey"
 		}).onUpdate("cascade").onDelete("set null"),
 	foreignKey({
+			columns: [table.organizationId],
+			foreignColumns: [organization.id],
+			name: "websites_organizationId_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+	foreignKey({
 			columns: [table.domainId],
 			foreignColumns: [domains.id],
 			name: "websites_domainId_fkey"
 		}).onUpdate("cascade").onDelete("set null"),
 ]);
 
-export const tags = pgTable("tags", {
-	id: text().primaryKey().notNull(),
-	name: text().notNull(),
-	slug: text().notNull(),
-	createdAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-	updatedAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-	deletedAt: timestamp({ precision: 3, mode: 'string' }),
-}, (table) => [
-	uniqueIndex("tags_name_key").using("btree", table.name.asc().nullsLast().op("text_ops")),
-	uniqueIndex("tags_slug_key").using("btree", table.slug.asc().nullsLast().op("text_ops")),
-]);
-
 export const user = pgTable("user", {
 	id: text('id').primaryKey(),
 	name: text('name').notNull(),
 	email: text('email').notNull().unique(),
-	emailVerified: boolean('email_verified').notNull(),
+	emailVerified: boolean('email_verified').$defaultFn(() => false).notNull(),
 	image: text('image'),
 	firstName: text(),
 	lastName: text(),
 	status: userStatus().default('ACTIVE').notNull(),
-	createdAt: timestamp('created_at').notNull(),
-	updatedAt: timestamp('updated_at').notNull(),
+	createdAt: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+	updatedAt: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
 	deletedAt: timestamp({ precision: 3, mode: 'string' }),
 	role: role().default('USER').notNull(),
 	twoFactorEnabled: boolean('two_factor_enabled'),
@@ -186,7 +129,7 @@ export const subscriptions = pgTable("subscriptions", {
 	customerId: text(),
 	priceId: text(),
 	productId: text(),
-	status: subscriptionStatus().default('ACTIVE').notNull(),
+	status: subscriptionStatus().default('active').notNull(),
 	startsAt: timestamp({ precision: 3, mode: 'string' }),
 	endsAt: timestamp({ precision: 3, mode: 'string' }),
 	canceledAt: timestamp({ precision: 3, mode: 'string' }),
@@ -211,54 +154,21 @@ export const projects = pgTable("projects", {
 	name: text().notNull(),
 	slug: text().notNull(),
 	description: text(),
-	type: projectType().default('WEBSITE').notNull(),
-	clientId: text(),
+	type: projectType().default('website').notNull(),
+	organizationId: text('organization_id').notNull().references(() => organization.id, { onDelete: 'cascade' }),
 	startDate: timestamp({ precision: 3, mode: 'string' }),
 	endDate: timestamp({ precision: 3, mode: 'string' }),
-	status: projectStatus().default('ACTIVE').notNull(),
+	status: projectStatus().default('active').notNull(),
 	createdAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	deletedAt: timestamp({ precision: 3, mode: 'string' }),
 }, (table) => [
 	foreignKey({
-			columns: [table.clientId],
-			foreignColumns: [clients.id],
-			name: "projects_clientId_fkey"
-		}).onUpdate("cascade").onDelete("set null"),
+			columns: [table.organizationId],
+			foreignColumns: [organization.id],
+			name: "projects_organizationId_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
 ]);
-
-export const projectAccess = pgTable("project_access", {
-	id: text().primaryKey().notNull(),
-	projectId: text().notNull(),
-	userId: text().notNull(),
-	role: role().default('GUEST').notNull(),
-	createdAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-	updatedAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-	deletedAt: timestamp({ precision: 3, mode: 'string' }),
-}, (table) => [
-	uniqueIndex("project_access_projectId_userId_key").using("btree", table.projectId.asc().nullsLast().op("text_ops"), table.userId.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.projectId],
-			foreignColumns: [projects.id],
-			name: "project_access_projectId_fkey"
-		}).onUpdate("cascade").onDelete("restrict"),
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [user.id],
-			name: "project_access_userId_fkey"
-		}).onUpdate("cascade").onDelete("restrict"),
-]);
-
-export const clients = pgTable("clients", {
-	id: text().primaryKey().notNull(),
-	name: text().notNull(),
-	email: text(),
-	phone: text(),
-	type: clientType().default('COMPANY').notNull(),
-	createdAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-	updatedAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-	deletedAt: timestamp({ precision: 3, mode: 'string' }),
-});
 
 export const userPreferences = pgTable("user_preferences", {
 	id: text().primaryKey().notNull(),
@@ -293,6 +203,7 @@ export const session = pgTable("session", {
 	ipAddress: text(),
 	userAgent: text(),
 	userId: text(),
+	activeOrganizationId: text('active_organization_id'),
 }, (table) => [
 	uniqueIndex("session_token_key").using("btree", table.token.asc().nullsLast().op("text_ops")),
 	index("session_userId_idx").using("btree", table.userId.asc().nullsLast().op("text_ops")),
@@ -331,6 +242,7 @@ export const domains = pgTable("domains", {
 	verifiedAt: timestamp({ precision: 3, mode: 'string' }),
 	userId: text(),
 	projectId: text(),
+	organizationId: text('organization_id').references(() => organization.id, { onDelete: 'cascade' }),
 	dnsRecords: jsonb(),
 	createdAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -350,24 +262,11 @@ export const domains = pgTable("domains", {
 			foreignColumns: [projects.id],
 			name: "domains_projectId_fkey"
 		}).onUpdate("cascade").onDelete("set null"),
-]);
-
-export const postToTag = pgTable("_PostToTag", {
-	a: text("A").notNull(),
-	b: text("B").notNull(),
-}, (table) => [
-	index().using("btree", table.b.asc().nullsLast().op("text_ops")),
 	foreignKey({
-			columns: [table.a],
-			foreignColumns: [posts.id],
-			name: "_PostToTag_A_fkey"
+			columns: [table.organizationId],
+			foreignColumns: [organization.id],
+			name: "domains_organizationId_fkey"
 		}).onUpdate("cascade").onDelete("cascade"),
-	foreignKey({
-			columns: [table.b],
-			foreignColumns: [tags.id],
-			name: "_PostToTag_B_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
-	primaryKey({ columns: [table.a, table.b], name: "_PostToTag_AB_pkey"}),
 ]);
 
 export const funnelDefinitions = pgTable("funnel_definitions", {
@@ -413,3 +312,64 @@ export const funnelGoals = pgTable("funnel_goals", {
 			name: "funnel_goals_funnelId_fkey"
 		}).onUpdate("cascade").onDelete("cascade"),
 ]);
+
+export const apikey = pgTable("apikey", {
+	id: text('id').primaryKey(),
+	name: text('name'),
+	start: text('start'),
+	prefix: text('prefix'),
+	key: text('key').notNull(),
+	userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+	refillInterval: integer('refill_interval'),
+	refillAmount: integer('refill_amount'),
+	lastRefillAt: timestamp('last_refill_at'),
+	enabled: boolean('enabled').default(true),
+	rateLimitEnabled: boolean('rate_limit_enabled').default(true),
+	rateLimitTimeWindow: integer('rate_limit_time_window').default(86400000),
+	rateLimitMax: integer('rate_limit_max').default(10),
+	requestCount: integer('request_count'),
+	remaining: integer('remaining'),
+	lastRequest: timestamp('last_request'),
+	expiresAt: timestamp('expires_at'),
+	createdAt: timestamp('created_at').notNull(),
+	updatedAt: timestamp('updated_at').notNull(),
+	permissions: text('permissions'),
+	metadata: text('metadata'),
+});
+
+export const organization = pgTable("organization", {
+	id: text('id').primaryKey(),
+	name: text('name').notNull(),
+	slug: text('slug').unique(),
+	logo: text('logo'),
+	createdAt: timestamp('created_at').notNull(),
+	metadata: text('metadata'),
+});
+
+export const member = pgTable("member", {
+	id: text('id').primaryKey(),
+	organizationId: text('organization_id').notNull().references(() => organization.id, { onDelete: 'cascade' }),
+	userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+	role: text('role').default('member').notNull(),
+	teamId: text('team_id'),
+	createdAt: timestamp('created_at').notNull(),
+});
+
+export const invitation = pgTable("invitation", {
+	id: text('id').primaryKey(),
+	organizationId: text('organization_id').notNull().references(() => organization.id, { onDelete: 'cascade' }),
+	email: text('email').notNull(),
+	role: text('role').default('member'),
+	teamId: text('team_id'),
+	status: text('status').default('pending').notNull(),
+	expiresAt: timestamp('expires_at').notNull(),
+	inviterId: text('inviter_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+});
+
+export const team = pgTable("team", {
+	id: text('id').primaryKey(),
+	name: text('name').notNull(),
+	organizationId: text('organization_id').notNull().references(() => organization.id, { onDelete: 'cascade' }),
+	createdAt: timestamp('created_at').notNull(),
+	updatedAt: timestamp('updated_at'),
+});
