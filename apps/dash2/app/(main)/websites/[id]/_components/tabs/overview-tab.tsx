@@ -10,6 +10,10 @@ import {
   Timer,
   LayoutDashboard,
   Zap,
+  ChevronDown,
+  ChevronRight,
+  Info,
+  BookOpen,
 } from "lucide-react";
 import { differenceInDays } from "date-fns";
 import { useRouter } from "next/navigation";
@@ -67,6 +71,8 @@ interface ChartDataPoint {
 const MIN_PREVIOUS_SESSIONS_FOR_TREND = 5;
 const MIN_PREVIOUS_VISITORS_FOR_TREND = 5;
 const MIN_PREVIOUS_PAGEVIEWS_FOR_TREND = 10;
+
+
 
 
 
@@ -742,67 +748,51 @@ export function WebsiteOverviewTab({
           const isPropertyExpanded = expandedProperties.has(propertyId);
 
           return (
-            <div className="space-y-0 border-l-2 border-muted ml-4">
+            <div className="ml-4">
               {/* Property Category Row - Clickable */}
               <button
                 onClick={() => togglePropertyExpansion(propertyId)}
-                className="w-full flex items-center justify-between py-3 px-4 bg-muted/30 hover:bg-muted/50 transition-colors duration-200 rounded-r-md border border-l-0 border-border/50"
-                data-track="custom-event-property-toggle"
-                data-property-key={propertyKey}
-                data-event-name={parentRow.name}
+                className="w-full flex items-center justify-between py-2 px-3 bg-muted/20 hover:bg-muted/40 transition-colors duration-200 rounded border border-border/30"
               >
-                <div className="flex items-center gap-3">
-                  <div className={`transition-transform duration-200 ${isPropertyExpanded ? 'rotate-90' : ''}`}>
-                    <svg className="w-3 h-3 text-muted-foreground" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="w-2 h-2 bg-primary/60 rounded-full flex-shrink-0" />
+                <div className="flex items-center gap-2">
+                  {isPropertyExpanded ? (
+                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                  )}
                   <span className="text-sm font-medium text-foreground">{propertyKey}</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <div className="text-sm font-medium text-foreground">
                     {propertyTotal.toLocaleString()}
                   </div>
-                  <div className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">
+                  <div className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded font-medium">
                     {propertyValues.length} {propertyValues.length === 1 ? 'value' : 'values'}
                   </div>
                 </div>
               </button>
 
-              {/* Property Values - Collapsible and Scrollable */}
+              {/* Property Values - Collapsible */}
               {isPropertyExpanded && (
-                <div className="max-h-64 overflow-y-auto bg-background/50 border border-l-0 border-t-0 border-border/30 rounded-br-md">
-                  <div className="divide-y divide-border/30">
-                    {propertyValues.map((valueItem: any, valueIndex: number) => (
-                      <div
-                        key={`${propertyKey}-${valueItem.value}-${valueIndex}`}
-                        className="flex items-center justify-between py-2.5 px-4 hover:bg-muted/20 transition-colors duration-150"
-                      >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full flex-shrink-0" />
-                          <span className="text-sm text-foreground truncate font-mono bg-muted/20 px-2 py-0.5 rounded text-xs" title={valueItem.value}>
-                            {valueItem.value}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 flex-shrink-0">
-                          <span className="text-sm font-medium text-foreground">
-                            {valueItem.count.toLocaleString()}
-                          </span>
-                          <div className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded font-medium min-w-[3rem] text-center">
-                            {valueItem.percentage}%
-                          </div>
+                <div className="mt-1 max-h-48 overflow-y-auto border border-border/20 rounded">
+                  {propertyValues.map((valueItem: any, valueIndex: number) => (
+                    <div
+                      key={`${propertyKey}-${valueItem.value}-${valueIndex}`}
+                      className="flex items-center justify-between py-2 px-3 hover:bg-muted/20 transition-colors duration-150 border-b border-border/10 last:border-b-0"
+                    >
+                      <span className="text-sm text-foreground truncate font-mono" title={valueItem.value}>
+                        {valueItem.value}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-foreground">
+                          {valueItem.count.toLocaleString()}
+                        </span>
+                        <div className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded font-medium min-w-[2.5rem] text-center">
+                          {valueItem.percentage}%
                         </div>
                       </div>
-                    ))}
-                  </div>
-
-                  {/* Scroll indicator if there are many items */}
-                  {propertyValues.length > 8 && (
-                    <div className="text-xs text-center text-muted-foreground py-2 bg-muted/10 border-t border-border/20">
-                      Showing {Math.min(8, propertyValues.length)} of {propertyValues.length} values • scroll for more
                     </div>
-                  )}
+                  ))}
                 </div>
               )}
             </div>

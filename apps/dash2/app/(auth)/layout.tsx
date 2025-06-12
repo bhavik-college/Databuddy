@@ -6,17 +6,26 @@ import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
+import { redirect } from "next/navigation";
+import { authClient } from "@databuddy/auth/client"
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
+
+  const { data: session, isPending } = authClient.useSession()
+
+  if (session && !isPending) {
+    redirect("/websites");
+  }
+
   return (
     <div className="flex h-screen">
-      {/* Iridescence side - Left column */}
+      {/* Iridescence side */}
       <div className="hidden md:flex md:w-1/2 relative flex-col items-start justify-between p-12 overflow-hidden">
         <div className="absolute inset-0">
-          <Iridescence 
-            color={[0.1, 0.2, 0.9]} 
-            speed={0.5} 
-            amplitude={0.2} 
+          <Iridescence
+            color={[0.1, 0.2, 0.9]}
+            speed={0.5}
+            amplitude={0.2}
           />
         </div>
         <Link href="/" className="relative z-10">
