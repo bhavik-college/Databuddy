@@ -204,28 +204,15 @@ async function processWebhookEvent(event: Stripe.Event, config: StripeConfig) {
  */
 function extractClientId(stripeObject: any): string | null {
     try {
-        console.log('🔍 DEBUGGING: Extracting client ID from Stripe object:', {
-            id: stripeObject.id,
-            object: stripeObject.object,
-            metadata: JSON.stringify(stripeObject.metadata || {}, null, 2),
-            client_reference_id: stripeObject.client_reference_id,
-            hasMetadata: !!stripeObject.metadata,
-            metadataKeys: stripeObject.metadata ? Object.keys(stripeObject.metadata) : []
-        })
-        
         // Try metadata first (recommended approach)
         if (stripeObject.metadata?.client_id) {
-            console.log('✅ Found client_id in metadata:', stripeObject.metadata.client_id)
             return stripeObject.metadata.client_id
         }
         
         // Fallback to other possible fields
         if (stripeObject.metadata?.website_id) {
-            console.log('✅ Found website_id in metadata:', stripeObject.metadata.website_id)
             return stripeObject.metadata.website_id
         }
-        
-        console.log('❌ No client_id found in metadata')
     } catch (error) {
         console.warn('Error extracting client ID:', error)
     }
@@ -238,25 +225,15 @@ function extractClientId(stripeObject: any): string | null {
  */
 function extractSessionId(stripeObject: any): string | null {
     try {
-        console.log('🔍 DEBUGGING: Extracting session ID from Stripe object:', {
-            id: stripeObject.id,
-            client_reference_id: stripeObject.client_reference_id,
-            metadata_session_id: stripeObject.metadata?.session_id
-        })
-        
         // Primary: client_reference_id (recommended - most reliable)
         if (stripeObject.client_reference_id) {
-            console.log('✅ Found session ID in client_reference_id:', stripeObject.client_reference_id)
             return stripeObject.client_reference_id
         }
         
         // Fallback: metadata.session_id
         if (stripeObject.metadata?.session_id) {
-            console.log('✅ Found session ID in metadata:', stripeObject.metadata.session_id)
             return stripeObject.metadata.session_id
         }
-
-        console.log('❌ No session ID found')
     } catch (error) {
         console.warn('Error extracting session ID:', error)
     }
@@ -304,7 +281,7 @@ async function insertPaymentIntent(pi: Stripe.PaymentIntent, config: StripeConfi
             format: 'JSONEachRow'
         })
         
-        console.log(`✅ Inserted PaymentIntent ${pi.id} for client ${clientId} with session ${sessionId} via webhook ${config.webhookToken}`)
+        console.log(`✅ PaymentIntent ${pi.id} processed for client ${clientId}`)
     } catch (error) {
         console.error('Error inserting payment intent:', error)
         throw error
@@ -339,6 +316,7 @@ async function insertCharge(charge: Stripe.Charge, config: StripeConfig) {
                 amount_refunded: charge.amount_refunded,
                 paid: charge.paid ? 1 : 0,
                 refunded: charge.refunded ? 1 : 0,
+                livemode: charge.livemode ? 1 : 0,
                 failure_code: charge.failure_code,
                 failure_message: charge.failure_message,
                 outcome_type: charge.outcome?.type || null,
@@ -351,7 +329,7 @@ async function insertCharge(charge: Stripe.Charge, config: StripeConfig) {
             format: 'JSONEachRow'
         })
         
-        console.log(`✅ Inserted Charge ${charge.id} for client ${clientId} with session ${sessionId} via webhook ${config.webhookToken}`)
+        console.log(`✅ Charge ${charge.id} processed for client ${clientId}`)
     } catch (error) {
         console.error('Error inserting charge:', error)
         throw error
@@ -390,7 +368,7 @@ async function insertRefund(refund: Stripe.Refund, config: StripeConfig) {
             format: 'JSONEachRow'
         })
         
-        console.log(`✅ Inserted Refund ${refund.id} for client ${clientId} with session ${sessionId} via webhook ${config.webhookToken}`)
+        console.log(`✅ Refund ${refund.id} processed for client ${clientId}`)
     } catch (error) {
         console.error('Error inserting refund:', error)
         throw error

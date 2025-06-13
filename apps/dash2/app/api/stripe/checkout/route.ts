@@ -3,6 +3,13 @@ import { stripe, TEST_PRODUCTS, type ProductKey } from '@/lib/stripe'
 
 export async function POST(request: NextRequest) {
   try {
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'Stripe not configured' },
+        { status: 500 }
+      )
+    }
+
     const { productKey, clientId, sessionId } = await request.json()
 
     if (!productKey || !TEST_PRODUCTS[productKey as ProductKey]) {
@@ -60,6 +67,14 @@ export async function POST(request: NextRequest) {
         client_id: clientId, // Databuddy client identifier
         product_key: productKey,
         session_id: sessionId,
+      },
+      // CRITICAL: Set metadata on payment intent so it propagates to charges
+      payment_intent_data: {
+        metadata: {
+          client_id: clientId, // Required for webhook processing
+          session_id: sessionId, // Required for analytics tracking
+          product_key: productKey,
+        },
       },
     })
 

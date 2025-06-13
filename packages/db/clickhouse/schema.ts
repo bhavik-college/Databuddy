@@ -227,6 +227,7 @@ CREATE TABLE IF NOT EXISTS ${ANALYTICS_DATABASE}.stripe_charges (
   amount_refunded UInt64,
   paid UInt8,
   refunded UInt8,
+  livemode UInt8,
   failure_code Nullable(String),
   failure_message Nullable(String),
   outcome_type Nullable(String),
@@ -255,6 +256,7 @@ CREATE TABLE IF NOT EXISTS ${ANALYTICS_DATABASE}.stripe_refunds (
   currency LowCardinality(String),
   charge_id String,
   payment_intent_id Nullable(String),
+  livemode UInt8,
   metadata JSON,
   session_id Nullable(String),
   created_at DateTime64(3, 'UTC') DEFAULT now()
@@ -352,6 +354,7 @@ export interface StripeCharge {
   amount_refunded: number;
   paid: number;
   refunded: number;
+  livemode: number;
   failure_code?: string;
   failure_message?: string;
   outcome_type?: string;
@@ -373,6 +376,7 @@ export interface StripeRefund {
   currency: string;
   charge_id: string;
   payment_intent_id?: string;
+  livemode: number;
   metadata: Record<string, any>;
   session_id?: string;
 }
