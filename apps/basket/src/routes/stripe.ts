@@ -243,11 +243,14 @@ async function processWebhookEvent(event: Stripe.Event, config: StripeConfig) {
         'payment_intent.created': (pi: Stripe.PaymentIntent) => insertPaymentIntent(pi, config),
         'payment_intent.canceled': (pi: Stripe.PaymentIntent) => insertPaymentIntent(pi, config),
         'payment_intent.payment_failed': (pi: Stripe.PaymentIntent) => insertPaymentIntent(pi, config),
+        'payment_intent.requires_action': (pi: Stripe.PaymentIntent) => insertPaymentIntent(pi, config),
         'charge.succeeded': (charge: Stripe.Charge) => insertCharge(charge, config),
         'charge.failed': (charge: Stripe.Charge) => insertCharge(charge, config),
         'charge.captured': (charge: Stripe.Charge) => insertCharge(charge, config),
+        'charge.dispute.created': (charge: Stripe.Charge) => insertCharge(charge, config),
         'refund.created': (refund: Stripe.Refund) => insertRefund(refund, config),
         'refund.updated': (refund: Stripe.Refund) => insertRefund(refund, config),
+        'refund.failed': (refund: Stripe.Refund) => insertRefund(refund, config),
     }
 
     const handler = handlers[event.type]
