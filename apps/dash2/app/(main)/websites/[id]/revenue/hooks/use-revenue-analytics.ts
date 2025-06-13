@@ -11,7 +11,7 @@ import {
 import type { DateRange } from '@/hooks/use-analytics';
 import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
-import { useRevenueConfig } from '@/hooks/use-revenue-config';
+import { useRevenueConfig } from './use-revenue-config';
 
 /**
  * Hook for revenue analytics specific to the revenue page
@@ -22,54 +22,59 @@ export function useRevenueAnalytics(dateRange: DateRange) {
   const websiteId = params.id as string;
   
   // Get user's revenue config to determine live mode setting
-  const { config } = useRevenueConfig();
-  const isLiveMode = config?.isLiveMode ?? false;
+  const { isLiveMode } = useRevenueConfig();
+
+  // Debug logging
+  console.log('Revenue Analytics - isLiveMode:', isLiveMode);
 
   // Create custom queries with livemode filter
-  const queries = useMemo(() => [
-    {
-      id: 'revenue-summary',
-      parameters: ['revenue_summary'],
-      limit: 1,
-      filters: [{ field: 'livemode', operator: 'eq' as const, value: isLiveMode ? 1 : 0 }]
-    },
-    {
-      id: 'revenue-trends',
-      parameters: ['revenue_trends'],
-      limit: 100,
-      filters: [{ field: 'livemode', operator: 'eq' as const, value: isLiveMode ? 1 : 0 }]
-    },
-    {
-      id: 'recent-transactions',
-      parameters: ['recent_transactions'],
-      limit: 50,
-      filters: [{ field: 'livemode', operator: 'eq' as const, value: isLiveMode ? 1 : 0 }]
-    },
-    {
-      id: 'recent-refunds',
-      parameters: ['recent_refunds'],
-      limit: 50,
-      filters: [{ field: 'livemode', operator: 'eq' as const, value: isLiveMode ? 1 : 0 }]
-    },
-    {
-      id: 'revenue-by-country',
-      parameters: ['revenue_by_country'],
-      limit: 20,
-      filters: [{ field: 'livemode', operator: 'eq' as const, value: isLiveMode ? 1 : 0 }]
-    },
-    {
-      id: 'revenue-by-currency',
-      parameters: ['revenue_by_currency'],
-      limit: 10,
-      filters: [{ field: 'livemode', operator: 'eq' as const, value: isLiveMode ? 1 : 0 }]
-    },
-    {
-      id: 'revenue-by-card-brand',
-      parameters: ['revenue_by_card_brand'],
-      limit: 10,
-      filters: [{ field: 'livemode', operator: 'eq' as const, value: isLiveMode ? 1 : 0 }]
-    },
-  ], [isLiveMode]);
+  const queries = useMemo(() => {
+    console.log('Revenue Analytics - Creating queries with isLiveMode:', isLiveMode);
+    return [
+      {
+        id: 'revenue-summary',
+        parameters: ['revenue_summary'],
+        limit: 1,
+        filters: [{ field: 'livemode', operator: 'eq' as const, value: isLiveMode ? 1 : 0 }]
+      },
+      {
+        id: 'revenue-trends',
+        parameters: ['revenue_trends'],
+        limit: 100,
+        filters: [{ field: 'livemode', operator: 'eq' as const, value: isLiveMode ? 1 : 0 }]
+      },
+      {
+        id: 'recent-transactions',
+        parameters: ['recent_transactions'],
+        limit: 50,
+        filters: [{ field: 'livemode', operator: 'eq' as const, value: isLiveMode ? 1 : 0 }]
+      },
+      {
+        id: 'recent-refunds',
+        parameters: ['recent_refunds'],
+        limit: 50,
+        filters: [{ field: 'livemode', operator: 'eq' as const, value: isLiveMode ? 1 : 0 }]
+      },
+      {
+        id: 'revenue-by-country',
+        parameters: ['revenue_by_country'],
+        limit: 20,
+        filters: [{ field: 'livemode', operator: 'eq' as const, value: isLiveMode ? 1 : 0 }]
+      },
+      {
+        id: 'revenue-by-currency',
+        parameters: ['revenue_by_currency'],
+        limit: 10,
+        filters: [{ field: 'livemode', operator: 'eq' as const, value: isLiveMode ? 1 : 0 }]
+      },
+      {
+        id: 'revenue-by-card-brand',
+        parameters: ['revenue_by_card_brand'],
+        limit: 10,
+        filters: [{ field: 'livemode', operator: 'eq' as const, value: isLiveMode ? 1 : 0 }]
+      },
+    ];
+  }, [isLiveMode]);
 
   const batchResult = useBatchDynamicQuery(websiteId, dateRange, queries, {
     enabled: !!websiteId,
@@ -218,8 +223,7 @@ export function useRevenueSummary(dateRange: DateRange) {
   const websiteId = params.id as string;
   
   // Get user's revenue config to determine live mode setting
-  const { config } = useRevenueConfig();
-  const isLiveMode = config?.isLiveMode ?? false;
+  const { isLiveMode } = useRevenueConfig();
 
   // Create a single query for summary only
   const queries = useMemo(() => [

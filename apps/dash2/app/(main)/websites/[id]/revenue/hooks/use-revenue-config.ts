@@ -15,15 +15,16 @@ export function useRevenueConfig() {
     isLoading,
     createOrUpdateConfig,
     regenerateWebhookToken,
+    deleteConfig,
     isCreating,
-    isRegeneratingToken
+    isRegeneratingToken,
+    isDeleting
   } = useRevenueConfigAPI();
 
   // Derived values from config
   const webhookToken = config?.webhookToken || '';
   const webhookSecret = config?.webhookSecret || '';
   const isLiveMode = config?.isLiveMode || false;
-  
   const webhookUrl = useMemo(() => {
     return webhookToken ? `https://basket.databuddy.cc/stripe/webhook/${webhookToken}` : '';
   }, [webhookToken]);
@@ -35,21 +36,21 @@ export function useRevenueConfig() {
     setTimeout(() => setCopied(false), 2000);
   }, []);
 
-  const setWebhookSecret = useCallback((secret: string) => {
+  const updateConfig = useCallback((updates: { webhookSecret?: string; isLiveMode?: boolean }) => {
     createOrUpdateConfig({
-      webhookSecret: secret,
-      isLiveMode,
+      webhookSecret: updates.webhookSecret ?? config?.webhookSecret ?? '',
+      isLiveMode: updates.isLiveMode ?? config?.isLiveMode ?? false,
       isActive: true
     });
-  }, [createOrUpdateConfig, isLiveMode]);
+  }, [createOrUpdateConfig, config?.webhookSecret, config?.isLiveMode]);
+
+  const setWebhookSecret = useCallback((secret: string) => {
+    updateConfig({ webhookSecret: secret });
+  }, [updateConfig]);
 
   const setIsLiveMode = useCallback((mode: boolean) => {
-    createOrUpdateConfig({
-      webhookSecret,
-      isLiveMode: mode,
-      isActive: true
-    });
-  }, [createOrUpdateConfig, webhookSecret]);
+    updateConfig({ isLiveMode: mode });
+  }, [updateConfig]);
 
   // Computed states for setup completion
   const isWebhookConfigured = !!(webhookSecret && webhookToken);
@@ -74,14 +75,17 @@ export function useRevenueConfig() {
     setOnboardingStep,
     setWebhookSecret,
     setIsLiveMode,
+    updateConfig,
     copyToClipboard,
     
     // API states
     isLoading,
     isCreating,
     isRegeneratingToken,
+    isDeleting,
     
     // API actions
     regenerateWebhookToken,
+    deleteConfig,
   };
 } 

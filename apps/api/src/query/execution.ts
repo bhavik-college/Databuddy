@@ -63,7 +63,17 @@ function applyFilters(sql: string, filters: FilterRequest[]): string {
   }).filter(Boolean)
   
   if (filterClauses.length > 0) {
-    return sql.replace('GROUP BY', `AND ${filterClauses.join(' AND ')}\n    GROUP BY`)
+    if (sql.includes('GROUP BY')) {
+      const result = sql.replace('GROUP BY', `AND ${filterClauses.join(' AND ')}\n    GROUP BY`);
+      return result;
+    } else {
+      if (sql.includes('WHERE')) {
+        const result = sql.replace(/WHERE/, `WHERE ${filterClauses.join(' AND ')} AND`);
+        return result;
+      } else {
+        return sql;
+      }
+    }
   }
   
   return sql

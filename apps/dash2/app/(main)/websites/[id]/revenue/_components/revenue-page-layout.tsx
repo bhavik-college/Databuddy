@@ -6,18 +6,12 @@ import { DollarSign, TrendingUp, Database, Settings, CheckCircle, Clock } from "
 import { RevenueOverviewTab } from "./tabs/overview-tab";
 import { RevenueAnalyticsTab } from "./tabs/analytics-tab";
 import { RevenueSettingsTab } from "./tabs/settings-tab";
+import { QuickSettingsModal } from "./quick-settings-modal";
 import { useRevenueConfig } from "../hooks/use-revenue-config";
 
 export function RevenuePageLayout() {
     const [activeTab, setActiveTab] = useState('overview');
     const revenueConfig = useRevenueConfig();
-
-    // Auto-redirect to settings if setup is not complete
-    useEffect(() => {
-        if (!revenueConfig.isLoading && !revenueConfig.isSetupComplete && activeTab === 'overview') {
-            setActiveTab('settings');
-        }
-    }, [revenueConfig.isLoading, revenueConfig.isSetupComplete, activeTab]);
 
     if (revenueConfig.isLoading) {
         return (
@@ -47,7 +41,7 @@ export function RevenuePageLayout() {
                             </p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                         {revenueConfig.isSetupComplete ? (
                             <div className="flex items-center gap-2 px-3 py-1 bg-green-50 dark:bg-green-950/20 rounded-full border border-green-200 dark:border-green-800">
                                 <CheckCircle className="h-4 w-4 text-green-500" />
@@ -59,6 +53,22 @@ export function RevenuePageLayout() {
                                 <span className="text-sm text-orange-600 dark:text-orange-400 font-medium">Setup Required</span>
                             </div>
                         )}
+                        <QuickSettingsModal
+                            webhookToken={revenueConfig.webhookToken}
+                            webhookSecret={revenueConfig.webhookSecret}
+                            isLiveMode={revenueConfig.isLiveMode}
+                            webhookUrl={revenueConfig.webhookUrl}
+                            onSave={(data) => {
+                                revenueConfig.updateConfig({
+                                    webhookSecret: data.webhookSecret,
+                                    isLiveMode: data.isLiveMode
+                                });
+                            }}
+                            onRegenerateToken={revenueConfig.regenerateWebhookToken}
+                            copyToClipboard={revenueConfig.copyToClipboard}
+                            isSaving={revenueConfig.isCreating}
+                            isRegeneratingToken={revenueConfig.isRegeneratingToken}
+                        />
                     </div>
                 </div>
             </header>
@@ -126,10 +136,16 @@ export function RevenuePageLayout() {
                         copyToClipboard={revenueConfig.copyToClipboard}
                         webhookUrl={revenueConfig.webhookUrl}
                         onSave={(data) => {
-                            revenueConfig.setWebhookSecret(data.webhookSecret);
-                            revenueConfig.setIsLiveMode(data.isLiveMode);
+                            revenueConfig.updateConfig({
+                                webhookSecret: data.webhookSecret,
+                                isLiveMode: data.isLiveMode
+                            });
                         }}
                         isSaving={revenueConfig.isCreating}
+                        onRegenerateToken={revenueConfig.regenerateWebhookToken}
+                        onDeleteConfig={revenueConfig.deleteConfig}
+                        isRegeneratingToken={revenueConfig.isRegeneratingToken}
+                        isDeleting={revenueConfig.isDeleting}
                     />
                 </TabsContent>
             </Tabs>

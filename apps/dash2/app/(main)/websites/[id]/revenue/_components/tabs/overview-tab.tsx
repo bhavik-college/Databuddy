@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CreditCard, CheckCircle, Clock, Settings, AlertCircle, TrendingUp, DollarSign, BarChart3, PieChart } from "lucide-react";
 import { RevenueSummaryCards } from "../revenue-summary-cards";
+import { QuickSettingsModal } from "../quick-settings-modal";
 import { useRevenueAnalytics } from "../../hooks/use-revenue-analytics";
+import { useRevenueConfig } from "../../hooks/use-revenue-config";
 import { useAtom } from 'jotai';
 import { formattedDateRangeAtom } from '@/stores/jotai/filterAtoms';
 import { useMemo } from 'react';
@@ -49,6 +51,7 @@ export function RevenueOverviewTab({
     isLiveMode
 }: OverviewTabProps) {
     const [formattedDateRange] = useAtom(formattedDateRangeAtom);
+    const revenueConfig = useRevenueConfig();
 
     // Convert the formatted date range to the expected format
     const dateRange = useMemo(() => ({
@@ -105,10 +108,33 @@ export function RevenueOverviewTab({
                                 <span>Webhook secret configured</span>
                             </div>
                         </div>
-                        <Button onClick={onSetupClick} className="w-full">
-                            <Settings className="h-4 w-4 mr-2" />
-                            Continue Setup
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button onClick={onSetupClick} className="flex-1">
+                                <Settings className="h-4 w-4 mr-2" />
+                                Continue Setup
+                            </Button>
+                            <QuickSettingsModal
+                                webhookToken={revenueConfig.webhookToken}
+                                webhookSecret={revenueConfig.webhookSecret}
+                                isLiveMode={revenueConfig.isLiveMode}
+                                webhookUrl={revenueConfig.webhookUrl}
+                                onSave={(data) => {
+                                    revenueConfig.updateConfig({
+                                        webhookSecret: data.webhookSecret,
+                                        isLiveMode: data.isLiveMode
+                                    });
+                                }}
+                                onRegenerateToken={revenueConfig.regenerateWebhookToken}
+                                copyToClipboard={revenueConfig.copyToClipboard}
+                                isSaving={revenueConfig.isCreating}
+                                isRegeneratingToken={revenueConfig.isRegeneratingToken}
+                                trigger={
+                                    <Button variant="outline" size="sm">
+                                        Quick Setup
+                                    </Button>
+                                }
+                            />
+                        </div>
                     </CardContent>
                 </Card>
 

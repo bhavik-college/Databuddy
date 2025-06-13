@@ -5,7 +5,7 @@ export const revenueBuilders: Record<string, ParameterBuilder> = {
   revenue_summary: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number, granularity: 'hourly' | 'daily' = 'daily', timezone?: string, filters?: any[]) => {
     // Build live mode filter if provided
     const liveModeFilter = filters?.find(f => f.field === 'livemode');
-    const liveModeCondition = liveModeFilter ? `AND livemode = ${liveModeFilter.value ? 1 : 0}` : '';
+    const liveModeCondition = liveModeFilter ? `AND livemode = ${liveModeFilter.value}` : '';
     
     return `
       SELECT 
@@ -35,7 +35,7 @@ export const revenueBuilders: Record<string, ParameterBuilder> = {
     
     // Build live mode filter if provided
     const liveModeFilter = filters?.find(f => f.field === 'livemode');
-    const liveModeCondition = liveModeFilter ? `AND livemode = ${liveModeFilter.value ? 1 : 0}` : '';
+    const liveModeCondition = liveModeFilter ? `AND livemode = ${liveModeFilter.value}` : '';
     
     return `
       SELECT 
@@ -59,7 +59,7 @@ export const revenueBuilders: Record<string, ParameterBuilder> = {
   recent_transactions: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number, granularity: 'hourly' | 'daily' = 'daily', timezone?: string, filters?: any[]) => {
     // Build live mode filter if provided
     const liveModeFilter = filters?.find(f => f.field === 'livemode');
-    const liveModeCondition = liveModeFilter ? `AND livemode = ${liveModeFilter.value ? 1 : 0}` : '';
+    const liveModeCondition = liveModeFilter ? `AND livemode = ${liveModeFilter.value}` : '';
     
     return `
       SELECT 
@@ -83,7 +83,7 @@ export const revenueBuilders: Record<string, ParameterBuilder> = {
   recent_refunds: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number, granularity: 'hourly' | 'daily' = 'daily', timezone?: string, filters?: any[]) => {
     // Build live mode filter if provided
     const liveModeFilter = filters?.find(f => f.field === 'livemode');
-    const liveModeCondition = liveModeFilter ? `AND livemode = ${liveModeFilter.value ? 1 : 0}` : '';
+    const liveModeCondition = liveModeFilter ? `AND livemode = ${liveModeFilter.value}` : '';
     
     return `
       SELECT 
@@ -108,7 +108,7 @@ export const revenueBuilders: Record<string, ParameterBuilder> = {
   revenue_by_country: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number, granularity: 'hourly' | 'daily' = 'daily', timezone?: string, filters?: any[]) => {
     // Build live mode filter if provided
     const liveModeFilter = filters?.find(f => f.field === 'livemode');
-    const liveModeCondition = liveModeFilter ? `AND pi.livemode = ${liveModeFilter.value ? 1 : 0}` : '';
+    const liveModeCondition = liveModeFilter ? `AND livemode = ${liveModeFilter.value}` : '';
     
     return `
       SELECT 
@@ -134,7 +134,7 @@ export const revenueBuilders: Record<string, ParameterBuilder> = {
   revenue_by_currency: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number, granularity: 'hourly' | 'daily' = 'daily', timezone?: string, filters?: any[]) => {
     // Build live mode filter if provided
     const liveModeFilter = filters?.find(f => f.field === 'livemode');
-    const liveModeCondition = liveModeFilter ? `AND livemode = ${liveModeFilter.value ? 1 : 0}` : '';
+    const liveModeCondition = liveModeFilter ? `AND livemode = ${liveModeFilter.value}` : '';
     
     return `
       SELECT 
@@ -157,24 +157,21 @@ export const revenueBuilders: Record<string, ParameterBuilder> = {
   revenue_by_card_brand: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number, granularity: 'hourly' | 'daily' = 'daily', timezone?: string, filters?: any[]) => {
     // Build live mode filter if provided
     const liveModeFilter = filters?.find(f => f.field === 'livemode');
-    const liveModeCondition = liveModeFilter ? `AND pi.livemode = ${liveModeFilter.value ? 1 : 0}` : '';
+    const liveModeCondition = liveModeFilter ? `AND livemode = ${liveModeFilter.value}` : '';
     
     return `
       SELECT 
-        c.card_brand as name,
-        SUM(pi.amount) / 100 as total_revenue,
-        COUNT(pi.id) as total_transactions,
-        AVG(pi.amount) / 100 as avg_order_value
-      FROM analytics.stripe_payment_intents pi
-      LEFT JOIN analytics.stripe_charges c ON pi.id = c.payment_intent_id
-      WHERE pi.created >= parseDateTimeBestEffort(${escapeSqlString(startDate)})
-        AND pi.created <= parseDateTimeBestEffort(${escapeSqlString(endDate)})
-        AND pi.client_id = ${escapeSqlString(websiteId)}
-        AND pi.status = 'succeeded'
+        'card' as name,
+        SUM(amount) / 100 as total_revenue,
+        COUNT(id) as total_transactions,
+        AVG(amount) / 100 as avg_order_value
+      FROM analytics.stripe_payment_intents
+      WHERE created >= parseDateTimeBestEffort(${escapeSqlString(startDate)})
+        AND created <= parseDateTimeBestEffort(${escapeSqlString(endDate)})
+        AND client_id = ${escapeSqlString(websiteId)}
+        AND status = 'succeeded'
         ${liveModeCondition}
-        AND c.card_brand IS NOT NULL 
-        AND c.card_brand != ''
-      GROUP BY c.card_brand 
+      GROUP BY 'card'
       ORDER BY total_revenue DESC 
       LIMIT ${offset}, ${limit}
     `;
