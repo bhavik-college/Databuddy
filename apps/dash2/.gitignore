@@ -10,6 +10,9 @@
 !.yarn/releases
 !.yarn/versions
 
+apps\dash2\app\payment
+apps\dash2\app\api\stripe
+
 # testing
 /coverage
 
