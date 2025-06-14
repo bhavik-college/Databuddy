@@ -27,7 +27,6 @@ const defaultQueryClientOptions = {
   },
 };
 
-// Create a shared query client for prefetching
 export const queryClient = new QueryClient(defaultQueryClientOptions);
 
 // Create a SessionContext
