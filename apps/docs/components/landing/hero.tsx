@@ -5,26 +5,7 @@ import { ArrowRight, Zap, Shield, Users, Play } from "lucide-react";
 
 export default function Hero() {
 	return (
-		<section className="relative min-h-screen bg-black overflow-hidden">
-			{/* Monochromatic background */}
-			<div className="absolute inset-0">
-				<div className="absolute inset-0 bg-gradient-to-br from-neutral-900/50 via-black to-neutral-800/30" />
-				<div className="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse" />
-				<div className="absolute bottom-0 right-1/4 w-96 h-96 bg-white/3 rounded-full blur-3xl animate-pulse delay-1000" />
-				<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/2 rounded-full blur-3xl" />
-
-				{/* Subtle grid overlay */}
-				<div className="absolute inset-0 opacity-10">
-					<div className="h-full w-full" style={{
-						backgroundImage: `
-							linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-							linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
-						`,
-						backgroundSize: '50px 50px'
-					}} />
-				</div>
-			</div>
-
+		<section className="relative overflow-hidden">
 			<div className="relative z-10 md:w-10/12 mx-auto font-geist md:border-l-0 md:border-b-0 md:border-[1.2px] rounded-none -pr-2 dark:bg-black/[0.95] backdrop-blur-sm">
 				<div className="w-full md:mx-0">
 					{/* Main hero content */}
@@ -34,21 +15,20 @@ export default function Hero() {
 							<div className="inline-flex items-center gap-2 rounded-full border border-neutral-700/50 bg-neutral-800/30 backdrop-blur-sm px-4 py-2 mb-8">
 								<div className="h-2 w-2 rounded-full bg-white animate-pulse" />
 								<span className="text-sm text-neutral-300">
-									Privacy-first analytics platform
+									Web analytics that don&apos;t suck
 								</span>
 							</div>
 
 							{/* Main headline */}
 							<h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6">
-								<span className="text-white">Analytics that</span>
+								<span className="text-white">Databuddy, analytics</span>
 								<br />
-								<span className="text-white">respect <strong>privacy</strong></span>
+								<span className="text-white">that <strong>don&apos;t suck</strong></span>
 							</h1>
 
 							{/* Subheadline */}
 							<p className="text-xl md:text-2xl text-neutral-400 mb-12 max-w-3xl mx-auto leading-relaxed">
-								Get powerful insights without cookies, tracking, or compromising user privacy.
-								65x faster than Google Analytics with complete data ownership.
+								No cookies, no banners, no slow dashboards. Just the data you care about, tracked in a way that actually makes sense.
 							</p>
 
 							{/* Clean CTA buttons */}
@@ -58,7 +38,7 @@ export default function Hero() {
 									className="group relative inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-black transition-all duration-300 bg-white rounded-2xl hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black shadow-2xl hover:shadow-white/10 transform hover:scale-105 hover:-translate-y-1"
 								>
 									<span className="flex items-center gap-2">
-										Get Started Free
+										Get started
 										<ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
 									</span>
 								</Link>

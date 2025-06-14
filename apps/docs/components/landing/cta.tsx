@@ -7,16 +7,16 @@ import LiquidChrome from "../bits/liquid"
 
 const ctaItems = [
     {
-        title: "Get Started Free",
-        description: "Start tracking your website analytics in under 5 minutes. No credit card required.",
-        href: "https://app.databuddy.cc",
+        title: "View demo",
+        description: "See Databuddy in action with our interactive demo dashboard.",
+        href: "/demo",
         primary: true
     },
     {
-        title: "View Live Demo",
-        description: "See Databuddy in action with our interactive demo dashboard.",
-        href: "/demo",
-        primary: false
+        title: "Get started",
+        description: "Drop your site in and see what your users are doing in seconds",
+        href: "https://app.databuddy.cc",
+        primary: true
     },
     {
         title: "Read Documentation",
@@ -30,30 +30,8 @@ export default function CTA() {
     return (
         <div className="md:w-10/12 mx-auto font-geist relative md:border-l-0 md:border-b-0 md:border-[1.2px] rounded-none -pr-2 dark:bg-black/[0.95]">
             <div className="w-full md:mx-0">
-                {/* Header section */}
-                <div className="border-l-[1.2px] border-t-[1.2px] md:border-t-0 p-10">
-                    <div className="flex items-center gap-2 my-1">
-                        <Zap className="w-4 h-4" />
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Ready to Get Started?
-                        </p>
-                    </div>
-                    <div className="mt-2">
-                        <div className="max-w-full">
-                            <div className="flex gap-3">
-                                <p className="max-w-lg text-xl font-normal tracking-tighter md:text-2xl">
-                                    Take control of your data with <strong>privacy-first analytics</strong>.
-                                </p>
-                            </div>
-                        </div>
-                        <p className="mt-2 text-sm text-left text-muted-foreground">
-                            Join thousands of privacy-conscious companies using advanced analytics. Get started with Databuddy today.
-                        </p>
-                    </div>
-                </div>
-
                 {/* CTA grid */}
-                <div className="grid grid-cols-1 relative md:grid-rows-1 md:grid-cols-3 border-b-[1.2px] border-t-[1.2px]">
+                <div className="grid grid-cols-1 relative md:grid-rows-1 md:grid-cols-3 border-t-[1.2px]">
                     <div className="hidden md:grid top-1/2 left-0 -translate-y-1/2 w-full grid-cols-3 z-10 pointer-events-none select-none absolute">
                         <Plus className="w-8 h-8 text-neutral-300 translate-x-[16.5px] translate-y-[.5px] ml-auto dark:text-neutral-600" />
                         <Plus className="w-8 h-8 text-neutral-300 ml-auto translate-x-[16.5px] translate-y-[.5px] dark:text-neutral-600" />
@@ -80,7 +58,7 @@ export default function CTA() {
                                     </div>
                                 )}
                                 <p className="text-gray-600 dark:text-gray-400 text-xs">
-                                    {item.primary ? 'Primary Action' : 'Learn More'}
+                                    {item.primary ? 'Try Now' : 'Learn More'}
                                 </p>
                             </div>
                             <div className="mt-2">
@@ -104,7 +82,7 @@ export default function CTA() {
                 </div>
 
                 {/* Liquid Chrome CTA Section */}
-                <div className="relative col-span-3 h-full border-l-[1.2px] border-t-[1.2px] py-20 dark:border-b-0 md:border-b-[1.2px] overflow-hidden">
+                <div className="relative border-l-[1.2px] border-t-[1.2px] min-h-[400px] overflow-hidden">
                     {/* Liquid Chrome Background */}
                     <div className="absolute inset-0 opacity-30">
                         <LiquidChrome
@@ -122,29 +100,30 @@ export default function CTA() {
                     <div className="absolute inset-0 bg-gradient-to-tr from-white/40 via-transparent to-transparent dark:from-black/40 dark:via-transparent dark:to-transparent" />
                     <div className="absolute inset-0 bg-gradient-to-bl from-transparent via-transparent to-white/40 dark:from-transparent dark:via-transparent dark:to-black/40" />
 
-                    <div className="relative z-10 w-full h-full p-16 pt-10 md:px-10">
+                    <div className="relative z-10 p-10 h-full">
                         <div className="flex flex-col items-center justify-center w-full h-full gap-8 text-center">
                             <div className="space-y-4">
                                 <h2 className="text-4xl font-bold tracking-tight md:text-5xl">
-                                    Ready to take control?
+                                    Ready to get started?
                                 </h2>
                                 <p className="text-lg text-muted-foreground max-w-md mx-auto">
-                                    Get insights in minutes, not hours. Start your free trial today.
+                                    Join developers who've ditched Google Analytics for something better.
                                 </p>
                             </div>
 
                             <div className="flex flex-col sm:flex-row items-center gap-4">
                                 <a
-                                    href="https://app.databuddy.cc/register"
+                                    href="https://app.databuddy.cc"
                                     className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white transition-all duration-200 bg-sky-600 rounded-xl hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 dark:focus:ring-offset-black shadow-lg hover:shadow-xl transform hover:scale-105"
                                     data-track="cta-get-started-click"
                                     data-section="cta"
                                     data-button-type="primary-cta"
                                     data-destination="register"
                                 >
-                                    Get Started Free
+                                    Get started
                                     <ArrowRight className="ml-2 h-4 w-4" />
                                 </a>
+
                                 <a
                                     href="/demo"
                                     className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-muted-foreground transition-all duration-200 hover:text-foreground"
@@ -153,7 +132,7 @@ export default function CTA() {
                                     data-button-type="secondary-cta"
                                     data-destination="demo"
                                 >
-                                    View live demo →
+                                    View demo →
                                 </a>
                             </div>
 
@@ -168,24 +147,24 @@ export default function CTA() {
                 </div>
 
                 {/* Benefits footer */}
-                <div className="border-l-[1.2px] border-t-[1.2px] p-10">
+                <div className="border-l-[1.2px] border-t-[1.2px] p-10 bg-neutral-900/20 backdrop-blur-sm">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 text-sm text-neutral-400">
                             <div className="flex items-center gap-2">
                                 <Check className="h-4 w-4 text-green-400" />
-                                Free 30-day trial
+                                No cookies, no consent banners
                             </div>
                             <div className="flex items-center gap-2">
                                 <Check className="h-4 w-4 text-green-400" />
-                                No credit card required
+                                Real-time dashboard
                             </div>
                             <div className="flex items-center gap-2">
                                 <Check className="h-4 w-4 text-green-400" />
-                                Setup in under 5 minutes
+                                GDPR compliant by default
                             </div>
                         </div>
                         <div className="text-xs text-neutral-500">
-                            Lightning fast setup
+                            Privacy-first analytics
                         </div>
                     </div>
                 </div>
