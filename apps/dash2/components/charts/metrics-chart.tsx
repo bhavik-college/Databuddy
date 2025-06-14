@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Brush } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Brush, ReferenceLine } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SkeletonChart } from "./skeleton-chart";
@@ -125,6 +125,7 @@ interface MetricsChartProps {
   title?: string;
   description?: string;
   className?: string;
+  currentTime?: string;
 }
 
 export function MetricsChart({
@@ -133,9 +134,12 @@ export function MetricsChart({
   height = 550,
   title,
   description,
-  className
+  className,
+  currentTime
 }: MetricsChartProps) {
   const chartData = useMemo(() => data || [], [data]);
+
+
 
   const [hoveredMetric, setHoveredMetric] = useState<string | null>(null);
   const [zoomDomain, setZoomDomain] = useState<{ startIndex?: number; endIndex?: number }>({});
@@ -387,6 +391,27 @@ export function MetricsChart({
                   name="Sessions"
                   yAxisId="left"
                   className="transition-all duration-300"
+                />
+              )}
+
+              {/* Current Time Reference Line */}
+              {currentTime && (
+                <ReferenceLine
+                  x={currentTime}
+                  stroke="#ef4444"
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  yAxisId="left"
+                  label={{
+                    value: "Now",
+                    position: "top",
+                    style: {
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      fill: '#ef4444',
+                      textAnchor: 'middle'
+                    }
+                  }}
                 />
               )}
             </AreaChart>

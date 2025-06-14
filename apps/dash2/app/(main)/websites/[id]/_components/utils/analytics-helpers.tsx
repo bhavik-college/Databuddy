@@ -1,6 +1,8 @@
-import { format, formatDistanceToNow, parseISO, isValid } from "date-fns";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { toast } from "sonner";
-import { formatMetricNumber } from "@/lib/formatters";
+
+dayjs.extend(relativeTime);
 
 type Granularity = 'daily' | 'hourly';
 
@@ -22,7 +24,7 @@ export const handleDataRefresh = async (
   successMessage = "Data has been updated"
 ): Promise<void> => {
   if (!isRefreshing) return;
-  
+
   try {
     // Do the actual data refetch
     const result = await refetchFn();
@@ -38,30 +40,30 @@ export const handleDataRefresh = async (
 };
 
 // Safe date parsing with fallback
-export const safeParseDate = (date: string | Date | null | undefined): Date => {
-  if (!date) return new Date();
-  
+export const safeParseDate = (date: string | Date | null | undefined): dayjs.Dayjs => {
+  if (!date) return dayjs();
+
   if (typeof date === 'object' && date instanceof Date) {
-    return isValid(date) ? date : new Date();
+    return dayjs(date).isValid() ? dayjs(date) : dayjs();
   }
-  
+
   try {
-    const parsed = parseISO(date.toString());
-    return isValid(parsed) ? parsed : new Date();
+    const parsed = dayjs(date.toString());
+    return parsed.isValid() ? parsed : dayjs();
   } catch {
-    return new Date();
+    return dayjs();
   }
 };
 
 // Format date for display based on granularity
 export const formatDateByGranularity = (
-  date: string | Date, 
+  date: string | Date,
   granularity: Granularity = 'daily'
 ): string => {
   const dateObj = safeParseDate(date);
-  return granularity === 'hourly' 
-    ? format(dateObj, 'MMM d, hh:mm a')
-    : format(dateObj, 'MMM d');
+  return granularity === 'hourly'
+    ? dateObj.format('MMM D, h:mm A')
+    : dateObj.format('MMM D');
 };
 
 // Create metric visibility toggles state
@@ -80,9 +82,9 @@ export const formatDistributionData = <T extends DataItem>(
   valueField: keyof T = 'visitors' as keyof T
 ): ChartDataPoint[] => {
   if (!data?.length) return [];
-  
+
   return data.map((item) => ({
-    name: typeof item[nameField] === 'string' 
+    name: typeof item[nameField] === 'string'
       ? (item[nameField] as string)?.charAt(0).toUpperCase() + (item[nameField] as string)?.slice(1) || 'Unknown'
       : String(item[nameField] || 'Unknown'),
     value: Number(item[valueField]) || 0
@@ -92,7 +94,7 @@ export const formatDistributionData = <T extends DataItem>(
 // Group browser data by name
 export const groupBrowserData = (browserVersions: Array<{ browser: string; visitors: number }> | undefined): ChartDataPoint[] => {
   if (!browserVersions?.length) return [];
-  
+
   const browserCounts = browserVersions.reduce((acc, item) => {
     const browserName = item.browser;
     if (!acc[browserName]) {
@@ -101,7 +103,7 @@ export const groupBrowserData = (browserVersions: Array<{ browser: string; visit
     acc[browserName].visitors += item.visitors;
     return acc;
   }, {} as Record<string, { visitors: number }>);
-  
+
   return Object.entries(browserCounts as Record<string, { visitors: number }>).map(([browser, data]) => ({
     name: browser,
     value: data.visitors
@@ -125,8 +127,8 @@ export const formatDomainLink = (
   domain?: string,
   maxLength = 30
 ): { href: string; display: string; title: string } => {
-  const displayPath = path.length > maxLength 
-    ? `${path.slice(0, maxLength - 3)}...` 
+  const displayPath = path.length > maxLength
+    ? `${path.slice(0, maxLength - 3)}...`
     : path;
 
   if (domain) {
@@ -153,7 +155,7 @@ export const formatDomainLink = (
 // Format relative time (e.g., "2 hours ago")
 export const formatRelativeTime = (date: string | Date): string => {
   const dateObj = safeParseDate(date);
-  return formatDistanceToNow(dateObj, { addSuffix: true });
+  return dateObj.fromNow();
 };
 
 export const calculatePercentChange = (current: number, previous: number): number => {
@@ -174,7 +176,7 @@ export const PERFORMANCE_THRESHOLDS = {
   fcp: { good: 1800, average: 3000, unit: 'ms' },
   lcp: { good: 2500, average: 4000, unit: 'ms' },
   cls: { good: 0.1, average: 0.25, unit: '' }
-}; 
+};
 
 /**
  * Checks if analytics data indicates no tracking is set up (all key metrics are zero)
@@ -183,14 +185,14 @@ export function isTrackingNotSetup(analytics: any): boolean {
   if (!analytics?.summary) return true;
 
   const { summary, events_by_date, top_pages, top_referrers } = analytics;
-  
+
   // Check core metrics
-  const hasData = (summary.pageviews || 0) > 0 || 
-                  (summary.visitors || summary.unique_visitors || 0) > 0 || 
-                  (summary.sessions || 0) > 0;
+  const hasData = (summary.pageviews || 0) > 0 ||
+    (summary.visitors || summary.unique_visitors || 0) > 0 ||
+    (summary.sessions || 0) > 0;
 
   // Check events by date
-  const hasEvents = events_by_date?.some((event: any) => 
+  const hasEvents = events_by_date?.some((event: any) =>
     (event.pageviews || 0) > 0 || (event.visitors || event.unique_visitors || 0) > 0
   );
 

@@ -16,6 +16,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { differenceInDays } from "date-fns";
+import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 
 import { StatCard } from "@/components/analytics/stat-card";
@@ -253,7 +254,21 @@ export function WebsiteOverviewTab({
     });
   }, [analytics.events_by_date, visibleMetrics, dateRange.granularity]);
 
-  // Mini chart data for stat cards
+  const currentTime = useMemo(() => {
+    const now = dayjs().utc();
+    const dateFrom = dayjs(dateRange.start_date);
+    const dateTo = dayjs(dateRange.end_date).endOf('day');
+
+    if (now.isAfter(dateFrom) && now.isBefore(dateTo) && chartData.length > 0) {
+      const timeToFormat = dateRange.granularity === 'hourly'
+        ? now.startOf('hour').toDate()
+        : now.toDate();
+
+      return formatDateByGranularity(timeToFormat, dateRange.granularity);
+    }
+    return undefined;
+  }, [dateRange.granularity, dateRange.start_date, dateRange.end_date]);
+
   const miniChartData = useMemo(() => {
     if (!analytics.events_by_date?.length) return {};
 
@@ -828,6 +843,7 @@ export function WebsiteOverviewTab({
             data={chartData}
             isLoading={isLoading}
             height={350}
+            currentTime={currentTime}
           />
         </div>
       </div>
