@@ -1,21 +1,11 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { Github, Home, Twitter } from 'lucide-react';
+import { Logo } from '@/components/logo';
 
 export const baseOptions: BaseLayoutProps = {
   nav: {
     enabled: false,
-    title: (
-      <div className="flex items-center gap-2.5">
-        <img 
-          src="/logo.png" 
-          alt="Databuddy Logo" 
-          width={32} 
-          height={32} 
-          className="rounded-full"
-        />
-        <span className="font-semibold">Databuddy</span>
-      </div>
-    ),
+    title: <Logo />,
     transparentMode: 'top',
   },
   links: [
