@@ -14,7 +14,7 @@ interface SessionsListProps {
 
 export function SessionsList({ websiteId }: SessionsListProps) {
     const [dateRange] = useState(() => getDefaultDateRange());
-    const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
+    const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null);
 
     const {
         data,
@@ -27,13 +27,7 @@ export function SessionsList({ websiteId }: SessionsListProps) {
     } = useInfiniteAnalyticsSessions(websiteId, dateRange, 25);
 
     const toggleSession = (sessionId: string) => {
-        const newExpanded = new Set(expandedSessions);
-        if (newExpanded.has(sessionId)) {
-            newExpanded.delete(sessionId);
-        } else {
-            newExpanded.add(sessionId);
-        }
-        setExpandedSessions(newExpanded);
+        setExpandedSessionId(expandedSessionId === sessionId ? null : sessionId);
     };
 
     // Intersection Observer for infinite scrolling
@@ -149,7 +143,7 @@ export function SessionsList({ websiteId }: SessionsListProps) {
                             key={session.session_id || index}
                             session={session}
                             index={index}
-                            isExpanded={expandedSessions.has(session.session_id)}
+                            isExpanded={expandedSessionId === session.session_id}
                             onToggle={() => toggleSession(session.session_id)}
                         />
                     ))}
