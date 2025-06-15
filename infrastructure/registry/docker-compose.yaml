@@ -1,0 +1,58 @@
+version: '3'
+services:
+  registry:
+    image: registry:latest
+    command: /etc/distribution/config.yml
+    expose:
+      - 5000
+    environment:
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /data
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: Registry
+      REGISTRY_AUTH_HTPASSWD_PATH: /run/secrets/registry_password_file
+      REGISTRY_STORAGE_DELETE_ENABLED: 1
+    volumes:
+      - "{{registry_data_dir}}:/data"
+    secrets:
+      - registry_password_file
+    restart: always
+    networks:
+      - databuddy_ingress
+    deploy:
+      mode: global
+      update_config:
+        parallelism: 0
+        order: stop-first
+        failure_action: rollback
+        delay: 10s
+      rollback_config:
+        parallelism: 0
+        order: stop-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - node.labels.ci-root==true
+      labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.registry.rule=Host(`{{registry_host}}`)"
+      - "traefik.http.routers.registry.entrypoints=websecure"
+      - "traefik.http.services.registry.loadbalancer.server.port=5000"
+      - "traefik.docker.network=databuddy_ingress"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5000 || exit 1
+      interval: 120s
+      timeout: 60s
+      start_period: 180s
+      retries: 20
+
+networks:
+  databuddy_ingress:
+    external: true
+
+secrets:
+  registry_password_file:
+    external: true

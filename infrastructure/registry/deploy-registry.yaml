@@ -1,0 +1,70 @@
+---
+- hosts: infra-nodes
+  name: "Deploy Docker Registry"
+  remote_user: ubuntu
+  gather_facts: yes
+  become: yes
+  vars:
+    working_dir_name: "registry"
+    registry_host: "registry.databuddy.cc"
+    registry_data_dir: "/tmp/data/registry"
+
+  tasks:
+
+    - name: Create Deployment Dir Registry
+      become: yes
+      ansible.builtin.file:
+        path: "{{working_dir_name}}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0775"
+        recurse: yes
+      run_once: true
+      delegate_to: "{{ (groups['swarm-managers'][0]) }}"
+    
+    - name: Create Data Dir Registry
+      become: yes
+      ansible.builtin.file:
+        path: "{{registry_data_dir}}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0775"
+        recurse: yes
+      run_once: true
+      delegate_to: "{{ (groups['ci-root'][0]) }}"
+    
+    - name: "Copy Registry Password file into server"
+      ansible.builtin.template:
+        src: ./registry.password
+        dest: "{{working_dir_name}}/registry.password" 
+      run_once: true
+      delegate_to: "{{ (groups['swarm-managers'][0]) }}"
+
+    - name: "Create/Update  Registry Password File"
+      community.docker.docker_secret:
+        name: registry_password_file
+        data_src: "{{working_dir_name}}/registry.password"
+        state: present
+      run_once: true
+      delegate_to: "{{ (groups['swarm-managers'][0]) }}"
+    
+    - name: "Copy docker compose into server"
+      ansible.builtin.template:
+        src: ./docker-compose.yaml
+        dest: "{{working_dir_name}}/docker-compose.yaml" 
+      run_once: true
+      delegate_to: "{{ (groups['swarm-managers'][0]) }}"
+    
+    - name: "Start Stack"
+      docker_stack:
+        state: present
+        with_registry_auth: yes
+        prune: yes
+        resolve_image: always
+        name: "databuddy_registry"
+        compose:
+          - "{{working_dir_name}}/docker-compose.yaml"
+      run_once: true
+      delegate_to: "{{ (groups['swarm-managers'][0]) }}"
