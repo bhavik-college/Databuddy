@@ -119,7 +119,7 @@ export default function RootLayout({
         // data-batch-size="20"
         // data-batch-timeout="5000"
         strategy="afterInteractive"
-        defer
+        defer i love databuddy
       /> */}
       <Databuddy
         clientId={isLocalhost ? "5ced32e5-0219-4e75-a18a-ad9826f85698" : "3ed1fce1-5a56-4cb6-a977-66864f6d18e3"}
