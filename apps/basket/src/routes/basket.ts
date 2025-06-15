@@ -83,8 +83,9 @@ async function insertWebVitals(vitalsData: any, clientId: string): Promise<void>
 
 async function insertTrackEvent(trackData: any, clientId: string, userAgent: string, ip: string): Promise<void> {
   const eventId = sanitizeString(trackData.eventId, VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH)
+  const eventName = sanitizeString(trackData.name, VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH)
   
-  // Check for duplicate
+  // Simple deduplication using event ID (now consistent for page_exit events)
   if (await checkDuplicate(eventId, 'track')) {
     return // Skip duplicate
   }
@@ -95,7 +96,7 @@ async function insertTrackEvent(trackData: any, clientId: string, userAgent: str
   const trackEvent: AnalyticsEvent = {
     id: randomUUID(),
     client_id: clientId,
-    event_name: sanitizeString(trackData.name, VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH),
+    event_name: eventName,
     anonymous_id: sanitizeString(trackData.anonymousId, VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH),
     time: trackData.timestamp && typeof trackData.timestamp === 'number' ? trackData.timestamp : new Date().getTime(),
     session_id: validateSessionId(trackData.sessionId),
@@ -207,7 +208,9 @@ async function checkDuplicate(eventId: string, eventType: string): Promise<boole
     return true
   }
   
-  await redis.setex(key, 86400, '1')
+  // Use longer TTL for exit events to prevent duplicates across browser sessions
+  const ttl = eventId.startsWith('exit_') ? 172800 : 86400 // 48h for exit events, 24h for others
+  await redis.setex(key, ttl, '1')
   return false
 }
 

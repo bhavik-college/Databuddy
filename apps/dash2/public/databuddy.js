@@ -614,7 +614,8 @@
                 });
             }
 
-            const exitHandler = (event) => {
+            // Simple exit handler
+            const exitHandler = () => {
                 if (this.options.enableBatching) this.flushBatch();
                 
                 if (!this.isInternalNavigation && !(window.databuddy?.isTemporarilyHidden)) {
@@ -624,13 +625,11 @@
                 this.isInternalNavigation = false;
             };
 
-            window.addEventListener('pagehide', () => {
-                exitHandler();
-            });
+            window.addEventListener('pagehide', exitHandler, { once: true });
             
-            window.addEventListener('beforeunload', () => {
-                exitHandler();
-            });
+            if (!('onpagehide' in window)) {
+                window.addEventListener('beforeunload', exitHandler, { once: true });
+            }
         }
 
         trackExitData() {
@@ -638,10 +637,13 @@
             
             const baseContext = this.getBaseContext();
             
+            // Create consistent exit event ID based on session, path, and page start time
+            const exitEventId = `exit_${this.sessionId}_${btoa(window.location.pathname)}_${this.pageEngagementStart}`;
+            
             const exitEvent = {
                 type: "track",
                 payload: {
-                    eventId: crypto.randomUUID(),
+                    eventId: exitEventId,
                     name: "page_exit",
                     anonymousId: this.anonymousId,
                     sessionId: this.sessionId,
@@ -657,16 +659,8 @@
                 }
             };
             
-            if (this.options.enableBatching) {
-                if (this.batchQueue.length === 0) {
-                    this.sendExitEventImmediately(exitEvent);
-                } else {
-                    this.batchQueue.unshift(exitEvent);
-                    this.flushBatch();
-                }
-            } else {
-                this.sendExitEventImmediately(exitEvent);
-            }
+            // Send immediately
+            this.sendExitEventImmediately(exitEvent);
         }
         
         async sendExitEventImmediately(exitEvent) {
