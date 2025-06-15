@@ -266,7 +266,7 @@ async function insertPaymentIntent(pi: Stripe.PaymentIntent, config: StripeConfi
                 amount: pi.amount,
                 amount_received: pi.amount_received,
                 amount_capturable: pi.amount_capturable,
-                customer_id: pi.customer as string || null,
+                customer_id: null,
                 livemode: pi.livemode ? 1 : 0,
                 metadata: pi.metadata,
                 payment_method_types: pi.payment_method_types,
@@ -323,7 +323,7 @@ async function insertCharge(charge: Stripe.Charge, config: StripeConfig) {
                 risk_level: charge.outcome?.risk_level || null,
                 card_brand: card?.brand || null,
                 payment_intent_id: charge.payment_intent as string || null,
-                customer_id: charge.customer as string || null,
+                customer_id: null,
                 session_id: sessionId
             }],
             format: 'JSONEachRow'

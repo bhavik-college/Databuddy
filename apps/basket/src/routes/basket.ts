@@ -1,6 +1,6 @@
 import { Elysia } from 'elysia'
 import { AnalyticsEvent, ErrorEvent, WebVitalsEvent, clickHouse } from '@databuddy/db'
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { getGeo } from '../utils/ip-geo'
 import { parseUserAgent } from '../utils/user-agent'
 import { getWebsiteById, isValidOrigin } from '../hooks/auth'
@@ -12,6 +12,7 @@ import {
   VALIDATION_LIMITS 
 } from '../utils/validation'
 import { getRedisCache } from '@databuddy/redis'
+import crypto from 'node:crypto'
 
 const redis = getRedisCache()
 
@@ -237,6 +238,17 @@ const app = new Elysia()
     const userAgent = sanitizeString(request.headers.get('user-agent'), VALIDATION_LIMITS.STRING_MAX_LENGTH) || ''
     const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || ''
     
+    const saltKey = `salt:${Math.floor(Date.now() / (24 * 60 * 60 * 1000))}`
+    
+    const salt = await redis.get(saltKey)
+    if (!salt) {
+      const newSalt = crypto.randomBytes(32).toString('hex')
+      await redis.setex(saltKey, 60 * 60 * 24, newSalt)
+      return { status: 'success', type: 'salt', salt: newSalt }
+    }
+    
+    body.anonymous_id = createHash('sha256').update(body.anonymous_id + salt).digest('hex')
+
     if (eventType === 'track') {
       await insertTrackEvent(body, clientId, userAgent, ip)
       return { status: 'success', type: 'track' }
@@ -251,6 +263,7 @@ const app = new Elysia()
       await insertWebVitals(body, clientId)
       return { status: 'success', type: 'web_vitals' }
     }
+
     
     return { status: 'error', message: 'Unknown event type' }
   })
