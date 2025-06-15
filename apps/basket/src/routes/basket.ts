@@ -208,8 +208,7 @@ async function checkDuplicate(eventId: string, eventType: string): Promise<boole
     return true
   }
   
-  // Use longer TTL for exit events to prevent duplicates across browser sessions
-  const ttl = eventId.startsWith('exit_') ? 172800 : 86400 // 48h for exit events, 24h for others
+  const ttl = eventId.startsWith('exit_') ? 172800 : 86400
   await redis.setex(key, ttl, '1')
   return false
 }
@@ -223,7 +222,6 @@ const app = new Elysia()
     const eventType = body.type || 'track'
     const clientId = sanitizeString(query.client_id, VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH)
     
-    // Auth check
     if (!clientId) {
       return { status: 'error', message: 'Missing client ID' }
     }
@@ -287,7 +285,6 @@ const app = new Elysia()
     
     const clientId = sanitizeString(query.client_id, VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH)
     
-    // Auth check
     if (!clientId) {
       return { status: 'error', message: 'Missing client ID' }
     }
@@ -305,7 +302,6 @@ const app = new Elysia()
     const userAgent = sanitizeString(request.headers.get('user-agent'), VALIDATION_LIMITS.STRING_MAX_LENGTH) || ''
     const ip = extractIpFromRequest(request)
     
-    // Process each event in the batch
     const results = []
     for (const event of body) {
       const eventType = event.type || 'track'

@@ -19,6 +19,7 @@
         "ioredis": "^5.6.1",
         "jotai": "^2.12.4",
         "nanoid": "^5.1.5",
+        "nextjs-toploader": "^3.8.16",
         "nuqs": "^2.4.3",
         "react": "19.0.0",
         "react-dom": "19.0.0",
