@@ -30,10 +30,9 @@ import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { addDomain, updateDomainVerification } from "../actions";
+import { addDomain } from "../actions";
 
 const addDomainSchema = z.object({
   domainName: z
@@ -54,7 +53,6 @@ export function AddDomainForm({ userId }: AddDomainFormProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<AddDomainForm>({
-    resolver: zodResolver(addDomainSchema),
     defaultValues: {
       domainName: '',
       verificationStatus: 'PENDING',
@@ -65,7 +63,7 @@ export function AddDomainForm({ userId }: AddDomainFormProps) {
     setIsLoading(true);
     try {
       const result = await addDomain(userId, data.domainName, data.verificationStatus);
-      
+
       if (result.error) {
         toast.error(result.error);
         return;
@@ -106,9 +104,9 @@ export function AddDomainForm({ userId }: AddDomainFormProps) {
                 <FormItem>
                   <FormLabel>Domain Name</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="example.com" 
-                      {...field} 
+                    <Input
+                      placeholder="example.com"
+                      {...field}
                       disabled={isLoading}
                     />
                   </FormControl>
@@ -125,8 +123,8 @@ export function AddDomainForm({ userId }: AddDomainFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Verification Status</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
+                  <Select
+                    onValueChange={field.onChange}
                     defaultValue={field.value}
                     disabled={isLoading}
                   >
@@ -149,9 +147,9 @@ export function AddDomainForm({ userId }: AddDomainFormProps) {
               )}
             />
             <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setIsOpen(false)}
                 disabled={isLoading}
               >

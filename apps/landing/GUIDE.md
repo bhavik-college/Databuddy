@@ -85,7 +85,7 @@ As an early adopter, your feedback is invaluable to us. We're particularly inter
 ### Feedback Channels
 
 - **Email**: Send detailed feedback to [feedback@databuddy.cc](mailto:feedback@databuddy.cc)
-- **Discord**: Join our [Discord community](https://discord.gg/databuddy) to discuss with the team and other early adopters
+- **Discord**: Join our [Discord community](https://discord.gg/JTk7a38tCZ) to discuss with the team and other early adopters
 - **Scheduled Calls**: We offer 1:1 calls with our team to discuss your experience in depth
 
 ### Feedback Guidelines
@@ -154,4 +154,4 @@ When providing feedback, please include:
 
 Thank you for being an early adopter of Databuddy! Your feedback and support are crucial as we build the future of privacy-first analytics.
 
-For any questions not covered in this guide, please reach out to us at [hello@databuddy.cc](mailto:hello@databuddy.cc) or join our [Discord community](https://discord.gg/databuddy). 
+For any questions not covered in this guide, please reach out to us at [hello@databuddy.cc](mailto:hello@databuddy.cc) or join our [Discord community](https://discord.gg/JTk7a38tCZ). 

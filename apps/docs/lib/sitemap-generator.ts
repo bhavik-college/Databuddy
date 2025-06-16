@@ -114,6 +114,7 @@ export function generateSitemapEntries(): MetadataRoute.Sitemap {
       { url: '/docs/Integrations/nextjs', priority: 0.8, changeFrequency: 'weekly' as const },
       { url: '/docs/Integrations/wordpress', priority: 0.8, changeFrequency: 'weekly' as const },
       { url: '/docs/Integrations/shopify', priority: 0.8, changeFrequency: 'weekly' as const },
+      { url: '/docs/Integrations/stripe', priority: 0.8, changeFrequency: 'weekly' as const },
       { url: '/docs/Integrations/framer', priority: 0.7, changeFrequency: 'weekly' as const },
       { url: '/docs/Integrations/gtm', priority: 0.7, changeFrequency: 'weekly' as const },
       { url: '/privacy', priority: 0.5, changeFrequency: 'yearly' as const },

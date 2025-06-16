@@ -4,12 +4,12 @@ when:
 
 steps:
 
-  - name: Build Dash2
+  - name: Build dashboard
     image: woodpeckerci/plugin-docker-buildx:6.0.0
     settings:
       registry: http://registry.databuddy.cc/v2
-      repo: registry.databuddy.cc/dash2
-      dockerfile: dash2.Dockerfile
+      repo: registry.databuddy.cc/dashboard
+      dockerfile: dashboard.Dockerfile
       auto_tag: true
       username:
         from_secret: docker_username

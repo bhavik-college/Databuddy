@@ -1,6 +1,6 @@
-import { 
-  Sparkles, Shield, Zap, LineChart, 
-  Layers, HelpCircle, Mail, Info, 
+import {
+  Sparkles, Shield, Zap, LineChart,
+  Layers, HelpCircle, Mail, Info,
   Lightbulb, DollarSign, FileText, Briefcase, Play
 } from "lucide-react"
 
@@ -145,6 +145,6 @@ export function flattenNavItems(navGroups: any[]) {
 
 // Legal pages
 export const legalPages = [
-  { name: "Privacy Policy", href: "/privacy-policy" },
+  { name: "Privacy Policy", href: "/privacy" },
   { name: "Terms of Service", href: "/terms-of-service" },
 ]; 

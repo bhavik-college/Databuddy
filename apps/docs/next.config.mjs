@@ -8,7 +8,6 @@ const config = {
   compress: true,
   poweredByHeader: false,
   
-  // SEO and Performance optimizations
   async headers() {
     return [
       {
@@ -39,12 +38,15 @@ const config = {
             key: 'Cache-Control',
             value: 'public, max-age=3600, stale-while-revalidate=86400',
           },
+          {
+            key: 'X-Robots-Tag',
+            value: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+          },
         ],
       },
     ];
   },
 
-  // SEO-friendly redirects
   async redirects() {
     return [
       {
@@ -57,16 +59,19 @@ const config = {
         destination: '/docs/:path*',
         permanent: true,
       },
+      {
+        source: '/docs/docs/:path*',
+        destination: '/docs/:path*',
+        permanent: true,
+      },
     ];
   },
 
-  // Optimize images for better Core Web Vitals
   images: {
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
   },
 
-  // Enable experimental features for better SEO
   experimental: {
     optimizePackageImports: ['fumadocs-ui', 'lucide-react'],
   },

@@ -2,11 +2,11 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { 
-  Github, 
-  Twitter, 
-  Linkedin, 
-  Youtube, 
+import {
+  Github,
+  Twitter,
+  Linkedin,
+  Youtube,
   Mail,
   ArrowUp
 } from "lucide-react"
@@ -36,7 +36,7 @@ const footerLinks = [
       { name: "Documentation", href: "https://docs.databuddy.cc" },
       { name: "Support", href: "/contact" },
       { name: "Status", href: "https://status.databuddy.cc" },
-      { name: "Privacy Policy", href: "/privacy-policy" },
+      { name: "Privacy Policy", href: "/privacy" },
       { name: "Terms of Service", href: "/terms" },
     ]
   },
@@ -63,7 +63,7 @@ export default function Footer() {
       behavior: "smooth"
     })
   }
-  
+
   return (
     <footer className="relative pt-16 pb-10 border-t border-slate-800 bg-slate-950">
       <div className="container px-4 mx-auto">
@@ -80,7 +80,7 @@ export default function Footer() {
             </p>
             <div className="flex space-x-4">
               {socialLinks.map((link) => (
-                <a 
+                <a
                   key={link.name}
                   href={link.href}
                   target="_blank"
@@ -93,14 +93,14 @@ export default function Footer() {
               ))}
             </div>
           </div>
-          
+
           {footerLinks.map((group) => (
             <div key={group.title} className="col-span-1">
               <h3 className="font-medium text-white mb-3">{group.title}</h3>
               <ul className="space-y-2">
                 {group.links.map((link) => (
                   <li key={link.name}>
-                    <Link 
+                    <Link
                       href={link.href}
                       className="text-sm text-slate-400 hover:text-sky-400 transition-colors"
                     >
@@ -112,12 +112,12 @@ export default function Footer() {
             </div>
           ))}
         </div>
-        
+
         <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-slate-800">
           <p className="text-xs text-slate-500 mb-4 md:mb-0">
             © {new Date().getFullYear()} Databuddy. All rights reserved.
           </p>
-          
+
           <div className="flex items-center space-x-6">
             <Link href="/terms" className="text-xs text-slate-500 hover:text-sky-400">
               Terms of Service
@@ -125,9 +125,9 @@ export default function Footer() {
             <Link href="/privacy" className="text-xs text-slate-500 hover:text-sky-400">
               Privacy Policy
             </Link>
-            <Button 
-              variant="outline" 
-              size="icon" 
+            <Button
+              variant="outline"
+              size="icon"
               className="w-8 h-8 rounded-full border-slate-800 hover:border-sky-500 text-slate-400 hover:text-sky-400"
               onClick={scrollToTop}
               aria-label="Scroll to top"

@@ -91,7 +91,9 @@ const logger = console;
     const res = await clickHouse.query({
       query,
     });
+    const beforeParse = Date.now();
     const json = await res.json<T>();
+    const afterParse = Date.now();
     const keys = Object.keys(json.data[0] || {});
     const response = {
       ...json,
@@ -112,6 +114,8 @@ const logger = console;
       // query: cleanQuery(query),
       rows: json.rows,
       stats: response.statistics,
+      beforeParse: beforeParse - start,
+      afterParse: afterParse - beforeParse,
       elapsed: Date.now() - start,
     });
   

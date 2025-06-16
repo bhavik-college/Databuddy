@@ -18,7 +18,7 @@ export default async function Page(props: {
   if (!page) notFound();
 
   const MDXContent = page.data.body;
-  const url = `https://www.databuddy.cc/docs${page.url === '/docs' ? '' : page.url}`;
+  const url = `https://www.databuddy.cc${page.url}`;
 
   // Generate breadcrumbs from slug
   const breadcrumbs = [
@@ -81,27 +81,46 @@ export async function generateMetadata(props: {
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
-  const url = `https://www.databuddy.cc/docs${page.url === '/docs' ? '' : page.url}`;
+  const url = `https://www.databuddy.cc${page.url}`;
   const title = `${page.data.title} | Databuddy Documentation`;
   const description = page.data.description || `Learn about ${page.data.title} in Databuddy's privacy-first analytics platform. Complete guides and API documentation.`;
+
+  // Generate dynamic keywords based on page content and URL
+  const baseKeywords = [
+    page.data.title.toLowerCase(),
+    'databuddy',
+    'analytics',
+    'privacy-first',
+    'documentation',
+    'web analytics',
+    'GDPR compliant',
+    'cookieless analytics',
+    'data ownership',
+  ];
+
+  // Add context-specific keywords
+  const contextKeywords = [
+    ...(page.url.includes('integration') || page.url.includes('Integrations') ? ['integration', 'setup guide', 'installation'] : []),
+    ...(page.url.includes('api') ? ['API', 'reference', 'endpoints', 'REST API'] : []),
+    ...(page.url.includes('getting-started') ? ['tutorial', 'quickstart', 'setup'] : []),
+    ...(page.url.includes('sdk') ? ['SDK', 'JavaScript', 'tracking'] : []),
+    ...(page.url.includes('dashboard') ? ['dashboard', 'interface', 'UI'] : []),
+    ...(page.url.includes('security') ? ['security', 'privacy', 'compliance'] : []),
+    ...(page.url.includes('performance') ? ['performance', 'core web vitals', 'optimization'] : []),
+    ...(page.url.includes('react') ? ['React', 'React.js', 'component'] : []),
+    ...(page.url.includes('nextjs') ? ['Next.js', 'React framework', 'SSR'] : []),
+    ...(page.url.includes('wordpress') ? ['WordPress', 'plugin', 'CMS'] : []),
+    ...(page.url.includes('shopify') ? ['Shopify', 'e-commerce', 'online store'] : []),
+  ];
 
   return {
     title,
     description,
-    keywords: [
-      page.data.title.toLowerCase(),
-      'databuddy',
-      'analytics',
-      'privacy-first',
-      'documentation',
-      'web analytics',
-      'GDPR compliant',
-      ...(page.url.includes('integration') ? ['integration', 'setup guide'] : []),
-      ...(page.url.includes('api') ? ['API', 'reference', 'endpoints'] : []),
-    ],
+    keywords: [...baseKeywords, ...contextKeywords],
     authors: [{ name: 'Databuddy Team' }],
     creator: 'Databuddy',
     publisher: 'Databuddy',
+    category: 'Documentation',
     openGraph: {
       title,
       description,
@@ -111,7 +130,7 @@ export async function generateMetadata(props: {
       locale: 'en_US',
       images: [
         {
-          url: '/og-docs.webp',
+          url: 'https://www.databuddy.cc/og.webp',
           width: 1200,
           height: 630,
           alt: `${page.data.title} - Databuddy Documentation`,
@@ -122,7 +141,7 @@ export async function generateMetadata(props: {
       card: 'summary_large_image',
       title,
       description,
-      images: ['/og-docs.webp'],
+      images: ['https://www.databuddy.cc/og.webp'],
       creator: '@databuddyps',
       site: '@databuddyps',
     },
@@ -132,6 +151,9 @@ export async function generateMetadata(props: {
     robots: {
       index: true,
       follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
       googleBot: {
         index: true,
         follow: true,
@@ -143,6 +165,8 @@ export async function generateMetadata(props: {
     other: {
       'article:section': 'Documentation',
       'article:tag': page.data.title,
+      'article:author': 'Databuddy Team',
+      'og:site_name': 'Databuddy Documentation',
     },
   };
 }

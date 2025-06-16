@@ -26,10 +26,10 @@ interface TableStats {
   uncompressed_size: string
 }
 
-export default function TableDetail({ 
-  params 
-}: { 
-  params: { database: string; table: string } 
+export default function TableDetail({
+  params
+}: {
+  params: { database: string; table: string }
 }) {
   const { database, table } = params
   const [data, setData] = useState<QueryResult | null>(null)
@@ -52,8 +52,8 @@ export default function TableDetail({
       const response = await fetch('/api/database/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          query: `SELECT * FROM ${tableName} LIMIT ${limit}` 
+        body: JSON.stringify({
+          query: `SELECT * FROM ${tableName} LIMIT ${limit}`
         })
       })
       const result = await response.json()
@@ -74,7 +74,7 @@ export default function TableDetail({
       const response = await fetch('/api/database/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           query: `
             SELECT 
               count() as total_rows,
@@ -104,7 +104,7 @@ export default function TableDetail({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tableName, limit: 50000 })
       })
-      
+
       if (response.ok) {
         const blob = await response.blob()
         const url = window.URL.createObjectURL(blob)
@@ -153,15 +153,15 @@ export default function TableDetail({
       const whereClause = Object.entries(rowData)
         .map(([key, value]) => `${key} = '${value}'`)
         .join(' AND ')
-      
+
       const response = await fetch('/api/database/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          query: `ALTER TABLE ${tableName} DELETE WHERE ${whereClause}` 
+        body: JSON.stringify({
+          query: `ALTER TABLE ${tableName} DELETE WHERE ${whereClause}`
         })
       })
-      
+
       const result = await response.json()
       if (result.success) {
         loadTableData()
@@ -183,20 +183,20 @@ export default function TableDetail({
       const whereClause = Object.entries(originalRow)
         .map(([key, value]) => `${key} = '${value}'`)
         .join(' AND ')
-      
+
       // Build SET clause from updated row data
       const setClause = Object.entries(updatedRow)
         .map(([key, value]) => `${key} = '${value}'`)
         .join(', ')
-      
+
       const response = await fetch('/api/database/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          query: `ALTER TABLE ${tableName} UPDATE ${setClause} WHERE ${whereClause}` 
+        body: JSON.stringify({
+          query: `ALTER TABLE ${tableName} UPDATE ${setClause} WHERE ${whereClause}`
         })
       })
-      
+
       const result = await response.json()
       if (result.success) {
         loadTableData()

@@ -1,7 +1,7 @@
 import Link from "next/link"
-import { 
-  Twitter, 
-  Linkedin 
+import {
+  Twitter,
+  Linkedin
 } from "lucide-react"
 import { competitors } from "../(main)/compare/data"
 
@@ -40,7 +40,7 @@ const footerLinks = [
     links: [
       { name: "Documentation", href: "https://docs.databuddy.cc" },
       { name: "Support", href: "/contact" },
-      { name: "Privacy Policy", href: "/privacy-policy" }, 
+      { name: "Privacy Policy", href: "/privacy" },
       { name: "Terms of Service", href: "/terms" },
     ]
   },
@@ -56,7 +56,7 @@ const socialLinks = [
 ]
 
 export default function Footer() {
-  
+
   return (
     <footer className="border-t border-slate-800 bg-slate-950 py-5">
       <div className="container px-4 mx-auto">
@@ -67,7 +67,7 @@ export default function Footer() {
             </Link>
             <div className="flex space-x-3 mt-2">
               {socialLinks.map((link) => (
-                <a 
+                <a
                   key={link.name}
                   href={link.href}
                   target="_blank"
@@ -80,14 +80,14 @@ export default function Footer() {
               ))}
             </div>
           </div>
-          
+
           {footerLinks.map((group, index) => (
             <div key={group.title} className="col-span-1 md:col-span-2">
               <h3 className="font-medium text-white text-sm">{group.title}</h3>
               <ul className="mt-1.5">
                 {group.links.slice(0, 5).map((link) => (
                   <li key={link.name} className="mb-0.5">
-                    <Link 
+                    <Link
                       href={link.href}
                       className="text-xs text-slate-400 hover:text-sky-400 transition-colors"
                     >
@@ -99,12 +99,12 @@ export default function Footer() {
             </div>
           ))}
         </div>
-        
+
         <div className="flex flex-col md:flex-row justify-between items-center pt-3 mt-3 border-t border-slate-800/50 text-xs">
           <p className="text-slate-500">
             © {new Date().getFullYear()} Databuddy
           </p>
-          
+
           <div className="flex items-center space-x-4 mt-1 md:mt-0">
             <Link href="/terms" className="text-slate-500 hover:text-sky-400">Terms</Link>
             <Link href="/privacy" className="text-slate-500 hover:text-sky-400">Privacy</Link>
