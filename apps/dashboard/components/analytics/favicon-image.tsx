@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Globe } from 'lucide-react';
+import { GlobeIcon } from '@phosphor-icons/react';
 
 interface FaviconImageProps {
   domain: string;
@@ -121,9 +121,10 @@ export function FaviconImage({
         className={`${className} flex items-center justify-center rounded-sm`}
         style={{ width: size, height: size }}
       >
-        <Globe
+        <GlobeIcon
           className="text-muted-foreground"
-          style={{ width: size * 0.6, height: size * 0.6 }}
+          size={size}
+          weight="fill"
           aria-label={altText || 'Website icon'}
         />
       </div>
