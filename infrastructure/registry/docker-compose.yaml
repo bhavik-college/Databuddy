@@ -6,13 +6,11 @@ services:
     expose:
       - 5000
     environment:
-      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /data
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /tmp/data
       REGISTRY_AUTH: htpasswd
       REGISTRY_AUTH_HTPASSWD_REALM: Registry
       REGISTRY_AUTH_HTPASSWD_PATH: /run/secrets/registry_password_file
       REGISTRY_STORAGE_DELETE_ENABLED: 1
-    volumes:
-      - "{{registry_data_dir}}:/data"
     secrets:
       - registry_password_file
     restart: always

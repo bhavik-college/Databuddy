@@ -35,20 +35,22 @@ deploy-aqua: install-dependencies
 deploy-registry: install-dependencies
 	cd registry && ansible-playbook --timeout 60 --ssh-common-args="-i $(SSH_PRIVATE_KEY) -o ServerAliveInterval=15" -i ../inventory.ini deploy-registry.yaml
 
-deploy-app: insatall-dependencies
-	cd registry && ansible-playbook --timeout 60 --ssh-common-args="-i $(SSH_PRIVATE_KEY) -o ServerAliveInterval=15" -i ../inventory.ini deploy-registry.yaml \
+deploy-app: install-dependencies
+	cd deploy && ansible-playbook --timeout 60 --ssh-common-args="-i $(SSH_PRIVATE_KEY) -o ServerAliveInterval=15" -i ../inventory.ini deploy-databuddy.yaml \
 		--extra-vars "ipinfo_token=$$IPINFO_TOKEN" \
 		--extra-vars "ai_api_key=$$AI_API_KEY" \
 		--extra-vars "better_auth_url=$$BETTER_AUTH_URL" \
 		--extra-vars "better_auth_secret=$$BETTER_AUTH_SECRET" \
-		--extra-vars "github_client_id=" \
+		--extra-vars "github_client_id=$$GITHUB_CLIENT_ID" \
 		--extra-vars "github_client_secret=$$GITHUB_CLIENT_SECRET" \
 		--extra-vars "google_client_id=$$GOOGLE_CLIENT_ID" \
 		--extra-vars "google_client_secret=$$GOOGLE_CLIENT_SECRET" \
 		--extra-vars "opr_api_key=$$OPR_API_KEY" \
 		--extra-vars "version=$$DATABUDDY_VERSION" \
-		--extra-vars "deployment_target-infra-nodes" 
+		--extra-vars "docker_username=$$DOCKER_USERNAME" \
+		--extra-vars "docker_password=$$DOCKER_PASSWORD" \
+		--extra-vars "deployment_target=infra-nodes" 
 
 
 
-.PHONY: setup-nodes init-swarm update-swarm install-dependencies deploy-ingress deploy-ssl-cert deploy-monitoring deploy-aqua deploy-registry
+.PHONY: setup-nodes init-swarm update-swarm install-dependencies deploy-ingress deploy-ssl-cert deploy-monitoring deploy-aqua deploy-registry deploy-app
