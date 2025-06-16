@@ -1,3 +1,6 @@
+
+import './polyfills/compression'
+
 import { Elysia } from 'elysia'
 import basketRouter from './routes/basket';
 import stripeRouter from './routes/stripe';
