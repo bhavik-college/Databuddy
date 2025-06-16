@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Copy, ExternalLink, AlertCircle, Check, Save } from "lucide-react";
+import { CopyIcon, ArrowSquareOutIcon, WarningCircleIcon, CheckCircleIcon, FloppyDiskBackIcon } from "@phosphor-icons/react";
 
 interface WebhookStepProps {
     webhookSecret: string;
@@ -76,7 +76,7 @@ export function WebhookStep({
                                 size="sm"
                                 onClick={() => copyToClipboard(webhookUrl, 'Webhook URL')}
                             >
-                                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                                {copied ? <CheckCircleIcon size={16} weight="fill" className="h-4 w-4" /> : <CopyIcon size={16} weight="duotone" className="h-4 w-4" />}
                             </Button>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
@@ -121,7 +121,7 @@ export function WebhookStep({
                                 disabled={isSaving}
                                 className="flex items-center gap-2"
                             >
-                                <Save className="h-4 w-4" />
+                                <FloppyDiskBackIcon size={16} weight="fill" className="h-4 w-4" />
                                 {isSaving ? 'Saving...' : 'Save Changes'}
                             </Button>
                         </div>
@@ -133,7 +133,7 @@ export function WebhookStep({
 
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 dark:bg-amber-950/20 dark:border-amber-800">
                 <div className="flex gap-3">
-                    <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+                    <WarningCircleIcon size={20} weight="duotone" className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
                     <div>
                         <h4 className="font-medium text-amber-900 dark:text-amber-100">Stripe Dashboard Setup</h4>
                         <p className="text-sm text-amber-800 dark:text-amber-200 mt-1">
@@ -146,7 +146,7 @@ export function WebhookStep({
                             className="mt-2"
                             onClick={() => window.open('https://dashboard.stripe.com/webhooks', '_blank')}
                         >
-                            <ExternalLink className="h-4 w-4 mr-2" />
+                            <ArrowSquareOutIcon size={16} weight="duotone" className="h-4 w-4 mr-2" />
                             Open Stripe Dashboard
                         </Button>
                     </div>

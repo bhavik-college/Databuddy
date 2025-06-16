@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { authClient, useSession } from "@databuddy/auth/client";
 import { toast } from "sonner";
-import { Loader2, Check } from "lucide-react";
+import { ArrowClockwiseIcon, CheckCircleIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -101,12 +101,12 @@ export function ProfileForm() {
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />
                 Saving...
               </>
             ) : isSaved ? (
               <>
-                <Check className="mr-2 h-4 w-4" />
+                <CheckCircleIcon size={16} weight="fill" className="mr-2 h-4 w-4" />
                 Saved
               </>
             ) : (

@@ -1,22 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import { useQueryState } from "nuqs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
-  ShieldOff,
-  User,
-  Shield,
-  Bell,
-  Settings as SettingsIcon,
-  Info,
-  Sparkles
-} from "lucide-react";
+  ShieldIcon,
+  UserIcon,
+  BellIcon,
+  GearSixIcon,
+  InfoIcon,
+  SparkleIcon
+} from "@phosphor-icons/react";
 import dynamic from "next/dynamic";
 
 const EmailForm = dynamic(() => import("./_components/email-form").then(mod => ({ default: mod.EmailForm })), {
@@ -63,25 +60,25 @@ export default function SettingsPage() {
     {
       id: "profile" as SettingsTab,
       label: "Profile",
-      icon: User,
+      icon: UserIcon,
       description: "Manage your personal information and profile settings",
     },
     {
       id: "account" as SettingsTab,
       label: "Account",
-      icon: SettingsIcon,
+      icon: GearSixIcon,
       description: "Manage your account settings and preferences",
     },
     {
       id: "security" as SettingsTab,
       label: "Security",
-      icon: Shield,
+      icon: ShieldIcon,
       description: "Manage your security settings and authentication methods",
     },
     {
       id: "notifications" as SettingsTab,
       label: "Notifications",
-      icon: Bell,
+      icon: BellIcon,
       description: "Configure your notification preferences",
       disabled: true,
     },
@@ -96,7 +93,7 @@ export default function SettingsPage() {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-4">
               <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
-                <SettingsIcon className="h-6 w-6 text-primary" />
+                <GearSixIcon size={24} weight="duotone" className="h-6 w-6 text-primary" />
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground truncate">
@@ -207,7 +204,7 @@ export default function SettingsPage() {
               {activeTab === "profile" && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <Alert className="border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/20">
-                    <Info className="h-4 w-4 text-blue-600" />
+                    <InfoIcon size={16} weight="duotone" className="h-4 w-4 text-blue-600" />
                     <AlertTitle>Profile Information</AlertTitle>
                     <AlertDescription>
                       Your profile information is used to personalize your experience and how others see you on the platform.
@@ -272,7 +269,7 @@ export default function SettingsPage() {
                   <Card className="border-destructive shadow-sm">
                     <CardHeader className="pb-6">
                       <div className="flex items-center gap-3">
-                        <ShieldOff className="h-6 w-6 text-destructive" />
+                        <ShieldIcon size={24} weight="duotone" className="h-6 w-6 text-destructive" />
                         <div>
                           <CardTitle className="text-xl font-semibold tracking-tight text-destructive">Danger Zone</CardTitle>
                           <CardDescription className="text-destructive/80 text-base mt-1">
@@ -329,10 +326,10 @@ export default function SettingsPage() {
                       <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
                         <div className="relative mb-10">
                           <div className="rounded-full bg-muted/50 p-12 border-2 border-muted/50">
-                            <Bell className="h-20 w-20 text-muted-foreground" />
+                            <BellIcon size={80} weight="duotone" className="h-20 w-20 text-muted-foreground" />
                           </div>
                           <div className="absolute -top-3 -right-3 p-3 rounded-full bg-primary/10 border-2 border-primary/20">
-                            <Sparkles className="h-8 w-8 text-primary" />
+                            <SparkleIcon size={32} weight="duotone" className="h-8 w-8 text-primary" />
                           </div>
                         </div>
 
@@ -344,7 +341,7 @@ export default function SettingsPage() {
                         <div className="bg-muted/50 rounded-xl p-8 max-w-lg border border-muted/50">
                           <div className="flex items-start gap-4">
                             <div className="p-3 rounded-lg bg-primary/10">
-                              <Sparkles className="h-6 w-6 text-primary" />
+                              <SparkleIcon size={24} weight="duotone" className="h-6 w-6 text-primary" />
                             </div>
                             <div className="text-left">
                               <p className="font-semibold text-base mb-3">💡 What's coming</p>

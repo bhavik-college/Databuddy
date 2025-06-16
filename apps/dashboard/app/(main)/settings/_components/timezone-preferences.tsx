@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Clock, Globe, CalendarIcon, Loader2, CheckCircle, Sparkles, MapPin } from "lucide-react";
+import { ClockIcon, GlobeIcon, CalendarIcon, ArrowClockwiseIcon, CheckCircleIcon, SparkleIcon, MapPinIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -167,7 +167,7 @@ export function TimezonePreferences() {
     return (
       <div className="flex items-center justify-center py-8">
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <ArrowClockwiseIcon size={16} weight="fill" className="h-4 w-4 animate-spin" />
           <span className="text-sm">Loading preferences...</span>
         </div>
       </div>
@@ -182,7 +182,7 @@ export function TimezonePreferences() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-600/5 border border-blue-500/20 flex items-center justify-center">
-                <Clock className="h-5 w-5 text-blue-600" />
+                <ClockIcon size={16} weight="duotone" className="h-5 w-5 text-blue-600" />
               </div>
               <div>
                 <p className="font-medium text-sm">Current Format</p>
@@ -193,7 +193,7 @@ export function TimezonePreferences() {
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="text-xs">
-                <MapPin className="h-3 w-3 mr-1" />
+                <MapPinIcon size={16} weight="duotone" className="h-3 w-3 mr-1" />
                 {currentTimezone.split('/').pop()?.replace('_', ' ')}
               </Badge>
             </div>
@@ -205,15 +205,15 @@ export function TimezonePreferences() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-3 w-full mb-6">
           <TabsTrigger value="timezone" className="flex gap-2 items-center">
-            <Globe className="h-4 w-4" />
+            <GlobeIcon size={16} weight="duotone" className="h-4 w-4" />
             <span className="hidden sm:inline">Timezone</span>
           </TabsTrigger>
           <TabsTrigger value="date" className="flex gap-2 items-center">
-            <CalendarIcon className="h-4 w-4" />
+            <CalendarIcon size={16} weight="duotone" className="h-4 w-4" />
             <span className="hidden sm:inline">Date</span>
           </TabsTrigger>
           <TabsTrigger value="time" className="flex gap-2 items-center">
-            <Clock className="h-4 w-4" />
+            <ClockIcon size={16} weight="duotone" className="h-4 w-4" />
             <span className="hidden sm:inline">Time</span>
           </TabsTrigger>
         </TabsList>
@@ -230,9 +230,9 @@ export function TimezonePreferences() {
                 onClick={() => setPreferences({ ...preferences, timezone: 'auto' })}
                 className="w-full justify-start gap-2"
               >
-                <Globe className="h-4 w-4" />
+                <GlobeIcon size={16} weight="duotone" className="h-4 w-4" />
                 Auto-detect ({getBrowserTimezone()})
-                {preferences.timezone === 'auto' && <CheckCircle className="h-4 w-4 ml-auto" />}
+                {preferences.timezone === 'auto' && <CheckCircleIcon size={16} weight="duotone" className="h-4 w-4 ml-auto" />}
               </Button>
             </div>
 
@@ -256,7 +256,7 @@ export function TimezonePreferences() {
                           <div className="flex items-center justify-between">
                             <span>{tz.label}</span>
                             {preferences.timezone === tz.region && (
-                              <CheckCircle className="h-4 w-4" />
+                              <CheckCircleIcon size={16} weight="duotone" className="h-4 w-4" />
                             )}
                           </div>
                         </div>
@@ -291,7 +291,7 @@ export function TimezonePreferences() {
                       <div className="text-xs text-muted-foreground mt-1">{option.value}</div>
                     </div>
                     {preferences.dateFormat === option.value && (
-                      <CheckCircle className="h-4 w-4 text-primary" />
+                      <CheckCircleIcon size={16} weight="duotone" className="h-4 w-4 text-primary" />
                     )}
                   </div>
                 </div>
@@ -322,7 +322,7 @@ export function TimezonePreferences() {
                       <div className="text-xs text-muted-foreground mt-1">{option.value}</div>
                     </div>
                     {preferences.timeFormat === option.value && (
-                      <CheckCircle className="h-4 w-4 text-primary" />
+                      <CheckCircleIcon size={16} weight="duotone" className="h-4 w-4 text-primary" />
                     )}
                   </div>
                 </div>
@@ -342,12 +342,12 @@ export function TimezonePreferences() {
           >
             {saving ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />
                 Saving...
               </>
             ) : (
               <>
-                <CheckCircle className="mr-2 h-4 w-4" />
+                <CheckCircleIcon size={16} weight="duotone" className="mr-2 h-4 w-4" />
                 Save Changes
               </>
             )}
@@ -366,7 +366,7 @@ export function TimezonePreferences() {
       <div className="bg-muted/30 rounded-lg p-4 border border-muted/50">
         <div className="flex items-start gap-3">
           <div className="p-1 rounded-md bg-primary/10">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <SparkleIcon size={16} weight="duotone" className="h-4 w-4 text-primary" />
           </div>
           <div className="text-sm">
             <p className="font-medium mb-1">🌍 Timezone & Format Tips</p>

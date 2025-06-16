@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Settings, Copy, RefreshCw, ExternalLink, AlertCircle, CheckCircle } from "lucide-react";
+import { GearSixIcon, CopyIcon, WarningCircleIcon, CheckCircleIcon, ArrowClockwiseIcon, ArrowSquareOutIcon } from "@phosphor-icons/react";
 import { toast } from "sonner";
 
 interface QuickSettingsModalProps {
@@ -91,7 +91,7 @@ export function QuickSettingsModal({
             <DialogTrigger asChild>
                 {trigger || (
                     <Button variant="outline" size="sm">
-                        <Settings className="h-4 w-4 mr-2" />
+                        <GearSixIcon size={16} weight="duotone" className="h-4 w-4 mr-2" />
                         Quick Settings
                     </Button>
                 )}
@@ -99,7 +99,7 @@ export function QuickSettingsModal({
             <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <Settings className="h-5 w-5" />
+                        <GearSixIcon size={20} weight="duotone" className="h-5 w-5" />
                         Revenue Settings
                     </DialogTitle>
                     <DialogDescription>
@@ -112,9 +112,9 @@ export function QuickSettingsModal({
                     <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                         <div className="flex items-center gap-2">
                             {isSetupComplete ? (
-                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                <CheckCircleIcon size={16} weight="fill" className="h-4 w-4 text-green-500" />
                             ) : (
-                                <AlertCircle className="h-4 w-4 text-orange-500" />
+                                <WarningCircleIcon size={16} weight="duotone" className="h-4 w-4 text-orange-500" />
                             )}
                             <span className="text-sm font-medium">
                                 {isSetupComplete ? 'Integration Active' : 'Setup Required'}
@@ -140,14 +140,14 @@ export function QuickSettingsModal({
                                     size="sm"
                                     onClick={() => copyToClipboard(webhookUrl, 'Webhook URL')}
                                 >
-                                    <Copy className="h-4 w-4" />
+                                    <CopyIcon size={16} weight="duotone" className="h-4 w-4" />
                                 </Button>
                                 <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => window.open('https://dashboard.stripe.com/webhooks', '_blank')}
                                 >
-                                    <ExternalLink className="h-4 w-4" />
+                                    <ArrowSquareOutIcon size={16} weight="duotone" className="h-4 w-4" />
                                 </Button>
                             </div>
                         </div>
@@ -231,7 +231,7 @@ export function QuickSettingsModal({
                                 disabled={isRegeneratingToken}
                                 className="w-full"
                             >
-                                <RefreshCw className={`h-4 w-4 mr-2 ${isRegeneratingToken ? 'animate-spin' : ''}`} />
+                                <ArrowClockwiseIcon size={16} weight="fill" className={`h-4 w-4 mr-2 ${isRegeneratingToken ? 'animate-spin' : ''}`} />
                                 {isRegeneratingToken ? 'Regenerating Token...' : 'Regenerate Webhook Token'}
                             </Button>
                         )}

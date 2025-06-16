@@ -6,7 +6,7 @@ import { z } from "zod";
 import { useSession, authClient } from "@databuddy/auth/client";
 import { enableTwoFactor, verifyTwoFactorCode, generateBackupCodes } from "@databuddy/auth/client";
 import { toast } from "sonner";
-import { Loader2, Copy, Check, Key, Shield, Download } from "lucide-react";
+import { ArrowClockwiseIcon, CopyIcon, CheckCircleIcon, KeyIcon, ShieldCheckIcon, DownloadIcon } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -248,18 +248,18 @@ export function TwoFactorForm() {
           <h4 className="font-medium">Your Backup Codes</h4>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={downloadBackupCodes}>
-              <Download className="h-4 w-4 mr-2" />
+              <DownloadIcon size={16} weight="duotone" className="h-4 w-4 mr-2" />
               Download
             </Button>
             <Button variant="outline" size="sm" onClick={copyBackupCodes}>
               {copied ? (
                 <>
-                  <Check className="h-4 w-4 mr-2" />
+                  <CheckCircleIcon size={16} weight="duotone" className="h-4 w-4 mr-2" />
                   Copied
                 </>
               ) : (
                 <>
-                  <Copy className="h-4 w-4 mr-2" />
+                  <CopyIcon size={16} weight="duotone" className="h-4 w-4 mr-2" />
                   Copy
                 </>
               )}
@@ -281,7 +281,7 @@ export function TwoFactorForm() {
     return (
       <div className="space-y-4">
         <Alert>
-          <Shield className="h-4 w-4" />
+          <ShieldCheckIcon size={16} weight="duotone" className="h-4 w-4" />
           <AlertTitle>Set up two-factor authentication</AlertTitle>
           <AlertDescription>
             Scan the QR code below with your authenticator app and enter the code it provides.
@@ -354,7 +354,7 @@ export function TwoFactorForm() {
                   Back
                 </Button>
                 <Button type="submit" disabled={isLoading}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isLoading && <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />}
                   Verify
                 </Button>
               </div>
@@ -363,7 +363,7 @@ export function TwoFactorForm() {
         </div>
 
         <Alert>
-          <Key className="h-4 w-4" />
+          <KeyIcon size={16} weight="duotone" className="h-4 w-4" />
           <AlertTitle>Backup Codes</AlertTitle>
           <AlertDescription>
             Save these backup codes somewhere safe. You can use them to log in if you lose access to your authenticator app.
@@ -379,7 +379,7 @@ export function TwoFactorForm() {
     return (
       <div className="space-y-4">
         <Alert className="bg-green-500/10 border-green-500/20">
-          <Check className="h-4 w-4 text-green-500" />
+          <CheckCircleIcon size={16} weight="duotone" className="h-4 w-4 text-green-500" />
           <AlertTitle>Two-factor authentication enabled</AlertTitle>
           <AlertDescription>
             Your account is now protected with two-factor authentication.
@@ -389,7 +389,7 @@ export function TwoFactorForm() {
         <BackupCodesDisplay />
 
         <Button variant="destructive" onClick={handleDisable2FA} disabled={isLoading}>
-          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isLoading && <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />}
           Disable Two-Factor Authentication
         </Button>
       </div>
@@ -401,7 +401,7 @@ export function TwoFactorForm() {
       {isEnabled ? (
         <>
           <Alert className="bg-green-500/10 border-green-500/20">
-            <Check className="h-4 w-4 text-green-500" />
+            <CheckCircleIcon size={16} weight="duotone" className="h-4 w-4 text-green-500" />
             <AlertTitle>Two-factor authentication is enabled</AlertTitle>
             <AlertDescription>
               Your account is protected with two-factor authentication.
@@ -410,12 +410,12 @@ export function TwoFactorForm() {
 
           <div className="flex gap-2 mt-4">
             <Button variant="outline" onClick={handleRegenerateBackupCodes} disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isLoading && <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />}
               Generate New Backup Codes
             </Button>
 
             <Button variant="destructive" onClick={handleDisable2FA} disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isLoading && <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />}
               Disable Two-Factor Authentication
             </Button>
           </div>
@@ -423,7 +423,7 @@ export function TwoFactorForm() {
       ) : (
         <>
           <Alert>
-            <Shield className="h-4 w-4" />
+            <ShieldCheckIcon size={16} weight="duotone" className="h-4 w-4" />
             <AlertTitle>Add an extra layer of security</AlertTitle>
             <AlertDescription>
               Two-factor authentication adds an additional layer of security to your account by requiring more than just a password to sign in.
@@ -447,7 +447,7 @@ export function TwoFactorForm() {
               />
 
               <Button type="submit" disabled={isLoading} className="w-full">
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading && <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />}
                 Enable Two-Factor Authentication
               </Button>
             </form>

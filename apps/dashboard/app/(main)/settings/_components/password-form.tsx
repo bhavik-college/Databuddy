@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { authClient } from "@databuddy/auth/client";
 import { toast } from "sonner";
-import { Loader2, Lock, Eye, EyeOff, Shield, AlertTriangle, CheckCircle, Sparkles, LogOut } from "lucide-react";
+import { ArrowClockwiseIcon, LockKeyIcon, EyeIcon, EyeSlashIcon, ShieldCheckIcon, WarningIcon, CheckCircleIcon, SparkleIcon, SignOutIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -117,7 +117,7 @@ export function PasswordForm() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       {/* Security Notice */}
       <Alert className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
-        <Shield className="h-4 w-4 text-amber-600" />
+        <ShieldCheckIcon size={16} weight="duotone" className="h-4 w-4 text-amber-600" />
         <AlertDescription className="text-sm">
           <strong>Security Tip:</strong> Use a strong password with a mix of letters, numbers, and special characters. Consider using a password manager.
         </AlertDescription>
@@ -143,7 +143,7 @@ export function PasswordForm() {
                       )}
                       {...field}
                     />
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <LockKeyIcon size={16} weight="duotone" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Button
                       type="button"
                       variant="ghost"
@@ -152,9 +152,9 @@ export function PasswordForm() {
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                     >
                       {showCurrentPassword ? (
-                        <EyeOff className="h-4 w-4" />
+                        <EyeSlashIcon size={16} weight="duotone" className="h-4 w-4" />
                       ) : (
-                        <Eye className="h-4 w-4" />
+                        <EyeIcon size={16} weight="duotone" className="h-4 w-4" />
                       )}
                     </Button>
                   </div>
@@ -184,7 +184,7 @@ export function PasswordForm() {
                       )}
                       {...field}
                     />
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <LockKeyIcon size={16} weight="duotone" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Button
                       type="button"
                       variant="ghost"
@@ -193,9 +193,9 @@ export function PasswordForm() {
                       onClick={() => setShowNewPassword(!showNewPassword)}
                     >
                       {showNewPassword ? (
-                        <EyeOff className="h-4 w-4" />
+                        <EyeSlashIcon size={16} weight="duotone" className="h-4 w-4" />
                       ) : (
-                        <Eye className="h-4 w-4" />
+                        <EyeIcon size={16} weight="duotone" className="h-4 w-4" />
                       )}
                     </Button>
                   </div>
@@ -249,7 +249,7 @@ export function PasswordForm() {
                       )}
                       {...field}
                     />
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <LockKeyIcon size={16} weight="duotone" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Button
                       type="button"
                       variant="ghost"
@@ -258,13 +258,13 @@ export function PasswordForm() {
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     >
                       {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4" />
+                        <EyeSlashIcon size={16} weight="duotone" className="h-4 w-4" />
                       ) : (
-                        <Eye className="h-4 w-4" />
+                        <EyeIcon size={16} weight="duotone" className="h-4 w-4" />
                       )}
                     </Button>
                     {field.value && field.value === newPassword && (
-                      <CheckCircle className="absolute right-10 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
+                      <CheckCircleIcon size={16} weight="fill" className="absolute right-10 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
                     )}
                   </div>
                 </FormControl>
@@ -288,7 +288,7 @@ export function PasswordForm() {
                   htmlFor="revokeOtherSessions"
                   className="text-sm font-medium leading-none cursor-pointer flex items-center gap-2"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <SignOutIcon size={16} weight="duotone" className="h-4 w-4" />
                   Log out from all other devices
                 </label>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -307,12 +307,12 @@ export function PasswordForm() {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />
                   Updating Password...
                 </>
               ) : (
                 <>
-                  <Shield className="mr-2 h-4 w-4" />
+                  <ShieldCheckIcon size={16} weight="duotone" className="mr-2 h-4 w-4" />
                   Update Password
                 </>
               )}
@@ -325,7 +325,7 @@ export function PasswordForm() {
       <div className="bg-muted/30 rounded-lg p-4 border border-muted/50">
         <div className="flex items-start gap-3">
           <div className="p-1 rounded-md bg-primary/10">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <SparkleIcon size={16} weight="fill" className="h-4 w-4 text-primary" />
           </div>
           <div className="text-sm">
             <p className="font-medium mb-1">🔒 Password Security Tips</p>

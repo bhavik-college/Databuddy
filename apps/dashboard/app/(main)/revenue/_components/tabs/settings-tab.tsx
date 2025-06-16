@@ -10,19 +10,16 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import {
-    Copy,
-    Check,
-    RefreshCw,
-    Trash2,
-    AlertTriangle,
-    ExternalLink,
-    Settings,
-    Webhook,
-    Key,
-    Globe,
-    TestTube,
-    Zap
-} from "lucide-react";
+    CopyIcon,
+    KeyIcon,
+    GearSixIcon,
+    GlobeIcon,
+    TestTubeIcon,
+    LightningIcon,
+    TrashIcon,
+    ArrowClockwiseIcon,
+    ArrowSquareOutIcon,
+} from "@phosphor-icons/react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -96,7 +93,7 @@ export function RevenueSettingsTab({ revenueConfig }: { revenueConfig: ReturnTyp
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <Webhook className="h-5 w-5" />
+                        <KeyIcon size={20} weight="duotone" className="h-5 w-5" />
                         Webhook Configuration
                     </CardTitle>
                 </CardHeader>
@@ -116,7 +113,7 @@ export function RevenueSettingsTab({ revenueConfig }: { revenueConfig: ReturnTyp
                                 size="icon"
                                 onClick={() => handleCopy(revenueConfig.webhookUrl, "Webhook URL")}
                             >
-                                <Copy className="h-4 w-4" />
+                                <CopyIcon size={16} weight="duotone" className="h-4 w-4" />
                             </Button>
                         </div>
                         <p className="text-xs text-muted-foreground">
@@ -139,7 +136,7 @@ export function RevenueSettingsTab({ revenueConfig }: { revenueConfig: ReturnTyp
                                 size="icon"
                                 onClick={() => handleCopy(revenueConfig.webhookToken, "Webhook Token")}
                             >
-                                <Copy className="h-4 w-4" />
+                                <CopyIcon size={16} weight="duotone" className="h-4 w-4" />
                             </Button>
                             <Button
                                 variant="outline"
@@ -147,7 +144,7 @@ export function RevenueSettingsTab({ revenueConfig }: { revenueConfig: ReturnTyp
                                 onClick={() => revenueConfig.regenerateWebhookToken()}
                                 disabled={revenueConfig.isRegeneratingToken}
                             >
-                                <RefreshCw className={`h-4 w-4 ${revenueConfig.isRegeneratingToken ? 'animate-spin' : ''}`} />
+                                <ArrowClockwiseIcon size={16} weight="fill" className={`h-4 w-4 ${revenueConfig.isRegeneratingToken ? 'animate-spin' : ''}`} />
                             </Button>
                         </div>
                         <p className="text-xs text-muted-foreground">
@@ -193,7 +190,7 @@ export function RevenueSettingsTab({ revenueConfig }: { revenueConfig: ReturnTyp
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <Settings className="h-5 w-5" />
+                        <GearSixIcon size={20} weight="duotone" className="h-5 w-5" />
                         Mode Configuration
                     </CardTitle>
                 </CardHeader>
@@ -205,12 +202,12 @@ export function RevenueSettingsTab({ revenueConfig }: { revenueConfig: ReturnTyp
                                 <Badge variant={isLiveMode ? "default" : "secondary"} className="text-xs">
                                     {isLiveMode ? (
                                         <>
-                                            <Globe className="h-3 w-3 mr-1" />
+                                            <GlobeIcon size={12} weight="duotone" className="h-3 w-3 mr-1" />
                                             Live
                                         </>
                                     ) : (
                                         <>
-                                            <TestTube className="h-3 w-3 mr-1" />
+                                            <TestTubeIcon size={12} weight="duotone" className="h-3 w-3 mr-1" />
                                             Test
                                         </>
                                     )}
@@ -233,7 +230,7 @@ export function RevenueSettingsTab({ revenueConfig }: { revenueConfig: ReturnTyp
                     {!isLiveMode && (
                         <div className="rounded-md bg-blue-50 dark:bg-blue-950/20 p-3 text-blue-700 dark:text-blue-400 text-sm">
                             <div className="flex items-start gap-2">
-                                <TestTube className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                                <TestTubeIcon size={16} weight="duotone" className="h-4 w-4 flex-shrink-0 mt-0.5" />
                                 <div>
                                     <p className="font-medium">Test Mode Active</p>
                                     <p className="text-xs mt-1">
@@ -250,7 +247,7 @@ export function RevenueSettingsTab({ revenueConfig }: { revenueConfig: ReturnTyp
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <Zap className="h-5 w-5" />
+                        <LightningIcon size={20} weight="duotone" className="h-5 w-5" />
                         Setup Instructions
                     </CardTitle>
                 </CardHeader>
@@ -314,7 +311,7 @@ export function RevenueSettingsTab({ revenueConfig }: { revenueConfig: ReturnTyp
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
-                                <ExternalLink className="h-4 w-4 mr-2" />
+                                <ArrowSquareOutIcon size={16} weight="duotone" className="h-4 w-4 mr-2" />
                                 Open Stripe Dashboard
                             </a>
                         </Button>
@@ -327,7 +324,7 @@ export function RevenueSettingsTab({ revenueConfig }: { revenueConfig: ReturnTyp
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button variant="destructive" size="sm">
-                            <Trash2 className="h-4 w-4 mr-2" />
+                            <TrashIcon size={16} weight="duotone" className="h-4 w-4 mr-2" />
                             Delete Configuration
                         </Button>
                     </AlertDialogTrigger>

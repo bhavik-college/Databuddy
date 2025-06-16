@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Key, CheckCircle, AlertCircle } from "lucide-react";
+import { KeyIcon, CheckCircleIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import type { ConfigurationSummaryProps } from "../../utils/types";
 
 export function ConfigurationSummary({
@@ -18,9 +18,9 @@ export function ConfigurationSummary({
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     {isConfigured ? (
-                        <CheckCircle className="h-5 w-5 text-green-500" />
+                        <CheckCircleIcon size={20} weight="fill" className="h-5 w-5 text-green-500" />
                     ) : (
-                        <AlertCircle className="h-5 w-5 text-orange-500" />
+                        <WarningCircleIcon size={20} weight="duotone" className="h-5 w-5 text-orange-500" />
                     )}
                     Configuration Summary
                 </CardTitle>
@@ -52,7 +52,7 @@ export function ConfigurationSummary({
                 {isConfigured && (
                     <div className="pt-2 border-t">
                         <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                            <CheckCircle className="h-4 w-4" />
+                            <CheckCircleIcon size={16} weight="fill" className="h-4 w-4" />
                             <span>Integration is active and ready to receive webhooks</span>
                         </div>
                     </div>

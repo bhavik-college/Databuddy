@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { CheckCircle } from "lucide-react";
+import { CheckCircleIcon } from "@phosphor-icons/react";
 
 interface CompleteStepProps {
     onViewDashboard: () => void;
@@ -12,7 +12,7 @@ export function CompleteStep({ onViewDashboard }: CompleteStepProps) {
         <div className="space-y-4">
             <div className="text-center py-6">
                 <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+                    <CheckCircleIcon size={32} weight="fill" className="h-8 w-8 text-green-600 dark:text-green-400" />
                 </div>
                 <h3 className="text-lg font-medium mb-2">Integration Complete!</h3>
                 <p className="text-muted-foreground mb-4">

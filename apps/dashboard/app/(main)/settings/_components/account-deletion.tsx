@@ -6,7 +6,7 @@ import { z } from "zod";
 import { useSession, logout } from "@databuddy/auth/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Trash2, AlertTriangle, Loader2, Info, ShieldAlert } from "lucide-react";
+import { TrashIcon, WarningIcon, ArrowClockwiseIcon, InfoIcon, ShieldCheckIcon } from "@phosphor-icons/react";
 import { deactivateUserAccount } from "@/app/actions/users";
 
 import { Button } from "@/components/ui/button";
@@ -98,7 +98,7 @@ export function AccountDeletion() {
       <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0 md:space-x-6 p-4 bg-gradient-to-r from-red-950/20 to-red-900/10 rounded-lg border border-red-900/20">
         <div className="flex-1 space-y-2">
           <div className="flex items-center">
-            <ShieldAlert className="h-5 w-5 text-red-500 mr-2" />
+            <ShieldCheckIcon size={20} weight="fill" className="h-5 w-5 text-red-500 mr-2" />
             <h3 className="text-base font-medium text-red-400">Account Deletion</h3>
           </div>
           <p className="text-sm text-slate-300">
@@ -115,13 +115,13 @@ export function AccountDeletion() {
               size="sm"
               className="bg-red-900/60 hover:bg-red-800 border border-red-800/50 text-white px-4"
             >
-              <Trash2 className="h-4 w-4 mr-2" />
+              <TrashIcon size={16} weight="duotone" className="h-4 w-4 mr-2" />
               Delete Account
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent className="bg-slate-950 border border-red-900/30 max-w-xl">
             <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-red-500 text-white p-3 rounded-full">
-              <AlertTriangle className="h-6 w-6" />
+              <WarningIcon size={24} weight="duotone" className="h-6 w-6" />
             </div>
 
             <AlertDialogHeader className="pt-6">
@@ -136,21 +136,21 @@ export function AccountDeletion() {
             <div className="bg-red-950/20 border border-red-900/20 rounded-md p-4 my-4">
               <div className="space-y-3 text-sm text-slate-300">
                 <div className="flex items-start">
-                  <Info className="h-4 w-4 text-red-400 mt-0.5 mr-2 flex-shrink-0" />
+                  <InfoIcon size={16} weight="duotone" className="h-4 w-4 text-red-400 mt-0.5 mr-2 flex-shrink-0" />
                   <p>
                     <span className="font-medium text-red-400">Immediate effects:</span>{" "}
                     Your account will be deactivated and you&apos;ll be signed out from all devices.
                   </p>
                 </div>
                 <div className="flex items-start">
-                  <Info className="h-4 w-4 text-red-400 mt-0.5 mr-2 flex-shrink-0" />
+                  <InfoIcon size={16} weight="duotone" className="h-4 w-4 text-red-400 mt-0.5 mr-2 flex-shrink-0" />
                   <p>
                     <span className="font-medium text-red-400">Recovery period:</span>{" "}
                     You&apos;ll have 30 days to change your mind and recover your account.
                   </p>
                 </div>
                 <div className="flex items-start">
-                  <Info className="h-4 w-4 text-red-400 mt-0.5 mr-2 flex-shrink-0" />
+                  <InfoIcon size={16} weight="duotone" className="h-4 w-4 text-red-400 mt-0.5 mr-2 flex-shrink-0" />
                   <p>
                     <span className="font-medium text-red-400">Permanent deletion:</span>{" "}
                     After 30 days, all your data will be permanently deleted.
@@ -236,7 +236,7 @@ export function AccountDeletion() {
                   >
                     {isLoading ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />
                         Processing...
                       </>
                     ) : (

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
+import { CopyIcon } from "@phosphor-icons/react";
 
 interface TestingStepProps {
     copyToClipboard: (text: string, label: string) => void;
@@ -33,7 +33,7 @@ export function TestingStep({ copyToClipboard, onBack, onNext }: TestingStepProp
                                     'Test command'
                                 )}
                             >
-                                <Copy className="h-4 w-4 mr-2" />
+                                <CopyIcon size={16} weight="duotone" className="h-4 w-4 mr-2" />
                                 Copy Command
                             </Button>
                         </div>

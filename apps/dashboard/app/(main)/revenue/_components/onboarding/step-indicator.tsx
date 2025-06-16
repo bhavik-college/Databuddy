@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle } from "lucide-react";
+import { CheckCircleIcon } from "@phosphor-icons/react";
 import type { OnboardingStep } from "../../utils/types";
 
 interface StepIndicatorProps {
@@ -20,7 +20,7 @@ export function StepIndicator({ currentStep, steps }: StepIndicatorProps) {
                             : 'bg-muted text-muted-foreground'
                         }`}>
                         {index < steps.indexOf(currentStep) ? (
-                            <CheckCircle className="h-4 w-4" />
+                            <CheckCircleIcon size={16} weight="fill" className="h-4 w-4" />
                         ) : (
                             index + 1
                         )}

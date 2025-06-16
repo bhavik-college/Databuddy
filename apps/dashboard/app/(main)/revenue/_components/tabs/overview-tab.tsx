@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Zap } from "lucide-react";
+import { WarningCircleIcon, LightningIcon } from "@phosphor-icons/react";
 
 interface OverviewTabProps {
     onSetupClick: () => void;
@@ -21,7 +21,7 @@ export function RevenueOverviewTab({
         return (
             <div className="text-center py-12 border-2 border-dashed rounded-lg">
                 <div className="inline-block p-3 bg-orange-100 rounded-full dark:bg-orange-900/20">
-                    <AlertCircle className="h-8 w-8 text-orange-500" />
+                    <WarningCircleIcon size={32} weight="duotone" className="h-8 w-8 text-orange-500" />
                 </div>
                 <h3 className="mt-4 text-lg font-semibold">Stripe Integration Not Configured</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -29,7 +29,7 @@ export function RevenueOverviewTab({
                 </p>
                 <div className="mt-6">
                     <Button onClick={onSetupClick}>
-                        <Zap className="h-4 w-4 mr-2" />
+                        <LightningIcon size={16} weight="duotone" className="h-4 w-4 mr-2" />
                         Go to Setup
                     </Button>
                 </div>

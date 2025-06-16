@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession, authClient } from "@databuddy/auth/client";
 import { toast } from "sonner";
-import { Loader2, LogOut, Monitor, Smartphone, Globe, Clock } from "lucide-react";
+import { ArrowClockwiseIcon, SignOutIcon, MonitorIcon, PhoneIcon, GlobeIcon, ClockIcon } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -37,14 +37,14 @@ export function SessionsForm() {
     setIsLoading(true);
     try {
       const response = await authClient.listSessions();
-      
+
       // Mark current session
       const currentSessionId = session?.session?.id;
       const formattedSessions = response.data?.map((s: any) => ({
         ...s,
         isCurrent: s.id === currentSessionId
       }));
-      
+
       setSessions(formattedSessions || []);
     } catch (error: any) {
       toast.error(error.message || "Failed to load sessions");
@@ -61,14 +61,14 @@ export function SessionsForm() {
         toast.error(response.error.message || "Failed to revoke session");
       } else {
         toast.success("Session revoked successfully");
-        
-      // If current session was revoked, redirect to login
-      if (sessionId === session?.session?.id) {
-        router.push("/login");
-        return;
-      }
-      
-      // Refresh the list
+
+        // If current session was revoked, redirect to login
+        if (sessionId === session?.session?.id) {
+          router.push("/login");
+          return;
+        }
+
+        // Refresh the list
         fetchSessions();
       }
     } catch (error: any) {
@@ -82,7 +82,7 @@ export function SessionsForm() {
     if (!confirm("Are you sure you want to revoke all other sessions? You'll remain logged in on this device only.")) {
       return;
     }
-    
+
     setIsLoading(true);
     try {
       const response = await authClient.revokeOtherSessions();
@@ -100,22 +100,22 @@ export function SessionsForm() {
   };
 
   const getDeviceIcon = (userAgent?: string | null) => {
-    if (!userAgent) return <Globe className="h-4 w-4" />;
-    
+    if (!userAgent) return <GlobeIcon size={16} weight="duotone" className="h-4 w-4" />;
+
     const ua = userAgent.toLowerCase();
     if (ua.includes("mobile") || ua.includes("android") || ua.includes("iphone") || ua.includes("ipad")) {
-      return <Smartphone className="h-4 w-4" />;
+      return <PhoneIcon size={16} weight="duotone" className="h-4 w-4" />;
     }
-    return <Monitor className="h-4 w-4" />;
+    return <MonitorIcon size={16} weight="duotone" className="h-4 w-4" />;
   };
 
   const formatUserAgent = (userAgent?: string | null) => {
     if (!userAgent) return "Unknown Device";
-    
+
     // Extract browser and OS information
     let browser = "Unknown Browser";
     let os = "Unknown OS";
-    
+
     if (userAgent.includes("Firefox")) {
       browser = "Firefox";
     } else if (userAgent.includes("Chrome")) {
@@ -125,7 +125,7 @@ export function SessionsForm() {
     } else if (userAgent.includes("Edge")) {
       browser = "Edge";
     }
-    
+
     if (userAgent.includes("Windows")) {
       os = "Windows";
     } else if (userAgent.includes("Mac OS")) {
@@ -137,7 +137,7 @@ export function SessionsForm() {
     } else if (userAgent.includes("iPhone") || userAgent.includes("iPad")) {
       os = "iOS";
     }
-    
+
     return `${browser} on ${os}`;
   };
 
@@ -146,21 +146,21 @@ export function SessionsForm() {
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-medium">Active Sessions</h3>
         {sessions.length > 1 && (
-          <Button 
-            variant="outline" 
-            onClick={handleRevokeAll} 
+          <Button
+            variant="outline"
+            onClick={handleRevokeAll}
             disabled={isLoading}
             size="sm"
           >
-            <LogOut className="h-4 w-4 mr-2" />
+            <SignOutIcon size={16} weight="duotone" className="h-4 w-4 mr-2" />
             Revoke All Other Sessions
           </Button>
         )}
       </div>
-      
+
       {isLoading ? (
         <div className="flex items-center justify-center p-8">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <ArrowClockwiseIcon size={16} weight="fill" className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : sessions.length === 0 ? (
         <Alert>
@@ -172,11 +172,10 @@ export function SessionsForm() {
       ) : (
         <div className="space-y-3">
           {sessions.map((s) => (
-            <div 
-              key={s.id} 
-              className={`p-4 border rounded-md flex items-start justify-between ${
-                s.isCurrent ? 'bg-primary/5 border-primary/20' : ''
-              }`}
+            <div
+              key={s.id}
+              className={`p-4 border rounded-md flex items-start justify-between ${s.isCurrent ? 'bg-primary/5 border-primary/20' : ''
+                }`}
             >
               <div className="flex items-start gap-3">
                 <div className="p-2 bg-muted rounded-md">
@@ -193,11 +192,11 @@ export function SessionsForm() {
                   </p>
                   <div className="text-sm text-muted-foreground mt-1">
                     <div className="flex items-center gap-2">
-                      <Globe className="h-3.5 w-3.5" />
+                      <GlobeIcon size={16} weight="duotone" className="h-3.5 w-3.5" />
                       <span>{s.ipAddress || "Unknown IP"}</span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      <Clock className="h-3.5 w-3.5" />
+                      <ClockIcon size={16} weight="duotone" className="h-3.5 w-3.5" />
                       <span>
                         Created {dayjs(s.createdAt).fromNow()},
                         expires {dayjs(s.expiresAt).fromNow()}
@@ -206,14 +205,14 @@ export function SessionsForm() {
                   </div>
                 </div>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => handleRevoke(s.id)}
                 disabled={revokeLoading === s.id}
               >
                 {revokeLoading === s.id ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <ArrowClockwiseIcon size={16} weight="fill" className="h-4 w-4 animate-spin" />
                 ) : (
                   "Revoke"
                 )}

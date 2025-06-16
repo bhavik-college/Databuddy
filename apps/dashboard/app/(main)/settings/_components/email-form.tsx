@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { authClient, useSession } from "@databuddy/auth/client";
 import { toast } from "sonner";
-import { Loader2, Mail, Lock, AlertCircle, Shield, CheckCircle, Sparkles } from "lucide-react";
+import { ArrowClockwiseIcon, EnvelopeSimpleIcon, LockKeyIcon, WarningIcon, ShieldCheckIcon, CheckCircleIcon, SparkleIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -72,7 +72,7 @@ export function EmailForm() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-600/5 border border-blue-500/20 flex items-center justify-center">
-                <Mail className="h-5 w-5 text-blue-600" />
+                <EnvelopeSimpleIcon size={20} weight="duotone" className="h-5 w-5 text-blue-600" />
               </div>
               <div>
                 <p className="font-medium text-sm">Current Email</p>
@@ -82,12 +82,12 @@ export function EmailForm() {
             <div className="flex items-center gap-2">
               {session?.user?.emailVerified ? (
                 <Badge variant="secondary" className="text-xs">
-                  <CheckCircle className="h-3 w-3 mr-1" />
+                  <CheckCircleIcon size={12} weight="fill" className="h-3 w-3 mr-1" />
                   Verified
                 </Badge>
               ) : (
                 <Badge variant="outline" className="text-xs border-amber-300 text-amber-600">
-                  <AlertCircle className="h-3 w-3 mr-1" />
+                  <WarningIcon size={12} weight="duotone" className="h-3 w-3 mr-1" />
                   Unverified
                 </Badge>
               )}
@@ -98,7 +98,7 @@ export function EmailForm() {
 
       {/* Security Notice */}
       <Alert className="border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/20">
-        <Shield className="h-4 w-4 text-blue-600" />
+        <ShieldCheckIcon size={16} weight="duotone" className="h-4 w-4 text-blue-600" />
         <AlertDescription className="text-sm">
           <strong>Security Notice:</strong> Changing your email requires verification. You'll receive a confirmation link at your new email address.
         </AlertDescription>
@@ -123,7 +123,7 @@ export function EmailForm() {
                       )}
                       {...field}
                     />
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <EnvelopeSimpleIcon size={16} weight="duotone" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   </div>
                 </FormControl>
                 <FormDescription className="text-sm leading-relaxed">
@@ -151,7 +151,7 @@ export function EmailForm() {
                       )}
                       {...field}
                     />
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <LockKeyIcon size={16} weight="duotone" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   </div>
                 </FormControl>
                 <FormDescription className="text-sm leading-relaxed">
@@ -171,12 +171,12 @@ export function EmailForm() {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />
                   Sending Request...
                 </>
               ) : (
                 <>
-                  <Mail className="mr-2 h-4 w-4" />
+                  <EnvelopeSimpleIcon size={16} weight="duotone" className="mr-2 h-4 w-4" />
                   Update Email
                 </>
               )}
@@ -189,7 +189,7 @@ export function EmailForm() {
       <div className="bg-muted/30 rounded-lg p-4 border border-muted/50">
         <div className="flex items-start gap-3">
           <div className="p-1 rounded-md bg-primary/10">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <SparkleIcon size={16} weight="duotone" className="h-4 w-4 text-primary" />
           </div>
           <div className="text-sm">
             <p className="font-medium mb-1">📧 Email Change Process</p>

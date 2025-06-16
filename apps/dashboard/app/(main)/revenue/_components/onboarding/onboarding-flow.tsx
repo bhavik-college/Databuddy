@@ -5,7 +5,7 @@ import { OverviewStep } from "./steps/overview-step";
 import { WebhookStep } from "./steps/webhook-step";
 import { TestingStep } from "./steps/testing-step";
 import { CompleteStep } from "./steps/complete-step";
-import type { OnboardingFlowProps, OnboardingStep } from "../../utils/types";
+import type { OnboardingStep } from "../../utils/types";
 
 interface OnboardingFlowPropsExtended {
     currentStep: OnboardingStep;
