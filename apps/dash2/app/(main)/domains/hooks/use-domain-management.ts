@@ -76,7 +76,7 @@ export const useDomainManagement = () => {
     const cleanedDomain = cleanDomainInput(domain);
     
     if (!validateDomainFormat(cleanedDomain)) {
-      toast.error("Please enter a valid top-level domain (e.g., example.com)");
+      toast.error("Please enter a valid domain (e.g., example.com)");
       return;
     }
 

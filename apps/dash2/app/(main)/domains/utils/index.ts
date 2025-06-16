@@ -7,7 +7,7 @@ export const cleanDomainInput = (input: string): string => {
   }
   
   const parsed = parse(input.trim());
-  return parsed.domain || '';
+  return parsed.hostname || '';
 };
 
 export const validateDomainFormat = (input: string): boolean => {
@@ -16,7 +16,7 @@ export const validateDomainFormat = (input: string): boolean => {
   }
   
   const parsed = parse(input.trim());
-  return !!(parsed.domain && parsed.publicSuffix);
+  return !!(parsed.hostname && parsed.publicSuffix);
 };
 
 export const formatRank = (rank: string | undefined | null): string => {
