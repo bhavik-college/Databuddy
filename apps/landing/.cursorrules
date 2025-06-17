@@ -1,6 +1,0 @@
-When using slugs / params, use const { slug } = await params, etc
-When using sheets, dialogs, always use Title of that specific element with VisuallyHidden
-Always use dayjs instead of date-fns
-When installing shadcn components, use "bun x shadcn@latest add"
-Check for existing components before creating new ones, especially shadcn components, look for every components folder
-ensure we use DRY system, create universal and modular hooks, components, the less lines of code per file the better.

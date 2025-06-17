@@ -180,7 +180,7 @@ export function DomainsTab() {
               <GlobeIcon size={64} weight="duotone" className="h-16 w-16 text-muted-foreground" />
             </div>
             <div className="absolute -top-2 -right-2 p-2 rounded-full bg-primary/10 border border-primary/20">
-              <PlusIcon size={24} weight="fill" className="h-6 w-6 text-primary" />
+              <PlusIcon size={24} className="h-6 w-6 text-primary" />
             </div>
           </div>
           <h3 className="text-2xl font-bold mb-4">No Domains Yet</h3>

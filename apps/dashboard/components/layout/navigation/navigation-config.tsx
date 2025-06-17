@@ -23,7 +23,6 @@ export const mainNavigation: NavigationSection[] = [
       { name: "Websites", icon: GlobeIcon, href: "/websites", rootLevel: true, highlight: true },
       { name: "Domains", icon: LinkIcon, href: "/domains", rootLevel: true, highlight: true },
       { name: "Settings", icon: GearIcon, href: "/settings", rootLevel: true, highlight: true },
-      // { name: "Billing", icon: CreditCard, href: "/billing", rootLevel: true, highlight: true },
     ],
   },
   {
@@ -52,7 +51,6 @@ export const websiteNavigation: NavigationSection[] = [
       { name: "Journeys", icon: GitBranchIcon, href: "/journeys", highlight: true },
       { name: "Errors", icon: BugIcon, href: "/errors", highlight: true },
       { name: "Map", icon: MapPinIcon, href: "/map", highlight: true },
-      { name: "Test", icon: TestTubeIcon, href: "/test", highlight: true, production: false },
     ],
   },
   {
@@ -61,4 +59,26 @@ export const websiteNavigation: NavigationSection[] = [
       { name: "Assistant", icon: RobotIcon, href: "/assistant", highlight: true, alpha: true },
     ],
   }
-]; 
+];
+
+export const demoNavigation: NavigationSection[] = [
+  {
+    title: "Demo Analytics",
+    items: [
+      { name: "Overview", icon: HouseIcon, href: "", highlight: true },
+      { name: "Sessions", icon: ClockIcon, href: "/sessions", highlight: true },
+      { name: "Profiles", icon: UsersIcon, href: "/profiles", highlight: true },
+      { name: "Map", icon: MapPinIcon, href: "/map", highlight: true },
+    ],
+  }
+];
+
+export const sandboxNavigation: NavigationSection[] = [
+  {
+    title: "Test Pages",
+    items: [
+      { name: "Overview", icon: HouseIcon, href: "", highlight: true },
+      { name: "UI Components", icon: TestTubeIcon, href: "/ui-components", highlight: true },
+    ],
+  },
+];

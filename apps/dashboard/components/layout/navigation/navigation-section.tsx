@@ -16,12 +16,31 @@ export function NavigationSection({ title, items, pathname, currentWebsiteId }: 
       </h3>
       <div className="space-y-1 ml-1">
         {items.map((item) => {
-          const fullPath = item.rootLevel ? item.href : `/websites/${currentWebsiteId}${item.href}`;
-          const isActive = item.rootLevel 
-            ? pathname === item.href
-            : (item.href === "" 
-                ? pathname === `/websites/${currentWebsiteId}` 
-                : pathname === fullPath);
+          let fullPath: string;
+          let isActive: boolean;
+
+          if (item.rootLevel) {
+            fullPath = item.href;
+            isActive = pathname === item.href;
+          } else if (currentWebsiteId === "sandbox") {
+            // Handle sandbox context
+            fullPath = item.href === "" ? "/sandbox" : `/sandbox${item.href}`;
+            isActive = item.href === ""
+              ? pathname === "/sandbox"
+              : pathname === fullPath;
+          } else if (pathname.startsWith("/demo")) {
+            // Handle demo context
+            fullPath = item.href === "" ? `/demo/${currentWebsiteId}` : `/demo/${currentWebsiteId}${item.href}`;
+            isActive = item.href === ""
+              ? pathname === `/demo/${currentWebsiteId}`
+              : pathname === fullPath;
+          } else {
+            // Handle website context
+            fullPath = `/websites/${currentWebsiteId}${item.href}`;
+            isActive = item.href === ""
+              ? pathname === `/websites/${currentWebsiteId}`
+              : pathname === fullPath;
+          }
 
           return (
             <NavigationItem

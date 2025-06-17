@@ -16,17 +16,38 @@ export const processCountryData = (data: any[]) =>
     country: item.country === 'IL' ? 'PS' : item.country
   }))
 
-export const processPageData = (data: any[]) => 
-  data.map(item => {
+export const processPageData = (data: any[]) => {
+  // First, clean and process each item
+  const processedData = data.map(item => {
     let cleanPath = item.name || item.path || '/';
     
     try {
       if (cleanPath.startsWith('http')) {
         const url = new URL(cleanPath);
-        cleanPath = url.pathname + url.search + url.hash;
+        // Only use pathname, strip query parameters and hash for cleaner display
+        cleanPath = url.pathname;
+      } else {
+        // For relative paths, strip query parameters
+        const questionMarkIndex = cleanPath.indexOf('?');
+        if (questionMarkIndex !== -1) {
+          cleanPath = cleanPath.substring(0, questionMarkIndex);
+        }
+        // Also strip hash fragments
+        const hashIndex = cleanPath.indexOf('#');
+        if (hashIndex !== -1) {
+          cleanPath = cleanPath.substring(0, hashIndex);
+        }
       }
     } catch (e) {
-      // If URL parsing fails, keep the original path
+      // If URL parsing fails, still try to clean query params manually
+      const questionMarkIndex = cleanPath.indexOf('?');
+      if (questionMarkIndex !== -1) {
+        cleanPath = cleanPath.substring(0, questionMarkIndex);
+      }
+      const hashIndex = cleanPath.indexOf('#');
+      if (hashIndex !== -1) {
+        cleanPath = cleanPath.substring(0, hashIndex);
+      }
     }
     
     cleanPath = cleanPath || '/';
@@ -36,7 +57,36 @@ export const processPageData = (data: any[]) =>
       name: cleanPath,
       path: cleanPath
     };
-  })
+  });
+
+  // Now aggregate duplicates
+  const pathMap = new Map();
+  
+  processedData.forEach(item => {
+    const path = item.path;
+    
+    if (pathMap.has(path)) {
+      // Merge with existing entry
+      const existing = pathMap.get(path);
+      existing.pageviews = (existing.pageviews || 0) + (item.pageviews || 0);
+      existing.visitors = (existing.visitors || 0) + (item.visitors || 0);
+      existing.sessions = (existing.sessions || 0) + (item.sessions || 0);
+      existing.entries = (existing.entries || 0) + (item.entries || 0);
+      existing.exits = (existing.exits || 0) + (item.exits || 0);
+    } else {
+      // Create new entry
+      pathMap.set(path, { ...item });
+    }
+  });
+  
+  // Convert map back to array and sort by pageviews (or entries/exits depending on data)
+  return Array.from(pathMap.values())
+    .sort((a, b) => {
+      const aValue = a.pageviews || a.entries || a.exits || 0;
+      const bValue = b.pageviews || b.entries || b.exits || 0;
+      return bValue - aValue;
+    });
+}
 
 export const processCustomEventsData = (data: any[]) => 
   data.map(item => {

@@ -1,9 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
 
+import { Geist_Mono } from "next/font/google";
+
+const geistMono = Geist_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-geist-mono',
+});
+
 export function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-3 group">
+    <Link href="/" className="flex items-center gap-3">
       <div className="relative flex-shrink-0 transition-transform duration-200">
         <Image
           src="/logo.svg"
@@ -14,9 +22,9 @@ export function Logo() {
           priority
         />
       </div>
-      <div className="flex flex-col justify-center">
-        <h1 className="
-          font-mono
+      <div className="flex items-center">
+        <h1 className={`
+          ${geistMono.variable}
           text-lg 
           tracking-wider
           text-foreground
@@ -25,11 +33,9 @@ export function Logo() {
           select-none
           transition-colors 
           duration-200
-          group-hover:text-primary
-        ">
+        `}>
           DATABUDDY
         </h1>
-        <div className="h-0.5 w-full bg-gradient-to-r from-primary/60 to-transparent rounded-full mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
     </Link>
   );

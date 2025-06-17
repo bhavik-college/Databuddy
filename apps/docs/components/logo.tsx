@@ -1,7 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Geist_Mono } from "next/font/google";
 
-// Logo content without Link wrapper - for use in navigation where parent provides Link
+const geistMono = Geist_Mono({
+    subsets: ['latin'],
+    weight: ['400', '500', '600', '700'],
+    variable: '--font-geist-mono',
+});
+
 export function LogoContent() {
     return (
         <div className="flex items-center gap-3 group">
@@ -15,9 +21,9 @@ export function LogoContent() {
                     priority
                 />
             </div>
-            <div className="flex flex-col justify-center">
-                <h1 className="
-          font-mono
+            <div className="flex items-center">
+                <h1 className={`
+          ${geistMono.variable}
           text-lg 
           tracking-wider
           font-semibold
@@ -25,8 +31,7 @@ export function LogoContent() {
           select-none
           transition-colors 
           duration-200
-          group-hover:opacity-80
-        ">
+        `}>
                     DATABUDDY
                 </h1>
             </div>
@@ -37,7 +42,7 @@ export function LogoContent() {
 // Full Logo component with Link wrapper - for standalone use
 export function Logo() {
     return (
-        <Link href="/" className="flex items-center gap-3 group">
+        <Link href="/" className="flex items-center gap-3">
             <div className="relative flex-shrink-0">
                 <Image
                     src="/logo.svg"
@@ -48,7 +53,7 @@ export function Logo() {
                     priority
                 />
             </div>
-            <div className="flex flex-col justify-center">
+            <div className="flex items-center">
                 <h1 className="
           font-mono
           text-lg 
@@ -58,7 +63,6 @@ export function Logo() {
           select-none
           transition-colors 
           duration-200
-          group-hover:opacity-80
         ">
                     DATABUDDY
                 </h1>

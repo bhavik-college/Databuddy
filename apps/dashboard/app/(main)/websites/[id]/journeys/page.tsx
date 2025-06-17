@@ -482,7 +482,7 @@ export default function JourneysPage() {
     return (
         <div className="p-3 sm:p-4 lg:p-6 max-w-[1600px] mx-auto space-y-6">
             {/* Header */}
-            <div className="border-b bg-gradient-to-r from-background via-background to-muted/20 -mx-3 sm:-mx-4 lg:-mx-6 px-3 sm:px-4 lg:px-6 pb-6">
+            <div className="border-b bg-muted/20 rounded py-2 -mx-3 sm:-mx-4 lg:-mx-6 px-3 sm:px-4 lg:px-6 pb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">

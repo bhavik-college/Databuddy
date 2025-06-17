@@ -1,11 +1,18 @@
 'use client';
 
 import Link from "next/link";
-import { Play, BarChart3, Users, Zap, Eye, ArrowRight } from 'lucide-react';
+import { Play, BarChart3, Users, Zap, Eye, ArrowRight, Maximize2, Minimize2 } from 'lucide-react';
 import Squares from "@/components/bits/squares";
 import Image from "next/image";
+import { useState } from 'react';
 
 export default function DemoPage() {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
   return (
     <div className="min-h-screen bg-black">
       {/* Hero Section */}
@@ -41,9 +48,12 @@ export default function DemoPage() {
               Watch how our privacy-first analytics provides powerful insights without compromising your visitors' privacy or your site's performance.
             </p>
 
-            {/* Video Container */}
-            <div className="mx-auto max-w-5xl">
-              <div className="relative overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900 shadow-2xl">
+            {/* Demo Container */}
+            <div className={`transition-all duration-300 ${isFullscreen
+              ? 'fixed inset-0 z-50 bg-black p-4'
+              : 'mx-auto max-w-[95vw]'
+              }`}>
+              <div className="relative overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900 shadow-2xl h-full">
                 <div className="flex items-center justify-between border-b border-neutral-700 bg-neutral-800/50 px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className="flex gap-2">
@@ -55,30 +65,45 @@ export default function DemoPage() {
                       Databuddy Analytics Dashboard
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-                    <span className="text-xs text-neutral-400">Live Demo</span>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+                      <span className="text-xs text-neutral-400">Live Demo</span>
+                    </div>
+                    <button
+                      onClick={toggleFullscreen}
+                      className="flex items-center gap-2 px-3 py-1.5 text-xs text-neutral-400 hover:text-white hover:bg-neutral-700 rounded-md transition-colors"
+                      data-track="demo-fullscreen-toggle"
+                      data-section="demo"
+                      data-action={isFullscreen ? 'exit-fullscreen' : 'enter-fullscreen'}
+                    >
+                      {isFullscreen ? (
+                        <>
+                          <Minimize2 className="h-3 w-3" />
+                          Exit Fullscreen
+                        </>
+                      ) : (
+                        <>
+                          <Maximize2 className="h-3 w-3" />
+                          Fullscreen
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
 
-                <div className="aspect-video bg-black">
-                  <video
-                    controls
-                    className="h-full w-full object-cover"
-                    poster="/demo-thumbnail.webp"
-                    data-track="demo-video-interaction"
+                <div className={`bg-black ${isFullscreen ? 'h-[calc(100vh-80px)]' : ''
+                  }`} style={!isFullscreen ? { height: '70vh', width: '100%' } : {}}>
+                  <iframe
+                    src="https://app.databuddy.cc/demo/OXmNQsViBT-FOS_wZCTHc"
+                    className="h-full w-full border-0"
+                    title="Databuddy Analytics Demo Dashboard"
+                    loading="lazy"
+                    data-track="demo-iframe-interaction"
                     data-section="demo"
-                    data-video-type="product-demo"
-                  >
-                    <source src="/demo.mp4" type="video/mp4" />
-                    <track kind="captions" src="/demo-captions.vtt" srcLang="en" label="English" />
-                    <div className="flex h-full items-center justify-center">
-                      <div className="text-center">
-                        <Play className="mx-auto mb-4 h-16 w-16 text-neutral-600" />
-                        <p className="text-neutral-400">Video demo coming soon</p>
-                      </div>
-                    </div>
-                  </video>
+                    data-demo-type="live-dashboard"
+                    allow="web-share"
+                  />
                 </div>
               </div>
             </div>

@@ -56,16 +56,6 @@ const AnalyticsSchema = {
   ]
 };
 
-// Validation schemas
-const chatRequestSchema = z.object({
-  message: z.string().min(1).max(1000),
-  website_id: z.string().min(1),
-  context: z.object({
-    previousMessages: z.array(z.any()).optional(),
-    dateRange: z.any().optional()
-  }).optional()
-});
-
 const AIResponseJsonSchema = z.object({
   sql: z.string().nullable().optional(),
   chart_type: z.enum(['bar', 'line', 'pie', 'area', 'stacked_bar', 'multi_line']).nullable().optional(),

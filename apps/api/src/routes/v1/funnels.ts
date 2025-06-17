@@ -548,7 +548,7 @@ funnelRouter.get('/:id/analytics', async (c) => {
       .map(step => step.avg_time_to_complete!);
     
     const avgCompletionTime = completionTimes.length > 0 
-      ? completionTimes.reduce((sum, time) => sum + time, 0) / completionTimes.length 
+      ? Number((completionTimes.reduce((sum, time) => sum + time, 0) / completionTimes.length).toFixed(2))
       : 0;
 
     // Format completion time
