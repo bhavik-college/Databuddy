@@ -46,7 +46,7 @@ steps:
       playbook: infrastructure/deploy/deploy-databuddy.yaml
       diff: false
       inventory: infrastructure/inventory.ini
-      syntax_check: true
+      syntax_check: false
       user: root
       private_key:
         from_secret: ansible_private_key
