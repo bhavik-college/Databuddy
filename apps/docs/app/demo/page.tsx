@@ -62,23 +62,16 @@ export default function DemoPage() {
                 </div>
 
                 <div className="aspect-video bg-black">
-                  <video
-                    controls
-                    className="h-full w-full object-cover"
-                    poster="/demo-thumbnail.webp"
-                    data-track="demo-video-interaction"
+                  <iframe
+                    src="https://app.databuddy.cc/demo/OXmNQsViBT-FOS_wZCTHc"
+                    className="h-full w-full border-0"
+                    title="Databuddy Analytics Demo Dashboard"
+                    loading="lazy"
+                    data-track="demo-iframe-interaction"
                     data-section="demo"
-                    data-video-type="product-demo"
-                  >
-                    <source src="/demo.mp4" type="video/mp4" />
-                    <track kind="captions" src="/demo-captions.vtt" srcLang="en" label="English" />
-                    <div className="flex h-full items-center justify-center">
-                      <div className="text-center">
-                        <Play className="mx-auto mb-4 h-16 w-16 text-neutral-600" />
-                        <p className="text-neutral-400">Video demo coming soon</p>
-                      </div>
-                    </div>
-                  </video>
+                    data-demo-type="live-dashboard"
+                    allow="web-share"
+                  />
                 </div>
               </div>
             </div>
