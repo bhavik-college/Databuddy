@@ -1,10 +1,11 @@
 import { Hono } from 'hono';
-import { db, websites, domains, projects, eq, and, or, inArray } from '@databuddy/db';
+import { db, websites, domains, projects, eq, and, or, inArray, sql } from '@databuddy/db';
 import { authMiddleware } from '../../middleware/auth';
 import { logger } from '../../lib/logger';
 import { nanoid } from 'nanoid';
 import { cacheable } from '@databuddy/redis';
 import type { AppVariables } from '../../types';
+import { z } from 'zod';
 
 type WebsitesContext = {
   Variables: AppVariables & {
@@ -13,6 +14,18 @@ type WebsitesContext = {
 };
 
 export const websitesRouter = new Hono<WebsitesContext>();
+
+// Validation schemas
+const createWebsiteSchema = z.object({
+  name: z.string().min(1).max(100).regex(/^[a-zA-Z0-9\s\-_.]+$/, 'Invalid website name format'),
+  domain: z.string().min(1).max(253).regex(/^[a-zA-Z0-9.-]+$/, 'Invalid domain format'),
+  subdomain: z.string().max(63).regex(/^[a-zA-Z0-9-]*$/, 'Invalid subdomain format').optional(),
+  domainId: z.string().uuid('Invalid domain ID format')
+});
+
+const updateWebsiteSchema = z.object({
+  name: z.string().min(1).max(100).regex(/^[a-zA-Z0-9\s\-_.]+$/, 'Invalid website name format')
+});
 
 // Apply auth middleware to all routes
 websitesRouter.use('*', authMiddleware);
@@ -54,9 +67,7 @@ async function checkWebsiteAccess(id: string, userId: string) {
         ),
         and(
           eq(websites.id, id),
-          projectIds.length > 0 ? 
-            inArray(websites.projectId, projectIds) : 
-            eq(websites.id, "impossible-match")
+          projectIds.length > 0 ? inArray(websites.projectId, projectIds) : sql`FALSE`
         )
       )
     });
@@ -99,13 +110,24 @@ const verifyDomainAccess = cacheable(_verifyDomainAccess, {
 // CREATE - POST /websites
 websitesRouter.post('/', async (c) => {
   const user = c.get('user');
-  const data = await c.req.json();
+  const rawData = await c.req.json();
 
   if (!user) {
     return c.json({ success: false, error: "Unauthorized" }, 401);
   }
 
   try {
+    // Validate input data
+    const validationResult = createWebsiteSchema.safeParse(rawData);
+    if (!validationResult.success) {
+      return c.json({ 
+        success: false, 
+        error: "Invalid input data",
+        details: validationResult.error.issues
+      }, 400);
+    }
+    
+    const data = validationResult.data;
     logger.info('[Website API] Creating website with data:', { ...data, userId: user.id });
     
     // Verify domain access
@@ -170,13 +192,24 @@ websitesRouter.post('/', async (c) => {
 websitesRouter.patch('/:id', async (c) => {
   const user = c.get('user');
   const id = c.req.param('id');
-  const { name } = await c.req.json();
+  const rawData = await c.req.json();
 
   if (!user) {
     return c.json({ success: false, error: "Unauthorized" }, 401);
   }
 
   try {
+    // Validate input data
+    const validationResult = updateWebsiteSchema.safeParse(rawData);
+    if (!validationResult.success) {
+      return c.json({ 
+        success: false, 
+        error: "Invalid input data",
+        details: validationResult.error.issues
+      }, 400);
+    }
+    
+    const { name } = validationResult.data;
     logger.info('[Website API] Updating website name:', { id, name, userId: user.id });
 
     const website = await checkWebsiteAccess(id, user.id);
@@ -221,6 +254,16 @@ websitesRouter.get('/', async (c) => {
 
   if (!user) {
     return c.json({ success: false, error: "Unauthorized" }, 401);
+  }
+
+  if (user.role === 'ADMIN') {
+    const allWebsites = await db.query.websites.findMany({
+      orderBy: (websites, { desc }) => [desc(websites.createdAt)]
+    });
+    return c.json({
+      success: true,
+      data: allWebsites
+    });
   }
 
   try {
@@ -305,6 +348,8 @@ websitesRouter.get('/:id', async (c) => {
       });
     }
 
+    const projectIds = await getUserProjectIds(user.id);
+    
     const website = await db.query.websites.findFirst({
       where: or(
         and(
@@ -313,7 +358,7 @@ websitesRouter.get('/:id', async (c) => {
         ),
         and(
           eq(websites.id, id),
-          eq(websites.id, "impossible-match")
+          projectIds.length > 0 ? inArray(websites.projectId, projectIds) : sql`FALSE`
         )
       )
     });

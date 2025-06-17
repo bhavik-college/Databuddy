@@ -6,6 +6,7 @@ import { logger } from '../../lib/logger';
 import { cacheable } from '@databuddy/redis/cacheable';
 import { Resolver } from "node:dns";
 import { randomUUID, randomBytes } from "node:crypto";
+import { z } from 'zod';
 
 // DNS resolver setup
 const resolver = new Resolver();
@@ -83,6 +84,16 @@ function getOwnerData(user: any, data: any) {
     ? { projectId: data.projectId }
     : { userId: user.id };
 }
+
+// Validation schemas
+const createDomainSchema = z.object({
+  name: z.string().min(1).max(253).regex(/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Invalid domain format'),
+  projectId: z.string().uuid().optional()
+});
+
+const updateDomainSchema = z.object({
+  name: z.string().min(1).max(253).regex(/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Invalid domain format').optional()
+});
 
 // Create router
 export const domainsRouter = new Hono<DomainsContext>();
@@ -202,13 +213,21 @@ domainsRouter.get('/project/:projectId', async (c) => {
  */
 domainsRouter.post('/', async (c) => {
   const user = c.get('user');
-  const data = await c.req.json();
+  const rawData = await c.req.json();
 
   if (!user || !user.id) {
     return c.json({ success: false, error: 'Unauthorized' }, 401);
   }
 
   try {
+    // Validate input data
+    const validationResult = createDomainSchema.safeParse(rawData);
+    if (!validationResult.success) {
+      const { response, status } = createResponse(false, undefined, 'Invalid input data', 400);
+      return c.json({ ...response, details: validationResult.error.issues }, status as any);
+    }
+    
+    const data = validationResult.data;
     logger.info(`[Domain API] Creating domain: ${data.name}`);
     
     // Check if domain already exists
@@ -239,7 +258,7 @@ domainsRouter.post('/', async (c) => {
     const { response, status } = createResponse(true, createdDomain);
     return c.json(response, status as any);
   } catch (error) {
-    const { response, status } = handleError('Domain creation', error, { domainName: data.name, userId: user.id });
+    const { response, status } = handleError('Domain creation', error, { domainName: rawData?.name || 'unknown', userId: user.id });
     return c.json(response, status as any);
   }
 });
@@ -509,7 +528,7 @@ domainsRouter.post('/:id/verify', async (c) => {
           exactMatch: cleanTxt === cleanToken
         });
         
-        return cleanTxt.includes(cleanToken);
+        return cleanTxt === cleanToken;
       })
     );
     
@@ -603,8 +622,7 @@ domainsRouter.post('/:id/regenerate-token', async (c) => {
       domainId: id,
       domainName: domain.name,
       newStatus: 'PENDING',
-      newToken: `${verificationToken.substring(0, 8)}...`,
-      fullNewToken: verificationToken
+      newToken: `${verificationToken.substring(0, 8)}...`
     });
 
     const { response, status } = createResponse(true, updatedDomain);

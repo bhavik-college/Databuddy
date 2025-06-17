@@ -7,7 +7,7 @@ import { websites, projects } from "@databuddy/db";
 import { cacheable } from "@databuddy/redis";
 
 // Helper function to verify website access with caching
-const verifyWebsiteAccess = cacheable(
+export const verifyWebsiteAccess = cacheable(
   async (userId: string, websiteId: string, role: string): Promise<boolean> => {
     try {
       // First check if user owns the website

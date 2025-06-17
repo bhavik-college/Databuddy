@@ -1,10 +1,7 @@
 import { eq } from "@databuddy/db";
-
 import { websites } from "@databuddy/db";
 import { db } from "@databuddy/db";
-
 import { cacheable } from "@databuddy/redis";
-
 import { createMiddleware } from "hono/factory";
 
 export const getWebsiteById = cacheable(
@@ -21,33 +18,56 @@ export const getWebsiteById = cacheable(
     }
   );
 
+// Import the existing checkWebsiteAccess function
+import { verifyWebsiteAccess } from './auth';
+
 
   
 
 export const websiteAuthHook = createMiddleware(async (c, next) => {
   const websiteId = c.req.header('X-Website-Id') || c.req.query('website_id') || c.req.query('websiteId');
+  const user = c.get('user');
 
-    if (!websiteId) {
-      return c.json({
-        success: false,
-        error: 'Website ID is required',
-        code: 'WEBSITE_ID_REQUIRED' 
-      }, 401);
-    }
+  if (!websiteId) {
+    return c.json({
+      success: false,
+      error: 'Website ID is required',
+      code: 'WEBSITE_ID_REQUIRED' 
+    }, 401);
+  }
 
-    const website = await getWebsiteById(websiteId);
+  if (!user) {
+    return c.json({
+      success: false,
+      error: 'User authentication required',
+      code: 'AUTH_REQUIRED'
+    }, 401);
+  }
 
-    if (!website) {
-      return c.json({
-        success: false,
-        error: 'Website not found',
-        code: 'WEBSITE_NOT_FOUND'
-      }, 404);
-    }   
+  // Use the existing verifyWebsiteAccess function to check permissions
+  const hasAccess = await verifyWebsiteAccess(user.id, websiteId, user.role || 'USER');
 
-    c.set('website', website);
+  if (!hasAccess) {
+    return c.json({
+      success: false,
+      error: 'Unauthorized access to website',
+      code: 'UNAUTHORIZED_WEBSITE_ACCESS'
+    }, 403);
+  }
 
-    await next();
-  });
+  // Get the website data after access is verified
+  const website = await getWebsiteById(websiteId);
+
+  if (!website) {
+    return c.json({
+      success: false,
+      error: 'Website not found',
+      code: 'WEBSITE_NOT_FOUND'
+    }, 404);
+  }   
+
+  c.set('website', website);
+  await next();
+});
 
 
