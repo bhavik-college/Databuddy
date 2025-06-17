@@ -8,8 +8,8 @@ steps:
     image: woodpeckerci/plugin-ansible
     commands:
       - apk add make
-      - echo "hi"
-      
+      - cd infrastructure && make deploy-app
+
   - name: Build dashboard
     image: woodpeckerci/plugin-docker-buildx:6.0.0
     settings:
