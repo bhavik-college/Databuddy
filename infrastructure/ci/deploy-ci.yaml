@@ -17,7 +17,7 @@
     woodpecker_github: true
     woodpecker_github_client_id: "Ov23ctD4OqYIRfs7TS2n"
     woodpecker_github_client_secret: "c74a1df9ba42d3e16fc96dc7c7739f97347f66a8"
-    woodpecker_agent_secret: "1eed3577eafef3faad25cf073c3c5cc8e479d7f1950280e0c48fc472059cd094"
+    woodpecker_agent_secret: "db9a01ecf4e2754dc30080f0d8c7fd90d30d3f4655cd59e5be38f1cb791bedc3"
     woodpecker_plugins_privileged: woodpeckerci/plugin-docker-buildx:6.0.0,woodpeckerci/plugin-ansible
     #woodpecker agent vars
 
