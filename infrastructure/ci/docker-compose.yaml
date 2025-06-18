@@ -49,7 +49,7 @@ services:
   woodpecker-agent:
     image: woodpeckerci/woodpecker-agent:v3
     command: agent
-    restart: unless-stopped
+    restart: always
     depends_on:
       - woodpecker-server
     volumes:
@@ -72,9 +72,8 @@ services:
         order: stop-first
       restart_policy:
         condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
+        delay: 15s
+        window: 30s
       placement:
         constraints:
           - node.labels.ci-worker==true
