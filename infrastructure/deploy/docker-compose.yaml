@@ -11,7 +11,7 @@ x-databuddy-env:
     GITHUB_CLIENT_SECRET: "{{github_client_secret}}"  # secret
     GOOGLE_CLIENT_ID: "{{google_client_id}}"
     GOOGLE_CLIENT_SECRET: "{{google_client_secret}}" # secret
-    DATABASE_URL: "postgresql://databuddy:databuddy@pgsql:5432/databuddy"
+    DATABASE_URL: "postgresql://postgres:databuddy@pgsql:5432/databuddy"
     OPR_API_KEY: "{{opr_api_key}}" # secret
     NEXT_PUBLIC_API_URL: "https://{{api_host}}"
     NEXT_PUBLIC_BASKET_URL: "https://{{basket_host}}"
