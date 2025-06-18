@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { Monitor, Smartphone, Zap, MapPin, TrendingUp, TrendingDown, AlertTriangle, CheckCircle } from "lucide-react";
 import { DataTable } from "@/components/analytics/data-table";
 import { useEnhancedPerformanceData } from "@/hooks/use-dynamic-query";
@@ -33,11 +33,11 @@ function PerformanceMetricCell({ value, type = 'time' }: { value?: number; type?
   if (!value || value === 0) {
     return <span className="text-muted-foreground">N/A</span>;
   }
-  
+
   let formatted: string;
   let colorClass: string;
   let showIcon = false;
-  
+
   if (type === 'cls') {
     // CLS is a score (0-1, lower is better)
     formatted = value.toFixed(3);
@@ -49,7 +49,7 @@ function PerformanceMetricCell({ value, type = 'time' }: { value?: number; type?
     colorClass = value < 1000 ? "text-green-600" : value < 3000 ? "text-yellow-600" : "text-red-400";
     showIcon = value < 1000 || value >= 3000;
   }
-  
+
   return (
     <div className="flex items-center gap-1">
       <span className={colorClass}>{formatted}</span>
@@ -60,41 +60,43 @@ function PerformanceMetricCell({ value, type = 'time' }: { value?: number; type?
 }
 
 function PerformanceSummaryCard({ summary }: { summary: PerformanceSummary }) {
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return "text-green-600 bg-green-50 border-green-200";
-    if (score >= 70) return "text-yellow-600 bg-yellow-50 border-yellow-200";
-    return "text-red-600 border-red-600";
-  };
+  const performanceColor = useMemo(() => {
+    if (summary.performanceScore >= 80) return 'text-green-600';
+    if (summary.performanceScore >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  }, [summary.performanceScore]);
 
-  const getScoreIcon = (score: number) => {
-    if (score >= 90) return <TrendingUp className="h-4 w-4" />;
-    if (score >= 70) return <Zap className="h-4 w-4" />;
-    return <TrendingDown className="h-4 w-4" />;
-  };
+  const avgLoadTimeColor = useMemo(() => {
+    if (summary.avgLoadTime < 1500) return 'text-green-600';
+    if (summary.avgLoadTime < 3000) return 'text-yellow-600';
+    return 'text-red-600';
+  }, [summary.avgLoadTime]);
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div className="p-4 rounded-lg border bg-background">
         <div className="flex items-center gap-2 mb-2">
-          {getScoreIcon(summary.performanceScore)}
+          <Zap className="h-4 w-4 text-primary" />
           <span className="text-sm font-medium text-muted-foreground">Performance Score</span>
         </div>
-        <div className="text-2xl font-bold">{summary.performanceScore}/100</div>
+        <div className={`text-2xl font-bold ${performanceColor}`}>
+          {summary.performanceScore}/100
+        </div>
       </div>
-      
+
       <div className="p-4 rounded-lg border bg-background">
         <div className="flex items-center gap-2 mb-2">
-          <Zap className="h-4 w-4 text-blue-500" />
+          <TrendingUp className="h-4 w-4 text-blue-500" />
           <span className="text-sm font-medium text-muted-foreground">Avg Load Time</span>
         </div>
-        <div className="text-2xl font-bold">
-          {summary.avgLoadTime < 1000 
-            ? `${Math.round(summary.avgLoadTime)}ms` 
+        <div className={`text-2xl font-bold ${avgLoadTimeColor}`}>
+          {summary.avgLoadTime < 1000
+            ? `${Math.round(summary.avgLoadTime)}ms`
             : `${(summary.avgLoadTime / 1000).toFixed(1)}s`
           }
         </div>
       </div>
-      
+
       <div className="p-4 rounded-lg border bg-background">
         <div className="flex items-center gap-2 mb-2">
           <CheckCircle className="h-4 w-4 text-green-500" />
@@ -107,7 +109,7 @@ function PerformanceSummaryCard({ summary }: { summary: PerformanceSummary }) {
           </span>
         </div>
       </div>
-      
+
       <div className="p-4 rounded-lg border bg-background">
         <div className="flex items-center gap-2 mb-2">
           <AlertTriangle className="h-4 w-4 text-red-500" />
@@ -124,85 +126,59 @@ function PerformanceSummaryCard({ summary }: { summary: PerformanceSummary }) {
   );
 }
 
-const normalizeData = (data: any[]): PerformanceEntry[] => 
-  data?.map((item) => ({
-    name: item.name || 'Unknown',
-    visitors: item.visitors || 0,
-    avg_load_time: item.avg_load_time || 0,
-    avg_ttfb: item.avg_ttfb,
-    avg_dom_ready_time: item.avg_dom_ready_time,
-    avg_render_time: item.avg_render_time,
-    avg_fcp: item.avg_fcp,
-    avg_lcp: item.avg_lcp,
-    avg_cls: item.avg_cls,
-  })) || [];
-
-const createNameColumn = (
-  header: string, 
-  renderIcon?: (name: string) => React.ReactNode,
-  formatText?: (name: string) => string
-) => ({
-  id: 'name',
-  accessorKey: 'name',
-  header,
-  cell: (info: any) => {
-    const name = info.getValue() as string;
-    const displayText = formatText ? formatText(name) : name;
-    return (
-      <div className="flex items-center gap-2">
-        {renderIcon?.(name)}
-        <div className="font-medium max-w-xs truncate" title={name}>
-          {displayText}
-        </div>
-      </div>
-    );
-  }
-});
-
 const performanceColumns = [
   {
     id: 'visitors',
     accessorKey: 'visitors',
     header: 'Visitors',
-    cell: (info: any) => (info.getValue() as number)?.toLocaleString(),
+    cell: ({ getValue }: any) => getValue()?.toLocaleString() ?? '0'
   },
   {
     id: 'avg_load_time',
     accessorKey: 'avg_load_time',
-    header: 'Load Time',
-    cell: (info: any) => <PerformanceMetricCell value={info.getValue()} />,
-  },
-  // {
-  //   id: 'avg_fcp',
-  //   accessorKey: 'avg_fcp',
-  //   header: 'FCP',
-  //   cell: (info: any) => <PerformanceMetricCell value={info.getValue()} />,
-  // },
-  // {
-  //   id: 'avg_lcp',
-  //   accessorKey: 'avg_lcp',
-  //   header: 'LCP',
-  //   cell: (info: any) => <PerformanceMetricCell value={info.getValue()} />,
-  // },
-  // {
-  //   id: 'avg_cls',
-  //   accessorKey: 'avg_cls',
-  //   header: 'CLS',
-  //   cell: (info: any) => <PerformanceMetricCell value={info.getValue()} type="cls" />,
-  // },
-  {
-    id: 'avg_ttfb',
-    accessorKey: 'avg_ttfb',
-    header: 'TTFB',
-    cell: (info: any) => <PerformanceMetricCell value={info.getValue()} />,
-  },
-  {
-    id: 'avg_dom_ready_time',
-    accessorKey: 'avg_dom_ready_time',
-    header: 'DOM Ready',
-    cell: (info: any) => <PerformanceMetricCell value={info.getValue()} />,
-  },
+    header: 'Avg Load Time',
+    cell: ({ getValue }: any) => {
+      const value = getValue() as number;
+      if (!value) return '0ms';
+      return value < 1000 ? `${Math.round(value)}ms` : `${(value / 1000).toFixed(1)}s`;
+    }
+  }
 ];
+
+const createNameColumn = (header: string, iconRenderer?: (name: string) => React.ReactNode, nameFormatter?: (name: string) => string) => ({
+  id: 'name',
+  accessorKey: 'name',
+  header,
+  cell: ({ getValue }: any) => {
+    const name = getValue() as string;
+    const displayName = nameFormatter ? nameFormatter(name) : name;
+    return (
+      <div className="flex items-center gap-2">
+        {iconRenderer && iconRenderer(name)}
+        <span className="truncate">{displayName}</span>
+      </div>
+    );
+  }
+});
+
+// Optimized data normalization with single pass
+const normalizeAndSortData = (data: any[]): PerformanceEntry[] => {
+  if (!data?.length) return [];
+
+  return data
+    .map((item) => ({
+      name: item.name || 'Unknown',
+      visitors: item.visitors || 0,
+      avg_load_time: item.avg_load_time || 0,
+      avg_ttfb: item.avg_ttfb,
+      avg_dom_ready_time: item.avg_dom_ready_time,
+      avg_render_time: item.avg_render_time,
+      avg_fcp: item.avg_fcp,
+      avg_lcp: item.avg_lcp,
+      avg_cls: item.avg_cls,
+    }))
+    .sort((a, b) => a.avg_load_time - b.avg_load_time);
+};
 
 export function WebsitePerformanceTab({
   websiteId,
@@ -210,7 +186,7 @@ export function WebsitePerformanceTab({
   isRefreshing,
   setIsRefreshing
 }: FullTabProps) {
-  
+
   const {
     results: performanceResults,
     isLoading,
@@ -218,128 +194,177 @@ export function WebsitePerformanceTab({
     error
   } = useEnhancedPerformanceData(websiteId, dateRange);
 
-  useEffect(() => {
+  const handleRefresh = useCallback(async () => {
     if (isRefreshing) {
-      refetch().finally(() => setIsRefreshing(false));
+      try {
+        await refetch();
+      } finally {
+        setIsRefreshing(false);
+      }
     }
   }, [isRefreshing, refetch, setIsRefreshing]);
 
+  useEffect(() => {
+    handleRefresh();
+  }, [handleRefresh]);
+
+  // Optimized data processing with reduced operations
   const processedData = useMemo(() => {
     if (!performanceResults?.length) {
-      return { pages: [], countries: [], devices: [], browsers: [], operating_systems: [], regions: [] };
+      return {
+        pages: [],
+        countries: [],
+        devices: [],
+        browsers: [],
+        operating_systems: [],
+        regions: []
+      };
     }
 
+    // Single pass through results to extract and process all data
+    const dataMap = new Map();
+
+    performanceResults.forEach(result => {
+      if (result.success && result.data) {
+        Object.entries(result.data).forEach(([key, value]) => {
+          if (Array.isArray(value)) {
+            dataMap.set(key, normalizeAndSortData(value));
+          }
+        });
+      }
+    });
+
     return {
-      pages: normalizeData(performanceResults.find(r => r.queryId === 'pages')?.data?.slow_pages)
-        ?.sort((a, b) => a.avg_load_time - b.avg_load_time), // Sort by fastest first
-      countries: normalizeData(performanceResults.find(r => r.queryId === 'countries')?.data?.performance_by_country)
-        ?.sort((a, b) => a.avg_load_time - b.avg_load_time),
-      devices: normalizeData(performanceResults.find(r => r.queryId === 'devices')?.data?.performance_by_device)
-        ?.sort((a, b) => a.avg_load_time - b.avg_load_time),
-      browsers: normalizeData(performanceResults.find(r => r.queryId === 'browsers')?.data?.performance_by_browser)
-        ?.sort((a, b) => a.avg_load_time - b.avg_load_time),
-      operating_systems: normalizeData(performanceResults.find(r => r.queryId === 'operating_systems')?.data?.performance_by_os)
-        ?.sort((a, b) => a.avg_load_time - b.avg_load_time),
-      regions: normalizeData(performanceResults.find(r => r.queryId === 'regions')?.data?.performance_by_region)
-        ?.sort((a, b) => a.avg_load_time - b.avg_load_time),
+      pages: dataMap.get('slow_pages') || [],
+      countries: dataMap.get('performance_by_country') || [],
+      devices: dataMap.get('performance_by_device') || [],
+      browsers: dataMap.get('performance_by_browser') || [],
+      operating_systems: dataMap.get('performance_by_os') || [],
+      regions: dataMap.get('performance_by_region') || [],
     };
   }, [performanceResults]);
 
-  // Calculate performance summary
+  // Optimized performance summary calculation
   const performanceSummary = useMemo((): PerformanceSummary => {
     const pages = processedData.pages;
     if (!pages.length) {
       return { avgLoadTime: 0, fastPages: 0, slowPages: 0, totalPages: 0, performanceScore: 0 };
     }
 
-    const totalLoadTime = pages.reduce((sum: number, page: PerformanceEntry) => sum + page.avg_load_time, 0);
+    // Single pass calculation
+    let totalLoadTime = 0;
+    let fastPages = 0;
+    let slowPages = 0;
+
+    for (const page of pages) {
+      totalLoadTime += page.avg_load_time;
+      if (page.avg_load_time < 1000) fastPages++;
+      else if (page.avg_load_time > 3000) slowPages++;
+    }
+
     const avgLoadTime = totalLoadTime / pages.length;
-    const fastPages = pages.filter(page => page.avg_load_time < 1000).length;
-    const slowPages = pages.filter(page => page.avg_load_time > 3000).length;
-    
-    // Calculate performance score (0-100)
     const fastPercentage = fastPages / pages.length;
     const slowPercentage = slowPages / pages.length;
-    const performanceScore = Math.round((fastPercentage * 100) - (slowPercentage * 50));
+    const performanceScore = Math.max(0, Math.min(100,
+      Math.round((fastPercentage * 100) - (slowPercentage * 50))
+    ));
 
     return {
       avgLoadTime,
       fastPages,
       slowPages,
       totalPages: pages.length,
-      performanceScore: Math.max(0, Math.min(100, performanceScore))
+      performanceScore
     };
   }, [processedData.pages]);
 
-  const tabs = useMemo(() => [
-    {
-      id: 'pages',
-      label: 'Pages',
-      data: processedData.pages.map((item, i) => ({ ...item, _uniqueKey: `page-${i}` })),
-      columns: [
-        createNameColumn('Page', undefined, (name) => {
+  // Optimized tabs generation with stable references
+  const tabs = useMemo(() => {
+    const tabConfigs = [
+      {
+        id: 'pages',
+        label: 'Pages',
+        data: processedData.pages,
+        iconRenderer: undefined,
+        nameFormatter: (name: string) => {
           try {
             return name.startsWith('http') ? new URL(name).pathname : name;
           } catch {
             return name.startsWith('/') ? name : `/${name}`;
           }
-        }),
-        ...performanceColumns
-      ],
-    },
-    {
-      id: 'countries',
-      label: 'Countries',
-      data: processedData.countries.map((item, i) => ({ ...item, _uniqueKey: `country-${i}` })),
-      columns: [
-        createNameColumn('Country', (name) => <CountryFlag country={name} size={16} />),
-        ...performanceColumns
-      ],
-    },
-    {
-      id: 'regions',
-      label: 'Regions',
-      data: processedData.regions.map((item, i) => ({ ...item, _uniqueKey: `region-${i}` })),
-      columns: [
-        createNameColumn('Region', () => <MapPin className="h-4 w-4 text-primary" />),
-        ...performanceColumns
-      ],
-    },
-    {
-      id: 'devices',
-      label: 'Device Types',
-      data: processedData.devices.map((item, i) => ({ ...item, _uniqueKey: `device-${i}` })),
-      columns: [
-        createNameColumn('Device Type', (name) => {
+        }
+      },
+      {
+        id: 'countries',
+        label: 'Countries',
+        data: processedData.countries,
+        iconRenderer: (name: string) => <CountryFlag country={name} size={16} />,
+        nameFormatter: undefined
+      },
+      {
+        id: 'regions',
+        label: 'Regions',
+        data: processedData.regions,
+        iconRenderer: () => <MapPin className="h-4 w-4 text-primary" />,
+        nameFormatter: undefined
+      },
+      {
+        id: 'devices',
+        label: 'Device Types',
+        data: processedData.devices,
+        iconRenderer: (name: string) => {
           const device = name.toLowerCase();
-          return device.includes('mobile') || device.includes('phone') ? 
+          return device.includes('mobile') || device.includes('phone') ?
             <Smartphone className="h-4 w-4 text-blue-500" /> :
             device.includes('tablet') ?
-            <Monitor className="h-4 w-4 text-purple-500" /> :
-            <Monitor className="h-4 w-4 text-gray-500" />;
-        }),
-        ...performanceColumns
-      ],
-    },
-    {
-      id: 'browsers',
-      label: 'Browsers',
-      data: processedData.browsers.map((item, i) => ({ ...item, _uniqueKey: `browser-${i}` })),
+              <Monitor className="h-4 w-4 text-purple-500" /> :
+              <Monitor className="h-4 w-4 text-gray-500" />;
+        },
+        nameFormatter: undefined
+      },
+      {
+        id: 'browsers',
+        label: 'Browsers',
+        data: processedData.browsers,
+        iconRenderer: (name: string) => <BrowserIcon name={name} size="sm" />,
+        nameFormatter: undefined
+      },
+      {
+        id: 'operating_systems',
+        label: 'Operating Systems',
+        data: processedData.operating_systems,
+        iconRenderer: (name: string) => <OSIcon name={name} size="sm" />,
+        nameFormatter: undefined
+      },
+    ];
+
+    return tabConfigs.map(config => ({
+      id: config.id,
+      label: config.label,
+      data: config.data.map((item: PerformanceEntry, i: number) => ({
+        ...item,
+        _uniqueKey: `${config.id}-${i}`
+      })),
       columns: [
-        createNameColumn('Browser', (name) => <BrowserIcon name={name} size="sm" />),
+        createNameColumn(
+          config.label.slice(0, -1), // Remove 's' from plural
+          config.iconRenderer,
+          config.nameFormatter
+        ),
         ...performanceColumns
       ],
-    },
-    {
-      id: 'operating_systems',
-      label: 'Operating Systems',
-      data: processedData.operating_systems.map((item, i) => ({ ...item, _uniqueKey: `os-${i}` })),
-      columns: [
-        createNameColumn('Operating System', (name) => <OSIcon name={name} size="sm" />),
-        ...performanceColumns
-      ],
-    },
-  ], [processedData]);
+    }));
+  }, [processedData]);
+
+  if (error) {
+    return (
+      <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md">
+        <p className="text-sm text-red-600 dark:text-red-400">
+          Failed to load performance data. Please try refreshing.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -349,20 +374,20 @@ export function WebsitePerformanceTab({
           <div>
             <p className="font-medium text-foreground mb-1">Performance Overview</p>
             <p className="text-xs text-muted-foreground">
-              Core Web Vitals and performance metrics. 
-              <span className="text-green-600 font-medium">Good</span>, 
-              <span className="text-yellow-600 font-medium ml-1">Needs Improvement</span>, 
+              Core Web Vitals and performance metrics.
+              <span className="text-green-600 font-medium">Good</span>,
+              <span className="text-yellow-600 font-medium ml-1">Needs Improvement</span>,
               <span className="text-red-600 font-medium ml-1">Poor</span> ratings.
             </p>
           </div>
         </div>
-        
+
         {!isLoading && processedData.pages.length > 0 && (
           <PerformanceSummaryCard summary={performanceSummary} />
         )}
       </div>
 
-      <DataTable 
+      <DataTable
         tabs={tabs}
         title="Performance Analysis"
         description="Detailed performance metrics across pages, locations, devices, and browsers"
@@ -370,14 +395,6 @@ export function WebsitePerformanceTab({
         initialPageSize={15}
         minHeight={400}
       />
-
-      {error && (
-        <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md">
-          <p className="text-sm text-red-600 dark:text-red-400">
-            Failed to load performance data. Please try refreshing.
-          </p>
-        </div>
-      )}
     </div>
   );
 } 

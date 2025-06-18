@@ -55,6 +55,7 @@ funnelRouter.get('/', async (c) => {
         name: funnelDefinitions.name,
         description: funnelDefinitions.description,
         steps: funnelDefinitions.steps,
+        filters: funnelDefinitions.filters,
         isActive: funnelDefinitions.isActive,
         createdAt: funnelDefinitions.createdAt,
         updatedAt: funnelDefinitions.updatedAt,
@@ -147,7 +148,7 @@ funnelRouter.post(
     try {
       const website = c.get('website')
       const user = c.get('user')
-      const { name, description, steps } = await c.req.json()
+      const { name, description, steps, filters } = await c.req.json()
       
       const funnelId = crypto.randomUUID()
       
@@ -159,6 +160,7 @@ funnelRouter.post(
           name,
           description,
           steps,
+          filters,
           createdBy: user.id,
         })
         .returning()
@@ -425,87 +427,77 @@ funnelRouter.get('/:id/analytics', async (c) => {
 
     const funnelData = funnel[0]
     const steps = funnelData.steps as Array<{ type: string; target: string; name: string; conditions?: any }>
+    const filters = funnelData.filters as Array<{ field: string; operator: string; value: string | string[] }> || []
 
-    // Execute funnel analysis query
-    const analysisQuery = `
-      WITH ${steps.map((step, index: number) => {
-        let whereCondition = '';
+    // Build filter conditions
+    const buildFilterConditions = () => {
+      if (!filters || filters.length === 0) return '';
+      
+      const filterConditions = filters.map(filter => {
+        const field = filter.field.replace(/'/g, "''");
+        const value = Array.isArray(filter.value) ? filter.value : [filter.value];
         
-        if (step.type === 'PAGE_VIEW') {
-          // Handle page views - only screen_view events with matching path
-          const targetPath = step.target.replace(/'/g, "''");
-          whereCondition = `event_name = 'screen_view' AND (path = '${targetPath}' OR path LIKE '%${targetPath}')`;
-        } else if (step.type === 'EVENT') {
-          // Handle custom events - exclude system events like in query.ts
-          const eventName = step.target.replace(/'/g, "''");
-          whereCondition = `event_name = '${eventName}' AND event_name NOT IN ('screen_view', 'page_exit', 'error', 'web_vitals')`;
-        } else if (step.type === 'CUSTOM' && step.conditions) {
-          // Handle custom conditions with properties
-          const eventName = step.target.replace(/'/g, "''");
-          let customConditions = `event_name = '${eventName}' AND event_name NOT IN ('screen_view', 'page_exit', 'error', 'web_vitals')`;
-          
-          // Add property-based conditions if specified
-          if (step.conditions && typeof step.conditions === 'object') {
-            Object.entries(step.conditions).forEach(([key, value]) => {
-              if (typeof value === 'string') {
-                customConditions += ` AND JSONExtractString(properties, '${key.replace(/'/g, "''")}') = '${String(value).replace(/'/g, "''")}'`;
-              } else if (typeof value === 'number') {
-                customConditions += ` AND JSONExtractFloat(properties, '${key.replace(/'/g, "''")}') = ${value}`;
-              } else if (typeof value === 'boolean') {
-                customConditions += ` AND JSONExtractBool(properties, '${key.replace(/'/g, "''")}') = ${value ? 1 : 0}`;
-              }
-            });
-          }
-          
-          whereCondition = customConditions;
+        switch (filter.operator) {
+          case 'equals':
+            return `${field} = '${value[0].replace(/'/g, "''")}'`;
+          case 'contains':
+            return `${field} LIKE '%${value[0].replace(/'/g, "''")}%'`;
+          case 'not_equals':
+            return `${field} != '${value[0].replace(/'/g, "''")}'`;
+          case 'in':
+            return `${field} IN (${value.map(v => `'${v.replace(/'/g, "''")}'`).join(', ')})`;
+          case 'not_in':
+            return `${field} NOT IN (${value.map(v => `'${v.replace(/'/g, "''")}'`).join(', ')})`;
+          default:
+            return '';
         }
-        
-        return `step_${index + 1}_users AS (
-          SELECT DISTINCT
-            session_id,
-            anonymous_id,
-            MIN(time) as step_time
-          FROM analytics.events
-          WHERE client_id = '${website.id}'
-            AND toDate(time) >= '${startDate}'
-            AND toDate(time) <= '${endDate}'
-            AND ${whereCondition}
-          GROUP BY session_id, anonymous_id
-        )`;
-      }).join(',\n      ')},
-      step_progression AS (
-        ${steps.map((step, index: number) => {
-          const stepNum = index + 1;
-          const joins = Array.from({length: stepNum}, (_, i) => {
-            if (i === 0) return 'step_1_users s1';
-            return `LEFT JOIN step_${i + 1}_users s${i + 1} ON s1.session_id = s${i + 1}.session_id AND s${i + 1}.step_time >= s${i}.step_time`;
-          }).join('\n        ');
-          
-          return `
-            SELECT 
-              ${stepNum} as step_number,
-              '${step.name.replace(/'/g, "''")}' as step_name,
-              COUNT(DISTINCT s1.session_id) as total_users,
-              ${index === 0 ? 
-                'COUNT(DISTINCT s1.session_id)' : 
-                `COUNT(DISTINCT s${stepNum}.session_id)`} as users,
-              ${index === 0 ? 
-                '100.0' : 
-                `ROUND((COUNT(DISTINCT s${stepNum}.session_id) * 100.0 / NULLIF(COUNT(DISTINCT s1.session_id), 0)), 2)`} as conversion_rate,
-              ${index === 0 ? 
-                '0' : 
-                `(COUNT(DISTINCT s1.session_id) - COUNT(DISTINCT s${stepNum}.session_id))`} as dropoffs,
-              ${index === 0 ? 
-                '0.0' : 
-                `ROUND(((COUNT(DISTINCT s1.session_id) - COUNT(DISTINCT s${stepNum}.session_id)) * 100.0 / NULLIF(COUNT(DISTINCT s1.session_id), 0)), 2)`} as dropoff_rate,
-              ${index === 0 ? 
-                '0.0' : 
-                `ROUND(AVG(CASE WHEN s${stepNum}.step_time > s${stepNum - 1}.step_time AND dateDiff('second', s${stepNum - 1}.step_time, s${stepNum}.step_time) > 0 AND dateDiff('second', s${stepNum - 1}.step_time, s${stepNum}.step_time) < 86400 THEN dateDiff('second', s${stepNum - 1}.step_time, s${stepNum}.step_time) ELSE NULL END), 2)`} as avg_time_to_complete
-            FROM ${joins}`;
-        }).join('\nUNION ALL\n')}
+      }).filter(Boolean);
+      
+      return filterConditions.length > 0 ? ` AND ${filterConditions.join(' AND ')}` : '';
+    };
+
+    const filterConditions = buildFilterConditions();
+
+    const stepQueries = steps.map((step, index) => {
+      let whereCondition = '';
+      
+      if (step.type === 'PAGE_VIEW') {
+        const targetPath = step.target.replace(/'/g, "''");
+        whereCondition = `event_name = 'screen_view' AND (path = '${targetPath}' OR path LIKE '%${targetPath}%')`;
+      } else if (step.type === 'EVENT') {
+        const eventName = step.target.replace(/'/g, "''");
+        whereCondition = `event_name = '${eventName}'`;
+      }
+      
+      return `
+        SELECT 
+          ${index + 1} as step_number,
+          '${step.name.replace(/'/g, "''")}' as step_name,
+          session_id,
+          MIN(time) as first_occurrence
+        FROM analytics.events
+        WHERE client_id = '${website.id}'
+          AND time >= parseDateTimeBestEffort('${startDate}')
+          AND time <= parseDateTimeBestEffort('${endDate} 23:59:59')
+          AND ${whereCondition}${filterConditions}
+        GROUP BY session_id`;
+    });
+
+    // Get all step events and then process the funnel logic in JavaScript
+    const analysisQuery = `
+      WITH all_step_events AS (
+        ${stepQueries.join('\n        UNION ALL\n')}
       )
-      SELECT * FROM step_progression ORDER BY step_number
+      SELECT 
+        step_number,
+        step_name,
+        session_id,
+        first_occurrence
+      FROM all_step_events
+      ORDER BY session_id, first_occurrence
     `;
+    
+
 
     // Log the generated query for debugging
     logger.info('Generated funnel analysis query', {
@@ -514,17 +506,13 @@ funnelRouter.get('/:id/analytics', async (c) => {
       query: analysisQuery
     });
 
-    let analyticsResults;
+    let rawResults;
     try {
-      analyticsResults = await chQuery<{
+      rawResults = await chQuery<{
         step_number: number;
         step_name: string;
-        total_users: number;
-        users: number;
-        conversion_rate: number;
-        dropoffs: number;
-        dropoff_rate: number;
-        avg_time_to_complete?: number;
+        session_id: string;
+        first_occurrence: number;
       }>(analysisQuery);
     } catch (sqlError: any) {
       logger.error('SQL query failed for funnel analytics', {
@@ -535,6 +523,70 @@ funnelRouter.get('/:id/analytics', async (c) => {
       });
       throw new Error(`SQL query failed: ${sqlError.message}`);
     }
+
+    // Process the results to calculate proper funnel progression
+    // Group events by session and calculate funnel progression
+    const sessionEvents = new Map<string, Array<{step_number: number, step_name: string, first_occurrence: number}>>();
+    
+    for (const event of rawResults) {
+      if (!sessionEvents.has(event.session_id)) {
+        sessionEvents.set(event.session_id, []);
+      }
+      sessionEvents.get(event.session_id)!.push({
+        step_number: event.step_number,
+        step_name: event.step_name,
+        first_occurrence: event.first_occurrence
+      });
+    }
+
+    // Calculate funnel progression for each session
+    const stepCounts = new Map<number, Set<string>>();
+    
+    for (const [sessionId, events] of sessionEvents) {
+      // Sort events by time
+      events.sort((a, b) => a.first_occurrence - b.first_occurrence);
+      
+      // Track which steps this session completed in order
+      let currentStep = 1;
+      const completedSteps = new Set<number>();
+      
+      for (const event of events) {
+        if (event.step_number === currentStep) {
+          completedSteps.add(event.step_number);
+          if (!stepCounts.has(event.step_number)) {
+            stepCounts.set(event.step_number, new Set());
+          }
+          stepCounts.get(event.step_number)!.add(sessionId);
+          currentStep++;
+        }
+      }
+    }
+
+    // Build analytics results
+    const analyticsResults = steps.map((step, index) => {
+      const stepNumber = index + 1;
+      const users = stepCounts.get(stepNumber)?.size || 0;
+      const prevStepUsers = index > 0 ? (stepCounts.get(index)?.size || 0) : users;
+      const totalUsers = stepCounts.get(1)?.size || 0;
+      
+      const conversion_rate = index === 0 ? 100.0 : 
+        prevStepUsers > 0 ? Math.round((users / prevStepUsers) * 100 * 100) / 100 : 0;
+      
+      const dropoffs = index > 0 ? prevStepUsers - users : 0;
+      const dropoff_rate = index > 0 && prevStepUsers > 0 ? 
+        Math.round((dropoffs / prevStepUsers) * 100 * 100) / 100 : 0;
+
+      return {
+        step_number: stepNumber,
+        step_name: step.name,
+        users,
+        total_users: totalUsers,
+        conversion_rate,
+        dropoffs,
+        dropoff_rate,
+        avg_time_to_complete: 0
+      };
+    });
 
     // Calculate overall metrics
     const firstStep = analyticsResults[0];

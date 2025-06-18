@@ -14,7 +14,8 @@ import {
     PencilIcon,
     TrashIcon,
     TargetIcon,
-    CaretRightIcon
+    CaretRightIcon,
+    FunnelIcon
 } from "@phosphor-icons/react";
 import type { Funnel } from "@/hooks/use-funnels";
 
@@ -37,127 +38,176 @@ export function FunnelCard({
 }: FunnelCardProps) {
     return (
         <Card
-            className={`group transition-all duration-300 animate-in fade-in-50 slide-in-from-bottom-2 ${isExpanded
-                ? 'shadow-lg border-primary/20 bg-gradient-to-br from-background to-muted/10 scale-[1.01]'
-                : 'hover:shadow-md hover:border-primary/10 hover:scale-[1.005]'
-                } rounded-xl cursor-pointer overflow-hidden`}
+            className={`group transition-all duration-200 ${isExpanded
+                ? 'shadow-lg border-primary/30 bg-gradient-to-r from-background to-primary/5'
+                : 'hover:shadow-md hover:border-border'
+                } rounded cursor-pointer`}
             onClick={() => onToggle(funnel.id)}
         >
             <CardHeader className="pb-4">
-                <div className="flex items-start justify-between">
-                    <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="flex items-center gap-2 min-w-0 flex-1">
-                                <CardTitle className="text-xl font-semibold leading-6 truncate text-foreground">
-                                    {funnel.name}
-                                </CardTitle>
-                                <CaretDownIcon
-                                    size={16}
-                                    weight="duotone"
-                                    className={`h-5 w-5 text-muted-foreground transition-all duration-300 flex-shrink-0 ${isExpanded ? 'rotate-180 text-primary' : 'group-hover:text-foreground'
-                                        }`}
-                                />
-                            </div>
+                <div className="flex items-center justify-between">
+                    {/* Left side - Main info */}
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                            <CardTitle className="text-lg font-semibold text-foreground truncate">
+                                {funnel.name}
+                            </CardTitle>
+                            <CaretDownIcon
+                                size={16}
+                                weight="fill"
+                                className={`h-4 w-4 text-muted-foreground transition-transform duration-200 flex-shrink-0 ${isExpanded ? 'rotate-180 text-primary' : ''
+                                    }`}
+                            />
                         </div>
-                        <div className="flex items-center gap-3 flex-wrap">
+
+                        <div className="flex items-center gap-4">
                             <Badge
                                 variant={funnel.isActive ? "default" : "secondary"}
-                                className={`text-xs font-medium ${funnel.isActive
-                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                    : ''
-                                    }`}
+                                className="text-xs"
                             >
-                                {funnel.isActive ? (
-                                    <>
-                                        <CheckCircleIcon size={16} weight="duotone" className="h-3 w-3 mr-1" />
-                                        Active
-                                    </>
-                                ) : (
-                                    <>
-                                        <XCircleIcon size={16} weight="duotone" className="h-3 w-3 mr-1" />
-                                        Inactive
-                                    </>
-                                )}
+                                <CheckCircleIcon size={12} className="mr-1" />
+                                {funnel.isActive ? 'Active' : 'Inactive'}
                             </Badge>
+
                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                <ChartBarIcon size={16} weight="duotone" className="h-3 w-3" />
+                                <ChartBarIcon size={14} />
                                 <span>{funnel.steps.length} steps</span>
                             </div>
+
+                            {funnel.filters && funnel.filters.length > 0 && (
+                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                    <FunnelIcon size={14} />
+                                    <span>{funnel.filters.length} filter{funnel.filters.length !== 1 ? 's' : ''}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
 
+                    {/* Right side - Actions */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
                                 size="sm"
                                 variant="ghost"
-                                className="h-8 w-8 p-0 rounded flex-shrink-0"
+                                className="h-8 w-8 p-0 rounded"
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                <DotsThreeIcon size={16} weight="duotone" className="h-4 w-4" />
+                                <DotsThreeIcon size={16} />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded w-8 p-1 space-y-0">
+                        <DropdownMenuContent align="end" className="rounded">
                             <DropdownMenuItem
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onEdit(funnel);
                                 }}
-                                className="p-1 justify-center h-6 min-h-0"
-                                title="Edit"
                             >
-                                <PencilIcon size={16} weight="duotone" className="h-3 w-3" />
+                                <PencilIcon size={16} className="mr-2" />
+                                Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onDelete(funnel.id);
                                 }}
-                                className="p-1 justify-center h-6 min-h-0 text-destructive focus:text-destructive"
-                                title="Delete"
+                                className="text-destructive focus:text-destructive"
                             >
-                                <TrashIcon size={16} weight="duotone" className="h-3 w-3" />
+                                <TrashIcon size={16} className="mr-2" />
+                                Delete
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
 
-                <div className="mt-4 space-y-3">
-                    {funnel.description && (
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                            {funnel.description}
-                        </p>
-                    )}
+                {/* Description */}
+                {funnel.description && (
+                    <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
+                        {funnel.description}
+                    </p>
+                )}
 
-                    <div className="bg-muted/30 rounded-lg p-3 border border-muted/50">
-                        <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground mb-2">
-                            <TargetIcon size={16} weight="duotone" className="h-3 w-3" />
-                            <span>Funnel Steps</span>
-                        </div>
-                        <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                            {funnel.steps.map((step, index) => (
-                                <div key={index} className="flex items-center gap-2 flex-shrink-0">
-                                    <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-3 py-2 shadow-sm">
-                                        <div className="w-5 h-5 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center text-xs font-semibold">
-                                            {index + 1}
-                                        </div>
-                                        <span className="text-sm font-medium text-foreground whitespace-nowrap" title={step.name}>
-                                            {step.name}
-                                        </span>
+                {/* Steps preview */}
+                <div className="mt-4">
+                    <div className="flex items-center gap-2 mb-3">
+                        <TargetIcon size={16} className="text-muted-foreground" />
+                        <span className="text-sm font-medium text-muted-foreground">Steps</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 overflow-x-auto">
+                        {funnel.steps.map((step, index) => (
+                            <div key={index} className="flex items-center gap-2 flex-shrink-0">
+                                <div className="flex items-center gap-2 bg-muted/50 rounded px-3 py-1.5 border">
+                                    <div className="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
+                                        {index + 1}
                                     </div>
-                                    {index < funnel.steps.length - 1 && (
-                                        <CaretRightIcon size={16} weight="duotone" className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                    )}
+                                    <span className="text-sm font-medium whitespace-nowrap max-w-32 truncate" title={step.name}>
+                                        {step.name}
+                                    </span>
                                 </div>
-                            ))}
-                        </div>
+                                {index < funnel.steps.length - 1 && (
+                                    <CaretRightIcon size={14} className="text-muted-foreground flex-shrink-0" />
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </div>
+
+                {/* Filters preview */}
+                {funnel.filters && funnel.filters.length > 0 && (
+                    <div className="mt-4">
+                        <div className="flex items-center gap-2 mb-3">
+                            <FunnelIcon size={16} className="text-muted-foreground" />
+                            <span className="text-sm font-medium text-muted-foreground">Filters</span>
+                        </div>
+
+                        <div className="flex items-center gap-2 overflow-x-auto">
+                            {funnel.filters.map((filter, index) => {
+                                const getFieldLabel = (field: string) => {
+                                    const fieldMap: Record<string, string> = {
+                                        'browser_name': 'Browser',
+                                        'os_name': 'OS',
+                                        'country': 'Country',
+                                        'device_type': 'Device',
+                                        'utm_source': 'UTM Source',
+                                        'utm_medium': 'UTM Medium',
+                                        'utm_campaign': 'UTM Campaign',
+                                    };
+                                    return fieldMap[field] || field;
+                                };
+
+                                const getOperatorSymbol = (operator: string) => {
+                                    const operatorMap: Record<string, string> = {
+                                        'equals': '=',
+                                        'contains': '⊃',
+                                        'not_equals': '≠',
+                                        'in': '∈',
+                                        'not_in': '∉',
+                                    };
+                                    return operatorMap[operator] || operator;
+                                };
+
+                                return (
+                                    <div key={index} className="flex items-center gap-1 bg-muted/30 border rounded px-2 py-1 flex-shrink-0">
+                                        <span className="text-xs font-medium text-foreground">
+                                            {getFieldLabel(filter.field)}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {getOperatorSymbol(filter.operator)}
+                                        </span>
+                                        <span className="text-xs font-medium text-foreground max-w-20 truncate" title={filter.value as string}>
+                                            {filter.value}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </CardHeader>
 
             {isExpanded && (
-                <div className="border-t bg-gradient-to-b from-muted/5 to-muted/20 animate-in slide-in-from-top-2 duration-500">
-                    <CardContent className="pt-6 pb-6">
+                <div className="border-t">
+                    <CardContent className="pt-6">
                         {children || (
                             <div className="flex items-center justify-center py-8">
                                 <div className="relative">

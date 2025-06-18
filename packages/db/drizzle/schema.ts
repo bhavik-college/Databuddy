@@ -389,6 +389,7 @@ export const funnelDefinitions = pgTable("funnel_definitions", {
 	name: text().notNull(),
 	description: text(),
 	steps: jsonb().notNull(),
+	filters: jsonb(),
 	isActive: boolean().default(true).notNull(),
 	createdBy: text().notNull(),
 	createdAt: timestamp({ precision: 3, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),

@@ -11,11 +11,19 @@ export interface FunnelStep {
   conditions?: Record<string, any>;
 }
 
+export interface FunnelFilter {
+  field: string;
+  operator: 'equals' | 'contains' | 'not_equals' | 'in' | 'not_in';
+  value: string | string[];
+  label?: string;
+}
+
 export interface Funnel {
   id: string;
   name: string;
   description?: string;
   steps: FunnelStep[];
+  filters?: FunnelFilter[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -48,6 +56,7 @@ export interface CreateFunnelData {
   name: string;
   description?: string;
   steps: FunnelStep[];
+  filters?: FunnelFilter[];
 }
 
 // API Response interfaces

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,10 @@ import {
     TargetIcon,
     ChartBarIcon,
     PlusIcon,
-    TrashIcon
+    TrashIcon,
+    FunnelIcon
 } from "@phosphor-icons/react";
-import type { CreateFunnelData, FunnelStep } from "@/hooks/use-funnels";
+import type { CreateFunnelData, FunnelStep, FunnelFilter } from "@/hooks/use-funnels";
 
 interface CreateFunnelDialogProps {
     isOpen: boolean;
@@ -28,7 +29,8 @@ export function CreateFunnelDialog({ isOpen, onClose, onSubmit, isCreating }: Cr
         steps: [
             { type: 'PAGE_VIEW' as const, target: '/', name: 'Landing Page' },
             { type: 'PAGE_VIEW' as const, target: '/signup', name: 'Sign Up Page' }
-        ]
+        ],
+        filters: []
     });
 
     const handleSubmit = async () => {
@@ -43,7 +45,8 @@ export function CreateFunnelDialog({ isOpen, onClose, onSubmit, isCreating }: Cr
             steps: [
                 { type: 'PAGE_VIEW' as const, target: '/', name: 'Landing Page' },
                 { type: 'PAGE_VIEW' as const, target: '/signup', name: 'Sign Up Page' }
-            ]
+            ],
+            filters: []
         });
     };
 
@@ -72,27 +75,68 @@ export function CreateFunnelDialog({ isOpen, onClose, onSubmit, isCreating }: Cr
         }));
     };
 
+    const addFilter = () => {
+        setFormData(prev => ({
+            ...prev,
+            filters: [...(prev.filters || []), { field: 'browser_name', operator: 'equals' as const, value: '' }]
+        }));
+    };
+
+    const removeFilter = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            filters: (prev.filters || []).filter((_, i) => i !== index)
+        }));
+    };
+
+    const updateFilter = (index: number, field: keyof FunnelFilter, value: string) => {
+        setFormData(prev => ({
+            ...prev,
+            filters: (prev.filters || []).map((filter, i) =>
+                i === index ? { ...filter, [field]: value } : filter
+            )
+        }));
+    };
+
+    const filterOptions = [
+        { value: 'browser_name', label: 'Browser' },
+        { value: 'os_name', label: 'Operating System' },
+        { value: 'country', label: 'Country' },
+        { value: 'device_type', label: 'Device Type' },
+        { value: 'utm_source', label: 'UTM Source' },
+        { value: 'utm_medium', label: 'UTM Medium' },
+        { value: 'utm_campaign', label: 'UTM Campaign' },
+    ];
+
+    const operatorOptions = [
+        { value: 'equals', label: 'equals' },
+        { value: 'contains', label: 'contains' },
+        { value: 'not_equals', label: 'does not equal' },
+    ];
+
     const handleClose = () => {
         onClose();
         resetForm();
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto rounded-xl animate-in fade-in-50 zoom-in-95 duration-300">
-                <DialogHeader className="space-y-3 pb-6 border-b border-border/50">
+        <Sheet open={isOpen} onOpenChange={handleClose}>
+            <SheetContent side="right" className="w-[60vw] overflow-y-auto"
+                style={{ width: '40vw', padding: '1rem', maxWidth: '1200px' }}
+            >
+                <SheetHeader className="space-y-3 pb-6 border-b border-border/50">
                     <div className="flex items-center gap-3">
                         <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
                             <TargetIcon size={16} weight="duotone" className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                            <DialogTitle className="text-xl font-semibold text-foreground">Create New Funnel</DialogTitle>
-                            <DialogDescription className="text-muted-foreground mt-1">
+                            <SheetTitle className="text-xl font-semibold text-foreground">Create New Funnel</SheetTitle>
+                            <SheetDescription className="text-muted-foreground mt-1">
                                 Set up a new conversion funnel to track user journeys
-                            </DialogDescription>
+                            </SheetDescription>
                         </div>
                     </div>
-                </DialogHeader>
+                </SheetHeader>
 
                 <div className="space-y-6 pt-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -181,6 +225,81 @@ export function CreateFunnelDialog({ isOpen, onClose, onSubmit, isCreating }: Cr
                         </Button>
                     </div>
 
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                            <FunnelIcon size={16} weight="duotone" className="h-5 w-5 text-primary" />
+                            <Label className="text-base font-semibold text-foreground">Filters</Label>
+                            <span className="text-xs text-muted-foreground">(optional)</span>
+                        </div>
+
+                        {formData.filters && formData.filters.length > 0 && (
+                            <div className="space-y-3">
+                                {formData.filters.map((filter, index) => (
+                                    <div key={index} className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                                        <Select
+                                            value={filter.field}
+                                            onValueChange={(value) => updateFilter(index, 'field', value)}
+                                        >
+                                            <SelectTrigger className="w-40 rounded border-border/50">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded">
+                                                {filterOptions.map((option) => (
+                                                    <SelectItem key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+
+                                        <Select
+                                            value={filter.operator}
+                                            onValueChange={(value) => updateFilter(index, 'operator', value)}
+                                        >
+                                            <SelectTrigger className="w-32 rounded border-border/50">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded">
+                                                {operatorOptions.map((option) => (
+                                                    <SelectItem key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+
+                                        <Input
+                                            value={filter.value as string}
+                                            onChange={(e) => updateFilter(index, 'value', e.target.value)}
+                                            placeholder="Filter value"
+                                            className="flex-1 rounded border-border/50 focus:border-primary/50 focus:ring-primary/20"
+                                        />
+
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => removeFilter(index)}
+                                            className="rounded h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                                        >
+                                            <TrashIcon size={16} className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="rounded border-dashed border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/5"
+                            onClick={addFilter}
+                        >
+                            <PlusIcon size={16} className="h-4 w-4 mr-2" />
+                            Add Filter
+                        </Button>
+                    </div>
+
                     <div className="flex justify-end gap-3 pt-6 border-t border-border/50">
                         <Button
                             type="button"
@@ -192,7 +311,12 @@ export function CreateFunnelDialog({ isOpen, onClose, onSubmit, isCreating }: Cr
                         </Button>
                         <Button
                             onClick={handleSubmit}
-                            disabled={!formData.name || formData.steps.some(s => !s.name || !s.target) || isCreating}
+                            disabled={
+                                !formData.name ||
+                                formData.steps.some(s => !s.name || !s.target) ||
+                                (formData.filters || []).some(f => !f.value || f.value === '') ||
+                                isCreating
+                            }
                             className="rounded relative"
                         >
                             {isCreating && (
@@ -206,7 +330,7 @@ export function CreateFunnelDialog({ isOpen, onClose, onSubmit, isCreating }: Cr
                         </Button>
                     </div>
                 </div>
-            </DialogContent>
-        </Dialog>
+            </SheetContent>
+        </Sheet>
     );
 } 

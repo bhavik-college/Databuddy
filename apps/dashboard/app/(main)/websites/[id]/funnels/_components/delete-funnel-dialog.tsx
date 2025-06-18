@@ -21,7 +21,7 @@ export function DeleteFunnelDialog({ isOpen, onClose, onConfirm }: DeleteFunnelD
                         <div>
                             <AlertDialogTitle className="text-xl font-semibold text-foreground">Delete Funnel</AlertDialogTitle>
                             <AlertDialogDescription className="text-muted-foreground mt-1">
-                                Are you sure you want to delete this funnel? This action cannot be undone and will permanently remove all associated analytics data.
+                                Are you sure you want to delete this funnel? This action cannot be undone and will permanently remove it
                             </AlertDialogDescription>
                         </div>
                     </div>

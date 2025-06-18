@@ -187,7 +187,8 @@ export default function FunnelsPage() {
                 updates: {
                     name: funnel.name,
                     description: funnel.description,
-                    steps: funnel.steps
+                    steps: funnel.steps,
+                    filters: funnel.filters
                 }
             });
             setIsEditDialogOpen(false);
@@ -236,7 +237,7 @@ export default function FunnelsPage() {
     }
 
     return (
-        <div ref={pageRef} className="p-3 sm:p-4 lg:p-6 max-w-[1600px] mx-auto space-y-6">
+        <div ref={pageRef} className="p-3 sm:p-4 lg:p-6 max-w-[1600px] mx-auto space-y-4">
             <Suspense fallback={<PageHeaderSkeleton />}>
                 <PageHeader
                     websiteName={websiteData?.name || ''}
