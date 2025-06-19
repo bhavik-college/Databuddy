@@ -93,8 +93,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           clientId={process.env.NEXT_PUBLIC_DATABUDDY_CLIENT_ID!}
           trackScreenViews
           trackPerformance
-          trackWebVitals
-          trackErrors
+          trackWebVitals={true} // Default is false, explicitly enable for quick start
+          trackErrors={true}    // Default is false, explicitly enable for quick start
         />
         {children}
       </body>
@@ -359,14 +359,14 @@ window.pageLoadTime = Date.now();
 ## 🎉 What's Next?
 
 <Cards>
-  <Card title="SDK Reference" href="/docs/sdk" icon="📦">
-    Explore all configuration options and advanced features
+  <Card title="SDK Configuration Guide" href="/docs/sdk#-configuration-options" icon="📦">
+    Explore all SDK configuration props and options
   </Card>
   <Card title="Dashboard Guide" href="/docs/dashboard" icon="📊">
-    Learn to navigate your analytics dashboard
+    Learn to navigate your analytics dashboard and its features
   </Card>
-  <Card title="SDK Reference" href="/docs/sdk" icon="⚙️">
-    Set up custom events, performance monitoring, and more
+  <Card title="Event Tracking Deep Dive" href="/docs/sdk#-sdk-methods-reference" icon="⚙️">
+    Master custom event tracking, SDK methods, and standard event types
   </Card>
   <Card title="Security & Privacy" href="/docs/security" icon="🔒">
     Configure privacy settings and GDPR compliance

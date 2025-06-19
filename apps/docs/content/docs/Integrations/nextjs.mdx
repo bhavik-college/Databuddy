@@ -38,7 +38,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Databuddy 
-          clientId={process.env.NEXT_PUBLIC_DATABUDDY_SITE_ID!}
+          clientId={process.env.NEXT_PUBLIC_DATABUDDY_CLIENT_ID!}
           trackScreenViews={true}
           trackHashChanges={true}
           trackAttributes={true}
@@ -95,7 +95,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Databuddy 
-          clientId={process.env.NEXT_PUBLIC_DATABUDDY_SITE_ID!}
+          clientId={process.env.NEXT_PUBLIC_DATABUDDY_CLIENT_ID!}
           trackScreenViews={true}
         />
         {children}
@@ -138,7 +138,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <Databuddy 
-        clientId={process.env.NEXT_PUBLIC_DATABUDDY_SITE_ID!}
+        clientId={process.env.NEXT_PUBLIC_DATABUDDY_CLIENT_ID!}
         trackScreenViews={true}
         trackAttributes={true}
       />
@@ -164,9 +164,9 @@ export default function Document() {
       <Head>
         <script
           src="https://app.databuddy.cc/databuddy.js"
-          data-client-id={process.env.NEXT_PUBLIC_DATABUDDY_SITE_ID}
+          data-client-id={process.env.NEXT_PUBLIC_DATABUDDY_CLIENT_ID}
           data-track-screen-views="true"
-          async
+          defer
         />
       </Head>
       <body>
@@ -183,13 +183,13 @@ export default function Document() {
 Add to your `.env.local`:
 
 ```tsx
-NEXT_PUBLIC_DATABUDDY_SITE_ID=your_site_id_here
+NEXT_PUBLIC_DATABUDDY_CLIENT_ID=your_client_id_here
 ```
 
 For production, add to your deployment environment:
 
 ```tsx
-NEXT_PUBLIC_DATABUDDY_SITE_ID=your_production_site_id
+NEXT_PUBLIC_DATABUDDY_CLIENT_ID=your_production_client_id
 ```
 
 ## Tracking Events
@@ -292,7 +292,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Databuddy 
-          clientId={process.env.NEXT_PUBLIC_DATABUDDY_SITE_ID!}
+          clientId={process.env.NEXT_PUBLIC_DATABUDDY_CLIENT_ID!}
           // Core tracking
           trackScreenViews={true}
           trackHashChanges={true}
@@ -340,7 +340,7 @@ export default function RootLayout({
       <body>
         {process.env.NODE_ENV === 'production' && (
           <Databuddy 
-            clientId={process.env.NEXT_PUBLIC_DATABUDDY_SITE_ID!}
+            clientId={process.env.NEXT_PUBLIC_DATABUDDY_CLIENT_ID!}
             trackScreenViews={true}
             trackAttributes={true}
           />
@@ -369,28 +369,17 @@ import { Databuddy } from '@databuddy/sdk';
 ### Environment Variables on Vercel
 
 1. Go to your Vercel project settings
-2. Add environment variable: `NEXT_PUBLIC_DATABUDDY_SITE_ID`
+2. Add environment variable: `NEXT_PUBLIC_DATABUDDY_CLIENT_ID`
 3. Set different values for preview and production environments
 
 ## Troubleshooting
 
 ### Common Issues
 
-**Script Not Loading**: Ensure your environment variable `NEXT_PUBLIC_DATABUDDY_SITE_ID` is set correctly.
+**Script Not Loading**: Ensure your environment variable `NEXT_PUBLIC_DATABUDDY_CLIENT_ID` is set correctly.
 
 **Events Not Tracking**: Check browser console for any JavaScript errors and verify the Databuddy script is loaded.
 
 **Route Tracking**: If using custom route tracking, make sure the Analytics component is properly added to your layout.
 
-### Debug Mode
-
-Enable debug mode in development:
-
-```tsx
-<Databuddy 
-  clientId={process.env.NEXT_PUBLIC_DATABUDDY_SITE_ID!}
-  debug={process.env.NODE_ENV === 'development'}
-/>
-```
-
-Need help with your Next.js integration? Contact us at [help@databuddy.cc](mailto:help@databuddy.cc). 
+Need help with your Next.js integration? Contact us at [help@databuddy.cc](mailto:help@databuddy.cc).
