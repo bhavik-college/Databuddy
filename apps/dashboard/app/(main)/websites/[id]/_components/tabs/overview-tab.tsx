@@ -859,7 +859,8 @@ export function WebsiteOverviewTab({
           title="Traffic Sources"
           description="Referrers and campaign data"
           isLoading={isLoading}
-          minHeight={350}
+          initialPageSize={7}
+          minHeight={230}
         />
 
         <DataTable
@@ -867,7 +868,8 @@ export function WebsiteOverviewTab({
           title="Pages"
           description="Top pages and entry/exit points"
           isLoading={isLoading}
-          minHeight={350}
+          initialPageSize={7}
+          minHeight={230}
         />
       </div>
 
@@ -878,6 +880,7 @@ export function WebsiteOverviewTab({
         title="Custom Events"
         description="User-defined events and interactions with property breakdowns"
         isLoading={isLoading}
+        initialPageSize={8}
         minHeight={200}
         emptyMessage="No custom events tracked yet"
         expandable={true}
@@ -950,6 +953,7 @@ export function WebsiteOverviewTab({
           title="Devices"
           description="Device breakdown"
           isLoading={isLoading}
+          initialPageSize={8}
           minHeight={200}
           showSearch={false}
         />
@@ -960,7 +964,8 @@ export function WebsiteOverviewTab({
           title="Browsers"
           description="Browser breakdown"
           isLoading={isLoading}
-          minHeight={350}
+          initialPageSize={8}
+          minHeight={200}
           showSearch={false}
         />
 
@@ -970,10 +975,11 @@ export function WebsiteOverviewTab({
           title="Operating Systems"
           description="OS breakdown"
           isLoading={isLoading}
+          initialPageSize={8}
           minHeight={200}
           showSearch={false}
         />
       </div>
     </div>
   );
-} 
+}

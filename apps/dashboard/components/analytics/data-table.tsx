@@ -10,13 +10,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { ListFilterIcon, DatabaseIcon, ArrowUpDown, ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Search, X, ChevronDown, ChevronRight as ChevronRightIcon } from "lucide-react";
-import { type ColumnDef, type RowData, flexRender, getCoreRowModel, useReactTable, getFilteredRowModel, getSortedRowModel, type SortingState, getExpandedRowModel, type ExpandedState } from "@tanstack/react-table";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { type ColumnDef, type RowData, flexRender, getCoreRowModel, useReactTable, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, type SortingState, type PaginationState } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import React, { useState, useCallback, useMemo, Fragment, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TabConfig<TData> {
   id: string;
@@ -32,6 +30,7 @@ interface DataTableProps<TData extends { name: string | number }, TValue> {
   title: string;
   description?: string;
   isLoading?: boolean;
+  initialPageSize?: number;
   emptyMessage?: string;
   className?: string;
   onRowClick?: (field: string, value: string | number) => void;
@@ -130,10 +129,11 @@ export function DataTable<TData extends { name: string | number }, TValue>(
     title,
     description,
     isLoading = false,
+    initialPageSize,
     emptyMessage = "No data available",
     className,
     onRowClick,
-    minHeight = 400,
+    minHeight = 200,
     showSearch = true,
     getSubRows,
     renderSubRow,
@@ -143,9 +143,13 @@ export function DataTable<TData extends { name: string | number }, TValue>(
 ) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = React.useState('');
+  const [pagination, setPagination] = React.useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: initialPageSize ?? 10,
+  });
   const [activeTab, setActiveTab] = React.useState(tabs?.[0]?.id || '');
   const [isTransitioning, setIsTransitioning] = React.useState(false);
-  const [expanded, setExpanded] = React.useState<ExpandedState>({});
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [tooltipState, setTooltipState] = useState<{
     visible: boolean;
@@ -172,39 +176,16 @@ export function DataTable<TData extends { name: string | number }, TValue>(
     state: {
       sorting,
       globalFilter: showSearch ? globalFilter : '',
-      expanded,
+      pagination,
     },
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
-    onExpandedChange: setExpanded,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getExpandedRowModel: getExpandedRowModel(),
-    getSubRows: getSubRows,
   });
-
-  const { rows } = table.getRowModel();
-
-  const rowVirtualizer = useVirtualizer({
-    count: rows.length,
-    getScrollElement: () => tableContainerRef.current,
-    estimateSize: (index) => {
-      const row = rows[index];
-      if (row.getIsExpanded() && renderSubRow) {
-        // A rough estimation for expanded custom rows
-        return 150;
-      }
-      return 48; // Standard row height
-    },
-    overscan: 10,
-  });
-
-  const virtualRows = rowVirtualizer.getVirtualItems();
-  const totalSize = rowVirtualizer.getTotalSize();
-
-  const paddingTop = virtualRows.length > 0 ? virtualRows[0]?.start || 0 : 0;
-  const paddingBottom = virtualRows.length > 0 ? totalSize - (virtualRows[virtualRows.length - 1]?.end || 0) : 0;
 
   const displayData = table.getRowModel().rows;
 
@@ -219,6 +200,18 @@ export function DataTable<TData extends { name: string | number }, TValue>(
     };
     return mapping[tabId] || 'name';
   };
+
+  const toggleRowExpansion = useCallback((rowId: string) => {
+    setExpandedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(rowId)) {
+        newSet.delete(rowId);
+      } else {
+        newSet.add(rowId);
+      }
+      return newSet;
+    });
+  }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (tableContainerRef.current) {
@@ -246,12 +239,12 @@ export function DataTable<TData extends { name: string | number }, TValue>(
     setIsTransitioning(true);
     setTimeout(() => {
       setActiveTab(tabId);
+      setPagination(prev => ({ ...prev, pageIndex: 0 }));
       setGlobalFilter('');
-      setExpanded({});
+      setExpandedRows(new Set());
       setIsTransitioning(false);
-      rowVirtualizer.scrollToIndex(0);
     }, 150);
-  }, [activeTab, rowVirtualizer]);
+  }, [activeTab]);
 
   if (isLoading) {
     return (
@@ -431,230 +424,240 @@ export function DataTable<TData extends { name: string | number }, TValue>(
             </div>
           ) : (
             <div
-              ref={tableContainerRef}
-              className="overflow-auto rounded-md sm:rounded-lg border border-border/50 bg-background/50 relative"
-              style={{ height: minHeight }}
+              className="overflow-hidden rounded-md sm:rounded-lg border border-border/50 bg-background/50 relative"
+              style={{ minHeight }}
               role="tabpanel"
               id={`tabpanel-${activeTab}`}
               aria-labelledby={`tab-${activeTab}`}
             >
-              <Table>
-                <TableHeader>
-                  {table.getHeaderGroups().map(headerGroup => (
-                    <TableRow key={headerGroup.id} className="bg-muted/20 border-border/30 sticky top-0 z-10">
-                      {headerGroup.headers.map(header => (
-                        <TableHead
-                          key={header.id}
-                          className={cn(
-                            "h-11 text-xs font-semibold px-2 sm:px-4 text-muted-foreground uppercase tracking-wide bg-muted/20 backdrop-blur-sm",
-                            (header.column.columnDef.meta as any)?.className,
-                            header.column.getCanSort()
-                              ? 'cursor-pointer hover:text-foreground hover:bg-muted/30 transition-all duration-200 select-none group'
-                              : 'select-none'
-                          )}
-                          style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
-                          onClick={header.column.getToggleSortingHandler()}
-                          tabIndex={header.column.getCanSort() ? 0 : -1}
-                          role={header.column.getCanSort() ? "button" : undefined}
-                          aria-sort={
-                            header.column.getIsSorted() === 'asc' ? 'ascending' :
-                              header.column.getIsSorted() === 'desc' ? 'descending' :
-                                header.column.getCanSort() ? 'none' : undefined
-                          }
-                        >
-                          <div className="flex items-center gap-1.5">
-                            <span className="truncate">
-                              {header.isPlaceholder
-                                ? null
-                                : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
-                                )}
-                            </span>
-                            {header.column.getCanSort() && (
-                              <div className="flex flex-col items-center justify-center w-3 h-3">
-                                {!header.column.getIsSorted() && (
-                                  <ArrowUpDown className="h-3 w-3 text-muted-foreground/40 group-hover:text-muted-foreground/70 transition-colors" />
-                                )}
-                                {header.column.getIsSorted() === 'asc' && (
-                                  <ArrowUp className="h-3 w-3 text-primary" />
-                                )}
-                                {header.column.getIsSorted() === 'desc' && (
-                                  <ArrowDown className="h-3 w-3 text-primary" />
-                                )}
-                              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    {table.getHeaderGroups().map(headerGroup => (
+                      <TableRow key={headerGroup.id} className="bg-muted/20 border-border/30 sticky top-0 z-10">
+                        {headerGroup.headers.map(header => (
+                          <TableHead
+                            key={header.id}
+                            className={cn(
+                              "h-11 text-xs font-semibold px-2 sm:px-4 text-muted-foreground uppercase tracking-wide bg-muted/20 backdrop-blur-sm",
+                              (header.column.columnDef.meta as any)?.className,
+                              header.column.getCanSort()
+                                ? 'cursor-pointer hover:text-foreground hover:bg-muted/30 transition-all duration-200 select-none group'
+                                : 'select-none'
                             )}
-                          </div>
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody style={{ height: `${totalSize}px`, position: 'relative' }}>
-                  {paddingTop > 0 && (
-                    <TableRow style={{ height: `${paddingTop}px` }}>
-                      <TableCell colSpan={table.getAllColumns().length} />
-                    </TableRow>
-                  )}
-                  {virtualRows.map(virtualRow => {
-                    const row = rows[virtualRow.index];
-                    const percentage = getRowPercentage(row.original);
-                    const gradient = getPercentageGradient(percentage);
-                    const parentRow = row.getParentRow();
-
-                    // Special rendering for custom sub-rows
-                    if (row.depth > 0 && renderSubRow && parentRow) {
-                      return (
-                        <TableRow
-                          key={row.id}
-                          data-index={virtualRow.index}
-                          ref={node => rowVirtualizer.measureElement(node)}
-                          className="absolute w-full"
-                          style={{ transform: `translateY(${virtualRow.start}px)` }}
-                        >
-                          <TableCell colSpan={table.getAllColumns().length} className="p-0">
-                            {renderSubRow(row.original as TData, parentRow.original as TData, row.index)}
-                          </TableCell>
-                        </TableRow>
-                      )
-                    }
-
-                    return (
-                      <TableRow
-                        key={row.id}
-                        data-index={virtualRow.index}
-                        ref={node => rowVirtualizer.measureElement(node)}
-                        className={cn(
-                          "border-border/20 transition-all duration-300 ease-in-out absolute w-full",
-                          (onRowClick && !row.getCanExpand()) || row.getCanExpand() ? "cursor-pointer" : "",
-                          hoveredRow && hoveredRow !== row.id ? "opacity-40 grayscale-[80%]" : "opacity-100",
-                          !hoveredRow && (virtualRow.index % 2 === 0 ? "bg-background/50" : "bg-muted/10")
-                        )}
-                        onClick={() => {
-                          if (row.getCanExpand()) {
-                            row.toggleExpanded();
-                          } else if (onRowClick && row.original.name) {
-                            const field = getFieldFromTabId(activeTab);
-                            onRowClick(field, row.original.name);
-                          }
-                        }}
-                        style={{
-                          transform: `translateY(${virtualRow.start}px)`,
-                          background: !hoveredRow && percentage > 0 ? gradient.background : undefined,
-                          boxShadow: !hoveredRow && percentage > 0 ? `inset 3px 0 0 0 ${gradient.accentColor}` : undefined,
-                        }}
-                        onMouseEnter={() => handleRowMouseEnter(row.original, row.id)}
-                      >
-                        <div className="flex w-full">
-                          {row.getVisibleCells().map((cell, cellIndex) => (
-                            <TableCell
-                              key={cell.id}
-                              className={cn(
-                                "py-3 text-sm font-medium transition-colors duration-150 px-2 sm:px-4 flex items-center",
-                                cellIndex === 0 && "font-semibold text-foreground",
-                                (cell.column.columnDef.meta as any)?.className
-                              )}
-                              style={{
-                                width: cell.column.getSize() !== 150 ? cell.column.getSize() : 'auto',
-                                flex: `1 1 ${cell.column.getSize()}px`,
-                                minWidth: `calc(${cell.column.getSize()}px / 2)`,
-                                paddingLeft: cellIndex === 0 ? `${row.depth * 1.5 + 1}rem` : undefined
-                              }}
-                            >
-                              <div className="flex items-center gap-2 truncate">
-                                {cellIndex === 0 && row.getCanExpand() && (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      row.toggleExpanded();
-                                    }}
-                                    className="flex-shrink-0 p-0.5 hover:bg-muted rounded transition-colors"
-                                    aria-label={row.getIsExpanded() ? 'Collapse row' : 'Expand row'}
-                                  >
-                                    {row.getIsExpanded() ? (
-                                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-                                    ) : (
-                                      <ChevronRightIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                                    )}
-                                  </button>
-                                )}
-                                <div className="truncate flex-1">
-                                  <CellTooltip cell={cell} />
+                            style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
+                            onClick={header.column.getToggleSortingHandler()}
+                            tabIndex={header.column.getCanSort() ? 0 : -1}
+                            role={header.column.getCanSort() ? "button" : undefined}
+                            aria-sort={
+                              header.column.getIsSorted() === 'asc' ? 'ascending' :
+                                header.column.getIsSorted() === 'desc' ? 'descending' :
+                                  header.column.getCanSort() ? 'none' : undefined
+                            }
+                          >
+                            <div className="flex items-center gap-1.5">
+                              <span className="truncate">
+                                {header.isPlaceholder
+                                  ? null
+                                  : flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )}
+                              </span>
+                              {header.column.getCanSort() && (
+                                <div className="flex flex-col items-center justify-center w-3 h-3">
+                                  {!header.column.getIsSorted() && (
+                                    <ArrowUpDown className="h-3 w-3 text-muted-foreground/40 group-hover:text-muted-foreground/70 transition-colors" />
+                                  )}
+                                  {header.column.getIsSorted() === 'asc' && (
+                                    <ArrowUp className="h-3 w-3 text-primary" />
+                                  )}
+                                  {header.column.getIsSorted() === 'desc' && (
+                                    <ArrowDown className="h-3 w-3 text-primary" />
+                                  )}
                                 </div>
-                              </div>
-                            </TableCell>
-                          ))}
-                        </div>
+                              )}
+                            </div>
+                          </TableHead>
+                        ))}
                       </TableRow>
-                    );
-                  })}
-                  {paddingBottom > 0 && (
-                    <TableRow style={{ height: `${paddingBottom}px` }}>
-                      <TableCell colSpan={table.getAllColumns().length} />
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                    ))}
+                  </TableHeader>
+                  <TableBody className="overflow-hidden">
+                    {displayData.map((row, rowIndex) => {
+                      const subRows = expandable && getSubRows ? getSubRows(row.original) : undefined;
+                      const hasSubRows = subRows && subRows.length > 0;
+                      const isExpanded = expandedRows.has(row.id);
+                      const percentage = getRowPercentage(row.original);
+                      const gradient = getPercentageGradient(percentage);
+
+                      return (
+                        <Fragment key={row.id}>
+                          <TableRow
+                            className={cn(
+                              "h-12 border-border/20 relative transition-all duration-300 ease-in-out",
+                              (onRowClick && !hasSubRows) || hasSubRows ? "cursor-pointer" : "",
+                              hoveredRow && hoveredRow !== row.id ? "opacity-40 grayscale-[80%]" : "opacity-100",
+                              !hoveredRow && (rowIndex % 2 === 0 ? "bg-background/50" : "bg-muted/10")
+                            )}
+                            onClick={() => {
+                              if (hasSubRows) {
+                                toggleRowExpansion(row.id);
+                              } else if (onRowClick && row.original.name) {
+                                const field = getFieldFromTabId(activeTab);
+                                onRowClick(field, row.original.name);
+                              }
+                            }}
+                            style={{
+                              background: !hoveredRow && percentage > 0 ? gradient.background : undefined,
+                              boxShadow: !hoveredRow && percentage > 0 ? `inset 3px 0 0 0 ${gradient.accentColor}` : undefined,
+                            }}
+                            onMouseEnter={() => handleRowMouseEnter(row.original, row.id)}
+                          >
+                            {row.getVisibleCells().map((cell, cellIndex) => (
+                              <TableCell
+                                key={cell.id}
+                                className={cn(
+                                  "py-3 text-sm font-medium transition-colors duration-150 px-2 sm:px-4",
+                                  cellIndex === 0 && "font-semibold text-foreground",
+                                  (cell.column.columnDef.meta as any)?.className
+                                )}
+                                style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : undefined }}
+                              >
+                                <div className="flex items-center gap-2">
+                                  {cellIndex === 0 && hasSubRows && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleRowExpansion(row.id);
+                                      }}
+                                      className="flex-shrink-0 p-0.5 hover:bg-muted rounded transition-colors"
+                                      aria-label={isExpanded ? 'Collapse row' : 'Expand row'}
+                                    >
+                                      {isExpanded ? (
+                                        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                                      ) : (
+                                        <ChevronRightIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                                      )}
+                                    </button>
+                                  )}
+                                  <div className="truncate flex-1">
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                  </div>
+                                </div>
+                              </TableCell>
+                            ))}
+                          </TableRow>
+
+                          {hasSubRows && isExpanded && subRows.map((subRow, subIndex) => (
+                            <TableRow
+                              key={`${row.id}-sub-${subIndex}`}
+                              className="border-border/10 bg-muted/5 hover:bg-muted/10 transition-colors"
+                            >
+                              {renderSubRow ? (
+                                <TableCell
+                                  colSpan={row.getVisibleCells().length}
+                                  className="p-0"
+                                >
+                                  {renderSubRow(subRow, row.original, subIndex)}
+                                </TableCell>
+                              ) : (
+                                row.getVisibleCells().map((cell, cellIndex) => (
+                                  <TableCell
+                                    key={`sub-${cell.id}`}
+                                    className={cn(
+                                      "py-2 text-sm text-muted-foreground",
+                                      cellIndex === 0 ? "pl-8" : "px-3"
+                                    )}
+                                    style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : undefined }}
+                                  >
+                                    <div className="truncate">
+                                      {cellIndex === 0 ? (
+                                        <span className="text-xs">↳ {(subRow as any)[cell.column.id] || ''}</span>
+                                      ) : (
+                                        (subRow as any)[cell.column.id] || ''
+                                      )}
+                                    </div>
+                                  </TableCell>
+                                ))
+                              )}
+                            </TableRow>
+                          ))}
+                        </Fragment>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-3 border-t border-border/30">
-          <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
-            {(() => {
-              const filteredRowCount = table.getFilteredRowModel().rows.length;
-              const totalRowCount = tableData.length;
+        {(table.getFilteredRowModel().rows.length > table.getState().pagination.pageSize || table.getPageCount() > 1) && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-3 border-t border-border/30">
+            <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
+              {(() => {
+                const pageIndex = table.getState().pagination.pageIndex;
+                const pageSize = table.getState().pagination.pageSize;
+                const filteredRowCount = table.getFilteredRowModel().rows.length;
+                const totalRowCount = (data || []).length;
+                const firstVisibleRow = pageIndex * pageSize + 1;
+                const lastVisibleRow = Math.min(firstVisibleRow + pageSize - 1, filteredRowCount);
 
-              return (
-                <>
-                  <span className="font-medium">
-                    {filteredRowCount} {filteredRowCount === 1 ? 'row' : 'rows'}
-                  </span>
-                  {filteredRowCount !== totalRowCount && (
-                    <span className="text-muted-foreground/60">
-                      (filtered from {totalRowCount})
+                return (
+                  <>
+                    <span className="font-medium">
+                      {firstVisibleRow}-{lastVisibleRow} of {filteredRowCount}
                     </span>
-                  )}
-                </>
-              );
-            })()}
+                    {filteredRowCount !== totalRowCount && (
+                      <span className="text-muted-foreground/60">
+                        (filtered from {totalRowCount})
+                      </span>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+
+            {table.getPageCount() > 1 && (
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 hover:bg-muted/50"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </Button>
+
+                <div className="flex items-center gap-1 px-2 py-1 bg-muted/20 rounded">
+                  <span className="text-xs font-medium min-w-0">
+                    {table.getState().pagination.pageIndex + 1}
+                  </span>
+                  <span className="text-xs text-muted-foreground/70">/</span>
+                  <span className="text-xs text-muted-foreground">
+                    {table.getPageCount()}
+                  </span>
+                </div>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 hover:bg-muted/50"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
-  );
-}
-
-function CellTooltip<TData extends { name: string | number }, TValue>({ cell }: { cell: any }) {
-  const cellContent = flexRender(cell.column.columnDef.cell, cell.getContext());
-  const cellValue = cell.getValue();
-
-  const isSimpleContent = typeof cellContent === 'string' || typeof cellContent === 'number';
-
-  if (isSimpleContent) {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="truncate block">{cellContent}</span>
-          </TooltipTrigger>
-          <TooltipContent>{cellContent}</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="truncate block">{cellContent}</div>
-        </TooltipTrigger>
-        {cellValue && (
-          <TooltipContent>{String(cellValue)}</TooltipContent>
-        )}
-      </Tooltip>
-    </TooltipProvider>
   );
 }
