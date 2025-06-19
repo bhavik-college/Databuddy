@@ -1,5 +1,4 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import * as schema from './drizzle/schema';
 import * as relations from './drizzle/relations';
 
@@ -13,9 +12,3 @@ if (!databaseUrl) {
 }
 
 export const db = drizzle(databaseUrl, { schema: fullSchema });
-
-const migrateDb = async () => {
-    await migrate(db, { migrationsFolder: 'drizzle/migrations' });
-}
-
-migrateDb();
