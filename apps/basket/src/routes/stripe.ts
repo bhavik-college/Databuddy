@@ -148,15 +148,11 @@ async function handleWebhook(request: Request, set: any, config: StripeConfig) {
             livemode: event.livemode
         })
 
-        // Process the event with error handling
         try {
             await processWebhookEvent(event, config)
-            // updateWebhookSuccess(config.webhookToken) // Commented out - no DB fields yet
             console.log(`✅ Successfully processed ${event.type}`)
         } catch (processingError) {
             console.error(`❌ Error processing webhook event:`, processingError)
-            // updateWebhookFailure(config.webhookToken) // Commented out - no DB fields yet
-            // Still return 200 to prevent Stripe retries
         }
 
         set.status = 200
@@ -199,193 +195,120 @@ async function processWebhookEvent(event: Stripe.Event, config: StripeConfig) {
     }
 }
 
-/**
- * Extract client ID from Stripe metadata
- */
 function extractClientId(stripeObject: any): string | null {
-    try {
-        // Try metadata first (recommended approach)
-        if (stripeObject.metadata?.client_id) {
-            return stripeObject.metadata.client_id
-        }
-        
-        // Fallback to other possible fields
-        if (stripeObject.metadata?.website_id) {
-            return stripeObject.metadata.website_id
-        }
-    } catch (error) {
-        console.warn('Error extracting client ID:', error)
-    }
-    
-    return null
+    return stripeObject.metadata?.client_id || stripeObject.metadata?.website_id || null
 }
 
-/**
- * Extract session ID from Stripe client_reference_id (recommended) or metadata fallback
- */
 function extractSessionId(stripeObject: any): string | null {
-    try {
-        // Primary: client_reference_id (recommended - most reliable)
-        if (stripeObject.client_reference_id) {
-            return stripeObject.client_reference_id
-        }
-        
-        // Fallback: metadata.session_id
-        if (stripeObject.metadata?.session_id) {
-            return stripeObject.metadata.session_id
-        }
-    } catch (error) {
-        console.warn('Error extracting session ID:', error)
-    }
-    
-    return null
+    return stripeObject.client_reference_id || stripeObject.metadata?.session_id || null
 }
 
-/**
- * Insert Payment Intent data
- */
+function validateClientId(clientId: string | null, objectId: string, objectType: string): void {
+    if (!clientId) {
+        throw new Error(`Missing required client_id in ${objectType} ${objectId} metadata. Please include client_id in your Stripe Checkout session metadata.`)
+    }
+}
+
+async function insertStripeData(table: string, data: any): Promise<void> {
+    await clickHouse.insert({
+        table,
+        values: [data],
+        format: 'JSONEachRow'
+    })
+}
+
 async function insertPaymentIntent(pi: Stripe.PaymentIntent, config: StripeConfig) {
-    try {
-        const clientId = extractClientId(pi)
-        const sessionId = extractSessionId(pi)
-        
-        if (!clientId) {
-            console.error('❌ REQUIRED: client_id not found in PaymentIntent metadata:', pi.id)
-            throw new Error(`Missing required client_id in PaymentIntent ${pi.id} metadata. Please include client_id in your Stripe Checkout session metadata.`)
-        }
-
-        await clickHouse.insert({
-            table: 'analytics.stripe_payment_intents',
-            values: [{
-                id: pi.id,
-                client_id: clientId,
-                webhook_token: config.webhookToken,
-                created: new Date(pi.created * 1000).toISOString().replace('T', ' ').replace('Z', ''),
-                status: pi.status,
-                currency: pi.currency,
-                amount: pi.amount,
-                amount_received: pi.amount_received,
-                amount_capturable: pi.amount_capturable,
-                livemode: pi.livemode ? 1 : 0,
-                metadata: pi.metadata,
-                payment_method_types: pi.payment_method_types,
-                failure_reason: pi.last_payment_error?.message || null,
-                canceled_at: pi.canceled_at ? new Date(pi.canceled_at * 1000).toISOString().replace('T', ' ').replace('Z', '') : null,
-                cancellation_reason: pi.cancellation_reason,
-                description: pi.description,
-                application_fee_amount: pi.application_fee_amount,
-                setup_future_usage: pi.setup_future_usage,
-                session_id: sessionId
-            }],
-            format: 'JSONEachRow'
-        })
-        
-        console.log(`✅ PaymentIntent ${pi.id} processed for client ${clientId}`)
-    } catch (error) {
-        console.error('Error inserting payment intent:', error)
-        throw error
-    }
+    const clientId = extractClientId(pi)
+    const sessionId = extractSessionId(pi)
+    
+    validateClientId(clientId, pi.id, 'PaymentIntent')
+    
+    await insertStripeData('analytics.stripe_payment_intents', {
+        id: pi.id,
+        client_id: clientId,
+        webhook_token: config.webhookToken,
+        created: new Date(pi.created * 1000).toISOString().replace('T', ' ').replace('Z', ''),
+        status: pi.status,
+        currency: pi.currency,
+        amount: pi.amount,
+        amount_received: pi.amount_received,
+        amount_capturable: pi.amount_capturable,
+        livemode: pi.livemode ? 1 : 0,
+        metadata: pi.metadata,
+        payment_method_types: pi.payment_method_types,
+        failure_reason: pi.last_payment_error?.message || null,
+        canceled_at: pi.canceled_at ? new Date(pi.canceled_at * 1000).toISOString().replace('T', ' ').replace('Z', '') : null,
+        cancellation_reason: pi.cancellation_reason,
+        description: pi.description,
+        application_fee_amount: pi.application_fee_amount,
+        setup_future_usage: pi.setup_future_usage,
+        session_id: sessionId
+    })
+    
+    console.log(`✅ PaymentIntent ${pi.id} processed for client ${clientId}`)
 }
 
-/**
- * Insert Charge data
- */
 async function insertCharge(charge: Stripe.Charge, config: StripeConfig) {
-    try {
-        const clientId = extractClientId(charge)
-        const sessionId = extractSessionId(charge)
-        const card = charge.payment_method_details?.card
+    const clientId = extractClientId(charge)
+    const sessionId = extractSessionId(charge)
+    const card = charge.payment_method_details?.card
 
-        if (!clientId) {
-            console.error('❌ REQUIRED: client_id not found in Charge metadata:', charge.id)
-            throw new Error(`Missing required client_id in Charge ${charge.id} metadata. Please include client_id in your Stripe Checkout session metadata.`)
-        }
+    validateClientId(clientId, charge.id, 'Charge')
 
-        await clickHouse.insert({
-            table: 'analytics.stripe_charges',
-            values: [{
-                id: charge.id,
-                client_id: clientId,
-                webhook_token: config.webhookToken,
-                created: new Date(charge.created * 1000).toISOString().replace('T', ' ').replace('Z', ''),
-                status: charge.status,
-                currency: charge.currency,
-                amount: charge.amount,
-                amount_captured: charge.amount_captured,
-                amount_refunded: charge.amount_refunded,
-                paid: charge.paid ? 1 : 0,
-                refunded: charge.refunded ? 1 : 0,
-                livemode: charge.livemode ? 1 : 0,
-                failure_code: charge.failure_code,
-                failure_message: charge.failure_message,
-                outcome_type: charge.outcome?.type || null,
-                risk_level: charge.outcome?.risk_level || null,
-                card_brand: card?.brand || null,
-                payment_intent_id: charge.payment_intent as string || null,
-                session_id: sessionId
-            }],
-            format: 'JSONEachRow'
-        })
-        
-        console.log(`✅ Charge ${charge.id} processed for client ${clientId}`)
-    } catch (error) {
-        console.error('Error inserting charge:', error)
-        throw error
-    }
+    await insertStripeData('analytics.stripe_charges', {
+        id: charge.id,
+        client_id: clientId,
+        webhook_token: config.webhookToken,
+        created: new Date(charge.created * 1000).toISOString().replace('T', ' ').replace('Z', ''),
+        status: charge.status,
+        currency: charge.currency,
+        amount: charge.amount,
+        amount_captured: charge.amount_captured,
+        amount_refunded: charge.amount_refunded,
+        paid: charge.paid ? 1 : 0,
+        refunded: charge.refunded ? 1 : 0,
+        livemode: charge.livemode ? 1 : 0,
+        failure_code: charge.failure_code,
+        failure_message: charge.failure_message,
+        outcome_type: charge.outcome?.type || null,
+        risk_level: charge.outcome?.risk_level || null,
+        card_brand: card?.brand || null,
+        payment_intent_id: charge.payment_intent as string || null,
+        session_id: sessionId
+    })
+    
+    console.log(`✅ Charge ${charge.id} processed for client ${clientId}`)
 }
 
-/**
- * Insert Refund data
- */
 async function insertRefund(refund: Stripe.Refund, config: StripeConfig) {
-    try {
-        const clientId = extractClientId(refund)
-        const sessionId = extractSessionId(refund)
-        
-        if (!clientId) {
-            console.error('❌ REQUIRED: client_id not found in Refund metadata:', refund.id)
-            throw new Error(`Missing required client_id in Refund ${refund.id} metadata. Please include client_id in your Stripe Checkout session metadata.`)
-        }
+    const clientId = extractClientId(refund)
+    const sessionId = extractSessionId(refund)
+    
+    validateClientId(clientId, refund.id, 'Refund')
 
-        await clickHouse.insert({
-            table: 'analytics.stripe_refunds',
-            values: [{
-                id: refund.id,
-                client_id: clientId,
-                webhook_token: config.webhookToken,
-                created: new Date(refund.created * 1000).toISOString().replace('T', ' ').replace('Z', ''),
-                amount: refund.amount,
-                status: refund.status,
-                reason: refund.reason,
-                currency: refund.currency,
-                charge_id: refund.charge as string,
-                payment_intent_id: refund.payment_intent as string || null,
-                metadata: refund.metadata,
-                session_id: sessionId
-            }],
-            format: 'JSONEachRow'
-        })
-        
-        console.log(`✅ Refund ${refund.id} processed for client ${clientId}`)
-    } catch (error) {
-        console.error('Error inserting refund:', error)
-        throw error
-    }
+    await insertStripeData('analytics.stripe_refunds', {
+        id: refund.id,
+        client_id: clientId,
+        webhook_token: config.webhookToken,
+        created: new Date(refund.created * 1000).toISOString().replace('T', ' ').replace('Z', ''),
+        amount: refund.amount,
+        status: refund.status,
+        reason: refund.reason,
+        currency: refund.currency,
+        charge_id: refund.charge as string,
+        payment_intent_id: refund.payment_intent as string || null,
+        metadata: refund.metadata,
+        session_id: sessionId
+    })
+    
+    console.log(`✅ Refund ${refund.id} processed for client ${clientId}`)
 }
 
-/**
- * Log security events for monitoring
- */
 function logSecurityEvent(eventType: string, webhookToken: string, ip: string, metadata?: any) {
+    const logData = { webhookToken, ip, timestamp: new Date().toISOString(), metadata }
+    
     if (IS_PRODUCTION) {
-        console.warn(`🚨 Security Event: ${eventType}`, {
-            webhookToken,
-            ip,
-            timestamp: new Date().toISOString(),
-            metadata
-        })
-        // In production, send to your security monitoring system
-        // await securityLogger.warn(eventType, { webhookToken, ip, metadata })
+        console.warn(`🚨 Security Event: ${eventType}`, logData)
     } else {
         console.log(`🔍 Security Event (disabled): ${eventType}`, { webhookToken, ip })
     }
