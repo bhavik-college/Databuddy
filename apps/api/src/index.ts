@@ -1,4 +1,3 @@
-import './polyfills/compression'
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { auth, type User, type Session } from '@databuddy/auth';
