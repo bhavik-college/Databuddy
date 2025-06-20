@@ -17,6 +17,20 @@ import crypto from 'node:crypto'
 
 const redis = getRedisCache()
 
+async function getDailySalt(): Promise<string> {
+  const saltKey = `salt:${Math.floor(Date.now() / (24 * 60 * 60 * 1000))}`
+  let salt = await redis.get(saltKey)
+  if (!salt) {
+    salt = crypto.randomBytes(32).toString('hex')
+    await redis.setex(saltKey, 60 * 60 * 24, salt)
+  }
+  return salt
+}
+
+function saltAnonymousId(anonymousId: string, salt: string): string {
+  return createHash('sha256').update(anonymousId + salt).digest('hex')
+}
+
 function detectBot(userAgent: string, request: Request): { isBot: boolean } {
   const ua = userAgent?.toLowerCase() || '';
   
@@ -227,16 +241,10 @@ const app = new Elysia()
       return { status: 'ignored' }
     }
     
-    const saltKey = `salt:${Math.floor(Date.now() / (24 * 60 * 60 * 1000))}`
-    
-    const salt = await redis.get(saltKey)
-    if (!salt) {
-      const newSalt = crypto.randomBytes(32).toString('hex')
-      await redis.setex(saltKey, 60 * 60 * 24, newSalt)
-      return { status: 'success', type: 'salt', salt: newSalt }
+    const salt = await getDailySalt()
+    if (body.anonymous_id) {
+      body.anonymous_id = saltAnonymousId(body.anonymous_id, salt)
     }
-    
-    body.anonymous_id = createHash('sha256').update(body.anonymous_id + salt).digest('hex')
 
     const eventType = body.type || 'track'
     
@@ -294,6 +302,13 @@ const app = new Elysia()
     const botCheck = detectBot(userAgent, request)
     if (botCheck.isBot) {
       return { status: 'ignored', batch: true }
+    }
+    
+    const salt = await getDailySalt()
+    for (const event of body) {
+      if (event.anonymous_id) {
+        event.anonymous_id = saltAnonymousId(event.anonymous_id, salt)
+      }
     }
     
     const results = []
