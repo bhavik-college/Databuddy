@@ -46,7 +46,7 @@ analyticsRouter.get('/summary', async (c: any) => {
 
     return c.json({
       success: true,
-      has_data: hasTrackingData,
+      tracking_setup: hasTrackingData,
       website_id: website.id,
       domain: website.domain
     });
