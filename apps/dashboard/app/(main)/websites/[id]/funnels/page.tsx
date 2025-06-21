@@ -22,7 +22,6 @@ import {
 const PageHeader = lazy(() => import("./_components/page-header").then(m => ({ default: m.PageHeader })));
 const FunnelsList = lazy(() => import("./_components/funnels-list").then(m => ({ default: m.FunnelsList })));
 const FunnelAnalytics = lazy(() => import("./_components/funnel-analytics").then(m => ({ default: m.FunnelAnalytics })));
-const CreateFunnelDialog = lazy(() => import("./_components/create-funnel-dialog").then(m => ({ default: m.CreateFunnelDialog })));
 const EditFunnelDialog = lazy(() => import("./_components/edit-funnel-dialog").then(m => ({ default: m.EditFunnelDialog })));
 const DeleteFunnelDialog = lazy(() => import("./_components/delete-funnel-dialog").then(m => ({ default: m.DeleteFunnelDialog })));
 
@@ -94,8 +93,7 @@ export default function FunnelsPage() {
     const websiteId = id as string;
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [expandedFunnelId, setExpandedFunnelId] = useState<string | null>(null);
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingFunnel, setEditingFunnel] = useState<Funnel | null>(null);
     const [deletingFunnelId, setDeletingFunnelId] = useState<string | null>(null);
 
@@ -178,7 +176,8 @@ export default function FunnelsPage() {
     const handleCreateFunnel = async (data: CreateFunnelData) => {
         try {
             await createFunnel(data);
-            setIsCreateDialogOpen(false);
+            setIsDialogOpen(false);
+            setEditingFunnel(null);
         } catch (error) {
             console.error("Failed to create funnel:", error);
         }
@@ -195,7 +194,7 @@ export default function FunnelsPage() {
                     filters: funnel.filters
                 }
             });
-            setIsEditDialogOpen(false);
+            setIsDialogOpen(false);
             setEditingFunnel(null);
         } catch (error) {
             console.error("Failed to update funnel:", error);
@@ -250,7 +249,10 @@ export default function FunnelsPage() {
                     isLoading={funnelsLoading}
                     hasError={!!funnelsError}
                     onRefresh={handleRefresh}
-                    onCreateFunnel={() => setIsCreateDialogOpen(true)}
+                    onCreateFunnel={() => {
+                        setEditingFunnel(null);
+                        setIsDialogOpen(true);
+                    }}
                 />
             </Suspense>
 
@@ -262,10 +264,13 @@ export default function FunnelsPage() {
                     onToggleFunnel={handleToggleFunnel}
                     onEditFunnel={(funnel) => {
                         setEditingFunnel(funnel);
-                        setIsEditDialogOpen(true);
+                        setIsDialogOpen(true);
                     }}
                     onDeleteFunnel={setDeletingFunnelId}
-                    onCreateFunnel={() => setIsCreateDialogOpen(true)}
+                    onCreateFunnel={() => {
+                        setEditingFunnel(null);
+                        setIsDialogOpen(true);
+                    }}
                 >
                     {(funnel) => {
                         if (expandedFunnelId !== funnel.id) return null;
@@ -323,30 +328,20 @@ export default function FunnelsPage() {
                 </FunnelsList>
             </Suspense>
 
-            {/* Lazy load dialogs only when needed */}
-            {isCreateDialogOpen && (
-                <Suspense fallback={null}>
-                    <CreateFunnelDialog
-                        isOpen={isCreateDialogOpen}
-                        onClose={() => setIsCreateDialogOpen(false)}
-                        onSubmit={handleCreateFunnel}
-                        isCreating={isCreating}
-                        autocompleteData={autocompleteQuery.data}
-                    />
-                </Suspense>
-            )}
-
-            {isEditDialogOpen && (
+            {/* Unified dialog for both create and edit */}
+            {isDialogOpen && (
                 <Suspense fallback={null}>
                     <EditFunnelDialog
-                        isOpen={isEditDialogOpen}
+                        isOpen={isDialogOpen}
                         onClose={() => {
-                            setIsEditDialogOpen(false);
+                            setIsDialogOpen(false);
                             setEditingFunnel(null);
                         }}
                         onSubmit={handleUpdateFunnel}
+                        onCreate={handleCreateFunnel}
                         funnel={editingFunnel}
                         isUpdating={isUpdating}
+                        isCreating={isCreating}
                         autocompleteData={autocompleteQuery.data}
                     />
                 </Suspense>

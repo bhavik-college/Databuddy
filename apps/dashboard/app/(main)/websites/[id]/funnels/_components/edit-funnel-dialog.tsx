@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,19 +13,107 @@ import {
     TrashIcon,
     FunnelIcon
 } from "@phosphor-icons/react";
-import type { Funnel, FunnelStep, FunnelFilter, AutocompleteData } from "@/hooks/use-funnels";
+import type { Funnel, FunnelStep, FunnelFilter, AutocompleteData, CreateFunnelData } from "@/hooks/use-funnels";
+
+// Simple Autocomplete Component
+const AutocompleteInput = ({ value, onValueChange, suggestions, placeholder, className }: {
+    value: string;
+    onValueChange: (value: string) => void;
+    suggestions: string[];
+    placeholder?: string;
+    className?: string;
+}) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // Handle click outside to close dropdown
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => document.removeEventListener('mousedown', handleClickOutside);
+        }
+    }, [isOpen]);
+
+    const handleInputChange = (newValue: string) => {
+        onValueChange(newValue);
+
+        if (newValue.trim()) {
+            const filtered = suggestions.filter(s =>
+                s.toLowerCase().includes(newValue.toLowerCase())
+            ).slice(0, 8);
+            setFilteredSuggestions(filtered);
+            setIsOpen(filtered.length > 0);
+        } else {
+            setFilteredSuggestions(suggestions.slice(0, 8));
+            setIsOpen(suggestions.length > 0);
+        }
+    };
+
+    const handleFocus = () => {
+        if (value.trim()) {
+            const filtered = suggestions.filter(s =>
+                s.toLowerCase().includes(value.toLowerCase())
+            ).slice(0, 8);
+            setFilteredSuggestions(filtered);
+            setIsOpen(filtered.length > 0);
+        } else {
+            setFilteredSuggestions(suggestions.slice(0, 8));
+            setIsOpen(suggestions.length > 0);
+        }
+    };
+
+    const handleSelect = (suggestion: string) => {
+        onValueChange(suggestion);
+        setIsOpen(false);
+    };
+
+    return (
+        <div className="relative" ref={containerRef}>
+            <Input
+                value={value || ''}
+                onChange={(e) => handleInputChange(e.target.value)}
+                onFocus={handleFocus}
+                placeholder={placeholder}
+                className={className}
+            />
+            {isOpen && filteredSuggestions.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-popover border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {filteredSuggestions.map((suggestion, index) => (
+                        <div
+                            key={index}
+                            className="px-3 py-2 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground border-b last:border-b-0"
+                            onClick={() => handleSelect(suggestion)}
+                        >
+                            {suggestion}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
 
 interface EditFunnelDialogProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (funnel: Funnel) => Promise<void>;
+    onCreate?: (data: CreateFunnelData) => Promise<void>;
     funnel: Funnel | null;
     isUpdating: boolean;
+    isCreating?: boolean;
     autocompleteData?: AutocompleteData;
 }
 
-export function EditFunnelDialog({ isOpen, onClose, onSubmit, funnel, isUpdating, autocompleteData }: EditFunnelDialogProps) {
+export function EditFunnelDialog({ isOpen, onClose, onSubmit, onCreate, funnel, isUpdating, isCreating = false, autocompleteData }: EditFunnelDialogProps) {
     const [formData, setFormData] = useState<Funnel | null>(null);
+    const isCreateMode = !funnel;
 
     useEffect(() => {
         if (funnel) {
@@ -33,12 +121,57 @@ export function EditFunnelDialog({ isOpen, onClose, onSubmit, funnel, isUpdating
                 ...funnel,
                 filters: funnel.filters || []
             });
+        } else {
+            // Initialize for create mode
+            setFormData({
+                id: '',
+                name: '',
+                description: '',
+                steps: [
+                    { type: 'PAGE_VIEW' as const, target: '/', name: 'Landing Page' },
+                    { type: 'PAGE_VIEW' as const, target: '/signup', name: 'Sign Up Page' }
+                ],
+                filters: [],
+                isActive: true,
+                createdAt: '',
+                updatedAt: ''
+            });
         }
     }, [funnel]);
 
     const handleSubmit = async () => {
         if (!formData) return;
-        await onSubmit(formData);
+
+        if (isCreateMode && onCreate) {
+            const createData: CreateFunnelData = {
+                name: formData.name,
+                description: formData.description,
+                steps: formData.steps,
+                filters: formData.filters || []
+            };
+            await onCreate(createData);
+            resetForm();
+        } else {
+            await onSubmit(formData);
+        }
+    };
+
+    const resetForm = () => {
+        if (isCreateMode) {
+            setFormData({
+                id: '',
+                name: '',
+                description: '',
+                steps: [
+                    { type: 'PAGE_VIEW' as const, target: '/', name: 'Landing Page' },
+                    { type: 'PAGE_VIEW' as const, target: '/signup', name: 'Sign Up Page' }
+                ],
+                filters: [],
+                isActive: true,
+                createdAt: '',
+                updatedAt: ''
+            });
+        }
     };
 
     const addStep = () => {
@@ -144,22 +277,38 @@ export function EditFunnelDialog({ isOpen, onClose, onSubmit, funnel, isUpdating
         return [];
     };
 
+    const handleClose = () => {
+        onClose();
+        if (isCreateMode) {
+            resetForm();
+        }
+    };
+
     if (!formData) return null;
 
     return (
-        <Sheet open={isOpen} onOpenChange={onClose}>
+        <Sheet open={isOpen} onOpenChange={handleClose}>
             <SheetContent side="right" className="w-[60vw] overflow-y-auto"
                 style={{ width: '40vw', padding: '1rem', maxWidth: '1200px' }}
             >
                 <SheetHeader className="space-y-3 pb-6 border-b border-border/50">
                     <div className="flex items-center gap-3">
-                        <div className="p-3 rounded bg-primary/10 border border-primary/20">
-                            <PencilIcon size={16} weight="duotone" className="h-6 w-6 text-primary" />
+                        <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
+                            {isCreateMode ? (
+                                <FunnelIcon size={16} weight="duotone" className="h-6 w-6 text-primary" />
+                            ) : (
+                                <PencilIcon size={16} weight="duotone" className="h-6 w-6 text-primary" />
+                            )}
                         </div>
                         <div>
-                            <SheetTitle className="text-xl font-semibold text-foreground">Edit Funnel</SheetTitle>
+                            <SheetTitle className="text-xl font-semibold text-foreground">
+                                {isCreateMode ? 'Create New Funnel' : 'Edit Funnel'}
+                            </SheetTitle>
                             <SheetDescription className="text-muted-foreground mt-1">
-                                Update funnel configuration and steps
+                                {isCreateMode
+                                    ? 'Set up a new conversion funnel to track user journeys'
+                                    : 'Update funnel configuration and steps'
+                                }
                             </SheetDescription>
                         </div>
                     </div>
@@ -213,20 +362,13 @@ export function EditFunnelDialog({ isOpen, onClose, onSubmit, funnel, isUpdating
                                                 <SelectItem value="EVENT">Event</SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        <>
-                                            <Input
-                                                value={step.target}
-                                                onChange={(e) => updateStep(index, 'target', e.target.value)}
-                                                placeholder={step.type === 'PAGE_VIEW' ? '/path' : 'event_name'}
-                                                className="rounded border-border/50 focus:border-primary/50 focus:ring-primary/20"
-                                                list={`edit-step-${index}-suggestions`}
-                                            />
-                                            <datalist id={`edit-step-${index}-suggestions`}>
-                                                {getStepSuggestions(step.type).map((suggestion) => (
-                                                    <option key={suggestion} value={suggestion} />
-                                                ))}
-                                            </datalist>
-                                        </>
+                                        <AutocompleteInput
+                                            value={step.target || ''}
+                                            onValueChange={(value) => updateStep(index, 'target', value)}
+                                            suggestions={getStepSuggestions(step.type)}
+                                            placeholder={step.type === 'PAGE_VIEW' ? '/path' : 'event_name'}
+                                            className="rounded-lg border-border/50 focus:border-primary/50 focus:ring-primary/20"
+                                        />
                                         <Input
                                             value={step.name}
                                             onChange={(e) => updateStep(index, 'name', e.target.value)}
@@ -303,20 +445,13 @@ export function EditFunnelDialog({ isOpen, onClose, onSubmit, funnel, isUpdating
                                             </SelectContent>
                                         </Select>
 
-                                        <>
-                                            <Input
-                                                value={filter.value as string}
-                                                onChange={(e) => updateFilter(index, 'value', e.target.value)}
-                                                placeholder="Filter value"
-                                                className="flex-1 rounded border-border/50 focus:border-primary/50 focus:ring-primary/20"
-                                                list={`edit-filter-${index}-suggestions`}
-                                            />
-                                            <datalist id={`edit-filter-${index}-suggestions`}>
-                                                {getSuggestions(filter.field).map((suggestion) => (
-                                                    <option key={suggestion} value={suggestion} />
-                                                ))}
-                                            </datalist>
-                                        </>
+                                        <AutocompleteInput
+                                            value={filter.value as string || ''}
+                                            onValueChange={(value) => updateFilter(index, 'value', value)}
+                                            suggestions={getSuggestions(filter.field)}
+                                            placeholder="Filter value"
+                                            className="flex-1 rounded border-border/50 focus:border-primary/50 focus:ring-primary/20"
+                                        />
 
                                         <Button
                                             size="sm"
@@ -347,7 +482,7 @@ export function EditFunnelDialog({ isOpen, onClose, onSubmit, funnel, isUpdating
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={onClose}
+                            onClick={handleClose}
                             className="rounded"
                         >
                             Cancel
@@ -358,17 +493,20 @@ export function EditFunnelDialog({ isOpen, onClose, onSubmit, funnel, isUpdating
                                 !formData.name ||
                                 formData.steps.some(s => !s.name || !s.target) ||
                                 (formData.filters || []).some(f => !f.value || f.value === '') ||
-                                isUpdating
+                                (isCreateMode ? isCreating : isUpdating)
                             }
                             className="rounded relative"
                         >
-                            {isUpdating && (
+                            {(isCreateMode ? isCreating : isUpdating) && (
                                 <div className="absolute left-3">
                                     <div className="w-4 h-4 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground animate-spin"></div>
                                 </div>
                             )}
-                            <span className={isUpdating ? 'ml-6' : ''}>
-                                {isUpdating ? 'Updating...' : 'Update Funnel'}
+                            <span className={(isCreateMode ? isCreating : isUpdating) ? 'ml-6' : ''}>
+                                {isCreateMode
+                                    ? (isCreating ? 'Creating...' : 'Create Funnel')
+                                    : (isUpdating ? 'Updating...' : 'Update Funnel')
+                                }
                             </span>
                         </Button>
                     </div>
