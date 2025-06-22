@@ -177,7 +177,7 @@ export default function RevenuePage() {
                             ) : websites && websites.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {websites.map((website: any) => (
-                                        <Link key={website.id} href={`/revenue/${website.id}`}>
+                                        <Link key={website.id} href={`/websites/${website.id}/revenue`}>
                                             <Card className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-l-4 border-l-primary/20 hover:border-l-primary">
                                                 <CardHeader className="pb-3">
                                                     <div className="flex items-center justify-between">
