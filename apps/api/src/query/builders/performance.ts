@@ -4,8 +4,8 @@ import { createQueryBuilder, METRICS } from '../utils'
 export const performanceBuilders: Record<string, ParameterBuilder> = {
   slow_pages: createQueryBuilder({
     metricSet: METRICS.performance,
-    nameColumn: 'cutQueryString(path)',
-    groupByColumns: ['cutQueryString(path)'],
+    nameColumn: 'cutQueryStringAndFragment(path)',
+    groupByColumns: ['cutQueryStringAndFragment(path)'],
     extraWhere: "load_time > 0 AND path != ''",
     orderBy: 'avg_load_time DESC'
   }),
