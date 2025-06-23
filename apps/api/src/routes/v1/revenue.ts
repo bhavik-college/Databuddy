@@ -2,6 +2,7 @@ import { Context, Hono } from 'hono';
 import { db, userStripeConfig, eq, websites } from '@databuddy/db';
 import { authMiddleware } from '../../middleware/auth';
 import { logger } from '../../lib/logger';
+import { logger as discordLogger } from '../../lib/discord-webhook';
 import { nanoid } from 'nanoid';
 import { cacheable } from '@databuddy/redis';
 import type { AppVariables } from '../../types';
@@ -107,6 +108,17 @@ revenueRouter.get('/config', async (c: Context) => {
         .returning();
         
       logger.info('[Revenue API] Successfully created new revenue config:', { configId: config.id });
+
+      // Discord notification for revenue configuration setup
+      await discordLogger.info(
+        'Revenue Tracking Setup',
+        `User has set up revenue tracking and webhooks`,
+        {
+          configId: config.id,
+          userId: user.id,
+          webhookToken: config.webhookToken
+        }
+      );
     }
 
     // Return config without sensitive data

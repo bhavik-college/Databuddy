@@ -3,6 +3,7 @@ import { db, domains, eq, projects, and, or, inArray } from '@databuddy/db';
 import type { AppVariables } from '../../types';
 import { authMiddleware } from '../../middleware/auth';
 import { logger } from '../../lib/logger';
+import { logger as discordLogger } from '../../lib/discord-webhook';
 import { cacheable } from '@databuddy/redis/cacheable';
 import { Resolver } from "node:dns";
 import { randomUUID, randomBytes } from "node:crypto";
@@ -255,6 +256,18 @@ domainsRouter.post('/', async (c) => {
 
     logger.info('[Domain API] Domain created successfully:', { id: domainId });
 
+    // Discord notification for domain creation
+    await discordLogger.success(
+      'Domain Added',
+      `New domain "${data.name}" was added and auto-verified`,
+      {
+        domainId: domainId,
+        domainName: data.name,
+        userId: user.id,
+        projectId: data.projectId || null
+      }
+    );
+
     const { response, status } = createResponse(true, createdDomain);
     return c.json(response, status as any);
   } catch (error) {
@@ -324,6 +337,18 @@ domainsRouter.delete('/:id', async (c) => {
     await db.delete(domains).where(eq(domains.id, id));
 
     logger.info('[Domain API] Domain deleted successfully:', { id });
+
+    // Discord notification for domain deletion
+    await discordLogger.warning(
+      'Domain Deleted',
+      `Domain "${domain.name}" was deleted`,
+      {
+        domainId: id,
+        domainName: domain.name,
+        userId: user.id,
+        wasVerified: domain.verificationStatus === 'VERIFIED'
+      }
+    );
 
     const { response, status } = createResponse(true, { success: true });
     return c.json(response, status as any);
@@ -561,6 +586,20 @@ domainsRouter.post('/:id/verify', async (c) => {
       finalStatus: updateData.verificationStatus,
       message: message
     });
+
+    // Discord notification for domain verification (only on success)
+    if (isVerified) {
+      await discordLogger.success(
+        'Domain Verified',
+        `Domain "${domain.name}" has been successfully verified via DNS`,
+        {
+          domainId: id,
+          domainName: domain.name,
+          userId: user.id,
+          verificationMethod: 'DNS'
+        }
+      );
+    }
 
     const { response, status } = createResponse(true, { 
       verified: isVerified, 

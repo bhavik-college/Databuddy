@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { db, websites, domains, projects, eq, and, or, inArray, sql } from '@databuddy/db';
 import { authMiddleware } from '../../middleware/auth';
 import { logger } from '../../lib/logger';
+import { logger as discordLogger } from '../../lib/discord-webhook';
 import { nanoid } from 'nanoid';
 import { cacheable } from '@databuddy/redis';
 import type { AppVariables } from '../../types';
@@ -168,6 +169,18 @@ websitesRouter.post('/', async (c) => {
 
     logger.info('[Website API] Successfully created website:', website);
 
+    // Discord notification for website creation
+    await discordLogger.success(
+      'Website Created',
+      `New website "${data.name}" was created with domain "${fullDomain}"`,
+      {
+        websiteId: website.id,
+        websiteName: data.name,
+        domain: fullDomain,
+        userId: user.id
+      }
+    );
+
     return c.json({
       success: true,
       data: website
@@ -228,6 +241,19 @@ websitesRouter.patch('/:id', async (c) => {
       .returning();
 
     logger.info('[Website API] Successfully updated website:', updatedWebsite);
+
+    // Discord notification for website update
+    await discordLogger.info(
+      'Website Updated',
+      `Website "${website.name}" was renamed to "${name}"`,
+      {
+        websiteId: id,
+        oldName: website.name,
+        newName: name,
+        domain: website.domain,
+        userId: user.id
+      }
+    );
 
     return c.json({
       success: true,
@@ -420,6 +446,18 @@ websitesRouter.delete('/:id', async (c) => {
 
     await db.delete(websites)
       .where(eq(websites.id, id));
+
+    // Discord notification for website deletion
+    await discordLogger.warning(
+      'Website Deleted',
+      `Website "${website.name}" with domain "${website.domain}" was deleted`,
+      {
+        websiteId: id,
+        websiteName: website.name,
+        domain: website.domain,
+        userId: user.id
+      }
+    );
 
     return c.json({
       success: true,
