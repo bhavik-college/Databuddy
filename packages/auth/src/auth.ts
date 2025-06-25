@@ -7,6 +7,7 @@ import { getRedisCache } from "@databuddy/redis";
 import { nextCookies } from "better-auth/next-js";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { ac, owner, admin, member, viewer } from "./permissions";
+import { logger } from "@databuddy/shared";
 
 function isProduction() {
     return process.env.NODE_ENV === 'production';
@@ -29,6 +30,20 @@ export const auth = betterAuth({
         provider: "pg",
     }),
     appName: "databuddy.cc",
+    onAPIError: {
+        throw: false,
+        onError: (error, ctx) => {
+            if (error instanceof Error) {
+                logger.exception(error, ctx as Record<string, unknown>);
+            } else {
+                logger.error("Auth API Error", "An unknown error occurred", {
+                    error,
+                    ...(ctx as Record<string, unknown>)
+                });
+            }
+        },
+        errorURL: "/auth/error"
+    },
     advanced: {
         crossSubDomainCookies: {
             enabled: isProduction(),
@@ -67,6 +82,7 @@ export const auth = betterAuth({
         sendVerificationOnSignIn: true,
         autoSignInAfterVerification: true,
         sendVerificationEmail: async ({ user, url }: { user: any, url: string }) => {
+            logger.info('Email Verification', `Sending verification email to ${user.email}`, { url });
             const resend = new Resend(process.env.RESEND_API_KEY as string);
             await resend.emails.send({
                 from: 'noreply@databuddy.cc',
@@ -99,6 +115,7 @@ export const auth = betterAuth({
     plugins: [
         emailOTP({
             async sendVerificationOTP({ email, otp, type }) {
+                logger.info('Email OTP', `Sending OTP to ${email} of type ${type}`);
                 const resend = new Resend(process.env.RESEND_API_KEY as string);
                 await resend.emails.send({
                     from: 'noreply@databuddy.cc',
@@ -110,7 +127,7 @@ export const auth = betterAuth({
         }),
         magicLink({
             sendMagicLink: async ({ email, token, url }) => {
-                // console.log(url);
+                logger.info('Magic Link', `Sending magic link to ${email}`, { url });
                 const resend = new Resend(process.env.RESEND_API_KEY as string);
                 await resend.emails.send({
                     from: 'noreply@databuddy.cc',
@@ -156,6 +173,11 @@ export const auth = betterAuth({
                 viewer,
             },
             sendInvitationEmail: async ({ email, inviter, organization, invitation }) => {
+                logger.info(
+                    'Organization Invitation',
+                    `Inviting ${email} to ${organization.name}`,
+                    { inviter: inviter.user.name, organizationId: organization.id }
+                );
                 const invitationLink = `https://app.databuddy.cc/invitations/${invitation.id}`;
                 const resend = new Resend(process.env.RESEND_API_KEY as string);
                 await resend.emails.send({
