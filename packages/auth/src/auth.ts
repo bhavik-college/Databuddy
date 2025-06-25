@@ -7,22 +7,23 @@ import { Resend } from "resend";
 import { getRedisCache } from "@databuddy/redis";
 import { nextCookies } from "better-auth/next-js";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { ac, owner, admin, member, viewer } from "./permissions";
 
 // Helper to check NODE_ENV
 function isProduction() {
-  return process.env.NODE_ENV === 'production';
+    return process.env.NODE_ENV === 'production';
 }
 
 export const canManageUsers = (role: string) => {
-  return role === 'ADMIN'
+    return role === 'ADMIN'
 }
 
 export const getSession = async (request: any) => {
-  const sessionCookie = getSessionCookie(request);
-  if (!sessionCookie) {
-    return null;
-  }
-  return sessionCookie;
+    const sessionCookie = getSessionCookie(request);
+    if (!sessionCookie) {
+        return null;
+    }
+    return sessionCookie;
 }
 
 export const auth = betterAuth({
@@ -48,7 +49,7 @@ export const auth = betterAuth({
             clientId: process.env.GOOGLE_CLIENT_ID as string,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
         },
-        github: { 
+        github: {
             clientId: process.env.GITHUB_CLIENT_ID as string,
             clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
         },
@@ -67,7 +68,7 @@ export const auth = betterAuth({
         disableSignUp: true,
         sendVerificationOnSignIn: true,
         autoSignInAfterVerification: true,
-        sendVerificationEmail: async ({user, url}: {user: any, url: string}) => {
+        sendVerificationEmail: async ({ user, url }: { user: any, url: string }) => {
             const resend = new Resend(process.env.RESEND_API_KEY as string);
             const email = await resend.emails.send({
                 from: 'noreply@databuddy.cc',
@@ -101,8 +102,8 @@ export const auth = betterAuth({
     },
     plugins: [
         emailOTP({
-            async sendVerificationOTP({email, otp, type}) {
-                const resend = new Resend(process.env.RESEND_API_KEY as string); 
+            async sendVerificationOTP({ email, otp, type }) {
+                const resend = new Resend(process.env.RESEND_API_KEY as string);
                 await resend.emails.send({
                     from: 'noreply@databuddy.cc',
                     to: email,
@@ -146,7 +147,34 @@ export const auth = betterAuth({
                 session
             };
         }),
-        organization()
+        organization({
+            creatorRole: "owner",
+            teams: {
+                enabled: false,
+            },
+            ac,
+            roles: {
+                owner,
+                admin,
+                member,
+                viewer,
+            },
+            sendInvitationEmail: async ({ email, inviter, organization, invitation }) => {
+                const resend = new Resend(process.env.RESEND_API_KEY as string);
+                const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL}/invitations/${invitation.id}`;
+                await resend.emails.send({
+                    from: 'noreply@databuddy.cc',
+                    to: email,
+                    subject: `You're invited to join ${organization.name}`,
+                    html: `
+                        <p>Hi there!</p>
+                        <p>${inviter.user.name} has invited you to join <strong>${organization.name}</strong>.</p>
+                        <p><a href="${invitationLink}">Click here to accept the invitation</a></p>
+                        <p>This invitation will expire in 48 hours.</p>
+                    `
+                });
+            }
+        }),
     ]
 })
 
