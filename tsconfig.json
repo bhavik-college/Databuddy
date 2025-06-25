@@ -1,13 +1,27 @@
 {
     "compilerOptions": {
+        "jsx": "react",
         "baseUrl": ".",
         "paths": {
-            "@/*": ["./*"]
+            "@/*": [
+                "./*"
+            ]
         },
         "esModuleInterop": true
     },
-    "exclude": ["node_modules", "dist", ".next", "turbo", ".turbo", "**/node_modules"],
-    "include": ["apps/**/*", "packages/**/*", "lib"],
+    "exclude": [
+        "node_modules",
+        "dist",
+        ".next",
+        "turbo",
+        ".turbo",
+        "**/node_modules"
+    ],
+    "include": [
+        "apps/**/*",
+        "packages/**/*",
+        "lib"
+    ],
     "skipLibCheck": true,
     "noResolve": true,
     "noImplicitAny": false

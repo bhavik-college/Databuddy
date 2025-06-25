@@ -8,6 +8,7 @@ import { nextCookies } from "better-auth/next-js";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { ac, owner, admin, member, viewer } from "./permissions";
 import { logger } from "@databuddy/shared";
+import { VerificationEmail, OtpEmail, MagicLinkEmail, InvitationEmail, ResetPasswordEmail } from "./emails";
 
 function isProduction() {
     return process.env.NODE_ENV === 'production';
@@ -82,13 +83,12 @@ export const auth = betterAuth({
         sendVerificationOnSignIn: true,
         autoSignInAfterVerification: true,
         sendVerificationEmail: async ({ user, url }: { user: any, url: string }) => {
-            logger.info('Email Verification', `Sending verification email to ${user.email}`, { url });
             const resend = new Resend(process.env.RESEND_API_KEY as string);
             await resend.emails.send({
                 from: 'noreply@databuddy.cc',
                 to: user.email,
                 subject: 'Verify your email',
-                html: `<p>Click <a href="${url}">here</a> to verify your email</p>`
+                react: VerificationEmail({ url })
             });
         }
     },
@@ -115,34 +115,28 @@ export const auth = betterAuth({
     plugins: [
         emailOTP({
             async sendVerificationOTP({ email, otp, type }) {
-                logger.info('Email OTP', `Sending OTP to ${email} of type ${type}`);
                 const resend = new Resend(process.env.RESEND_API_KEY as string);
                 await resend.emails.send({
                     from: 'noreply@databuddy.cc',
                     to: email,
                     subject: 'Verify your email',
-                    html: `<p>Your verification code is ${otp}</p>`
+                    react: OtpEmail({ otp })
                 })
             },
         }),
         magicLink({
             sendMagicLink: async ({ email, token, url }) => {
-                logger.info('Magic Link', `Sending magic link to ${email}`, { url });
                 const resend = new Resend(process.env.RESEND_API_KEY as string);
                 await resend.emails.send({
                     from: 'noreply@databuddy.cc',
                     to: email,
                     subject: 'Login to Databuddy',
-                    html: `<p>Click <a href="${url}">here</a> to verify your email</p>`
+                    react: MagicLinkEmail({ url })
                 });
             }
         }),
         twoFactor(),
         multiSession(),
-        // captcha({
-        //     provider: "cloudflare-turnstile",
-        //     secretKey: process.env.RECAPTCHA_SECRET_KEY as string,
-        // })
         nextCookies(),
         customSession(async ({ user: sessionUser, session }) => {
             const [dbUser] = await db.query.user.findMany({
@@ -173,23 +167,13 @@ export const auth = betterAuth({
                 viewer,
             },
             sendInvitationEmail: async ({ email, inviter, organization, invitation }) => {
-                logger.info(
-                    'Organization Invitation',
-                    `Inviting ${email} to ${organization.name}`,
-                    { inviter: inviter.user.name, organizationId: organization.id }
-                );
                 const invitationLink = `https://app.databuddy.cc/invitations/${invitation.id}`;
                 const resend = new Resend(process.env.RESEND_API_KEY as string);
                 await resend.emails.send({
                     from: 'noreply@databuddy.cc',
                     to: email,
                     subject: `You're invited to join ${organization.name}`,
-                    html: `
-                        <p>Hi there!</p>
-                        <p>${inviter.user.name} has invited you to join <strong>${organization.name}</strong>.</p>
-                        <p><a href="${invitationLink}">Click here to accept the invitation</a></p>
-                        <p>This invitation will expire in 48 hours.</p>
-                    `
+                    react: InvitationEmail({ inviterName: inviter.user.name, organizationName: organization.name, invitationLink: invitationLink })
                 });
             }
         }),

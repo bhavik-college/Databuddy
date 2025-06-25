@@ -29,21 +29,7 @@ app.use('*', sentry())
 app.use('*', HonoLogger());
 
 app.use('*', cors({
-  origin: (origin) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return '*';
-
-    const allowedOrigins = [
-      'https://dashboard.databuddy.cc',
-      'https://app.databuddy.cc',
-      'http://localhost:4000',
-      'https://api.databuddy.cc',
-      'https://databuddy.cc',
-      'https://www.databuddy.cc'
-    ];
-
-    return allowedOrigins.includes(origin) ? origin : null;
-  },
+  origin: process.env.NODE_ENV === 'development' ? "http://localhost:3000" : "https://app.databuddy.cc",
   allowHeaders: [
     'Content-Type',
     'Authorization',
