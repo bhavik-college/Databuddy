@@ -44,6 +44,7 @@
     "nuqs": "^2.4.3",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "react-image-crop": "^11.0.10",
     "recharts": "^2.15.3",
     "resend": "^4.4.1",
     "superjson": "^2.2.2",

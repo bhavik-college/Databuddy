@@ -10,6 +10,7 @@ import domainsRouter from './routes/v1/domains';
 import funnelRouter from './routes/v1/funnels';
 import revenueRouter from './routes/v1/revenue';
 import redditRouter from './routes/v1/reddit';
+import { uploadRouter } from './routes/v1/upload';
 import { logger } from './lib/logger';
 import { logger as discordLogger } from './lib/discord-webhook';
 import { logger as HonoLogger } from "hono/logger"
@@ -82,6 +83,7 @@ app.route('/v1/domains', domainsRouter);
 app.route('/v1/funnels', funnelRouter);
 app.route('/v1/revenue', revenueRouter);
 app.route('/v1/reddit', redditRouter);
+app.route('/v1/upload', uploadRouter);
 
 app.get('/health', (c) => c.json({ status: 'ok', version: '1.0.0' }));
 app.get('/', (c) => c.json({ status: 'ok', version: '1.0.0' }));

@@ -27,6 +27,7 @@ import {
 import { useOrganizations } from "@/hooks/use-organizations";
 import { toast } from "sonner";
 import { TransferAssets } from "./transfer-assets";
+import { OrganizationLogoUploader } from "./organization-logo-uploader";
 
 interface SettingsTabProps {
     organization: any;
@@ -36,7 +37,6 @@ export function SettingsTab({ organization }: SettingsTabProps) {
     const router = useRouter();
     const [name, setName] = useState(organization.name);
     const [slug, setSlug] = useState(organization.slug);
-    const [logoUrl, setLogoUrl] = useState(organization.logo || "");
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -77,7 +77,6 @@ export function SettingsTab({ organization }: SettingsTabProps) {
                 data: {
                     name: name.trim(),
                     slug: slug.trim(),
-                    logo: logoUrl.trim() || null
                 }
             });
 
@@ -110,8 +109,7 @@ export function SettingsTab({ organization }: SettingsTabProps) {
 
     const hasChanges =
         name !== organization.name ||
-        slug !== organization.slug ||
-        logoUrl !== (organization.logo || "");
+        slug !== organization.slug;
 
     return (
         <div className="space-y-8">
@@ -124,28 +122,7 @@ export function SettingsTab({ organization }: SettingsTabProps) {
 
                 <div className="space-y-6">
                     {/* Logo Section */}
-                    <div className="space-y-3">
-                        <Label>Organization Logo</Label>
-                        <div className="flex items-center gap-4">
-                            <Avatar className="h-16 w-16 border border-border/50">
-                                <AvatarImage src={logoUrl || undefined} alt={name} />
-                                <AvatarFallback className="text-lg font-medium bg-accent">
-                                    {getOrganizationInitials(name)}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                                <Input
-                                    placeholder="https://example.com/logo.png"
-                                    value={logoUrl}
-                                    onChange={(e) => setLogoUrl(e.target.value)}
-                                    className="rounded"
-                                />
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    Enter a URL to your organization's logo image
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                    <OrganizationLogoUploader organization={organization} />
 
                     {/* Name */}
                     <div className="space-y-2">

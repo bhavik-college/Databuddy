@@ -2,6 +2,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authClient } from "@databuddy/auth/client";
 import { toast } from "sonner";
 
+type SessionData = {
+  session: {
+    token: string;
+  }
+}
+
+function isSessionData(data: any): data is SessionData {
+  return data && typeof data === 'object' && 'session' in data && 'token' in data.session;
+}
+
 interface CreateOrganizationData {
   name: string;
   slug?: string;
@@ -100,6 +110,34 @@ export function useOrganizations() {
     "Failed to update organization"
   ));
 
+  const uploadOrganizationLogoMutation = useMutation(createMutation(
+    async ({ organizationId, formData }: { organizationId: string; formData: FormData }) => {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/upload/organization/${organizationId}/logo`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to upload logo' }));
+        throw new Error(errorData.error || 'Failed to upload logo');
+      }
+
+      const { url } = await response.json();
+
+      await authClient.organization.update({
+        data: {
+          logo: url,
+        },
+        organizationId,
+      });
+
+      return { url };
+    },
+    "Logo uploaded successfully",
+    "Failed to upload logo"
+  ));
+
   const deleteOrganizationMutation = useMutation(createMutation(
     async (organizationId: string) => {
       const { data: result, error } = await authClient.organization.delete({ organizationId });
@@ -149,12 +187,14 @@ export function useOrganizations() {
     updateOrganization: updateOrganizationMutation.mutate,
     deleteOrganization: deleteOrganizationMutation.mutate,
     setActiveOrganization: setActiveOrganizationMutation.mutate,
+    uploadOrganizationLogo: uploadOrganizationLogoMutation.mutate,
 
     // Action states
     isCreatingOrganization: createOrganizationMutation.isPending,
     isUpdatingOrganization: updateOrganizationMutation.isPending,
     isDeletingOrganization: deleteOrganizationMutation.isPending,
     isSettingActiveOrganization: setActiveOrganizationMutation.isPending,
+    isUploadingOrganizationLogo: uploadOrganizationLogoMutation.isPending,
   };
 }
 
