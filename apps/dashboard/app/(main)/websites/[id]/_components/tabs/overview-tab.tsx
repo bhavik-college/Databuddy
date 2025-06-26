@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation";
 import { StatCard } from "@/components/analytics/stat-card";
 import { MetricsChart } from "@/components/charts/metrics-chart";
 import { DataTable } from "@/components/analytics/data-table";
-import { useDynamicQuery, useBatchDynamicQuery } from "@/hooks/use-dynamic-query";
+import { useDynamicQuery, useBatchDynamicQuery, useRealTimeStats } from "@/hooks/use-dynamic-query";
 import {
   formatDateByGranularity,
   getColorVariant,
@@ -143,6 +143,8 @@ export function WebsiteOverviewTab({
   isRefreshing,
   setIsRefreshing,
 }: FullTabProps) {
+
+  const { activeUsers } = useRealTimeStats(websiteId);
 
   const queries = useMemo(() => [
     {
@@ -788,6 +790,17 @@ export function WebsiteOverviewTab({
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         <StatCard
           title="UNIQUE VISITORS"
+          titleExtra={
+            activeUsers > 0 && (
+              <div className="flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                {activeUsers} live
+              </div>
+            )
+          }
           value={analytics.summary?.unique_visitors || 0}
           icon={UsersIcon}
           description={`${analytics.today?.visitors || 0} today`}

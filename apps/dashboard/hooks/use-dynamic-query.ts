@@ -64,6 +64,12 @@ export interface ParametersResponse {
     referrers: string[];
     performance: string[];
     errors: string[];
+    web_vitals: string[];
+    custom_events: string[];
+    user_journeys: string[];
+    funnel_analysis: string[];
+    revenue: string[];
+    real_time: string[];
   };
 }
 
@@ -218,6 +224,16 @@ export interface TodayMetricsData {
   pageviews: number;
 }
 
+export interface ActiveStatsData {
+  active_users: number;
+  active_sessions: number;
+  total_events: number;
+}
+
+export interface LatestEventData {
+  [key: string]: any;
+}
+
 export interface EventsByDateData {
   date: string;
   pageviews: number;
@@ -226,6 +242,11 @@ export interface EventsByDateData {
   sessions: number;
   bounce_rate: number;
   avg_session_duration: number;
+  revenue_by_currency: RevenueBreakdownData;
+  revenue_by_card_brand: RevenueBreakdownData;
+  // Real-time
+  active_stats: ActiveStatsData;
+  latest_events: LatestEventData;
 }
 
 export interface EntryPageData {
@@ -312,6 +333,9 @@ export type ParameterDataMap = {
   revenue_by_country: RevenueBreakdownData;
   revenue_by_currency: RevenueBreakdownData;
   revenue_by_card_brand: RevenueBreakdownData;
+  // Real-time
+  active_stats: ActiveStatsData;
+  latest_events: LatestEventData;
 };
 
 // Helper type to extract data types from parameters
@@ -1198,4 +1222,45 @@ export function useRevenueAnalytics(
     hasCurrencyData: batchResult.hasDataForQuery('revenue-by-currency', 'revenue_by_currency'),
     hasCardBrandData: batchResult.hasDataForQuery('revenue-by-card-brand', 'revenue_by_card_brand'),
   };
+}
+
+/**
+ * Hook for real-time active user stats. Polls every 5 seconds.
+ */
+export function useRealTimeStats(
+  websiteId: string,
+  options?: Partial<UseQueryOptions<DynamicQueryResponse>>
+) {
+  const dateRange = useMemo(() => {
+    const now = new Date();
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+    return {
+      start_date: fiveMinutesAgo.toISOString(),
+      end_date: now.toISOString(),
+    };
+  }, []);
+
+  const queryResult = useDynamicQuery(
+    websiteId,
+    dateRange,
+    {
+      id: 'realtime-active-stats',
+      parameters: ['active_stats'],
+    },
+    {
+      ...options,
+      refetchInterval: 5000,
+      staleTime: 0,
+      gcTime: 10000,
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+    }
+  );
+
+  const activeUsers = useMemo(() => {
+    const data = (queryResult.data as any)?.active_stats?.[0];
+    return data?.active_users || 0;
+  }, [queryResult.data]);
+
+  return { ...queryResult, activeUsers };
 } 

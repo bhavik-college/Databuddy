@@ -1,12 +1,11 @@
 import type { ParameterBuilder, BuilderConfig } from './types';
+import sqlstring from 'sqlstring'
 
-// SQL escaping function to prevent injection
 export function escapeSqlString(value: string | number): string {
   if (typeof value === 'number') {
     return value.toString()
   }
-  // Escape single quotes by doubling them
-  return `'${String(value).replace(/'/g, "''")}'`
+  return sqlstring.escape(value)
 }
 
 // Define reusable metric sets
@@ -48,7 +47,7 @@ export function createQueryBuilder(config: BuilderConfig): ParameterBuilder {
       `time <= parseDateTimeBestEffort(${escapeSqlString(endDate)})`,
       `event_name = 'screen_view'`
     ];
-    
+
     if (config.eventName) {
       whereClauses.push(`event_name = ${escapeSqlString(config.eventName)}`);
     }
@@ -56,7 +55,7 @@ export function createQueryBuilder(config: BuilderConfig): ParameterBuilder {
     if (config.extraWhere) {
       whereClauses.push(config.extraWhere);
     }
-    
+
     return `
       SELECT 
         ${config.nameColumn} as name,
@@ -90,10 +89,10 @@ export function createAlias(targetParameter: string): ParameterBuilder {
 // Helper function to get metric type for a parameter
 export function getMetricType(parameter: string): string {
   const performanceParams = [
-    'slow_pages', 'performance_by_country', 'performance_by_device', 
+    'slow_pages', 'performance_by_country', 'performance_by_device',
     'performance_by_browser', 'performance_by_os', 'performance_by_region'
   ]
-  
+
   const errorParams = [
     'recent_errors', 'error_types', 'errors_by_page', 'errors_by_browser',
     'errors_by_os', 'errors_by_country', 'errors_by_device', 'error_trends'
@@ -102,22 +101,22 @@ export function getMetricType(parameter: string): string {
   const webVitalsParams = [
     'web_vitals_overview', 'web_vitals_by_page', 'web_vitals_by_device', 'web_vitals_trends'
   ]
-  
+
   const revenueParams = [
     'revenue_summary', 'revenue_trends', 'recent_transactions', 'recent_refunds',
     'revenue_by_country', 'revenue_by_currency', 'revenue_by_card_brand'
   ]
-  
+
   const exitParams = ['exit_page']
-  
+
   const specialParams = ['sessions_summary']
-  
+
   if (performanceParams.includes(parameter)) return 'performance'
   if (errorParams.includes(parameter)) return 'errors'
   if (webVitalsParams.includes(parameter)) return 'web_vitals'
   if (revenueParams.includes(parameter)) return 'revenue'
   if (exitParams.includes(parameter)) return 'exits'
   if (specialParams.includes(parameter)) return 'special'
-  
+
   return 'standard'
 } 

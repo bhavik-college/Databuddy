@@ -11,6 +11,7 @@ export * from './user-journey'
 export * from './funnel'
 export * from './aliases'
 export * from './revenue'
+export * from './real-time'
 
 import type { ParameterBuilder } from '../types'
 import { deviceBuilders } from './device'
@@ -26,6 +27,7 @@ import { userJourneyBuilders } from './user-journey'
 import { funnelBuilders } from './funnel'
 import { aliasBuilders } from './aliases'
 import { revenueBuilders } from './revenue'
+import { realTimeBuilders } from './real-time'
 
 export const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
   ...deviceBuilders,
@@ -41,4 +43,5 @@ export const PARAMETER_BUILDERS: Record<string, ParameterBuilder> = {
   ...funnelBuilders,
   ...aliasBuilders,
   ...revenueBuilders,
+  ...realTimeBuilders,
 } 

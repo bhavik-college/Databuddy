@@ -18,9 +18,9 @@
     "test": "bun run src/scripts/test.ts"
   },
   "dependencies": {
-    "@databuddy/auth": "workspace:*",
     "@clickhouse/client": "^1.11.1",
     "@clickhouse/client-web": "^1.11.1",
+    "@databuddy/auth": "workspace:*",
     "@highlight-run/hono": "^1.0.4",
     "@hono/node-server": "^1.14.1",
     "@hono/sentry": "^1.2.1",
@@ -36,6 +36,7 @@
     "pino-pretty": "^13.0.0",
     "react": "19.0.0",
     "snoowrap": "^1.23.0",
+    "sqlstring": "^2.3.3",
     "ua-parser-js": "^2.0.3",
     "zod": "^3.24.3"
   },

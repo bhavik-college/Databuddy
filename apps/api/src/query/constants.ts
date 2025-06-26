@@ -11,5 +11,6 @@ export const PARAMETER_CATEGORIES = {
   custom_events: ['custom_events', 'custom_event_details', 'custom_events_by_page', 'custom_events_by_user', 'custom_event_properties', 'custom_event_property_values'],
   user_journeys: ['user_journeys', 'journey_paths', 'journey_dropoffs', 'journey_entry_points'],
   funnel_analysis: ['funnel_analysis', 'funnel_performance', 'funnel_steps_breakdown', 'funnel_user_segments'],
-  revenue: ['revenue_summary', 'revenue_trends', 'recent_transactions', 'recent_refunds', 'revenue_by_country', 'revenue_by_currency', 'revenue_by_card_brand']
+  revenue: ['revenue_summary', 'revenue_trends', 'recent_transactions', 'recent_refunds', 'revenue_by_country', 'revenue_by_currency', 'revenue_by_card_brand'],
+  real_time: ['active_stats', 'latest_events']
 } as const 

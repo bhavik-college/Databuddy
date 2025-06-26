@@ -27,6 +27,7 @@ interface Trend {
 
 interface StatCardProps {
   title: string;
+  titleExtra?: React.ReactNode;
   value: string | number;
   description?: string;
   icon?: ElementType | LucideIcon;
@@ -140,6 +141,7 @@ MiniChart.displayName = 'MiniChart';
 
 export function StatCard({
   title,
+  titleExtra,
   value,
   description,
   icon: Icon,
@@ -224,9 +226,12 @@ export function StatCard({
           {/* Header with title and icon */}
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
-              <p className="text-[9px] sm:text-[10px] md:text-xs font-semibold text-muted-foreground uppercase tracking-wider line-clamp-1 mb-0.5 sm:mb-1">
-                {title}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-[9px] sm:text-[10px] md:text-xs font-semibold text-muted-foreground uppercase tracking-wider line-clamp-1">
+                  {title}
+                </p>
+                {titleExtra}
+              </div>
               <div className={cn(
                 "font-bold leading-tight text-foreground group-hover:text-primary transition-colors duration-300",
                 isTimeValue ? "text-base sm:text-lg md:text-xl" : "text-lg sm:text-xl md:text-2xl",

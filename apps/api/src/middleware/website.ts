@@ -55,6 +55,12 @@ export const websiteAuthHook = (permission: Permission = { website: ["read"] }) 
       return next();
     }
 
+    if (user.role === 'ADMIN' || user.role === 'owner') {
+      const website = await getWebsiteById(websiteId);
+      c.set('website', website);
+      return next();
+    }
+
     const website = await getWebsiteById(websiteId);
     if (!website) {
       return c.json({ success: false, error: 'Website not found' }, 404);
