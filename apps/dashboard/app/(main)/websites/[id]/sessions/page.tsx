@@ -13,4 +13,4 @@ export default function SessionsPage() {
       <SessionsList websiteId={websiteId} />
     </div>
   );
-} 
+}

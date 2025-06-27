@@ -8,12 +8,12 @@ export interface AuthLoadingProps {
 
 export function AuthLoading({ className }: AuthLoadingProps) {
   return (
-    <div className={cn("h-full flex flex-col items-center justify-center", className)}>
+    <div className={cn("flex h-full flex-col items-center justify-center", className)}>
       <div className="flex flex-col items-center gap-4">
         <div style={{ transform: "scale(2.5)" }}>
           <Logo />
         </div>
-        <SpinnerIcon className="animate-spin mt-6" size={32 * 1.5} />
+        <SpinnerIcon className="mt-6 animate-spin" size={32 * 1.5} />
       </div>
     </div>
   );

@@ -30,4 +30,4 @@ export interface DomainActions {
   retryingDomains: Record<string, boolean>;
   deleteDialogOpen: Record<string, boolean>;
   regenerateDialogOpen: Record<string, boolean>;
-} 
+}

@@ -15,39 +15,55 @@ interface HelpDialogProps {
 
 export function HelpDialog({ open, onOpenChange }: HelpDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Help & Resources</DialogTitle>
-          <DialogDescription>
-            Get assistance and learn more about Databuddy
-          </DialogDescription>
+          <DialogDescription>Get assistance and learn more about Databuddy</DialogDescription>
         </DialogHeader>
         <div className="grid gap-3 py-4">
-          <Button variant="outline" className="justify-start text-left h-auto py-3">
+          <Button className="h-auto justify-start py-3 text-left" variant="outline">
             <div className="flex items-start gap-3">
-              <BookOpenIcon size={32} weight="duotone" className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <BookOpenIcon
+                className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary"
+                size={32}
+                weight="duotone"
+              />
               <div>
                 <h4 className="font-medium text-sm">Documentation</h4>
-                <span className="text-xs text-muted-foreground mt-1 block">Read guides and API references</span>
+                <span className="mt-1 block text-muted-foreground text-xs">
+                  Read guides and API references
+                </span>
               </div>
             </div>
           </Button>
-          <Button variant="outline" className="justify-start text-left h-auto py-3">
+          <Button className="h-auto justify-start py-3 text-left" variant="outline">
             <div className="flex items-start gap-3">
-              <ChatCircleIcon size={32} weight="duotone" className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <ChatCircleIcon
+                className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary"
+                size={32}
+                weight="duotone"
+              />
               <div>
                 <h4 className="font-medium text-sm">Contact Support</h4>
-                <span className="text-xs text-muted-foreground mt-1 block">Get help from our support team</span>
+                <span className="mt-1 block text-muted-foreground text-xs">
+                  Get help from our support team
+                </span>
               </div>
             </div>
           </Button>
-          <Button variant="outline" className="justify-start text-left h-auto py-3">
+          <Button className="h-auto justify-start py-3 text-left" variant="outline">
             <div className="flex items-start gap-3">
-              <LaptopIcon size={32} weight="duotone" className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <LaptopIcon
+                className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary"
+                size={32}
+                weight="duotone"
+              />
               <div>
                 <h4 className="font-medium text-sm">Tutorials</h4>
-                <span className="text-xs text-muted-foreground mt-1 block">Learn Databuddy step by step</span>
+                <span className="mt-1 block text-muted-foreground text-xs">
+                  Learn Databuddy step by step
+                </span>
               </div>
             </div>
           </Button>
@@ -55,4 +71,4 @@ export function HelpDialog({ open, onOpenChange }: HelpDialogProps) {
       </DialogContent>
     </Dialog>
   );
-} 
+}

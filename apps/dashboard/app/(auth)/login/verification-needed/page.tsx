@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Loader2, AlertCircle, ChevronLeft } from "lucide-react";
-import { toast } from "sonner";
-import Link from "next/link";
 import { authClient } from "@databuddy/auth/client";
+import { AlertCircle, ChevronLeft, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 export default function VerificationNeededPage() {
   const searchParams = useSearchParams();
@@ -37,28 +37,29 @@ export default function VerificationNeededPage() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto mt-12 bg-card rounded-xl shadow p-6 border border-border relative overflow-hidden">
-      <div className="text-center mb-8">
-        <div className="inline-flex justify-center items-center p-3 bg-amber-100 rounded-full mb-5 relative w-16 h-16">
-          <div className="absolute inset-0 bg-amber-50 rounded-full animate-pulse" />
-          <div className="absolute -inset-1 bg-gradient-to-tr from-amber-200 to-amber-100 rounded-full blur-md opacity-70" />
-          <div className="relative bg-gradient-to-tr from-amber-500 to-amber-400 rounded-full p-2.5">
+    <div className="relative mx-auto mt-12 w-full max-w-md overflow-hidden rounded-xl border border-border bg-card p-6 shadow">
+      <div className="mb-8 text-center">
+        <div className="relative mb-5 inline-flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 p-3">
+          <div className="absolute inset-0 animate-pulse rounded-full bg-amber-50" />
+          <div className="-inset-1 absolute rounded-full bg-gradient-to-tr from-amber-200 to-amber-100 opacity-70 blur-md" />
+          <div className="relative rounded-full bg-gradient-to-tr from-amber-500 to-amber-400 p-2.5">
             <AlertCircle className="h-8 w-8 text-white" />
           </div>
         </div>
-        <h1 className="text-2xl font-bold text-foreground">Verify your email</h1>
-        <p className="text-muted-foreground mt-2">
-          Verification needed for <strong className="text-amber-600 font-medium">{email}</strong>
+        <h1 className="font-bold text-2xl text-foreground">Verify your email</h1>
+        <p className="mt-2 text-muted-foreground">
+          Verification needed for <strong className="font-medium text-amber-600">{email}</strong>
         </p>
       </div>
       <div className="space-y-5 py-4">
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800">
           <p className="text-sm">
-            Your email <strong>{email}</strong> needs to be verified before you can sign in. Please check your inbox for the verification link.
+            Your email <strong>{email}</strong> needs to be verified before you can sign in. Please
+            check your inbox for the verification link.
           </p>
         </div>
         <Button
-          className="w-full bg-amber-500 hover:bg-amber-600 text-white"
+          className="w-full bg-amber-500 text-white hover:bg-amber-600"
           disabled={isLoading}
           onClick={sendVerificationEmail}
         >
@@ -73,9 +74,9 @@ export default function VerificationNeededPage() {
         </Button>
         <Link href="/login">
           <Button
-            variant="outline"
             className="w-full border-amber-200 text-amber-700 hover:bg-amber-50"
             type="button"
+            variant="outline"
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
             Back to login
@@ -84,4 +85,4 @@ export default function VerificationNeededPage() {
       </div>
     </div>
   );
-} 
+}

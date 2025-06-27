@@ -1,51 +1,45 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { stripe, TEST_PRODUCTS, type ProductKey } from '@/lib/stripe'
+import { type NextRequest, NextResponse } from "next/server";
+import { type ProductKey, stripe, TEST_PRODUCTS } from "@/lib/stripe";
 
 export async function POST(request: NextRequest) {
   try {
     if (!stripe) {
-      return NextResponse.json(
-        { error: 'Stripe not configured' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: "Stripe not configured" }, { status: 500 });
     }
 
-    const { productKey, clientId, sessionId } = await request.json()
+    const { productKey, clientId, sessionId } = await request.json();
 
-    if (!productKey || !TEST_PRODUCTS[productKey as ProductKey]) {
-      return NextResponse.json(
-        { error: 'Invalid product key' },
-        { status: 400 }
-      )
+    if (!(productKey && TEST_PRODUCTS[productKey as ProductKey])) {
+      return NextResponse.json({ error: "Invalid product key" }, { status: 400 });
     }
 
     if (!clientId) {
       return NextResponse.json(
-        { error: 'client_id is required for analytics tracking' },
+        { error: "client_id is required for analytics tracking" },
         { status: 400 }
-      )
+      );
     }
 
     if (!sessionId) {
       return NextResponse.json(
-        { error: 'sessionId is required for analytics tracking' },
+        { error: "sessionId is required for analytics tracking" },
         { status: 400 }
-      )
+      );
     }
 
-    const product = TEST_PRODUCTS[productKey as ProductKey]
+    const product = TEST_PRODUCTS[productKey as ProductKey];
 
-    console.log('🔵 Creating checkout session with Databuddy metadata:', {
+    console.log("🔵 Creating checkout session with Databuddy metadata:", {
       sessionId,
       clientId,
       productKey,
-      timestamp: new Date().toISOString()
-    })
+      timestamp: new Date().toISOString(),
+    });
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'payment',
+      payment_method_types: ["card"],
+      mode: "payment",
       line_items: [
         {
           price_data: {
@@ -76,19 +70,16 @@ export async function POST(request: NextRequest) {
           product_key: productKey,
         },
       },
-    })
+    });
 
     return NextResponse.json({
       sessionId: session.id,
       url: session.url,
       analyticsSessionId: sessionId,
-      clientId: clientId,
-    })
+      clientId,
+    });
   } catch (error) {
-    console.error('Error creating checkout session:', error)
-    return NextResponse.json(
-      { error: 'Failed to create checkout session' },
-      { status: 500 }
-    )
+    console.error("Error creating checkout session:", error);
+    return NextResponse.json({ error: "Failed to create checkout session" }, { status: 500 });
   }
-} 
+}

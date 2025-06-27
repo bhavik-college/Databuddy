@@ -4,11 +4,11 @@ import { scalePow } from "d3-scale";
 import type { Feature, GeoJsonObject } from "geojson";
 import type { Layer } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { GeoJSON, MapContainer } from "react-leaflet";
+import { getCountryPopulation } from "@/lib/data";
 import { useCountries, useSubdivisions } from "@/lib/geo";
 import { CountryFlag } from "./icons/CountryFlag";
-import { getCountryPopulation } from "@/lib/data";
 
 interface TooltipContent {
   name: string;
@@ -45,8 +45,8 @@ export function MapComponent({
     if (!locationsData?.countries) return null;
 
     // Filter out empty country codes and ensure proper formatting
-    const validCountries = locationsData.countries.filter((country: any) =>
-      country.country && country.country.trim() !== ""
+    const validCountries = locationsData.countries.filter(
+      (country: any) => country.country && country.country.trim() !== ""
     );
 
     const totalVisitors = validCountries.reduce((sum: number, c: any) => sum + c.visitors, 0) || 1;
@@ -79,7 +79,10 @@ export function MapComponent({
       data: Object.entries(regions).map(([key, data]) => ({
         value: key,
         count: data.visitors,
-        percentage: (data.visitors / (locationsData.cities.reduce((sum: number, c: any) => sum + c.visitors, 0) || 1)) * 100,
+        percentage:
+          (data.visitors /
+            (locationsData.cities.reduce((sum: number, c: any) => sum + c.visitors, 0) || 1)) *
+          100,
       })),
     };
   }, [locationsData?.cities]);
@@ -134,18 +137,18 @@ export function MapComponent({
       .range([0.1, 1]);
 
     return (value: number) => {
-      if (value === 0) return `rgba(229, 231, 235, 0.3)`; // Gray-200 for no data
+      if (value === 0) return "rgba(229, 231, 235, 0.3)"; // Gray-200 for no data
 
       const intensity = scale(value);
 
       // Use a gradient from light blue to dark blue based on intensity
       if (intensity < 0.3) {
         return `rgba(${lightBlue}, ${0.2 + intensity * 0.4})`;
-      } else if (intensity < 0.7) {
-        return `rgba(${baseBlue}, ${0.4 + intensity * 0.4})`;
-      } else {
-        return `rgba(${baseBlue}, ${0.7 + intensity * 0.3})`;
       }
+      if (intensity < 0.7) {
+        return `rgba(${baseBlue}, ${0.4 + intensity * 0.4})`;
+      }
+      return `rgba(${baseBlue}, ${0.7 + intensity * 0.3})`;
     };
   }, [processedCountryData, mode]);
 
@@ -165,31 +168,30 @@ export function MapComponent({
 
     // Dynamic border color and weight for better visual hierarchy
     const borderColor = hasData
-      ? (isHovered ? "rgba(59, 130, 246, 0.9)" : "rgba(59, 130, 246, 0.4)")
+      ? isHovered
+        ? "rgba(59, 130, 246, 0.9)"
+        : "rgba(59, 130, 246, 0.4)"
       : "rgba(156, 163, 175, 0.3)"; // Gray-400 for no data
 
-    const borderWeight = hasData
-      ? (isHovered ? 2.5 : 1.2)
-      : 0.8;
+    const borderWeight = hasData ? (isHovered ? 2.5 : 1.2) : 0.8;
 
     // Enhanced fill opacity with better contrast
-    const fillOpacity = hasData
-      ? (isHovered ? 0.95 : 0.8)
-      : 0.2;
+    const fillOpacity = hasData ? (isHovered ? 0.95 : 0.8) : 0.2;
 
     return {
       color: borderColor,
       weight: borderWeight,
       fill: true,
-      fillColor: fillColor,
-      fillOpacity: fillOpacity,
+      fillColor,
+      fillOpacity,
       opacity: 1,
       // Smooth transitions for better UX
       transition: "all 0.2s ease-in-out",
       // Add slight shadow effect for hovered countries
-      ...(isHovered && hasData && {
-        filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))"
-      })
+      ...(isHovered &&
+        hasData && {
+          filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))",
+        }),
     };
   };
 
@@ -234,14 +236,15 @@ export function MapComponent({
     };
 
     updateHeight();
-    window.addEventListener('resize', updateHeight);
-    return () => window.removeEventListener('resize', updateHeight);
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
   }, []);
 
   const zoom = resolvedHeight ? Math.log2(resolvedHeight / 400) + 1 : 1;
 
   return (
     <div
+      className="relative"
       onMouseMove={(e) => {
         if (tooltipContent) {
           setTooltipPosition({
@@ -250,17 +253,16 @@ export function MapComponent({
           });
         }
       }}
-      style={{
-        height: height,
-      }}
       ref={containerRef}
-      className="relative"
+      style={{
+        height,
+      }}
     >
       {passedIsLoading && (
-        <div className="absolute inset-0 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm z-10 flex items-center justify-center">
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
           <div className="flex flex-col items-center gap-3">
-            <div className="h-8 w-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+            <span className="font-medium text-gray-700 text-sm dark:text-gray-300">
               Loading map data...
             </span>
           </div>
@@ -269,11 +271,9 @@ export function MapComponent({
 
       {(countriesGeoData || subdivisionsGeoData) && (
         <MapContainer
-          preferCanvas={true}
           attributionControl={false}
-          zoomControl={false}
           center={[40, 3]}
-          zoom={zoom}
+          preferCanvas={true}
           style={{
             height: "100%",
             background: "none",
@@ -281,34 +281,32 @@ export function MapComponent({
             outline: "none",
             zIndex: "1",
           }}
+          zoom={zoom}
+          zoomControl={false}
         >
           {mapView === "countries" && countriesGeoData && (
             <GeoJSON
-              key={`countries-${dataVersion}-${mode}`}
               data={countriesGeoData as GeoJsonObject}
-              style={handleStyle as any}
+              key={`countries-${dataVersion}-${mode}`}
               onEachFeature={handleEachFeature}
+              style={handleStyle as any}
             />
           )}
         </MapContainer>
       )}
       {tooltipContent && (
         <div
-          className="fixed z-50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg p-3 shadow-xl border border-gray-200 dark:border-gray-700 text-sm pointer-events-none backdrop-blur-sm"
+          className="pointer-events-none fixed z-50 rounded-lg border border-gray-200 bg-white p-3 text-gray-900 text-sm shadow-xl backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
           style={{
             left: tooltipPosition.x,
             top: tooltipPosition.y - 10,
             transform: "translate(-50%, -100%)",
-            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
+            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
           }}
         >
-          <div className="font-medium flex items-center gap-2 mb-1">
-            {tooltipContent.code && (
-              <CountryFlag country={tooltipContent.code.slice(0, 2)} />
-            )}
-            <span className="text-gray-900 dark:text-white">
-              {tooltipContent.name}
-            </span>
+          <div className="mb-1 flex items-center gap-2 font-medium">
+            {tooltipContent.code && <CountryFlag country={tooltipContent.code.slice(0, 2)} />}
+            <span className="text-gray-900 dark:text-white">{tooltipContent.name}</span>
           </div>
           <div className="space-y-1">
             <div>
@@ -320,7 +318,7 @@ export function MapComponent({
               </span>
             </div>
             {mode === "perCapita" && (
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-gray-600 text-sm dark:text-gray-400">
                 <span className="font-bold text-blue-600 dark:text-blue-400">
                   {roundToTwo(tooltipContent.perCapita ?? 0)}
                 </span>{" "}
@@ -332,4 +330,4 @@ export function MapComponent({
       )}
     </div>
   );
-} 
+}

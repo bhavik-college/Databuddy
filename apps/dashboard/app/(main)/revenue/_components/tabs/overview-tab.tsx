@@ -1,59 +1,59 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { LightningIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { Badge } from "@/components/ui/badge";
-import { WarningCircleIcon, LightningIcon } from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface OverviewTabProps {
-    onSetupClick: () => void;
-    isSetupComplete: boolean;
-    setupProgress: number;
-    isLiveMode: boolean;
-    websiteId?: string;
+  onSetupClick: () => void;
+  isSetupComplete: boolean;
+  setupProgress: number;
+  isLiveMode: boolean;
+  websiteId?: string;
 }
 
-export function RevenueOverviewTab({
-    onSetupClick,
-    isSetupComplete,
-}: OverviewTabProps) {
-    if (!isSetupComplete) {
-        return (
-            <div className="text-center py-12 border-2 border-dashed rounded-lg">
-                <div className="inline-block p-3 bg-orange-100 rounded-full dark:bg-orange-900/20">
-                    <WarningCircleIcon size={32} weight="duotone" className="h-8 w-8 text-orange-500" />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold">Stripe Integration Not Configured</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                    You need to configure your Stripe webhook to start tracking revenue.
-                </p>
-                <div className="mt-6">
-                    <Button onClick={onSetupClick}>
-                        <LightningIcon size={16} weight="duotone" className="h-4 w-4 mr-2" />
-                        Go to Setup
-                    </Button>
-                </div>
-            </div>
-        );
-    }
-
+export function RevenueOverviewTab({ onSetupClick, isSetupComplete }: OverviewTabProps) {
+  if (!isSetupComplete) {
     return (
-        <div className="space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Revenue Tracking Active</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-muted-foreground">
-                        Your Stripe webhook is configured and ready to track revenue across all your websites.
-                    </p>
-                    <div className="mt-4">
-                        <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                            ✓ Active
-                        </Badge>
-                    </div>
-                </CardContent>
-            </Card>
+      <div className="rounded-lg border-2 border-dashed py-12 text-center">
+        <div className="inline-block rounded-full bg-orange-100 p-3 dark:bg-orange-900/20">
+          <WarningCircleIcon className="h-8 w-8 text-orange-500" size={32} weight="duotone" />
         </div>
+        <h3 className="mt-4 font-semibold text-lg">Stripe Integration Not Configured</h3>
+        <p className="mt-2 text-muted-foreground text-sm">
+          You need to configure your Stripe webhook to start tracking revenue.
+        </p>
+        <div className="mt-6">
+          <Button onClick={onSetupClick}>
+            <LightningIcon className="mr-2 h-4 w-4" size={16} weight="duotone" />
+            Go to Setup
+          </Button>
+        </div>
+      </div>
     );
-} 
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Revenue Tracking Active</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Your Stripe webhook is configured and ready to track revenue across all your websites.
+          </p>
+          <div className="mt-4">
+            <Badge
+              className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+              variant="secondary"
+            >
+              ✓ Active
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

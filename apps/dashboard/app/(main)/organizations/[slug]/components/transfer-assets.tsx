@@ -1,76 +1,87 @@
 "use client";
 
-import { useWebsiteTransfer } from "@/hooks/use-website-transfer";
-import { WebsiteSelector } from "./website-selector";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, Buildings, User } from "@phosphor-icons/react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { ArrowRight, User, Buildings } from "@phosphor-icons/react";
+import { useWebsiteTransfer } from "@/hooks/use-website-transfer";
+import { WebsiteSelector } from "./website-selector";
 
 export function TransferAssets({ organizationId }: { organizationId: string }) {
-    const { personalWebsites, organizationWebsites, transferWebsite, isTransferring, isLoading } = useWebsiteTransfer(organizationId);
-    const [selectedWebsite, setSelectedWebsite] = useState<string | null>(null);
+  const { personalWebsites, organizationWebsites, transferWebsite, isTransferring, isLoading } =
+    useWebsiteTransfer(organizationId);
+  const [selectedWebsite, setSelectedWebsite] = useState<string | null>(null);
 
-    const selectedSide = personalWebsites.some(w => w.id === selectedWebsite)
-        ? 'personal'
-        : organizationWebsites.some(w => w.id === selectedWebsite)
-            ? 'organization'
-            : null;
+  const selectedSide = personalWebsites.some((w) => w.id === selectedWebsite)
+    ? "personal"
+    : organizationWebsites.some((w) => w.id === selectedWebsite)
+      ? "organization"
+      : null;
 
-    const handleTransfer = () => {
-        if (!selectedWebsite || !selectedSide) return;
+  const handleTransfer = () => {
+    if (!(selectedWebsite && selectedSide)) return;
 
-        const destination = selectedSide === "personal"
-            ? { organizationId: organizationId }
-            : { organizationId: null };
+    const destination = selectedSide === "personal" ? { organizationId } : { organizationId: null };
 
-        transferWebsite({ websiteId: selectedWebsite, destination }, {
-            onSuccess: () => {
-                setSelectedWebsite(null);
-            }
-        });
-    };
-
-    if (isLoading) {
-        return <div className="flex items-center justify-center h-40"><Spinner /></div>
-    }
-
-    return (
-        <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-center">
-                {/* Personal Websites */}
-                <div className="flex flex-col gap-2 p-4 rounded-lg border">
-                    <div className="flex items-center gap-2 mb-2">
-                        <User size={16} />
-                        <h4 className="font-semibold">Your Websites</h4>
-                    </div>
-                    <WebsiteSelector
-                        websites={personalWebsites}
-                        selectedWebsite={selectedWebsite}
-                        onSelectWebsite={setSelectedWebsite}
-                    />
-                </div>
-
-                <div className="flex items-center justify-center">
-                    <Button onClick={handleTransfer} disabled={!selectedSide || isTransferring} size="icon" variant="outline">
-                        <ArrowRight />
-                    </Button>
-                </div>
-
-                {/* Organization Websites */}
-                <div className="flex flex-col gap-2 p-4 rounded-lg border">
-                    <div className="flex items-center gap-2 mb-2">
-                        <Buildings size={16} />
-                        <h4 className="font-semibold">Organization Websites</h4>
-                    </div>
-                    <WebsiteSelector
-                        websites={organizationWebsites}
-                        selectedWebsite={selectedWebsite}
-                        onSelectWebsite={setSelectedWebsite}
-                    />
-                </div>
-            </div>
-        </div>
+    transferWebsite(
+      { websiteId: selectedWebsite, destination },
+      {
+        onSuccess: () => {
+          setSelectedWebsite(null);
+        },
+      }
     );
-} 
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-40 items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 items-center gap-4 md:grid-cols-[1fr_auto_1fr]">
+        {/* Personal Websites */}
+        <div className="flex flex-col gap-2 rounded-lg border p-4">
+          <div className="mb-2 flex items-center gap-2">
+            <User size={16} />
+            <h4 className="font-semibold">Your Websites</h4>
+          </div>
+          <WebsiteSelector
+            onSelectWebsite={setSelectedWebsite}
+            selectedWebsite={selectedWebsite}
+            websites={personalWebsites}
+          />
+        </div>
+
+        <div className="flex items-center justify-center">
+          <Button
+            disabled={!selectedSide || isTransferring}
+            onClick={handleTransfer}
+            size="icon"
+            variant="outline"
+          >
+            <ArrowRight />
+          </Button>
+        </div>
+
+        {/* Organization Websites */}
+        <div className="flex flex-col gap-2 rounded-lg border p-4">
+          <div className="mb-2 flex items-center gap-2">
+            <Buildings size={16} />
+            <h4 className="font-semibold">Organization Websites</h4>
+          </div>
+          <WebsiteSelector
+            onSelectWebsite={setSelectedWebsite}
+            selectedWebsite={selectedWebsite}
+            websites={organizationWebsites}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}

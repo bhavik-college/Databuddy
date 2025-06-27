@@ -1,16 +1,12 @@
 "use client";
 
-import { Sidebar } from "@/components/layout/sidebar";
-import { useAuthSession } from "@/app/providers";
-import { RedirectToSignIn } from "@/components/auth/redirect-to-sign-in";
-import { AuthLoading } from "@/components/auth/auth-loading";
 import { MantineProvider } from "@mantine/core";
+import { useAuthSession } from "@/app/providers";
+import { AuthLoading } from "@/components/auth/auth-loading";
+import { RedirectToSignIn } from "@/components/auth/redirect-to-sign-in";
+import { Sidebar } from "@/components/layout/sidebar";
 
-export default function MainLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { session, isLoading } = useAuthSession();
 
   if (isLoading) {
@@ -22,13 +18,11 @@ export default function MainLayout({
   }
 
   return (
-    <div className="h-screen text-foreground overflow-hidden">
+    <div className="h-screen overflow-hidden text-foreground">
       <Sidebar />
-      <div className="md:pl-72 pt-16 h-screen relative">
-        <div className="h-[calc(100vh-4rem)] overflow-y-scroll">
-          {children}
-        </div>
+      <div className="relative h-screen pt-16 md:pl-72">
+        <div className="h-[calc(100vh-4rem)] overflow-y-scroll">{children}</div>
       </div>
     </div>
   );
-}  
+}

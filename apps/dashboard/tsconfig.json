@@ -20,10 +20,26 @@
     ],
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "strictNullChecks": true
   },
-  "include": ["next-env.d.ts", "types/**/*.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "components/ui", "ui", ".next", "dist", ".turbo", ".turbo", "**/node_modules"],
+  "include": [
+    "next-env.d.ts",
+    "types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "components/ui",
+    "ui",
+    ".next",
+    "dist",
+    ".turbo",
+    ".turbo",
+    "**/node_modules"
+  ],
   "skipLibCheck": true,
   "noImplicitAny": false,
   "incremental": true

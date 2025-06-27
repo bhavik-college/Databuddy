@@ -1,15 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authClient } from "@databuddy/auth/client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 type SessionData = {
   session: {
     token: string;
-  }
-}
+  };
+};
 
 function isSessionData(data: any): data is SessionData {
-  return data && typeof data === 'object' && 'session' in data && 'token' in data.session;
+  return data && typeof data === "object" && "session" in data && "token" in data.session;
 }
 
 interface CreateOrganizationData {
@@ -72,94 +72,122 @@ const createMutation = <TData, TVariables>(
  */
 export function useOrganizations() {
   const queryClient = useQueryClient();
-  const { data, error: organizationsError, isPending: isOrganizationsPending } = authClient.useListOrganizations();
-  const { data: activeOrganization, error: activeOrganizationError, isPending: isActiveOrganizationPending } = authClient.useActiveOrganization();
+  const {
+    data,
+    error: organizationsError,
+    isPending: isOrganizationsPending,
+  } = authClient.useListOrganizations();
+  const {
+    data: activeOrganization,
+    error: activeOrganizationError,
+    isPending: isActiveOrganizationPending,
+  } = authClient.useActiveOrganization();
 
   const organizations = data || [];
 
-  const createOrganizationMutation = useMutation(createMutation(
-    async (data: CreateOrganizationData) => {
-      const { data: result, error } = await authClient.organization.create({
-        name: data.name,
-        slug: data.slug || data.name.toLowerCase().replace(/\s+/g, '-'),
-        logo: data.logo,
-        metadata: data.metadata,
-      });
-      if (error) throw new Error(error.message || "Failed to create organization");
-      return result;
-    },
-    "Organization created successfully",
-    "Failed to create organization"
-  ));
-
-  const updateOrganizationMutation = useMutation(createMutation(
-    async ({ organizationId, data }: { organizationId?: string; data: UpdateOrganizationData }) => {
-      const { data: result, error } = await authClient.organization.update({
-        organizationId,
-        data: {
+  const createOrganizationMutation = useMutation(
+    createMutation(
+      async (data: CreateOrganizationData) => {
+        const { data: result, error } = await authClient.organization.create({
           name: data.name,
-          slug: data.slug,
+          slug: data.slug || data.name.toLowerCase().replace(/\s+/g, "-"),
           logo: data.logo,
           metadata: data.metadata,
-        },
-      });
-      if (error) throw new Error(error.message || "Failed to update organization");
-      return result;
-    },
-    "Organization updated successfully",
-    "Failed to update organization"
-  ));
+        });
+        if (error) throw new Error(error.message || "Failed to create organization");
+        return result;
+      },
+      "Organization created successfully",
+      "Failed to create organization"
+    )
+  );
 
-  const uploadOrganizationLogoMutation = useMutation(createMutation(
-    async ({ organizationId, formData }: { organizationId: string; formData: FormData }) => {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/upload/organization/${organizationId}/logo`, {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to upload logo' }));
-        throw new Error(errorData.error || 'Failed to upload logo');
-      }
-
-      const { url } = await response.json();
-
-      await authClient.organization.update({
-        data: {
-          logo: url,
-        },
+  const updateOrganizationMutation = useMutation(
+    createMutation(
+      async ({
         organizationId,
-      });
+        data,
+      }: {
+        organizationId?: string;
+        data: UpdateOrganizationData;
+      }) => {
+        const { data: result, error } = await authClient.organization.update({
+          organizationId,
+          data: {
+            name: data.name,
+            slug: data.slug,
+            logo: data.logo,
+            metadata: data.metadata,
+          },
+        });
+        if (error) throw new Error(error.message || "Failed to update organization");
+        return result;
+      },
+      "Organization updated successfully",
+      "Failed to update organization"
+    )
+  );
 
-      return { url };
-    },
-    "Logo uploaded successfully",
-    "Failed to upload logo"
-  ));
+  const uploadOrganizationLogoMutation = useMutation(
+    createMutation(
+      async ({ organizationId, formData }: { organizationId: string; formData: FormData }) => {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/upload/organization/${organizationId}/logo`,
+          {
+            method: "POST",
+            body: formData,
+            credentials: "include",
+          }
+        );
 
-  const deleteOrganizationMutation = useMutation(createMutation(
-    async (organizationId: string) => {
-      const { data: result, error } = await authClient.organization.delete({ organizationId });
-      if (error) throw new Error(error.message || "Failed to delete organization");
-      return result;
-    },
-    "Organization deleted successfully",
-    "Failed to delete organization"
-  ));
+        if (!response.ok) {
+          const errorData = await response
+            .json()
+            .catch(() => ({ message: "Failed to upload logo" }));
+          throw new Error(errorData.error || "Failed to upload logo");
+        }
+
+        const { url } = await response.json();
+
+        await authClient.organization.update({
+          data: {
+            logo: url,
+          },
+          organizationId,
+        });
+
+        return { url };
+      },
+      "Logo uploaded successfully",
+      "Failed to upload logo"
+    )
+  );
+
+  const deleteOrganizationMutation = useMutation(
+    createMutation(
+      async (organizationId: string) => {
+        const { data: result, error } = await authClient.organization.delete({ organizationId });
+        if (error) throw new Error(error.message || "Failed to delete organization");
+        return result;
+      },
+      "Organization deleted successfully",
+      "Failed to delete organization"
+    )
+  );
 
   const setActiveOrganizationMutation = useMutation({
     mutationFn: async (organizationId: string | null) => {
       if (organizationId === null) {
         // Unset active organization by calling setActive with empty object
-        const { data: result, error } = await authClient.organization.setActive({ organizationId: null });
+        const { data: result, error } = await authClient.organization.setActive({
+          organizationId: null,
+        });
         if (error) throw new Error(error.message || "Failed to unset active organization");
         return result;
-      } else {
-        const { data: result, error } = await authClient.organization.setActive({ organizationId });
-        if (error) throw new Error(error.message || "Failed to set active organization");
-        return result;
       }
+      const { data: result, error } = await authClient.organization.setActive({ organizationId });
+      if (error) throw new Error(error.message || "Failed to set active organization");
+      return result;
     },
     onSuccess: () => {
       toast.success("Workspace updated");
@@ -225,53 +253,61 @@ export function useOrganizationMembers(organizationId: string) {
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.organizationMembers(organizationId) });
   };
 
-  const inviteMemberMutation = useMutation(createMutation(
-    async (data: InviteMemberData) => {
-      const { data: result, error } = await authClient.organization.inviteMember({
-        email: data.email,
-        role: data.role,
-        organizationId: data.organizationId,
-        resend: data.resend,
-      });
-      if (error) throw new Error(error.message || "Failed to invite member");
-      return result;
-    },
-    "Member invited successfully",
-    "Failed to invite member",
-    () => {
-      invalidateMembers();
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.organizationInvitations(organizationId) });
-    }
-  ));
+  const inviteMemberMutation = useMutation(
+    createMutation(
+      async (data: InviteMemberData) => {
+        const { data: result, error } = await authClient.organization.inviteMember({
+          email: data.email,
+          role: data.role,
+          organizationId: data.organizationId,
+          resend: data.resend,
+        });
+        if (error) throw new Error(error.message || "Failed to invite member");
+        return result;
+      },
+      "Member invited successfully",
+      "Failed to invite member",
+      () => {
+        invalidateMembers();
+        queryClient.invalidateQueries({
+          queryKey: QUERY_KEYS.organizationInvitations(organizationId),
+        });
+      }
+    )
+  );
 
-  const updateMemberMutation = useMutation(createMutation(
-    async (data: UpdateMemberData) => {
-      const { data: result, error } = await authClient.organization.updateMemberRole({
-        memberId: data.memberId,
-        role: data.role,
-        organizationId: data.organizationId,
-      });
-      if (error) throw new Error(error.message || "Failed to update member role");
-      return result;
-    },
-    "Member role updated successfully",
-    "Failed to update member role",
-    invalidateMembers
-  ));
+  const updateMemberMutation = useMutation(
+    createMutation(
+      async (data: UpdateMemberData) => {
+        const { data: result, error } = await authClient.organization.updateMemberRole({
+          memberId: data.memberId,
+          role: data.role,
+          organizationId: data.organizationId,
+        });
+        if (error) throw new Error(error.message || "Failed to update member role");
+        return result;
+      },
+      "Member role updated successfully",
+      "Failed to update member role",
+      invalidateMembers
+    )
+  );
 
-  const removeMemberMutation = useMutation(createMutation(
-    async (memberIdOrEmail: string) => {
-      const { data: result, error } = await authClient.organization.removeMember({
-        memberIdOrEmail,
-        organizationId,
-      });
-      if (error) throw new Error(error.message || "Failed to remove member");
-      return result;
-    },
-    "Member removed successfully",
-    "Failed to remove member",
-    invalidateMembers
-  ));
+  const removeMemberMutation = useMutation(
+    createMutation(
+      async (memberIdOrEmail: string) => {
+        const { data: result, error } = await authClient.organization.removeMember({
+          memberIdOrEmail,
+          organizationId,
+        });
+        if (error) throw new Error(error.message || "Failed to remove member");
+        return result;
+      },
+      "Member removed successfully",
+      "Failed to remove member",
+      invalidateMembers
+    )
+  );
 
   return {
     members,
@@ -315,16 +351,23 @@ export function useOrganizationInvitations(organizationId: string) {
     enabled: !!organizationId,
   });
 
-  const cancelInvitationMutation = useMutation(createMutation(
-    async (invitationId: string) => {
-      const { data: result, error } = await authClient.organization.cancelInvitation({ invitationId });
-      if (error) throw new Error(error.message || "Failed to cancel invitation");
-      return result;
-    },
-    "Invitation cancelled successfully",
-    "Failed to cancel invitation",
-    () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.organizationInvitations(organizationId) })
-  ));
+  const cancelInvitationMutation = useMutation(
+    createMutation(
+      async (invitationId: string) => {
+        const { data: result, error } = await authClient.organization.cancelInvitation({
+          invitationId,
+        });
+        if (error) throw new Error(error.message || "Failed to cancel invitation");
+        return result;
+      },
+      "Invitation cancelled successfully",
+      "Failed to cancel invitation",
+      () =>
+        queryClient.invalidateQueries({
+          queryKey: QUERY_KEYS.organizationInvitations(organizationId),
+        })
+    )
+  );
 
   return {
     invitations,
@@ -365,27 +408,35 @@ export function useUserInvitations() {
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.userInvitations });
   };
 
-  const acceptInvitationMutation = useMutation(createMutation(
-    async (invitationId: string) => {
-      const { data: result, error } = await authClient.organization.acceptInvitation({ invitationId });
-      if (error) throw new Error(error.message || "Failed to accept invitation");
-      return result;
-    },
-    "Invitation accepted successfully",
-    "Failed to accept invitation",
-    invalidateUserInvitations
-  ));
+  const acceptInvitationMutation = useMutation(
+    createMutation(
+      async (invitationId: string) => {
+        const { data: result, error } = await authClient.organization.acceptInvitation({
+          invitationId,
+        });
+        if (error) throw new Error(error.message || "Failed to accept invitation");
+        return result;
+      },
+      "Invitation accepted successfully",
+      "Failed to accept invitation",
+      invalidateUserInvitations
+    )
+  );
 
-  const rejectInvitationMutation = useMutation(createMutation(
-    async (invitationId: string) => {
-      const { data: result, error } = await authClient.organization.rejectInvitation({ invitationId });
-      if (error) throw new Error(error.message || "Failed to reject invitation");
-      return result;
-    },
-    "Invitation rejected",
-    "Failed to reject invitation",
-    invalidateUserInvitations
-  ));
+  const rejectInvitationMutation = useMutation(
+    createMutation(
+      async (invitationId: string) => {
+        const { data: result, error } = await authClient.organization.rejectInvitation({
+          invitationId,
+        });
+        if (error) throw new Error(error.message || "Failed to reject invitation");
+        return result;
+      },
+      "Invitation rejected",
+      "Failed to reject invitation",
+      invalidateUserInvitations
+    )
+  );
 
   return {
     invitations,
@@ -400,4 +451,4 @@ export function useUserInvitations() {
     isAcceptingInvitation: acceptInvitationMutation.isPending,
     isRejectingInvitation: rejectInvitationMutation.isPending,
   };
-} 
+}

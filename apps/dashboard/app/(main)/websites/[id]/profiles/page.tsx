@@ -13,4 +13,4 @@ export default function ProfilesPage() {
       <ProfilesList websiteId={websiteId} />
     </div>
   );
-} 
+}

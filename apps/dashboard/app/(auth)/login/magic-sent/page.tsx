@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Loader2, MailCheck, ChevronLeft, Sparkles } from "lucide-react";
-import { toast } from "sonner";
-import Link from "next/link";
 import { signIn } from "@databuddy/auth/client";
+import { ChevronLeft, Loader2, MailCheck, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 export default function MagicSentPage() {
   const searchParams = useSearchParams();
@@ -42,28 +42,29 @@ export default function MagicSentPage() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto mt-12 bg-card rounded-xl shadow p-6 border border-border relative overflow-hidden">
-      <div className="text-center mb-8">
-        <div className="inline-flex justify-center items-center p-3 bg-blue-100 rounded-full mb-5 relative w-16 h-16">
-          <div className="absolute inset-0 bg-blue-50 rounded-full animate-pulse" />
-          <div className="absolute -inset-1 bg-gradient-to-tr from-blue-200 to-blue-100 rounded-full blur-md opacity-70" />
-          <div className="relative bg-gradient-to-tr from-blue-500 to-blue-400 rounded-full p-2.5">
+    <div className="relative mx-auto mt-12 w-full max-w-md overflow-hidden rounded-xl border border-border bg-card p-6 shadow">
+      <div className="mb-8 text-center">
+        <div className="relative mb-5 inline-flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 p-3">
+          <div className="absolute inset-0 animate-pulse rounded-full bg-blue-50" />
+          <div className="-inset-1 absolute rounded-full bg-gradient-to-tr from-blue-200 to-blue-100 opacity-70 blur-md" />
+          <div className="relative rounded-full bg-gradient-to-tr from-blue-500 to-blue-400 p-2.5">
             <MailCheck className="h-8 w-8 text-white" />
           </div>
         </div>
-        <h1 className="text-2xl font-bold text-foreground">Check your email</h1>
-        <p className="text-muted-foreground mt-2">
-          Magic link sent to <strong className="text-blue-600 font-medium">{email}</strong>
+        <h1 className="font-bold text-2xl text-foreground">Check your email</h1>
+        <p className="mt-2 text-muted-foreground">
+          Magic link sent to <strong className="font-medium text-blue-600">{email}</strong>
         </p>
       </div>
       <div className="space-y-5 py-4">
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800">
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-blue-800">
           <p className="text-sm">
-            We've sent a magic link to <strong>{email}</strong>. Please check your inbox and click the link to sign in instantly.
+            We've sent a magic link to <strong>{email}</strong>. Please check your inbox and click
+            the link to sign in instantly.
           </p>
         </div>
         <Button
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+          className="w-full bg-blue-500 text-white hover:bg-blue-600"
           disabled={isLoading}
           onClick={handleResend}
           type="button"
@@ -79,9 +80,9 @@ export default function MagicSentPage() {
         </Button>
         <Link href="/login">
           <Button
-            variant="outline"
             className="w-full border-blue-200 hover:bg-blue-50"
             type="button"
+            variant="outline"
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
             Back to login
@@ -90,4 +91,4 @@ export default function MagicSentPage() {
       </div>
     </div>
   );
-} 
+}

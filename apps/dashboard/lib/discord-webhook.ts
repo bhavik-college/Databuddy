@@ -35,7 +35,7 @@ export interface DiscordWebhookMessage {
   embeds?: DiscordEmbed[];
 }
 
-export type LogLevel = 'info' | 'success' | 'warning' | 'error' | 'debug';
+export type LogLevel = "info" | "success" | "warning" | "error" | "debug";
 
 export interface LogMessage {
   level: LogLevel;
@@ -48,20 +48,20 @@ export interface LogMessage {
 
 // Color constants for different log levels
 const LOG_COLORS = {
-  info: 0x3498db,     // Blue
-  success: 0x2ecc71,  // Green  
-  warning: 0xf39c12,  // Orange
-  error: 0xe74c3c,    // Red
-  debug: 0x9b59b6     // Purple
+  info: 0x34_98_db, // Blue
+  success: 0x2e_cc_71, // Green
+  warning: 0xf3_9c_12, // Orange
+  error: 0xe7_4c_3c, // Red
+  debug: 0x9b_59_b6, // Purple
 } as const;
 
 // Emoji constants for log levels
 const LOG_EMOJIS = {
-  info: 'ℹ️',
-  success: '✅',
-  warning: '⚠️',
-  error: '❌',
-  debug: '🐛'
+  info: "ℹ️",
+  success: "✅",
+  warning: "⚠️",
+  error: "❌",
+  debug: "🐛",
 } as const;
 
 class DiscordWebhook {
@@ -72,38 +72,44 @@ class DiscordWebhook {
   private isProcessingQueue = false;
 
   constructor(
-    webhookUrl: string, 
+    webhookUrl: string,
     options: {
       defaultUsername?: string;
       defaultAvatarUrl?: string;
     } = {}
   ) {
     this.webhookUrl = webhookUrl;
-    this.defaultUsername = options.defaultUsername || 'DataBuddy';
+    this.defaultUsername = options.defaultUsername || "DataBuddy";
     this.defaultAvatarUrl = options.defaultAvatarUrl;
   }
 
   /**
    * Send a simple text message
    */
-  async sendMessage(content: string, options: Partial<DiscordWebhookMessage> = {}): Promise<boolean> {
+  async sendMessage(
+    content: string,
+    options: Partial<DiscordWebhookMessage> = {}
+  ): Promise<boolean> {
     return this.send({
       content,
       username: this.defaultUsername,
       avatar_url: this.defaultAvatarUrl,
-      ...options
+      ...options,
     });
   }
 
   /**
    * Send a message with embed
    */
-  async sendEmbed(embed: DiscordEmbed, options: Partial<DiscordWebhookMessage> = {}): Promise<boolean> {
+  async sendEmbed(
+    embed: DiscordEmbed,
+    options: Partial<DiscordWebhookMessage> = {}
+  ): Promise<boolean> {
     return this.send({
       embeds: [embed],
       username: this.defaultUsername,
       avatar_url: this.defaultAvatarUrl,
-      ...options
+      ...options,
     });
   }
 
@@ -112,13 +118,13 @@ class DiscordWebhook {
    */
   async sendLog(logMessage: LogMessage): Promise<boolean> {
     const { level, title, message, metadata, userId, timestamp = new Date() } = logMessage;
-    
+
     const embed: DiscordEmbed = {
       title: `${LOG_EMOJIS[level]} ${title}`,
       description: message,
       color: LOG_COLORS[level],
       timestamp: timestamp.toISOString(),
-      fields: []
+      fields: [],
     };
 
     // Add metadata fields if provided
@@ -130,7 +136,7 @@ class DiscordWebhook {
         embed.fields.push({
           name: key.charAt(0).toUpperCase() + key.slice(1),
           value: this.formatValue(value),
-          inline: true
+          inline: true,
         });
       }
     }
@@ -141,15 +147,15 @@ class DiscordWebhook {
         embed.fields = [];
       }
       embed.fields.push({
-        name: 'User ID',
+        name: "User ID",
         value: userId,
-        inline: true
+        inline: true,
       });
     }
 
     // Add environment info
     embed.footer = {
-      text: `Environment: ${process.env.NODE_ENV || 'unknown'} | ${new Date().toLocaleString()}`
+      text: `Environment: ${process.env.NODE_ENV || "unknown"} | ${new Date().toLocaleString()}`,
     };
 
     return this.sendEmbed(embed);
@@ -158,40 +164,60 @@ class DiscordWebhook {
   /**
    * Quick log methods for different levels
    */
-  async logInfo(title: string, message: string, metadata?: Record<string, unknown>): Promise<boolean> {
-    return this.sendLog({ level: 'info', title, message, metadata });
+  async logInfo(
+    title: string,
+    message: string,
+    metadata?: Record<string, unknown>
+  ): Promise<boolean> {
+    return this.sendLog({ level: "info", title, message, metadata });
   }
 
-  async logSuccess(title: string, message: string, metadata?: Record<string, unknown>): Promise<boolean> {
-    return this.sendLog({ level: 'success', title, message, metadata });
+  async logSuccess(
+    title: string,
+    message: string,
+    metadata?: Record<string, unknown>
+  ): Promise<boolean> {
+    return this.sendLog({ level: "success", title, message, metadata });
   }
 
-  async logWarning(title: string, message: string, metadata?: Record<string, unknown>): Promise<boolean> {
-    return this.sendLog({ level: 'warning', title, message, metadata });
+  async logWarning(
+    title: string,
+    message: string,
+    metadata?: Record<string, unknown>
+  ): Promise<boolean> {
+    return this.sendLog({ level: "warning", title, message, metadata });
   }
 
-  async logError(title: string, message: string, metadata?: Record<string, unknown>): Promise<boolean> {
-    return this.sendLog({ level: 'error', title, message, metadata });
+  async logError(
+    title: string,
+    message: string,
+    metadata?: Record<string, unknown>
+  ): Promise<boolean> {
+    return this.sendLog({ level: "error", title, message, metadata });
   }
 
-  async logDebug(title: string, message: string, metadata?: Record<string, unknown>): Promise<boolean> {
-    return this.sendLog({ level: 'debug', title, message, metadata });
+  async logDebug(
+    title: string,
+    message: string,
+    metadata?: Record<string, unknown>
+  ): Promise<boolean> {
+    return this.sendLog({ level: "debug", title, message, metadata });
   }
 
   /**
    * Send user activity log
    */
   async logUserActivity(
-    action: string, 
-    userId: string, 
+    action: string,
+    userId: string,
     details?: Record<string, unknown>
   ): Promise<boolean> {
     return this.sendLog({
-      level: 'info',
-      title: 'User Activity',
+      level: "info",
+      title: "User Activity",
       message: action,
       metadata: details,
-      userId
+      userId,
     });
   }
 
@@ -200,16 +226,16 @@ class DiscordWebhook {
    */
   async logException(error: Error, context?: Record<string, unknown>): Promise<boolean> {
     const metadata: Record<string, unknown> = {
-      'Error Name': error.name,
-      'Stack Trace': `\`\`\`\n${(error.stack || 'No stack trace available').slice(0, 1000)}\n\`\`\``,
-      ...context
+      "Error Name": error.name,
+      "Stack Trace": `\`\`\`\n${(error.stack || "No stack trace available").slice(0, 1000)}\n\`\`\``,
+      ...context,
     };
 
     return this.sendLog({
-      level: 'error',
-      title: 'Application Error',
+      level: "error",
+      title: "Application Error",
       message: error.message,
-      metadata
+      metadata,
     });
   }
 
@@ -217,9 +243,9 @@ class DiscordWebhook {
    * Send system notification
    */
   async sendSystemNotification(
-    title: string, 
-    message: string, 
-    level: LogLevel = 'info'
+    title: string,
+    message: string,
+    level: LogLevel = "info"
   ): Promise<boolean> {
     const embed: DiscordEmbed = {
       title: `🔔 ${title}`,
@@ -227,8 +253,8 @@ class DiscordWebhook {
       color: LOG_COLORS[level],
       timestamp: new Date().toISOString(),
       footer: {
-        text: `DataBuddy System | ${process.env.NODE_ENV || 'unknown'}`
-      }
+        text: `DataBuddy System | ${process.env.NODE_ENV || "unknown"}`,
+      },
     };
 
     return this.sendEmbed(embed);
@@ -242,9 +268,9 @@ class DiscordWebhook {
       this.rateLimitQueue.push(async () => {
         try {
           const response = await fetch(this.webhookUrl, {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
             body: JSON.stringify(payload),
           });
@@ -257,7 +283,7 @@ class DiscordWebhook {
 
           resolve(true);
         } catch (error) {
-          console.error('Discord webhook error:', error);
+          console.error("Discord webhook error:", error);
           resolve(false);
         }
       });
@@ -281,7 +307,7 @@ class DiscordWebhook {
       if (task) {
         await task();
         // Discord rate limit: 5 requests per 2 seconds
-        await new Promise(resolve => setTimeout(resolve, 400));
+        await new Promise((resolve) => setTimeout(resolve, 400));
       }
     }
 
@@ -293,13 +319,13 @@ class DiscordWebhook {
    */
   private formatValue(value: unknown): string {
     if (value === null || value === undefined) {
-      return 'N/A';
+      return "N/A";
     }
-    
-    if (typeof value === 'object') {
+
+    if (typeof value === "object") {
       return `\`\`\`json\n${JSON.stringify(value, null, 2).slice(0, 500)}\n\`\`\``;
     }
-    
+
     return String(value);
   }
 }
@@ -312,10 +338,13 @@ let activityWebhook: DiscordWebhook | null = null;
 /**
  * Initialize the default Discord webhook
  */
-export function initializeDiscordWebhook(webhookUrl: string, options?: {
-  defaultUsername?: string;
-  defaultAvatarUrl?: string;
-}): DiscordWebhook {
+export function initializeDiscordWebhook(
+  webhookUrl: string,
+  options?: {
+    defaultUsername?: string;
+    defaultAvatarUrl?: string;
+  }
+): DiscordWebhook {
   defaultWebhook = new DiscordWebhook(webhookUrl, options);
   return defaultWebhook;
 }
@@ -325,8 +354,8 @@ export function initializeDiscordWebhook(webhookUrl: string, options?: {
  */
 export function initializeErrorWebhook(webhookUrl: string): DiscordWebhook {
   errorWebhook = new DiscordWebhook(webhookUrl, {
-    defaultUsername: 'DataBuddy Errors',
-    defaultAvatarUrl: undefined
+    defaultUsername: "DataBuddy Errors",
+    defaultAvatarUrl: undefined,
   });
   return errorWebhook;
 }
@@ -336,8 +365,8 @@ export function initializeErrorWebhook(webhookUrl: string): DiscordWebhook {
  */
 export function initializeActivityWebhook(webhookUrl: string): DiscordWebhook {
   activityWebhook = new DiscordWebhook(webhookUrl, {
-    defaultUsername: 'DataBuddy Activity',
-    defaultAvatarUrl: undefined
+    defaultUsername: "DataBuddy Activity",
+    defaultAvatarUrl: undefined,
   });
   return activityWebhook;
 }
@@ -368,69 +397,70 @@ export function getActivityWebhook(): DiscordWebhook | null {
  */
 export const discord = {
   log: {
-    info: (title: string, message: string, metadata?: Record<string, unknown>) => 
+    info: (title: string, message: string, metadata?: Record<string, unknown>) =>
       defaultWebhook?.logInfo(title, message, metadata),
-    success: (title: string, message: string, metadata?: Record<string, unknown>) => 
+    success: (title: string, message: string, metadata?: Record<string, unknown>) =>
       defaultWebhook?.logSuccess(title, message, metadata),
-    warning: (title: string, message: string, metadata?: Record<string, unknown>) => 
+    warning: (title: string, message: string, metadata?: Record<string, unknown>) =>
       defaultWebhook?.logWarning(title, message, metadata),
-    error: (title: string, message: string, metadata?: Record<string, unknown>) => 
+    error: (title: string, message: string, metadata?: Record<string, unknown>) =>
       defaultWebhook?.logError(title, message, metadata),
-    debug: (title: string, message: string, metadata?: Record<string, unknown>) => 
+    debug: (title: string, message: string, metadata?: Record<string, unknown>) =>
       defaultWebhook?.logDebug(title, message, metadata),
   },
-  
-  sendMessage: (content: string, options?: Partial<DiscordWebhookMessage>) => 
+
+  sendMessage: (content: string, options?: Partial<DiscordWebhookMessage>) =>
     defaultWebhook?.sendMessage(content, options),
-    
-  sendEmbed: (embed: DiscordEmbed, options?: Partial<DiscordWebhookMessage>) => 
+
+  sendEmbed: (embed: DiscordEmbed, options?: Partial<DiscordWebhookMessage>) =>
     defaultWebhook?.sendEmbed(embed, options),
-    
-  logException: (error: Error, context?: Record<string, unknown>) => 
+
+  logException: (error: Error, context?: Record<string, unknown>) =>
     errorWebhook?.logException(error, context) || defaultWebhook?.logException(error, context),
-    
-  logUserActivity: (action: string, userId: string, details?: Record<string, unknown>) => 
-    activityWebhook?.logUserActivity(action, userId, details) || defaultWebhook?.logUserActivity(action, userId, details),
-    
-  notify: (title: string, message: string, level: LogLevel = 'info') => 
+
+  logUserActivity: (action: string, userId: string, details?: Record<string, unknown>) =>
+    activityWebhook?.logUserActivity(action, userId, details) ||
+    defaultWebhook?.logUserActivity(action, userId, details),
+
+  notify: (title: string, message: string, level: LogLevel = "info") =>
     defaultWebhook?.sendSystemNotification(title, message, level),
 };
 
-export { DiscordWebhook }; 
+export { DiscordWebhook };
 
 // Initialize DataBuddy Discord webhook
-const DATABUDDY_WEBHOOK_URL = 'https://discord.com/api/webhooks/1379061559762092134/F6OLoVYCOTMzpHm8sUlQxSPJIYDyd3aUgKRm_OL2pC8bTe9VF9Fa5gyT1k1_xuc-5gz4';
+const DATABUDDY_WEBHOOK_URL =
+  "https://discord.com/api/webhooks/1379061559762092134/F6OLoVYCOTMzpHm8sUlQxSPJIYDyd3aUgKRm_OL2pC8bTe9VF9Fa5gyT1k1_xuc-5gz4";
 
 export const dataBuddyWebhook = new DiscordWebhook(DATABUDDY_WEBHOOK_URL, {
-  defaultUsername: 'DataBuddy',
-  defaultAvatarUrl: undefined
+  defaultUsername: "DataBuddy",
+  defaultAvatarUrl: undefined,
 });
 
 initializeDiscordWebhook(DATABUDDY_WEBHOOK_URL, {
-  defaultUsername: 'DataBuddy',
+  defaultUsername: "DataBuddy",
 });
 
 // Export ready-to-use logger instance
 export const logger = {
-  info: (title: string, message: string, metadata?: Record<string, unknown>) => 
+  info: (title: string, message: string, metadata?: Record<string, unknown>) =>
     dataBuddyWebhook.logInfo(title, message, metadata),
-  success: (title: string, message: string, metadata?: Record<string, unknown>) => 
+  success: (title: string, message: string, metadata?: Record<string, unknown>) =>
     dataBuddyWebhook.logSuccess(title, message, metadata),
-  warning: (title: string, message: string, metadata?: Record<string, unknown>) => 
+  warning: (title: string, message: string, metadata?: Record<string, unknown>) =>
     dataBuddyWebhook.logWarning(title, message, metadata),
-  error: (title: string, message: string, metadata?: Record<string, unknown>) => 
+  error: (title: string, message: string, metadata?: Record<string, unknown>) =>
     dataBuddyWebhook.logError(title, message, metadata),
-  debug: (title: string, message: string, metadata?: Record<string, unknown>) => 
+  debug: (title: string, message: string, metadata?: Record<string, unknown>) =>
     dataBuddyWebhook.logDebug(title, message, metadata),
-  exception: (error: Error, context?: Record<string, unknown>) => 
+  exception: (error: Error, context?: Record<string, unknown>) =>
     dataBuddyWebhook.logException(error, context),
-  activity: (action: string, userId: string, details?: Record<string, unknown>) => 
+  activity: (action: string, userId: string, details?: Record<string, unknown>) =>
     dataBuddyWebhook.logUserActivity(action, userId, details),
-  notify: (title: string, message: string, level: LogLevel = 'info') => 
+  notify: (title: string, message: string, level: LogLevel = "info") =>
     dataBuddyWebhook.sendSystemNotification(title, message, level),
-  message: (content: string, options?: Partial<DiscordWebhookMessage>) => 
+  message: (content: string, options?: Partial<DiscordWebhookMessage>) =>
     dataBuddyWebhook.sendMessage(content, options),
-  embed: (embed: DiscordEmbed, options?: Partial<DiscordWebhookMessage>) => 
+  embed: (embed: DiscordEmbed, options?: Partial<DiscordWebhookMessage>) =>
     dataBuddyWebhook.sendEmbed(embed, options),
 };
-

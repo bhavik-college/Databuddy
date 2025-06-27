@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { useAutumn } from 'autumn-js/react';
+import { useAutumn, useCustomer } from 'autumn-js/react';
 import { toast } from 'sonner';
 import dayjs from 'dayjs';
 import { CustomerProduct, Customer } from '../data/billing-data';
 import { useBillingData } from "../data/billing-data";
+import AttachDialog from '@/components/autumn/attach-dialog';
 
 export function useBilling(refetch?: () => void) {
     const { attach, cancel, check, track, openBillingPortal } = useAutumn();
@@ -17,29 +18,15 @@ export function useBilling(refetch?: () => void) {
     const handleUpgrade = async (planId: string) => {
         setIsActionLoading(true);
 
-        if (!subscriptionData?.paymentMethods?.length) {
-            setShowNoPaymentDialog(true);
-            setIsActionLoading(false);
-            return;
-        }
-
         try {
-            const result = await attach({ productId: planId });
-            if (result.error) {
-                if (result.error.message?.includes('no payment method')) {
-                    setShowNoPaymentDialog(true);
-                } else {
-                    toast.error(result.error.message || 'Failed to upgrade.');
-                }
-            } else {
-                toast.success('Successfully upgraded!');
-                if (refetch) {
-                    setTimeout(() => refetch(), 500);
-                }
-            }
+            const result = await attach({ 
+                productId: planId,
+                dialog: AttachDialog,
+                successUrl: `${window.location.origin}/payment/success?plan_id=${planId}`
+            });
         } catch (error: any) {
             toast.error(error.message || 'An unexpected error occurred.');
-        } finally {
+        } finally {                    
             setIsActionLoading(false);
         }
     };

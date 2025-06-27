@@ -1,15 +1,15 @@
 "use client";
 
-import type React from "react";
 import { ExternalLinkIcon, FileTextIcon } from "lucide-react"; // Using FileTextIcon as a generic page icon
-import { cn } from "@/lib/utils";
+import type React from "react";
 import { formatDomainLink } from "@/app/(main)/websites/[id]/_components/utils/analytics-helpers"; // Adjusted path
+import { cn } from "@/lib/utils";
 
 export interface PageLinkCellData {
   path: string;
   websiteDomain?: string;
   // Optional unique ID for the component instance
-  id?: string; 
+  id?: string;
 }
 
 interface PageLinkCellProps extends PageLinkCellData {
@@ -29,7 +29,11 @@ export const PageLinkCell: React.FC<PageLinkCellProps> = ({
   maxLength = 35, // Default max length for the path
 }) => {
   if (!path) {
-    return <span id={id} className={cn("text-sm text-muted-foreground", className)}>(not set)</span>;
+    return (
+      <span className={cn("text-muted-foreground text-sm", className)} id={id}>
+        (not set)
+      </span>
+    );
   }
 
   const { href, display } = formatDomainLink(path, websiteDomain, maxLength);
@@ -37,24 +41,24 @@ export const PageLinkCell: React.FC<PageLinkCellProps> = ({
 
   return (
     <a
-      id={id}
+      className={cn("group flex items-center gap-1.5 hover:underline", className)}
       href={href}
-      target={isExternal ? "_blank" : undefined}
+      id={id}
       rel={isExternal ? "noopener noreferrer" : undefined}
-      className={cn(
-        "flex items-center gap-1.5 hover:underline group",
-        className
-      )}
+      target={isExternal ? "_blank" : undefined}
     >
       <FileTextIcon className={cn("flex-shrink-0", iconClassName)} />
-      <span className={cn("truncate group-hover:text-primary", textClassName)} style={{ maxWidth: `${maxLength + 2}ch` }}>
+      <span
+        className={cn("truncate group-hover:text-primary", textClassName)}
+        style={{ maxWidth: `${maxLength + 2}ch` }}
+      >
         {display}
       </span>
       {isExternal && (
-        <ExternalLinkIcon className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+        <ExternalLinkIcon className="h-3 w-3 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
       )}
     </a>
   );
 };
 
-export default PageLinkCell; 
+export default PageLinkCell;

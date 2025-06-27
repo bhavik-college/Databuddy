@@ -56,9 +56,8 @@ export const useGetRegionName = () => {
 
   return {
     getRegionName: (region: string) => {
-      return subdivisions?.features.find(
-        (feature) => feature.properties.iso_3166_2 === region
-      )?.properties.name;
+      return subdivisions?.features.find((feature) => feature.properties.iso_3166_2 === region)
+        ?.properties.name;
     },
   };
 };

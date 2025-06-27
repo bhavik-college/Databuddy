@@ -1,20 +1,41 @@
 import {
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  type RowData,
+  type SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronRight as ChevronRightIcon,
+  DatabaseIcon,
+  ListFilterIcon,
+  Search,
+  X,
+} from "lucide-react";
+import React, { Fragment, useCallback, useMemo, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
+  TableRow,
 } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { ListFilterIcon, DatabaseIcon, ArrowUpDown, ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Search, X, ChevronDown, ChevronRight as ChevronRightIcon } from "lucide-react";
-import { type ColumnDef, type RowData, flexRender, getCoreRowModel, useReactTable, getFilteredRowModel, getSortedRowModel, type SortingState } from "@tanstack/react-table";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import React, { useState, useCallback, useMemo, Fragment, useRef } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 
 interface TabConfig<TData> {
   id: string;
@@ -61,48 +82,51 @@ function getPercentageGradient(percentage: number): {
     return {
       background: `linear-gradient(90deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.15) ${percentage * 0.8}%, rgba(34, 197, 94, 0.12) ${percentage}%, rgba(34, 197, 94, 0.02) ${percentage + 5}%, transparent 100%)`,
       hoverBackground: `linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.22) ${percentage * 0.8}%, rgba(34, 197, 94, 0.18) ${percentage}%, rgba(34, 197, 94, 0.04) ${percentage + 5}%, transparent 100%)`,
-      borderColor: 'rgba(34, 197, 94, 0.3)',
-      accentColor: 'rgba(34, 197, 94, 0.8)',
-      glowColor: 'rgba(34, 197, 94, 0.2)'
+      borderColor: "rgba(34, 197, 94, 0.3)",
+      accentColor: "rgba(34, 197, 94, 0.8)",
+      glowColor: "rgba(34, 197, 94, 0.2)",
     };
   }
   if (percentage >= 25) {
     return {
       background: `linear-gradient(90deg, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.15) ${percentage * 0.8}%, rgba(59, 130, 246, 0.12) ${percentage}%, rgba(59, 130, 246, 0.02) ${percentage + 5}%, transparent 100%)`,
       hoverBackground: `linear-gradient(90deg, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0.22) ${percentage * 0.8}%, rgba(59, 130, 246, 0.18) ${percentage}%, rgba(59, 130, 246, 0.04) ${percentage + 5}%, transparent 100%)`,
-      borderColor: 'rgba(59, 130, 246, 0.3)',
-      accentColor: 'rgba(59, 130, 246, 0.8)',
-      glowColor: 'rgba(59, 130, 246, 0.2)'
+      borderColor: "rgba(59, 130, 246, 0.3)",
+      accentColor: "rgba(59, 130, 246, 0.8)",
+      glowColor: "rgba(59, 130, 246, 0.2)",
     };
   }
   if (percentage >= 10) {
     return {
       background: `linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.15) ${percentage * 0.8}%, rgba(245, 158, 11, 0.12) ${percentage}%, rgba(245, 158, 11, 0.02) ${percentage + 5}%, transparent 100%)`,
       hoverBackground: `linear-gradient(90deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.22) ${percentage * 0.8}%, rgba(245, 158, 11, 0.18) ${percentage}%, rgba(245, 158, 11, 0.04) ${percentage + 5}%, transparent 100%)`,
-      borderColor: 'rgba(245, 158, 11, 0.3)',
-      accentColor: 'rgba(245, 158, 11, 0.8)',
-      glowColor: 'rgba(245, 158, 11, 0.2)'
+      borderColor: "rgba(245, 158, 11, 0.3)",
+      accentColor: "rgba(245, 158, 11, 0.8)",
+      glowColor: "rgba(245, 158, 11, 0.2)",
     };
   }
   return {
     background: `linear-gradient(90deg, rgba(107, 114, 128, 0.06) 0%, rgba(107, 114, 128, 0.12) ${percentage * 0.8}%, rgba(107, 114, 128, 0.1) ${percentage}%, rgba(107, 114, 128, 0.02) ${percentage + 5}%, transparent 100%)`,
     hoverBackground: `linear-gradient(90deg, rgba(107, 114, 128, 0.1) 0%, rgba(107, 114, 128, 0.18) ${percentage * 0.8}%, rgba(107, 114, 128, 0.15) ${percentage}%, rgba(107, 114, 128, 0.03) ${percentage + 5}%, transparent 100%)`,
-    borderColor: 'rgba(107, 114, 128, 0.2)',
-    accentColor: 'rgba(107, 114, 128, 0.7)',
-    glowColor: 'rgba(107, 114, 128, 0.15)'
+    borderColor: "rgba(107, 114, 128, 0.2)",
+    accentColor: "rgba(107, 114, 128, 0.7)",
+    glowColor: "rgba(107, 114, 128, 0.15)",
   };
 }
 
 const EnhancedSkeleton = ({ minHeight }: { minHeight: string | number }) => (
-  <div className="space-y-3 animate-pulse" style={{ minHeight }}>
+  <div className="animate-pulse space-y-3" style={{ minHeight }}>
     <div className="flex items-center justify-between">
       <Skeleton className="h-4 w-24 rounded-md" />
       <Skeleton className="h-8 w-32 rounded-lg" />
     </div>
     <div className="space-y-2">
       {Array.from({ length: 5 }, (_, index) => index).map((itemIndex) => (
-        <div key={`skeleton-${itemIndex}`} className="flex items-center space-x-4 p-3 bg-muted/20 rounded-lg animate-pulse">
-          <Skeleton className="h-6 w-6 rounded-full flex-shrink-0" />
+        <div
+          className="flex animate-pulse items-center space-x-4 rounded-lg bg-muted/20 p-3"
+          key={`skeleton-${itemIndex}`}
+        >
+          <Skeleton className="h-6 w-6 flex-shrink-0 rounded-full" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-full rounded-md" />
             <div className="flex items-center space-x-2">
@@ -111,7 +135,7 @@ const EnhancedSkeleton = ({ minHeight }: { minHeight: string | number }) => (
               <Skeleton className="h-3 w-8 rounded-sm" />
             </div>
           </div>
-          <div className="text-right space-y-1">
+          <div className="space-y-1 text-right">
             <Skeleton className="h-4 w-12 rounded-md" />
             <Skeleton className="h-3 w-8 rounded-sm" />
           </div>
@@ -121,29 +145,27 @@ const EnhancedSkeleton = ({ minHeight }: { minHeight: string | number }) => (
   </div>
 );
 
-export function DataTable<TData extends { name: string | number }, TValue>(
-  {
-    data,
-    columns,
-    tabs,
-    title,
-    description,
-    isLoading = false,
-    initialPageSize,
-    emptyMessage = "No data available",
-    className,
-    onRowClick,
-    minHeight = 200,
-    showSearch = true,
-    getSubRows,
-    renderSubRow,
-    expandable = false,
-    renderTooltipContent
-  }: DataTableProps<TData, TValue>
-) {
+export function DataTable<TData extends { name: string | number }, TValue>({
+  data,
+  columns,
+  tabs,
+  title,
+  description,
+  isLoading = false,
+  initialPageSize,
+  emptyMessage = "No data available",
+  className,
+  onRowClick,
+  minHeight = 200,
+  showSearch = true,
+  getSubRows,
+  renderSubRow,
+  expandable = false,
+  renderTooltipContent,
+}: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = React.useState('');
-  const [activeTab, setActiveTab] = React.useState(tabs?.[0]?.id || '');
+  const [globalFilter, setGlobalFilter] = React.useState("");
+  const [activeTab, setActiveTab] = React.useState(tabs?.[0]?.id || "");
   const [isTransitioning, setIsTransitioning] = React.useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
@@ -156,9 +178,15 @@ export function DataTable<TData extends { name: string | number }, TValue>(
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
-  const currentTabData = tabs?.find(tab => tab.id === activeTab);
-  const tableData = React.useMemo(() => currentTabData?.data || data || [], [currentTabData?.data, data]);
-  const tableColumns = React.useMemo(() => currentTabData?.columns || columns || [], [currentTabData?.columns, columns]);
+  const currentTabData = tabs?.find((tab) => tab.id === activeTab);
+  const tableData = React.useMemo(
+    () => currentTabData?.data || data || [],
+    [currentTabData?.data, data]
+  );
+  const tableColumns = React.useMemo(
+    () => currentTabData?.columns || columns || [],
+    [currentTabData?.columns, columns]
+  );
 
   const table = useReactTable({
     data: tableData,
@@ -171,7 +199,7 @@ export function DataTable<TData extends { name: string | number }, TValue>(
     },
     state: {
       sorting,
-      globalFilter: showSearch ? globalFilter : '',
+      globalFilter: showSearch ? globalFilter : "",
     },
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
@@ -184,18 +212,18 @@ export function DataTable<TData extends { name: string | number }, TValue>(
 
   const getFieldFromTabId = (tabId: string): string => {
     const mapping: Record<string, string> = {
-      'errors_by_page': 'path',
-      'errors_by_browser': 'browser_name',
-      'errors_by_os': 'os_name',
-      'errors_by_country': 'country',
-      'errors_by_device': 'device_type',
-      'error_types': 'error_message'
+      errors_by_page: "path",
+      errors_by_browser: "browser_name",
+      errors_by_os: "os_name",
+      errors_by_country: "country",
+      errors_by_device: "device_type",
+      error_types: "error_message",
     };
-    return mapping[tabId] || 'name';
+    return mapping[tabId] || "name";
   };
 
   const toggleRowExpansion = useCallback((rowId: string) => {
-    setExpandedRows(prev => {
+    setExpandedRows((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(rowId)) {
         newSet.delete(rowId);
@@ -209,43 +237,54 @@ export function DataTable<TData extends { name: string | number }, TValue>(
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (tableContainerRef.current) {
       const rect = tableContainerRef.current.getBoundingClientRect();
-      setTooltipState(prev => ({ ...prev, x: e.clientX - rect.left, y: e.clientY - rect.top }));
+      setTooltipState((prev) => ({ ...prev, x: e.clientX - rect.left, y: e.clientY - rect.top }));
     }
   }, []);
 
-  const handleRowMouseEnter = useCallback((row: TData, rowId: string) => {
-    if (!renderTooltipContent) return;
-    const content = renderTooltipContent(row);
-    setTooltipState(prev => ({ ...prev, visible: true, content }));
-    setHoveredRow(rowId);
-  }, [renderTooltipContent]);
+  const handleRowMouseEnter = useCallback(
+    (row: TData, rowId: string) => {
+      if (!renderTooltipContent) return;
+      const content = renderTooltipContent(row);
+      setTooltipState((prev) => ({ ...prev, visible: true, content }));
+      setHoveredRow(rowId);
+    },
+    [renderTooltipContent]
+  );
 
   const handleMouseLeave = useCallback(() => {
     if (!renderTooltipContent) return;
-    setTooltipState(prev => ({ ...prev, visible: false }));
+    setTooltipState((prev) => ({ ...prev, visible: false }));
     setHoveredRow(null);
   }, [renderTooltipContent]);
 
-  const handleTabChange = React.useCallback((tabId: string) => {
-    if (tabId === activeTab) return;
+  const handleTabChange = React.useCallback(
+    (tabId: string) => {
+      if (tabId === activeTab) return;
 
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setActiveTab(tabId);
-      setGlobalFilter('');
-      setExpandedRows(new Set());
-      setIsTransitioning(false);
-    }, 150);
-  }, [activeTab]);
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setActiveTab(tabId);
+        setGlobalFilter("");
+        setExpandedRows(new Set());
+        setIsTransitioning(false);
+      }, 150);
+    },
+    [activeTab]
+  );
 
   if (isLoading) {
     return (
-      <Card className={cn("w-full border shadow-sm bg-card/50 backdrop-blur-sm overflow-hidden", className)}>
-        <CardHeader className="px-2 sm:px-3 pb-2">
-          <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
-            <div className="flex-1 min-w-0">
+      <Card
+        className={cn(
+          "w-full overflow-hidden border bg-card/50 shadow-sm backdrop-blur-sm",
+          className
+        )}
+      >
+        <CardHeader className="px-2 pb-2 sm:px-3">
+          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row">
+            <div className="min-w-0 flex-1">
               <Skeleton className="h-5 w-32 rounded-md" />
-              {description && <Skeleton className="h-3 w-48 rounded-sm mt-0.5" />}
+              {description && <Skeleton className="mt-0.5 h-3 w-48 rounded-sm" />}
             </div>
             {showSearch && (
               <div className="flex-shrink-0">
@@ -256,15 +295,15 @@ export function DataTable<TData extends { name: string | number }, TValue>(
 
           {tabs && tabs.length > 1 && (
             <div className="mt-3">
-              <div className="flex gap-0.5 p-0.5 bg-muted/20 rounded-lg">
+              <div className="flex gap-0.5 rounded-lg bg-muted/20 p-0.5">
                 {tabs.map((tab) => (
-                  <Skeleton key={tab.id} className="h-8 w-20 rounded-md" />
+                  <Skeleton className="h-8 w-20 rounded-md" key={tab.id} />
                 ))}
               </div>
             </div>
           )}
         </CardHeader>
-        <CardContent className="px-2 sm:px-3 pb-2">
+        <CardContent className="px-2 pb-2 sm:px-3">
           <EnhancedSkeleton minHeight={minHeight} />
         </CardContent>
       </Card>
@@ -272,29 +311,30 @@ export function DataTable<TData extends { name: string | number }, TValue>(
   }
 
   return (
-    <Card className={cn("w-full border shadow-sm bg-card/50 backdrop-blur-sm overflow-hidden", className)}>
-      <CardHeader className="px-2 sm:px-3 pb-2">
-        <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-foreground text-sm truncate">
-              {title}
-            </h3>
+    <Card
+      className={cn(
+        "w-full overflow-hidden border bg-card/50 shadow-sm backdrop-blur-sm",
+        className
+      )}
+    >
+      <CardHeader className="px-2 pb-2 sm:px-3">
+        <div className="flex flex-col items-start justify-between gap-3 sm:flex-row">
+          <div className="min-w-0 flex-1">
+            <h3 className="truncate font-semibold text-foreground text-sm">{title}</h3>
             {description && (
-              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                {description}
-              </p>
+              <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs">{description}</p>
             )}
           </div>
 
           {showSearch && (
-            <div className="relative flex-shrink-0 w-full sm:w-auto">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground/50" />
+            <div className="relative w-full flex-shrink-0 sm:w-auto">
+              <Search className="-translate-y-1/2 absolute top-1/2 left-2 h-3 w-3 transform text-muted-foreground/50" />
               <Input
-                placeholder="Filter data..."
-                value={globalFilter ?? ''}
-                onChange={(event) => setGlobalFilter(event.target.value)}
-                className="h-7 w-full sm:w-36 pl-7 pr-2 text-xs bg-muted/30 border-0 focus:bg-background focus:ring-1 focus:ring-primary/20"
                 aria-label={`Search ${title}`}
+                className="h-7 w-full border-0 bg-muted/30 pr-2 pl-7 text-xs focus:bg-background focus:ring-1 focus:ring-primary/20 sm:w-36"
+                onChange={(event) => setGlobalFilter(event.target.value)}
+                placeholder="Filter data..."
+                value={globalFilter ?? ""}
               />
             </div>
           )}
@@ -302,40 +342,46 @@ export function DataTable<TData extends { name: string | number }, TValue>(
 
         {tabs && tabs.length > 1 && (
           <div className="mt-3 overflow-hidden">
-            <div className="overflow-x-auto pb-1 -mb-1">
-              <nav className="inline-flex gap-0.5 p-0.5 bg-muted/40 rounded" role="tablist" aria-label="Data view options">
+            <div className="-mb-1 overflow-x-auto pb-1">
+              <nav
+                aria-label="Data view options"
+                className="inline-flex gap-0.5 rounded bg-muted/40 p-0.5"
+                role="tablist"
+              >
                 {tabs.map((tab) => {
                   const isActive = activeTab === tab.id;
                   const itemCount = tab.data?.length || 0;
 
                   return (
                     <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => handleTabChange(tab.id)}
-                      disabled={isTransitioning}
-                      role="tab"
-                      aria-selected={isActive}
                       aria-controls={`tabpanel-${tab.id}`}
-                      tabIndex={isActive ? 0 : -1}
+                      aria-selected={isActive}
                       className={cn(
-                        "flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md transition-all duration-200",
+                        "flex items-center gap-1 rounded-md px-2.5 py-1.5 font-medium text-xs transition-all duration-200",
                         "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1",
                         "disabled:opacity-60",
                         isActive
                           ? "bg-background text-foreground shadow-sm"
-                          : "text-muted-foreground hover:text-foreground hover:bg-background/60"
+                          : "text-muted-foreground hover:bg-background/60 hover:text-foreground"
                       )}
+                      disabled={isTransitioning}
+                      key={tab.id}
+                      onClick={() => handleTabChange(tab.id)}
+                      role="tab"
+                      tabIndex={isActive ? 0 : -1}
+                      type="button"
                     >
                       <span>{tab.label}</span>
                       {itemCount > 0 && (
-                        <span className={cn(
-                          "inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full text-[10px] font-semibold",
-                          isActive
-                            ? "bg-primary/15 text-primary"
-                            : "bg-muted-foreground/20 text-muted-foreground/70"
-                        )}>
-                          {itemCount > 99 ? '99+' : itemCount}
+                        <span
+                          className={cn(
+                            "inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 font-semibold text-[10px]",
+                            isActive
+                              ? "bg-primary/15 text-primary"
+                              : "bg-muted-foreground/20 text-muted-foreground/70"
+                          )}
+                        >
+                          {itemCount > 99 ? "99+" : itemCount}
                         </span>
                       )}
                     </button>
@@ -347,127 +393,103 @@ export function DataTable<TData extends { name: string | number }, TValue>(
         )}
       </CardHeader>
 
-      <CardContent className="px-2 sm:px-3 pb-2 overflow-hidden">
+      <CardContent className="overflow-hidden px-2 pb-2 sm:px-3">
         <div
           className={cn(
-            "transition-all duration-300 ease-out relative",
-            isTransitioning && "opacity-40 scale-[0.98]"
+            "relative transition-all duration-300 ease-out",
+            isTransitioning && "scale-[0.98] opacity-40"
           )}
-          ref={tableContainerRef}
-          onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
+          onMouseMove={handleMouseMove}
+          ref={tableContainerRef}
         >
           <AnimatePresence>
             {renderTooltipContent && tooltipState.visible && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: "-50%" }}
                 animate={{ opacity: 1, scale: 1, y: "-50%" }}
+                className="pointer-events-none absolute z-30 translate-x-4"
                 exit={{ opacity: 0, scale: 0.9, y: "-50%" }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
+                initial={{ opacity: 0, scale: 0.9, y: "-50%" }}
                 style={{
                   top: tooltipState.y,
                   left: tooltipState.x,
                 }}
-                className="absolute z-30 pointer-events-none translate-x-4"
+                transition={{ duration: 0.15, ease: "easeOut" }}
               >
                 {tooltipState.content}
               </motion.div>
             )}
           </AnimatePresence>
           {isTransitioning && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-20 flex items-center justify-center">
-              <div className="flex items-center gap-2 px-3 py-2 bg-background/80 rounded-lg border border-border/50 shadow-sm">
-                <div className="w-3 h-3 bg-primary/60 rounded-full animate-pulse" />
-                <span className="text-xs font-medium text-muted-foreground">Loading...</span>
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/50 backdrop-blur-[1px]">
+              <div className="flex items-center gap-2 rounded-lg border border-border/50 bg-background/80 px-3 py-2 shadow-sm">
+                <div className="h-3 w-3 animate-pulse rounded-full bg-primary/60" />
+                <span className="font-medium text-muted-foreground text-xs">Loading...</span>
               </div>
             </div>
           )}
 
-          {!table.getRowModel().rows.length ? (
-            <div className="flex flex-col items-center justify-center py-8 sm:py-16 text-center" style={{ minHeight }}>
-              <div className="mb-4">
-                <div className="w-16 h-16 rounded-2xl bg-muted/20 flex items-center justify-center mb-3 mx-auto">
-                  {globalFilter ? (
-                    <Search className="h-7 w-7 text-muted-foreground/50" />
-                  ) : (
-                    <DatabaseIcon className="h-7 w-7 text-muted-foreground/50" />
-                  )}
-                </div>
-              </div>
-              <h4 className="text-base font-medium text-foreground mb-2">
-                {globalFilter ? 'No results found' : emptyMessage}
-              </h4>
-              <p className="text-sm text-muted-foreground max-w-sm mb-4">
-                {globalFilter
-                  ? `No data matches your search for "${globalFilter}". Try adjusting your search terms.`
-                  : 'Data will appear here when available and ready to display.'
-                }
-              </p>
-              {globalFilter && (
-                <button
-                  type="button"
-                  onClick={() => setGlobalFilter('')}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary hover:text-primary/80 bg-primary/10 hover:bg-primary/15 rounded-lg transition-colors"
-                >
-                  <X className="h-4 w-4" />
-                  Clear search
-                </button>
-              )}
-            </div>
-          ) : (
+          {table.getRowModel().rows.length ? (
             <div
-              className="overflow-auto rounded-md sm:rounded-lg border border-border/50 bg-background/50 relative"
-              style={{ height: minHeight }}
-              role="tabpanel"
-              id={`tabpanel-${activeTab}`}
               aria-labelledby={`tab-${activeTab}`}
+              className="relative overflow-auto rounded-md border border-border/50 bg-background/50 sm:rounded-lg"
+              id={`tabpanel-${activeTab}`}
+              role="tabpanel"
+              style={{ height: minHeight }}
             >
-              <Table className="table-fixed w-full">
+              <Table className="w-full table-fixed">
                 <TableHeader>
-                  {table.getHeaderGroups().map(headerGroup => (
-                    <TableRow key={headerGroup.id} className="bg-muted/20 border-border/30 sticky top-0 z-10">
-                      {headerGroup.headers.map(header => (
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow
+                      className="sticky top-0 z-10 border-border/30 bg-muted/20"
+                      key={headerGroup.id}
+                    >
+                      {headerGroup.headers.map((header) => (
                         <TableHead
-                          key={header.id}
+                          aria-sort={
+                            header.column.getIsSorted() === "asc"
+                              ? "ascending"
+                              : header.column.getIsSorted() === "desc"
+                                ? "descending"
+                                : header.column.getCanSort()
+                                  ? "none"
+                                  : undefined
+                          }
                           className={cn(
-                            "h-11 text-xs font-semibold px-2 sm:px-4 text-muted-foreground uppercase tracking-wide bg-muted/20 backdrop-blur-sm",
+                            "h-11 bg-muted/20 px-2 font-semibold text-muted-foreground text-xs uppercase tracking-wide backdrop-blur-sm sm:px-4",
                             (header.column.columnDef.meta as any)?.className,
                             header.column.getCanSort()
-                              ? 'cursor-pointer hover:text-foreground hover:bg-muted/30 transition-all duration-200 select-none group'
-                              : 'select-none'
+                              ? "group cursor-pointer select-none transition-all duration-200 hover:bg-muted/30 hover:text-foreground"
+                              : "select-none"
                           )}
-                          style={{
-                            width: header.getSize() !== 150 ? `${Math.min(header.getSize(), 300)}px` : undefined,
-                            maxWidth: '300px',
-                            minWidth: '80px'
-                          }}
+                          key={header.id}
                           onClick={header.column.getToggleSortingHandler()}
-                          tabIndex={header.column.getCanSort() ? 0 : -1}
                           role={header.column.getCanSort() ? "button" : undefined}
-                          aria-sort={
-                            header.column.getIsSorted() === 'asc' ? 'ascending' :
-                              header.column.getIsSorted() === 'desc' ? 'descending' :
-                                header.column.getCanSort() ? 'none' : undefined
-                          }
+                          style={{
+                            width:
+                              header.getSize() !== 150
+                                ? `${Math.min(header.getSize(), 300)}px`
+                                : undefined,
+                            maxWidth: "300px",
+                            minWidth: "80px",
+                          }}
+                          tabIndex={header.column.getCanSort() ? 0 : -1}
                         >
                           <div className="flex items-center gap-1.5">
                             <span className="truncate">
                               {header.isPlaceholder
                                 ? null
-                                : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
-                                )}
+                                : flexRender(header.column.columnDef.header, header.getContext())}
                             </span>
                             {header.column.getCanSort() && (
-                              <div className="flex flex-col items-center justify-center w-3 h-3">
+                              <div className="flex h-3 w-3 flex-col items-center justify-center">
                                 {!header.column.getIsSorted() && (
-                                  <ArrowUpDown className="h-3 w-3 text-muted-foreground/40 group-hover:text-muted-foreground/70 transition-colors" />
+                                  <ArrowUpDown className="h-3 w-3 text-muted-foreground/40 transition-colors group-hover:text-muted-foreground/70" />
                                 )}
-                                {header.column.getIsSorted() === 'asc' && (
+                                {header.column.getIsSorted() === "asc" && (
                                   <ArrowUp className="h-3 w-3 text-primary" />
                                 )}
-                                {header.column.getIsSorted() === 'desc' && (
+                                {header.column.getIsSorted() === "desc" && (
                                   <ArrowDown className="h-3 w-3 text-primary" />
                                 )}
                               </div>
@@ -490,9 +512,11 @@ export function DataTable<TData extends { name: string | number }, TValue>(
                       <Fragment key={row.id}>
                         <TableRow
                           className={cn(
-                            "h-12 border-border/20 relative transition-all duration-300 ease-in-out",
+                            "relative h-12 border-border/20 transition-all duration-300 ease-in-out",
                             (onRowClick && !hasSubRows) || hasSubRows ? "cursor-pointer" : "",
-                            hoveredRow && hoveredRow !== row.id ? "opacity-40 grayscale-[80%]" : "opacity-100",
+                            hoveredRow && hoveredRow !== row.id
+                              ? "opacity-40 grayscale-[80%]"
+                              : "opacity-100",
                             !hoveredRow && (rowIndex % 2 === 0 ? "bg-background/50" : "bg-muted/10")
                           )}
                           onClick={() => {
@@ -503,36 +527,43 @@ export function DataTable<TData extends { name: string | number }, TValue>(
                               onRowClick(field, row.original.name);
                             }
                           }}
-                          style={{
-                            background: !hoveredRow && percentage > 0 ? gradient.background : undefined,
-                            boxShadow: !hoveredRow && percentage > 0 ? `inset 3px 0 0 0 ${gradient.accentColor}` : undefined,
-                          }}
                           onMouseEnter={() => handleRowMouseEnter(row.original, row.id)}
+                          style={{
+                            background:
+                              !hoveredRow && percentage > 0 ? gradient.background : undefined,
+                            boxShadow:
+                              !hoveredRow && percentage > 0
+                                ? `inset 3px 0 0 0 ${gradient.accentColor}`
+                                : undefined,
+                          }}
                         >
                           {row.getVisibleCells().map((cell, cellIndex) => (
                             <TableCell
-                              key={cell.id}
                               className={cn(
-                                "py-3 text-sm font-medium transition-colors duration-150 px-2 sm:px-4",
+                                "px-2 py-3 font-medium text-sm transition-colors duration-150 sm:px-4",
                                 cellIndex === 0 && "font-semibold text-foreground",
                                 (cell.column.columnDef.meta as any)?.className
                               )}
+                              key={cell.id}
                               style={{
-                                width: cell.column.getSize() !== 150 ? `${Math.min(cell.column.getSize(), 300)}px` : undefined,
-                                maxWidth: '300px',
-                                minWidth: '80px'
+                                width:
+                                  cell.column.getSize() !== 150
+                                    ? `${Math.min(cell.column.getSize(), 300)}px`
+                                    : undefined,
+                                maxWidth: "300px",
+                                minWidth: "80px",
                               }}
                             >
                               <div className="flex items-center gap-2">
                                 {cellIndex === 0 && hasSubRows && (
                                   <button
-                                    type="button"
+                                    aria-label={isExpanded ? "Collapse row" : "Expand row"}
+                                    className="flex-shrink-0 rounded p-0.5 transition-colors hover:bg-muted"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       toggleRowExpansion(row.id);
                                     }}
-                                    className="flex-shrink-0 p-0.5 hover:bg-muted rounded transition-colors"
-                                    aria-label={isExpanded ? 'Collapse row' : 'Expand row'}
+                                    type="button"
                                   >
                                     {isExpanded ? (
                                       <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
@@ -541,7 +572,7 @@ export function DataTable<TData extends { name: string | number }, TValue>(
                                     )}
                                   </button>
                                 )}
-                                <div className="truncate flex-1 overflow-hidden">
+                                <div className="flex-1 overflow-hidden truncate">
                                   <div className="truncate">
                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                   </div>
@@ -551,49 +582,86 @@ export function DataTable<TData extends { name: string | number }, TValue>(
                           ))}
                         </TableRow>
 
-                        {hasSubRows && isExpanded && subRows.map((subRow, subIndex) => (
-                          <TableRow
-                            key={`${row.id}-sub-${subIndex}`}
-                            className="border-border/10 bg-muted/5 hover:bg-muted/10 transition-colors"
-                          >
-                            {renderSubRow ? (
-                              <TableCell
-                                colSpan={row.getVisibleCells().length}
-                                className="p-0"
-                              >
-                                {renderSubRow(subRow, row.original, subIndex)}
-                              </TableCell>
-                            ) : (
-                              row.getVisibleCells().map((cell, cellIndex) => (
-                                <TableCell
-                                  key={`sub-${cell.id}`}
-                                  className={cn(
-                                    "py-2 text-sm text-muted-foreground",
-                                    cellIndex === 0 ? "pl-8" : "px-3"
-                                  )}
-                                  style={{
-                                    width: cell.column.getSize() !== 150 ? `${Math.min(cell.column.getSize(), 300)}px` : undefined,
-                                    maxWidth: '300px',
-                                    minWidth: '80px'
-                                  }}
-                                >
-                                  <div className="truncate">
-                                    {cellIndex === 0 ? (
-                                      <span className="text-xs">↳ {(subRow as any)[cell.column.id] || ''}</span>
-                                    ) : (
-                                      (subRow as any)[cell.column.id] || ''
-                                    )}
-                                  </div>
+                        {hasSubRows &&
+                          isExpanded &&
+                          subRows.map((subRow, subIndex) => (
+                            <TableRow
+                              className="border-border/10 bg-muted/5 transition-colors hover:bg-muted/10"
+                              key={`${row.id}-sub-${subIndex}`}
+                            >
+                              {renderSubRow ? (
+                                <TableCell className="p-0" colSpan={row.getVisibleCells().length}>
+                                  {renderSubRow(subRow, row.original, subIndex)}
                                 </TableCell>
-                              ))
-                            )}
-                          </TableRow>
-                        ))}
+                              ) : (
+                                row.getVisibleCells().map((cell, cellIndex) => (
+                                  <TableCell
+                                    className={cn(
+                                      "py-2 text-muted-foreground text-sm",
+                                      cellIndex === 0 ? "pl-8" : "px-3"
+                                    )}
+                                    key={`sub-${cell.id}`}
+                                    style={{
+                                      width:
+                                        cell.column.getSize() !== 150
+                                          ? `${Math.min(cell.column.getSize(), 300)}px`
+                                          : undefined,
+                                      maxWidth: "300px",
+                                      minWidth: "80px",
+                                    }}
+                                  >
+                                    <div className="truncate">
+                                      {cellIndex === 0 ? (
+                                        <span className="text-xs">
+                                          ↳ {(subRow as any)[cell.column.id] || ""}
+                                        </span>
+                                      ) : (
+                                        (subRow as any)[cell.column.id] || ""
+                                      )}
+                                    </div>
+                                  </TableCell>
+                                ))
+                              )}
+                            </TableRow>
+                          ))}
                       </Fragment>
                     );
                   })}
                 </TableBody>
               </Table>
+            </div>
+          ) : (
+            <div
+              className="flex flex-col items-center justify-center py-8 text-center sm:py-16"
+              style={{ minHeight }}
+            >
+              <div className="mb-4">
+                <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/20">
+                  {globalFilter ? (
+                    <Search className="h-7 w-7 text-muted-foreground/50" />
+                  ) : (
+                    <DatabaseIcon className="h-7 w-7 text-muted-foreground/50" />
+                  )}
+                </div>
+              </div>
+              <h4 className="mb-2 font-medium text-base text-foreground">
+                {globalFilter ? "No results found" : emptyMessage}
+              </h4>
+              <p className="mb-4 max-w-sm text-muted-foreground text-sm">
+                {globalFilter
+                  ? `No data matches your search for "${globalFilter}". Try adjusting your search terms.`
+                  : "Data will appear here when available and ready to display."}
+              </p>
+              {globalFilter && (
+                <button
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 font-medium text-primary text-sm transition-colors hover:bg-primary/15 hover:text-primary/80"
+                  onClick={() => setGlobalFilter("")}
+                  type="button"
+                >
+                  <X className="h-4 w-4" />
+                  Clear search
+                </button>
+              )}
             </div>
           )}
         </div>

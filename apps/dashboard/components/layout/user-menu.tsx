@@ -1,21 +1,20 @@
-import { useState } from "react";
-import Link from "next/link";
-import { useSession, authClient } from "@databuddy/auth/client";
-import { toast } from "sonner";
+import { authClient, useSession } from "@databuddy/auth/client";
 import { HouseIcon, SignOutIcon, UserIcon } from "@phosphor-icons/react";
-import { redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { redirect, useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function UserMenu() {
   const { data: session, isPending: isSessionPending } = useSession();
@@ -60,35 +59,26 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="flex h-9 w-9 rounded-full"
-        >
+        <Button className="flex h-9 w-9 rounded-full" variant="ghost">
           <Avatar className="h-9 w-9 border border-border/50">
-            <AvatarImage
-              src={session?.user?.image || ""}
-              alt={session?.user?.name || "User"}
-            />
-            <AvatarFallback className="text-sm font-medium bg-primary/10 text-primary">
+            <AvatarImage alt={session?.user?.name || "User"} src={session?.user?.image || ""} />
+            <AvatarFallback className="bg-primary/10 font-medium text-primary text-sm">
               {getUserInitials()}
             </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56 p-2">
-        <div className="flex items-center justify-start gap-3 p-2 mb-1">
+        <div className="mb-1 flex items-center justify-start gap-3 p-2">
           <Avatar className="h-9 w-9 border border-border/50">
-            <AvatarImage
-              src={session?.user?.image || ""}
-              alt={session?.user?.name || "User"}
-            />
-            <AvatarFallback className="text-sm font-medium">{getUserInitials()}</AvatarFallback>
+            <AvatarImage alt={session?.user?.name || "User"} src={session?.user?.image || ""} />
+            <AvatarFallback className="font-medium text-sm">{getUserInitials()}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col space-y-0.5">
-            <span className="text-sm font-medium leading-none">
+            <span className="font-medium text-sm leading-none">
               {session?.user?.name || "User"}
             </span>
-            <span className="text-xs leading-none text-muted-foreground">
+            <span className="text-muted-foreground text-xs leading-none">
               {session?.user?.email || ""}
             </span>
           </div>
@@ -98,14 +88,14 @@ export function UserMenu() {
 
         <DropdownMenuGroup>
           <DropdownMenuItem asChild className="h-9 rounded-md">
-            <Link href="/websites" className="flex items-center w-full">
-              <HouseIcon size={32} weight="duotone" className="mr-2.5 h-4 w-4" />
+            <Link className="flex w-full items-center" href="/websites">
+              <HouseIcon className="mr-2.5 h-4 w-4" size={32} weight="duotone" />
               Websites
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild className="h-9 rounded-md">
-            <Link href="/settings?tab=profile" className="flex items-center w-full">
-              <UserIcon size={32} weight="duotone" className="mr-2.5 h-4 w-4" />
+            <Link className="flex w-full items-center" href="/settings?tab=profile">
+              <UserIcon className="mr-2.5 h-4 w-4" size={32} weight="duotone" />
               Profile
             </Link>
           </DropdownMenuItem>
@@ -114,14 +104,14 @@ export function UserMenu() {
         <DropdownMenuSeparator className="my-1" />
 
         <DropdownMenuItem
-          onClick={handleLogout}
+          className="h-9 cursor-pointer rounded-md text-destructive hover:bg-destructive/10 focus:text-destructive"
           disabled={isLoggingOut}
-          className="cursor-pointer h-9 rounded-md text-destructive focus:text-destructive hover:bg-destructive/10"
+          onClick={handleLogout}
         >
-          <SignOutIcon size={32} weight="duotone" className="mr-2.5 h-5 w-5" />
+          <SignOutIcon className="mr-2.5 h-5 w-5" size={32} weight="duotone" />
           {isLoggingOut ? "Signing out..." : "Sign out"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
-} 
+}

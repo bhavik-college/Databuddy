@@ -29,12 +29,12 @@ export function ProviderButton({
 
   return (
     <Button
-      variant="outline"
       className={cn(
         "relative w-full bg-background hover:bg-muted/50 hover:text-foreground",
         className
       )}
       disabled={isLoading}
+      variant="outline"
       {...props}
     >
       {showIcon && Icon && (
@@ -49,7 +49,7 @@ export function ProviderButton({
 
 export function GoogleButton({ className, ...props }: Omit<ProviderButtonProps, "providerId">) {
   return (
-    <ProviderButton providerId="google" className={cn("", className)} {...props}>
+    <ProviderButton className={cn("", className)} providerId="google" {...props}>
       Continue with Google
     </ProviderButton>
   );
@@ -57,7 +57,7 @@ export function GoogleButton({ className, ...props }: Omit<ProviderButtonProps, 
 
 export function GitHubButton({ className, ...props }: Omit<ProviderButtonProps, "providerId">) {
   return (
-    <ProviderButton providerId="github" className={cn("", className)} {...props}>
+    <ProviderButton className={cn("", className)} providerId="github" {...props}>
       Continue with GitHub
     </ProviderButton>
   );
@@ -65,7 +65,7 @@ export function GitHubButton({ className, ...props }: Omit<ProviderButtonProps, 
 
 export function AppleButton({ className, ...props }: Omit<ProviderButtonProps, "providerId">) {
   return (
-    <ProviderButton providerId="apple" className={cn("", className)} {...props}>
+    <ProviderButton className={cn("", className)} providerId="apple" {...props}>
       Continue with Apple
     </ProviderButton>
   );
@@ -73,7 +73,7 @@ export function AppleButton({ className, ...props }: Omit<ProviderButtonProps, "
 
 export function DiscordButton({ className, ...props }: Omit<ProviderButtonProps, "providerId">) {
   return (
-    <ProviderButton providerId="discord" className={cn("", className)} {...props}>
+    <ProviderButton className={cn("", className)} providerId="discord" {...props}>
       Continue with Discord
     </ProviderButton>
   );

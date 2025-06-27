@@ -1,7 +1,7 @@
-import { useCallback, useMemo } from 'react';
-import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
-import type { DateRange } from './use-analytics';
-import { usePreferences } from './use-preferences';
+import { type UseQueryOptions, useQuery } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
+import type { DateRange } from "./use-analytics";
+import { usePreferences } from "./use-preferences";
 
 // API Request Types
 export interface DynamicQueryRequest {
@@ -10,12 +10,22 @@ export interface DynamicQueryRequest {
   limit?: number;
   page?: number;
   filters?: DynamicQueryFilter[];
-  granularity?: 'hourly' | 'daily';
+  granularity?: "hourly" | "daily";
 }
 
 export interface DynamicQueryFilter {
   field: string;
-  operator: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'not_in' | 'contains' | 'starts_with';
+  operator:
+    | "eq"
+    | "ne"
+    | "gt"
+    | "gte"
+    | "lt"
+    | "lte"
+    | "in"
+    | "not_in"
+    | "contains"
+    | "starts_with";
   value: string | number | (string | number)[];
 }
 
@@ -347,7 +357,7 @@ interface ApiResponse {
   error?: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 // Base params builder - following use-analytics.ts pattern
 function buildParams(
@@ -357,23 +367,23 @@ function buildParams(
 ): URLSearchParams {
   const params = new URLSearchParams({
     website_id: websiteId,
-    ...additionalParams
+    ...additionalParams,
   });
 
   if (dateRange?.start_date) {
-    params.append('start_date', dateRange.start_date);
+    params.append("start_date", dateRange.start_date);
   }
 
   if (dateRange?.end_date) {
-    params.append('end_date', dateRange.end_date);
+    params.append("end_date", dateRange.end_date);
   }
 
   if (dateRange?.granularity) {
-    params.append('granularity', dateRange.granularity);
+    params.append("granularity", dateRange.granularity);
   }
 
   // Add cache busting
-  params.append('_t', Date.now().toString());
+  params.append("_t", Date.now().toString());
 
   return params;
 }
@@ -390,8 +400,8 @@ async function fetchAnalyticsData<T extends ApiResponse>(
   const url = `${API_BASE_URL}/v1${endpoint}?${params}`;
 
   const response = await fetch(url, {
-    credentials: 'include',
-    signal
+    credentials: "include",
+    signal,
   });
 
   if (!response.ok) {
@@ -415,12 +425,12 @@ const defaultQueryOptions = {
   refetchOnMount: false,
   refetchInterval: 10 * 60 * 1000, // Background refetch every 10 minutes
   retry: (failureCount: number, error: Error) => {
-    if (error instanceof DOMException && error.name === 'AbortError') {
+    if (error instanceof DOMException && error.name === "AbortError") {
       return false;
     }
     return failureCount < 2;
   },
-  networkMode: 'online' as const,
+  networkMode: "online" as const,
   refetchIntervalInBackground: false,
 };
 
@@ -435,14 +445,14 @@ function useUserTimezone(): string {
     try {
       return Intl.DateTimeFormat().resolvedOptions().timeZone;
     } catch {
-      return 'UTC';
+      return "UTC";
     }
   }, []);
 
   // Return user's preferred timezone or browser timezone if 'auto'
   if (!preferences) return browserTimezone;
 
-  return preferences.timezone === 'auto' ? browserTimezone : preferences.timezone;
+  return preferences.timezone === "auto" ? browserTimezone : preferences.timezone;
 }
 
 // Dynamic query specific fetcher - POST request (supports both single and batch)
@@ -453,39 +463,39 @@ async function fetchDynamicQuery(
   signal?: AbortSignal,
   userTimezone?: string
 ): Promise<DynamicQueryResponse | BatchQueryResponse> {
-  const timezone = userTimezone || 'UTC';
+  const timezone = userTimezone || "UTC";
   const params = buildParams(websiteId, dateRange, { timezone });
   const url = `${API_BASE_URL}/v1/query?${params}`;
 
   // Prepare the request body
   const requestBody = Array.isArray(queryData)
-    ? queryData.map(query => ({
-      ...query,
-      startDate: dateRange.start_date,
-      endDate: dateRange.end_date,
-      timeZone: timezone,
-      limit: query.limit || 100,
-      page: query.page || 1,
-      filters: query.filters || [],
-      granularity: query.granularity || dateRange.granularity || 'daily',
-    }))
+    ? queryData.map((query) => ({
+        ...query,
+        startDate: dateRange.start_date,
+        endDate: dateRange.end_date,
+        timeZone: timezone,
+        limit: query.limit || 100,
+        page: query.page || 1,
+        filters: query.filters || [],
+        granularity: query.granularity || dateRange.granularity || "daily",
+      }))
     : {
-      ...queryData,
-      startDate: dateRange.start_date,
-      endDate: dateRange.end_date,
-      timeZone: timezone,
-      limit: queryData.limit || 100,
-      page: queryData.page || 1,
-      filters: queryData.filters || [],
-      granularity: queryData.granularity || dateRange.granularity || 'daily',
-    };
+        ...queryData,
+        startDate: dateRange.start_date,
+        endDate: dateRange.end_date,
+        timeZone: timezone,
+        limit: queryData.limit || 100,
+        page: queryData.page || 1,
+        filters: queryData.filters || [],
+        granularity: queryData.granularity || dateRange.granularity || "daily",
+      };
 
   const response = await fetch(url, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
-    credentials: 'include',
+    credentials: "include",
     signal,
     body: JSON.stringify(requestBody),
   });
@@ -497,7 +507,7 @@ async function fetchDynamicQuery(
   const data = await response.json();
 
   if (!data.success) {
-    throw new Error(data.error || 'Failed to fetch dynamic query data');
+    throw new Error(data.error || "Failed to fetch dynamic query data");
   }
 
   return data;
@@ -514,14 +524,17 @@ export function useDynamicQuery<T extends (keyof ParameterDataMap)[]>(
 ) {
   const userTimezone = useUserTimezone();
 
-  const fetchData = useCallback(async ({ signal }: { signal?: AbortSignal }) => {
-    const result = await fetchDynamicQuery(websiteId, dateRange, queryData, signal, userTimezone);
-    // Ensure we return a single query response (not batch)
-    return result as DynamicQueryResponse;
-  }, [websiteId, dateRange, queryData, userTimezone]);
+  const fetchData = useCallback(
+    async ({ signal }: { signal?: AbortSignal }) => {
+      const result = await fetchDynamicQuery(websiteId, dateRange, queryData, signal, userTimezone);
+      // Ensure we return a single query response (not batch)
+      return result as DynamicQueryResponse;
+    },
+    [websiteId, dateRange, queryData, userTimezone]
+  );
 
   const query = useQuery({
-    queryKey: ['dynamic-query', websiteId, dateRange, queryData, userTimezone],
+    queryKey: ["dynamic-query", websiteId, dateRange, queryData, userTimezone],
     queryFn: fetchData,
     ...defaultQueryOptions,
     ...options,
@@ -530,19 +543,26 @@ export function useDynamicQuery<T extends (keyof ParameterDataMap)[]>(
 
   // Process data into a more usable format
   const processedData = useMemo(() => {
-    return query.data?.data.reduce((acc, result) => {
-      if (result.success) {
-        acc[result.parameter] = result.data;
-      }
-      return acc;
-    }, {} as Record<string, any>) || {};
+    return (
+      query.data?.data.reduce(
+        (acc, result) => {
+          if (result.success) {
+            acc[result.parameter] = result.data;
+          }
+          return acc;
+        },
+        {} as Record<string, any>
+      ) || {}
+    );
   }, [query.data]);
 
   // Extract errors
   const errors = useMemo(() => {
-    return query.data?.data
-      .filter(result => !result.success)
-      .map(result => ({ parameter: result.parameter, error: result.error })) || [];
+    return (
+      query.data?.data
+        .filter((result) => !result.success)
+        .map((result) => ({ parameter: result.parameter, error: result.error })) || []
+    );
   }, [query.data]);
 
   return {
@@ -568,21 +588,24 @@ export function useBatchDynamicQuery(
 ) {
   const userTimezone = useUserTimezone();
 
-  const fetchData = useCallback(async ({ signal }: { signal?: AbortSignal }) => {
-    const result = await fetchDynamicQuery(websiteId, dateRange, queries, signal, userTimezone);
-    // Ensure we return a batch query response
-    return result as BatchQueryResponse;
-  }, [websiteId, dateRange, queries, userTimezone]);
+  const fetchData = useCallback(
+    async ({ signal }: { signal?: AbortSignal }) => {
+      const result = await fetchDynamicQuery(websiteId, dateRange, queries, signal, userTimezone);
+      // Ensure we return a batch query response
+      return result as BatchQueryResponse;
+    },
+    [websiteId, dateRange, queries, userTimezone]
+  );
 
   const query = useQuery({
     queryKey: [
-      'batch-dynamic-query',
+      "batch-dynamic-query",
       websiteId,
       dateRange.start_date,
       dateRange.end_date,
       dateRange.granularity,
       dateRange.timezone,
-      JSON.stringify(queries)
+      JSON.stringify(queries),
     ],
     queryFn: fetchData,
     ...defaultQueryOptions,
@@ -608,20 +631,20 @@ export function useBatchDynamicQuery(
 
       if (result.success && result.data) {
         // Process each parameter result
-        result.data.forEach(paramResult => {
+        result.data.forEach((paramResult) => {
           if (paramResult.success && paramResult.data) {
             processedResult.data[paramResult.parameter] = paramResult.data;
           } else {
             processedResult.errors.push({
               parameter: paramResult.parameter,
-              error: paramResult.error
+              error: paramResult.error,
             });
           }
         });
       } else {
         processedResult.errors.push({
-          parameter: 'query',
-          error: result.error || 'Unknown query error'
+          parameter: "query",
+          error: result.error || "Unknown query error",
         });
       }
 
@@ -630,27 +653,41 @@ export function useBatchDynamicQuery(
   }, [query.data]);
 
   // Helper functions for easier data access
-  const getDataForQuery = useCallback((queryId: string, parameter: string) => {
-    const result = processedResults.find(r => r.queryId === queryId);
-    if (!result?.success) {
-      return [];
-    }
-    const data = result.data[parameter];
-    if (!data) {
-      return [];
-    }
-    return data;
-  }, [processedResults]);
+  const getDataForQuery = useCallback(
+    (queryId: string, parameter: string) => {
+      const result = processedResults.find((r) => r.queryId === queryId);
+      if (!result?.success) {
+        return [];
+      }
+      const data = result.data[parameter];
+      if (!data) {
+        return [];
+      }
+      return data;
+    },
+    [processedResults]
+  );
 
-  const hasDataForQuery = useCallback((queryId: string, parameter: string) => {
-    const result = processedResults.find(r => r.queryId === queryId);
-    return result?.success && result.data[parameter] && Array.isArray(result.data[parameter]) && result.data[parameter].length > 0;
-  }, [processedResults]);
+  const hasDataForQuery = useCallback(
+    (queryId: string, parameter: string) => {
+      const result = processedResults.find((r) => r.queryId === queryId);
+      return (
+        result?.success &&
+        result.data[parameter] &&
+        Array.isArray(result.data[parameter]) &&
+        result.data[parameter].length > 0
+      );
+    },
+    [processedResults]
+  );
 
-  const getErrorsForQuery = useCallback((queryId: string) => {
-    const result = processedResults.find(r => r.queryId === queryId);
-    return result?.errors || [];
-  }, [processedResults]);
+  const getErrorsForQuery = useCallback(
+    (queryId: string) => {
+      const result = processedResults.find((r) => r.queryId === queryId);
+      return result?.errors || [];
+    },
+    [processedResults]
+  );
 
   return {
     results: processedResults,
@@ -667,20 +704,30 @@ export function useBatchDynamicQuery(
     // Debug info
     debugInfo: {
       queryCount: queries.length,
-      successfulQueries: processedResults.filter(r => r.success).length,
-      failedQueries: processedResults.filter(r => !r.success).length,
+      successfulQueries: processedResults.filter((r) => r.success).length,
+      failedQueries: processedResults.filter((r) => !r.success).length,
       totalParameters: processedResults.reduce((sum, r) => sum + Object.keys(r.data).length, 0),
-    }
+    },
   };
 }
 
 /**
  * Hook to fetch available parameters
  */
-export function useAvailableParameters(websiteId: string, options?: Partial<UseQueryOptions<ParametersResponse>>) {
+export function useAvailableParameters(
+  websiteId: string,
+  options?: Partial<UseQueryOptions<ParametersResponse>>
+) {
   return useQuery({
-    queryKey: ['dynamic-query-parameters', websiteId],
-    queryFn: ({ signal }) => fetchAnalyticsData<ParametersResponse>('/query/parameters', websiteId, undefined, undefined, signal),
+    queryKey: ["dynamic-query-parameters", websiteId],
+    queryFn: ({ signal }) =>
+      fetchAnalyticsData<ParametersResponse>(
+        "/query/parameters",
+        websiteId,
+        undefined,
+        undefined,
+        signal
+      ),
     ...defaultQueryOptions,
     staleTime: 60 * 60 * 1000, // 1 hour - parameters don't change often
     ...options,
@@ -699,8 +746,8 @@ export function useDeviceData(
     websiteId,
     dateRange,
     {
-      id: 'device-data',
-      parameters: ['device_type', 'browser_name', 'os_name'],
+      id: "device-data",
+      parameters: ["device_type", "browser_name", "os_name"],
     },
     options
   );
@@ -718,8 +765,8 @@ export function useGeographicData(
     websiteId,
     dateRange,
     {
-      id: 'geographic-data',
-      parameters: ['country', 'region', 'city', 'timezone', 'language'],
+      id: "geographic-data",
+      parameters: ["country", "region", "city", "timezone", "language"],
       limit: 100,
     },
     options
@@ -738,8 +785,8 @@ export function useUTMData(
     websiteId,
     dateRange,
     {
-      id: 'utm-data',
-      parameters: ['utm_source', 'utm_medium', 'utm_campaign'],
+      id: "utm-data",
+      parameters: ["utm_source", "utm_medium", "utm_campaign"],
     },
     options
   );
@@ -757,8 +804,8 @@ export function usePageAnalytics(
     websiteId,
     dateRange,
     {
-      id: 'page-analytics',
-      parameters: ['top_pages', 'exit_page'],
+      id: "page-analytics",
+      parameters: ["top_pages", "exit_page"],
     },
     options
   );
@@ -776,8 +823,8 @@ export function usePerformanceData(
     websiteId,
     dateRange,
     {
-      id: 'performance-data',
-      parameters: ['slow_pages'],
+      id: "performance-data",
+      parameters: ["slow_pages"],
     },
     options
   );
@@ -793,33 +840,33 @@ export function useEnhancedPerformanceData(
 ) {
   const queries: DynamicQueryRequest[] = [
     {
-      id: 'pages',
-      parameters: ['slow_pages'],
+      id: "pages",
+      parameters: ["slow_pages"],
       limit: 100,
     },
     {
-      id: 'countries',
-      parameters: ['performance_by_country'],
+      id: "countries",
+      parameters: ["performance_by_country"],
       limit: 100,
     },
     {
-      id: 'devices',
-      parameters: ['performance_by_device'],
+      id: "devices",
+      parameters: ["performance_by_device"],
       limit: 100,
     },
     {
-      id: 'browsers',
-      parameters: ['performance_by_browser'],
+      id: "browsers",
+      parameters: ["performance_by_browser"],
       limit: 100,
     },
     {
-      id: 'operating_systems',
-      parameters: ['performance_by_os'],
+      id: "operating_systems",
+      parameters: ["performance_by_os"],
       limit: 100,
     },
     {
-      id: 'regions',
-      parameters: ['performance_by_region'],
+      id: "regions",
+      parameters: ["performance_by_region"],
       limit: 100,
     },
   ];
@@ -839,8 +886,8 @@ export function useTrafficSources(
     websiteId,
     dateRange,
     {
-      id: 'traffic-sources',
-      parameters: ['referrer', 'utm_source', 'utm_medium', 'utm_campaign'],
+      id: "traffic-sources",
+      parameters: ["referrer", "utm_source", "utm_medium", "utm_campaign"],
     },
     options
   );
@@ -856,23 +903,23 @@ export function useEnhancedGeographicData(
 ) {
   const queries: DynamicQueryRequest[] = [
     {
-      id: 'countries',
-      parameters: ['country'],
+      id: "countries",
+      parameters: ["country"],
       limit: 100,
     },
     {
-      id: 'regions',
-      parameters: ['region'],
+      id: "regions",
+      parameters: ["region"],
       limit: 100,
     },
     {
-      id: 'timezones',
-      parameters: ['timezone'],
+      id: "timezones",
+      parameters: ["timezone"],
       limit: 100,
     },
     {
-      id: 'languages',
-      parameters: ['language'],
+      id: "languages",
+      parameters: ["language"],
       limit: 100,
     },
   ];
@@ -890,28 +937,28 @@ export function useComprehensiveAnalytics(
 ) {
   const queries: DynamicQueryRequest[] = [
     {
-      id: 'device-analytics',
-      parameters: ['device_type', 'browser_name', 'os_name'],
+      id: "device-analytics",
+      parameters: ["device_type", "browser_name", "os_name"],
       limit: 10,
     },
     {
-      id: 'geographic-analytics',
-      parameters: ['country', 'region', 'city', 'timezone', 'language'],
+      id: "geographic-analytics",
+      parameters: ["country", "region", "city", "timezone", "language"],
       limit: 100,
     },
     {
-      id: 'utm-analytics',
-      parameters: ['utm_source', 'utm_medium', 'utm_campaign'],
+      id: "utm-analytics",
+      parameters: ["utm_source", "utm_medium", "utm_campaign"],
       limit: 10,
     },
     {
-      id: 'page-analytics',
-      parameters: ['top_pages', 'exit_page'],
+      id: "page-analytics",
+      parameters: ["top_pages", "exit_page"],
       limit: 10,
     },
     {
-      id: 'performance-analytics',
-      parameters: ['slow_pages'],
+      id: "performance-analytics",
+      parameters: ["slow_pages"],
       limit: 10,
     },
   ];
@@ -1019,15 +1066,15 @@ export function useEnhancedErrorData(
     websiteId,
     dateRange,
     [
-      { id: 'recent_errors', parameters: ['recent_errors'], limit: 100, filters },
-      { id: 'error_types', parameters: ['error_types'], limit: 100, filters },
-      { id: 'errors_by_page', parameters: ['errors_by_page'], filters },
-      { id: 'errors_by_browser', parameters: ['errors_by_browser'], filters },
-      { id: 'errors_by_os', parameters: ['errors_by_os'], filters },
-      { id: 'errors_by_country', parameters: ['errors_by_country'], filters },
-      { id: 'errors_by_device', parameters: ['errors_by_device'], filters },
-      { id: 'error_trends', parameters: ['error_trends'], limit: 30, filters },
-      { id: 'sessions_summary', parameters: ['sessions_summary'], filters },
+      { id: "recent_errors", parameters: ["recent_errors"], limit: 100, filters },
+      { id: "error_types", parameters: ["error_types"], limit: 100, filters },
+      { id: "errors_by_page", parameters: ["errors_by_page"], filters },
+      { id: "errors_by_browser", parameters: ["errors_by_browser"], filters },
+      { id: "errors_by_os", parameters: ["errors_by_os"], filters },
+      { id: "errors_by_country", parameters: ["errors_by_country"], filters },
+      { id: "errors_by_device", parameters: ["errors_by_device"], filters },
+      { id: "error_trends", parameters: ["error_trends"], limit: 30, filters },
+      { id: "sessions_summary", parameters: ["sessions_summary"], filters },
     ],
     {
       ...options,
@@ -1045,23 +1092,23 @@ export function useJourneyAnalytics(
 ) {
   const queries: DynamicQueryRequest[] = [
     {
-      id: 'user-journeys',
-      parameters: ['user_journeys'],
+      id: "user-journeys",
+      parameters: ["user_journeys"],
       limit: 50,
     },
     {
-      id: 'journey-paths',
-      parameters: ['journey_paths'],
+      id: "journey-paths",
+      parameters: ["journey_paths"],
       limit: 25,
     },
     {
-      id: 'journey-dropoffs',
-      parameters: ['journey_dropoffs'],
+      id: "journey-dropoffs",
+      parameters: ["journey_dropoffs"],
       limit: 20,
     },
     {
-      id: 'journey-entry-points',
-      parameters: ['journey_entry_points'],
+      id: "journey-entry-points",
+      parameters: ["journey_entry_points"],
       limit: 20,
     },
   ];
@@ -1069,12 +1116,24 @@ export function useJourneyAnalytics(
   const batchResult = useBatchDynamicQuery(websiteId, dateRange, queries, options);
 
   // Convenient accessors with proper typing
-  const journeyData = useMemo(() => ({
-    transitions: batchResult.getDataForQuery('user-journeys', 'user_journeys') as JourneyTransition[],
-    paths: batchResult.getDataForQuery('journey-paths', 'journey_paths') as JourneyPath[],
-    dropoffs: batchResult.getDataForQuery('journey-dropoffs', 'journey_dropoffs') as JourneyDropoff[],
-    entryPoints: batchResult.getDataForQuery('journey-entry-points', 'journey_entry_points') as JourneyEntryPoint[],
-  }), [batchResult]);
+  const journeyData = useMemo(
+    () => ({
+      transitions: batchResult.getDataForQuery(
+        "user-journeys",
+        "user_journeys"
+      ) as JourneyTransition[],
+      paths: batchResult.getDataForQuery("journey-paths", "journey_paths") as JourneyPath[],
+      dropoffs: batchResult.getDataForQuery(
+        "journey-dropoffs",
+        "journey_dropoffs"
+      ) as JourneyDropoff[],
+      entryPoints: batchResult.getDataForQuery(
+        "journey-entry-points",
+        "journey_entry_points"
+      ) as JourneyEntryPoint[],
+    }),
+    [batchResult]
+  );
 
   // Calculate summary statistics
   const summaryStats = useMemo(() => {
@@ -1082,12 +1141,14 @@ export function useJourneyAnalytics(
 
     const totalTransitions = transitions.reduce((sum, item) => sum + item.transitions, 0);
     const totalUsers = transitions.reduce((sum, item) => sum + item.users, 0);
-    const avgStepInJourney = transitions.length > 0
-      ? transitions.reduce((sum, item) => sum + item.avg_step_in_journey, 0) / transitions.length
-      : 0;
-    const avgExitRate = dropoffs.length > 0
-      ? dropoffs.reduce((sum, item) => sum + item.exit_rate, 0) / dropoffs.length
-      : 0;
+    const avgStepInJourney =
+      transitions.length > 0
+        ? transitions.reduce((sum, item) => sum + item.avg_step_in_journey, 0) / transitions.length
+        : 0;
+    const avgExitRate =
+      dropoffs.length > 0
+        ? dropoffs.reduce((sum, item) => sum + item.exit_rate, 0) / dropoffs.length
+        : 0;
 
     // Fallback stats from other queries when user_journeys query fails
     const fallbackUsers = paths.reduce((sum, item) => sum + item.unique_users, 0);
@@ -1097,7 +1158,7 @@ export function useJourneyAnalytics(
       totalTransitions: totalTransitions || fallbackTransitions,
       totalUsers: totalUsers || fallbackUsers,
       avgStepInJourney: Math.round(avgStepInJourney * 100) / 100,
-      avgExitRate: Math.round(avgExitRate * 100) / 100
+      avgExitRate: Math.round(avgExitRate * 100) / 100,
     };
   }, [journeyData]);
 
@@ -1106,10 +1167,10 @@ export function useJourneyAnalytics(
     journeyData,
     summaryStats,
     // Convenience methods
-    hasJourneyData: batchResult.hasDataForQuery('user-journeys', 'user_journeys'),
-    hasPathData: batchResult.hasDataForQuery('journey-paths', 'journey_paths'),
-    hasDropoffData: batchResult.hasDataForQuery('journey-dropoffs', 'journey_dropoffs'),
-    hasEntryPointData: batchResult.hasDataForQuery('journey-entry-points', 'journey_entry_points'),
+    hasJourneyData: batchResult.hasDataForQuery("user-journeys", "user_journeys"),
+    hasPathData: batchResult.hasDataForQuery("journey-paths", "journey_paths"),
+    hasDropoffData: batchResult.hasDataForQuery("journey-dropoffs", "journey_dropoffs"),
+    hasEntryPointData: batchResult.hasDataForQuery("journey-entry-points", "journey_entry_points"),
   };
 }
 
@@ -1123,38 +1184,38 @@ export function useRevenueAnalytics(
 ) {
   const queries: DynamicQueryRequest[] = [
     {
-      id: 'revenue-summary',
-      parameters: ['revenue_summary'],
+      id: "revenue-summary",
+      parameters: ["revenue_summary"],
       limit: 1,
     },
     {
-      id: 'revenue-trends',
-      parameters: ['revenue_trends'],
+      id: "revenue-trends",
+      parameters: ["revenue_trends"],
       limit: 100,
     },
     {
-      id: 'recent-transactions',
-      parameters: ['recent_transactions'],
+      id: "recent-transactions",
+      parameters: ["recent_transactions"],
       limit: 50,
     },
     {
-      id: 'recent-refunds',
-      parameters: ['recent_refunds'],
+      id: "recent-refunds",
+      parameters: ["recent_refunds"],
       limit: 50,
     },
     {
-      id: 'revenue-by-country',
-      parameters: ['revenue_by_country'],
+      id: "revenue-by-country",
+      parameters: ["revenue_by_country"],
       limit: 20,
     },
     {
-      id: 'revenue-by-currency',
-      parameters: ['revenue_by_currency'],
+      id: "revenue-by-currency",
+      parameters: ["revenue_by_currency"],
       limit: 10,
     },
     {
-      id: 'revenue-by-card-brand',
-      parameters: ['revenue_by_card_brand'],
+      id: "revenue-by-card-brand",
+      parameters: ["revenue_by_card_brand"],
       limit: 10,
     },
   ];
@@ -1163,7 +1224,10 @@ export function useRevenueAnalytics(
 
   // Convenient accessors with proper typing
   const revenueData = useMemo(() => {
-    const summaryData = batchResult.getDataForQuery('revenue-summary', 'revenue_summary') as RevenueSummaryData[];
+    const summaryData = batchResult.getDataForQuery(
+      "revenue-summary",
+      "revenue_summary"
+    ) as RevenueSummaryData[];
     const summary = summaryData?.[0] || {
       total_revenue: 0,
       total_transactions: 0,
@@ -1174,12 +1238,27 @@ export function useRevenueAnalytics(
 
     return {
       summary,
-      trends: batchResult.getDataForQuery('revenue-trends', 'revenue_trends') as RevenueTrendData[],
-      recentTransactions: batchResult.getDataForQuery('recent-transactions', 'recent_transactions') as RecentTransactionData[],
-      recentRefunds: batchResult.getDataForQuery('recent-refunds', 'recent_refunds') as RecentRefundData[],
-      byCountry: batchResult.getDataForQuery('revenue-by-country', 'revenue_by_country') as RevenueBreakdownData[],
-      byCurrency: batchResult.getDataForQuery('revenue-by-currency', 'revenue_by_currency') as RevenueBreakdownData[],
-      byCardBrand: batchResult.getDataForQuery('revenue-by-card-brand', 'revenue_by_card_brand') as RevenueBreakdownData[],
+      trends: batchResult.getDataForQuery("revenue-trends", "revenue_trends") as RevenueTrendData[],
+      recentTransactions: batchResult.getDataForQuery(
+        "recent-transactions",
+        "recent_transactions"
+      ) as RecentTransactionData[],
+      recentRefunds: batchResult.getDataForQuery(
+        "recent-refunds",
+        "recent_refunds"
+      ) as RecentRefundData[],
+      byCountry: batchResult.getDataForQuery(
+        "revenue-by-country",
+        "revenue_by_country"
+      ) as RevenueBreakdownData[],
+      byCurrency: batchResult.getDataForQuery(
+        "revenue-by-currency",
+        "revenue_by_currency"
+      ) as RevenueBreakdownData[],
+      byCardBrand: batchResult.getDataForQuery(
+        "revenue-by-card-brand",
+        "revenue_by_card_brand"
+      ) as RevenueBreakdownData[],
     };
   }, [batchResult]);
 
@@ -1188,15 +1267,24 @@ export function useRevenueAnalytics(
     const { summary, trends, recentTransactions, recentRefunds } = revenueData;
 
     // Calculate growth from trends if available
-    const revenueGrowth = trends.length >= 2 ?
-      ((trends[0]?.revenue || 0) - (trends[1]?.revenue || 0)) / (trends[1]?.revenue || 1) * 100 : 0;
+    const revenueGrowth =
+      trends.length >= 2
+        ? (((trends[0]?.revenue || 0) - (trends[1]?.revenue || 0)) / (trends[1]?.revenue || 1)) *
+          100
+        : 0;
 
-    const transactionGrowth = trends.length >= 2 ?
-      ((trends[0]?.transactions || 0) - (trends[1]?.transactions || 0)) / (trends[1]?.transactions || 1) * 100 : 0;
+    const transactionGrowth =
+      trends.length >= 2
+        ? (((trends[0]?.transactions || 0) - (trends[1]?.transactions || 0)) /
+            (trends[1]?.transactions || 1)) *
+          100
+        : 0;
 
     // Calculate refund rate
-    const refundRate = summary.total_transactions > 0 ?
-      (summary.total_refunds / summary.total_transactions) * 100 : 0;
+    const refundRate =
+      summary.total_transactions > 0
+        ? (summary.total_refunds / summary.total_transactions) * 100
+        : 0;
 
     return {
       revenueGrowth: Math.round(revenueGrowth * 100) / 100,
@@ -1212,13 +1300,13 @@ export function useRevenueAnalytics(
     revenueData,
     summaryStats,
     // Convenience methods
-    hasSummaryData: batchResult.hasDataForQuery('revenue-summary', 'revenue_summary'),
-    hasTrendsData: batchResult.hasDataForQuery('revenue-trends', 'revenue_trends'),
-    hasTransactionsData: batchResult.hasDataForQuery('recent-transactions', 'recent_transactions'),
-    hasRefundsData: batchResult.hasDataForQuery('recent-refunds', 'recent_refunds'),
-    hasCountryData: batchResult.hasDataForQuery('revenue-by-country', 'revenue_by_country'),
-    hasCurrencyData: batchResult.hasDataForQuery('revenue-by-currency', 'revenue_by_currency'),
-    hasCardBrandData: batchResult.hasDataForQuery('revenue-by-card-brand', 'revenue_by_card_brand'),
+    hasSummaryData: batchResult.hasDataForQuery("revenue-summary", "revenue_summary"),
+    hasTrendsData: batchResult.hasDataForQuery("revenue-trends", "revenue_trends"),
+    hasTransactionsData: batchResult.hasDataForQuery("recent-transactions", "recent_transactions"),
+    hasRefundsData: batchResult.hasDataForQuery("recent-refunds", "recent_refunds"),
+    hasCountryData: batchResult.hasDataForQuery("revenue-by-country", "revenue_by_country"),
+    hasCurrencyData: batchResult.hasDataForQuery("revenue-by-currency", "revenue_by_currency"),
+    hasCardBrandData: batchResult.hasDataForQuery("revenue-by-card-brand", "revenue_by_card_brand"),
   };
 }
 
@@ -1242,14 +1330,14 @@ export function useRealTimeStats(
     websiteId,
     dateRange,
     {
-      id: 'realtime-active-stats',
-      parameters: ['active_stats'],
+      id: "realtime-active-stats",
+      parameters: ["active_stats"],
     },
     {
       ...options,
       refetchInterval: 5000,
       staleTime: 0,
-      gcTime: 10000,
+      gcTime: 10_000,
       refetchOnWindowFocus: true,
       refetchOnMount: true,
     }
@@ -1261,4 +1349,4 @@ export function useRealTimeStats(
   }, [queryResult.data]);
 
   return { ...queryResult, activeUsers };
-} 
+}

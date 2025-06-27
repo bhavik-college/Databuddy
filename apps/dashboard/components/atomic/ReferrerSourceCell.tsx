@@ -6,13 +6,13 @@ import type React from "react";
 // Ideally, this would be a shared type if used in multiple places outside atomic components.
 export interface ReferrerSourceCellData {
   // The primary display name, maps to 'value' if accessorKey is 'name' in a table
-  name?: string; 
+  name?: string;
   // The raw referrer string
-  referrer?: string; 
+  referrer?: string;
   // The domain used for fetching the favicon
-  domain?: string; 
+  domain?: string;
   // Optional unique ID for the component instance
-  id?: string; 
+  id?: string;
 }
 
 interface ReferrerSourceCellProps extends ReferrerSourceCellData {
@@ -30,7 +30,10 @@ export const ReferrerSourceCell: React.FC<ReferrerSourceCellProps> = ({
 
   if (displayName === "Direct" || !domain) {
     return (
-      <span id={id} className={className ? `${className} font-medium text-sm` : "font-medium text-sm"}>
+      <span
+        className={className ? `${className} font-medium text-sm` : "font-medium text-sm"}
+        id={id}
+      >
         {displayName}
       </span>
     );
@@ -46,18 +49,25 @@ export const ReferrerSourceCell: React.FC<ReferrerSourceCellProps> = ({
   };
 
   return (
-    <span id={id} className={className ? `${className} font-medium text-sm flex items-center gap-2` : "font-medium text-sm flex items-center gap-2"}>
+    <span
+      className={
+        className
+          ? `${className} flex items-center gap-2 font-medium text-sm`
+          : "flex items-center gap-2 font-medium text-sm"
+      }
+      id={id}
+    >
       <img
-        src={faviconUrl}
         alt={`${displayName} favicon`}
-        width={16}
-        height={16}
         className="rounded-sm"
+        height={16}
         onError={handleImageError}
+        src={faviconUrl}
+        width={16}
       />
       {displayName}
     </span>
   );
 };
 
-export default ReferrerSourceCell; 
+export default ReferrerSourceCell;

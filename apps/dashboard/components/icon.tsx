@@ -5,22 +5,66 @@ import { cn } from "@/lib/utils";
 
 // Define available browser icons based on the public directory
 const BROWSER_ICONS = [
-  "Chrome", "Firefox", "Safari", "Edge", "Opera", "OperaGX", "SamsungInternet",
-  "UCBrowser", "Yandex", "Baidu", "QQ", "WeChat", "Instagram", "Facebook",
-  "IE", "Chromium", "DuckDuckGo", "Avast", "AVG", "Android", "Huawei",
-  "Miui", "Vivo", "Sogou", "CocCoc", "Whale", "WebKit", "Wolvic",
-  "Sleipnir", "Silk", "Quark", "PaleMoon", "Oculus", "Naver", "Line",
-  "Lenovo", "KAKAOTALK", "Iron", "HeyTap", "360", "Brave"
+  "Chrome",
+  "Firefox",
+  "Safari",
+  "Edge",
+  "Opera",
+  "OperaGX",
+  "SamsungInternet",
+  "UCBrowser",
+  "Yandex",
+  "Baidu",
+  "QQ",
+  "WeChat",
+  "Instagram",
+  "Facebook",
+  "IE",
+  "Chromium",
+  "DuckDuckGo",
+  "Avast",
+  "AVG",
+  "Android",
+  "Huawei",
+  "Miui",
+  "Vivo",
+  "Sogou",
+  "CocCoc",
+  "Whale",
+  "WebKit",
+  "Wolvic",
+  "Sleipnir",
+  "Silk",
+  "Quark",
+  "PaleMoon",
+  "Oculus",
+  "Naver",
+  "Line",
+  "Lenovo",
+  "KAKAOTALK",
+  "Iron",
+  "HeyTap",
+  "360",
+  "Brave",
 ] as const;
 
-// Define available OS icons based on the public directory  
+// Define available OS icons based on the public directory
 const OS_ICONS = [
-  "Windows", "macOS", "Android", "Ubuntu", "Tux", "Apple", "Chrome",
-  "HarmonyOS", "OpenHarmony", "Playstation", "Tizen"
+  "Windows",
+  "macOS",
+  "Android",
+  "Ubuntu",
+  "Tux",
+  "Apple",
+  "Chrome",
+  "HarmonyOS",
+  "OpenHarmony",
+  "Playstation",
+  "Tizen",
 ] as const;
 
-export type BrowserIconName = typeof BROWSER_ICONS[number];
-export type OSIconName = typeof OS_ICONS[number];
+export type BrowserIconName = (typeof BROWSER_ICONS)[number];
+export type OSIconName = (typeof OS_ICONS)[number];
 export type IconType = "browser" | "os";
 
 interface PublicIconProps {
@@ -37,13 +81,7 @@ const sizeMap = {
   lg: 24,
 };
 
-export function PublicIcon({
-  type,
-  name,
-  size = "md",
-  className,
-  fallback
-}: PublicIconProps) {
+export function PublicIcon({ type, name, size = "md", className, fallback }: PublicIconProps) {
   const iconSize = typeof size === "number" ? size : sizeMap[size];
 
   const normalizedName = name.replace(/\s+/g, "").replace(/[^a-zA-Z0-9]/g, "");
@@ -52,18 +90,18 @@ export function PublicIcon({
   const availableIcons = type === "browser" ? BROWSER_ICONS : OS_ICONS;
 
   // Check if we have this icon (case-insensitive)
-  const exactMatch = availableIcons.find(icon =>
-    icon.toLowerCase() === normalizedName.toLowerCase()
+  const exactMatch = availableIcons.find(
+    (icon) => icon.toLowerCase() === normalizedName.toLowerCase()
   );
 
   // Special mapping for OS icons
   let mappedName = normalizedName;
   if (type === "os") {
     const osMap: Record<string, string> = {
-      'linux': 'Ubuntu',
-      'ios': 'Apple',
-      'darwin': 'macOS',
-      'mac': 'macOS'
+      linux: "Ubuntu",
+      ios: "Apple",
+      darwin: "macOS",
+      mac: "macOS",
     };
     const lowerName = normalizedName.toLowerCase();
     if (osMap[lowerName]) {
@@ -72,14 +110,15 @@ export function PublicIcon({
   }
 
   // Check with mapped name
-  const mappedMatch = availableIcons.find(icon =>
-    icon.toLowerCase() === mappedName.toLowerCase()
+  const mappedMatch = availableIcons.find(
+    (icon) => icon.toLowerCase() === mappedName.toLowerCase()
   );
 
   // If no exact match, try partial matching
-  const partialMatch = availableIcons.find(icon =>
-    icon.toLowerCase().includes(normalizedName.toLowerCase()) ||
-    normalizedName.toLowerCase().includes(icon.toLowerCase())
+  const partialMatch = availableIcons.find(
+    (icon) =>
+      icon.toLowerCase().includes(normalizedName.toLowerCase()) ||
+      normalizedName.toLowerCase().includes(icon.toLowerCase())
   );
 
   const iconName = exactMatch || mappedMatch || partialMatch;
@@ -94,13 +133,13 @@ export function PublicIcon({
     }
   }
 
-  if (!iconName || !iconSrc) {
+  if (!(iconName && iconSrc)) {
     return fallback ? (
       <>{fallback}</>
     ) : (
       <div
         className={cn(
-          "rounded bg-muted flex items-center justify-center text-muted-foreground text-xs font-medium",
+          "flex items-center justify-center rounded bg-muted font-medium text-muted-foreground text-xs",
           className
         )}
         style={{ width: iconSize, height: iconSize }}
@@ -111,20 +150,21 @@ export function PublicIcon({
   }
 
   return (
-    <div className={cn("relative flex-shrink-0", className)} style={{ width: iconSize, height: iconSize }}>
+    <div
+      className={cn("relative flex-shrink-0", className)}
+      style={{ width: iconSize, height: iconSize }}
+    >
       <Image
-        key={`${iconName}`}
-        src={iconSrc}
         alt={name}
-        width={iconSize}
+        className={cn("object-contain")}
         height={iconSize}
-        className={cn(
-          "object-contain",
-        )}
+        key={`${iconName}`}
         onError={(e) => {
           const img = e.target as HTMLImageElement;
-          img.style.display = 'none';
+          img.style.display = "none";
         }}
+        src={iconSrc}
+        width={iconSize}
       />
     </div>
   );
@@ -135,32 +175,13 @@ export function BrowserIcon({
   name,
   size = "md",
   className,
-  fallback
+  fallback,
 }: Omit<PublicIconProps, "type">) {
   return (
-    <PublicIcon
-      type="browser"
-      name={name}
-      size={size}
-      className={className}
-      fallback={fallback}
-    />
+    <PublicIcon className={className} fallback={fallback} name={name} size={size} type="browser" />
   );
 }
 
-export function OSIcon({
-  name,
-  size = "md",
-  className,
-  fallback
-}: Omit<PublicIconProps, "type">) {
-  return (
-    <PublicIcon
-      type="os"
-      name={name}
-      size={size}
-      className={className}
-      fallback={fallback}
-    />
-  );
-} 
+export function OSIcon({ name, size = "md", className, fallback }: Omit<PublicIconProps, "type">) {
+  return <PublicIcon className={className} fallback={fallback} name={name} size={size} type="os" />;
+}

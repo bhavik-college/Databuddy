@@ -4,7 +4,7 @@ export interface CustomerProduct {
   id: string;
   name: string;
   group: string | null;
-  status: 'active' | 'canceled' | 'scheduled';
+  status: 'active' | 'canceled' | 'scheduled' | 'trialing';
   canceled_at: number | null;
   started_at: number;
   is_default: boolean;
@@ -92,7 +92,7 @@ export interface Plan {
   is_add_on: boolean;
   price: Price;
   items: PlanItem[];
-  scenario: 'active' | 'upgrade' | 'downgrade' | 'canceled' | 'scheduled';
+  scenario: 'active' | 'upgrade' | 'downgrade' | 'canceled' | 'scheduled' | 'trialing';
   button_text: string;
   free_trial?: any | null;
   interval_group?: any | null;
@@ -426,7 +426,7 @@ export const useBillingData = () => {
       if (customerProduct) {
         let scenario: Plan['scenario'] = 'upgrade';
 
-        if (customerProduct.status === 'active') {
+        if (customerProduct.status === 'active' || customerProduct.status === 'trialing') {
           scenario = customerProduct.canceled_at ? 'canceled' : 'active';
         } else if (customerProduct.status === 'scheduled') {
           scenario = 'scheduled';

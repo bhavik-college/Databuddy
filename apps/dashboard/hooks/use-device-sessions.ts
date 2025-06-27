@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import { authClient } from "@databuddy/auth/client";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface DeviceSessionDetails {
@@ -16,7 +16,8 @@ interface DeviceSessionDetails {
   expiresAt: string;
 }
 
-export interface DeviceSessionEntry { // Exporting for use in TopHeader
+export interface DeviceSessionEntry {
+  // Exporting for use in TopHeader
   session: DeviceSessionDetails;
   user?: {
     email?: string;
@@ -43,31 +44,32 @@ export function useDeviceSessions() {
       if (result.error) {
         throw new Error(result.error.message);
       }
-      const processedSessions: DeviceSessionEntry[] = result.data?.map((item: any) => ({
-        session: item.session || {
-          sessionToken: item.sessionToken,
-          userId: item.userId,
-          provider: item.provider,
-          isCurrent: item.isCurrent,
-          ipAddress: item.ipAddress,
-          userAgent: item.userAgent,
-          lastActive: item.lastActive,
-          createdAt: item.createdAt,
-          expiresAt: item.expiresAt,
-        },
-        user: item.user || { email: item.email || "Unknown User", name: item.name },
-        sessionToken: item.sessionToken || item.session?.sessionToken,
-        isCurrent: typeof item.isCurrent === 'boolean' ? item.isCurrent : (item.session?.isCurrent || false),
-        provider: item.provider || item.session?.provider || 'N/A',
-        userId: item.userId || item.session?.userId,
-      })) || [];
+      const processedSessions: DeviceSessionEntry[] =
+        result.data?.map((item: any) => ({
+          session: item.session || {
+            sessionToken: item.sessionToken,
+            userId: item.userId,
+            provider: item.provider,
+            isCurrent: item.isCurrent,
+            ipAddress: item.ipAddress,
+            userAgent: item.userAgent,
+            lastActive: item.lastActive,
+            createdAt: item.createdAt,
+            expiresAt: item.expiresAt,
+          },
+          user: item.user || { email: item.email || "Unknown User", name: item.name },
+          sessionToken: item.sessionToken || item.session?.sessionToken,
+          isCurrent: typeof item.isCurrent === "boolean" ? item.isCurrent : item.session?.isCurrent,
+          provider: item.provider || item.session?.provider || "N/A",
+          userId: item.userId || item.session?.userId,
+        })) || [];
       setSessions(processedSessions);
     } catch (err: any) {
       const errorMessage = err.message || "Failed to fetch sessions.";
       setError(errorMessage);
       // Toasting errors here might be too aggressive if the hook is used in a non-UI critical way
       // Consider letting the component using the hook decide on toast notifications
-      // toast.error(errorMessage); 
+      // toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +87,7 @@ export function useDeviceSessions() {
         throw new Error(result.error.message);
       }
       toast.success("Session switched successfully. Reloading...");
-      window.location.reload(); 
+      window.location.reload();
       // No need to call fetchSessions() here as the page reloads
       return { success: true };
     } catch (err: any) {
@@ -123,4 +125,4 @@ export function useDeviceSessions() {
     setActiveSession,
     revokeSession,
   };
-} 
+}

@@ -1,24 +1,30 @@
 "use client";
 
-import { useState } from 'react';
-import { PlusIcon, GlobeIcon, ChartLineIcon, SparkleIcon, TrendUpIcon } from '@phosphor-icons/react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useWebsites } from '@/hooks/use-websites';
-import { useDomains } from '@/hooks/use-domains';
-import { WebsiteDialog } from '@/components/website-dialog';
-import { WebsiteCard } from './_components/website-card';
-import { cn } from '@/lib/utils';
+import {
+  ChartLineIcon,
+  GlobeIcon,
+  PlusIcon,
+  SparkleIcon,
+  TrendUpIcon,
+} from "@phosphor-icons/react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { WebsiteDialog } from "@/components/website-dialog";
+import { useDomains } from "@/hooks/use-domains";
+import { useWebsites } from "@/hooks/use-websites";
+import { cn } from "@/lib/utils";
+import { WebsiteCard } from "./_components/website-card";
 
 function WebsiteLoadingSkeleton() {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {[1, 2, 3, 4, 5, 6].map((num) => (
-        <Card key={`website-skeleton-${num}`} className="overflow-hidden animate-pulse">
+        <Card className="animate-pulse overflow-hidden" key={`website-skeleton-${num}`}>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="space-y-2 flex-1">
+              <div className="flex-1 space-y-2">
                 <Skeleton className="h-4 w-32 rounded" />
                 <div className="flex items-center gap-1">
                   <Skeleton className="h-3 w-3 rounded" />
@@ -45,47 +51,52 @@ function WebsiteLoadingSkeleton() {
 
 function EnhancedEmptyState({ onAddWebsite }: { onAddWebsite: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+    <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
       <div className="relative mb-8">
-        <div className="rounded-full bg-muted/50 p-8 border">
-          <GlobeIcon size={64} weight="duotone" className="h-16 w-16 text-muted-foreground" />
+        <div className="rounded-full border bg-muted/50 p-8">
+          <GlobeIcon className="h-16 w-16 text-muted-foreground" size={64} weight="duotone" />
         </div>
-        <div className="absolute -top-2 -right-2 p-2 rounded-full bg-primary/10 border border-primary/20">
-          <ChartLineIcon size={24} weight="fill" className="h-6 w-6 text-primary" />
+        <div className="-top-2 -right-2 absolute rounded-full border border-primary/20 bg-primary/10 p-2">
+          <ChartLineIcon className="h-6 w-6 text-primary" size={24} weight="fill" />
         </div>
       </div>
 
-      <h3 className="text-2xl font-bold mb-4">No Websites Yet</h3>
-      <p className="text-muted-foreground mb-8 max-w-md leading-relaxed">
-        Start tracking your website analytics by adding your first website. Get insights into visitors, pageviews, and performance.
+      <h3 className="mb-4 font-bold text-2xl">No Websites Yet</h3>
+      <p className="mb-8 max-w-md text-muted-foreground leading-relaxed">
+        Start tracking your website analytics by adding your first website. Get insights into
+        visitors, pageviews, and performance.
       </p>
 
       <Button
-        size="lg"
-        onClick={onAddWebsite}
-        data-track="websites-add-first-website"
-        data-section="empty-state"
-        data-button-type="primary-cta"
         className={cn(
           "gap-2 px-8 py-4 font-medium text-base",
           "bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary",
-          "shadow-lg hover:shadow-xl transition-all duration-300 group relative overflow-hidden"
+          "group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl"
         )}
+        data-button-type="primary-cta"
+        data-section="empty-state"
+        data-track="websites-add-first-website"
+        onClick={onAddWebsite}
+        size="lg"
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-        <PlusIcon size={24} className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300 relative z-10" />
+        <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-700 group-hover:translate-x-[100%]" />
+        <PlusIcon
+          className="relative z-10 h-5 w-5 transition-transform duration-300 group-hover:rotate-90"
+          size={24}
+        />
         <span className="relative z-10">Add First Website</span>
       </Button>
 
-      <div className="bg-muted/50 rounded-xl p-6 max-w-md border mt-8">
+      <div className="mt-8 max-w-md rounded-xl border bg-muted/50 p-6">
         <div className="flex items-start gap-3">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <SparkleIcon size={24} weight="fill" className="h-5 w-5 text-primary" />
+          <div className="rounded-lg bg-primary/10 p-2">
+            <SparkleIcon className="h-5 w-5 text-primary" size={24} weight="fill" />
           </div>
           <div className="text-left">
-            <p className="font-semibold text-sm mb-2">💡 Quick tip</p>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Add your tracking script to start collecting analytics data. You'll see beautiful charts and insights within minutes.
+            <p className="mb-2 font-semibold text-sm">💡 Quick tip</p>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              Add your tracking script to start collecting analytics data. You'll see beautiful
+              charts and insights within minutes.
             </p>
           </div>
         </div>
@@ -96,15 +107,21 @@ function EnhancedEmptyState({ onAddWebsite }: { onAddWebsite: () => void }) {
 
 function ErrorState({ onRetry }: { onRetry: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-      <div className="rounded-full bg-red-50 p-8 border border-red-200 mb-8">
-        <GlobeIcon size={64} weight="duotone" className="h-16 w-16 text-red-500" />
+    <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
+      <div className="mb-8 rounded-full border border-red-200 bg-red-50 p-8">
+        <GlobeIcon className="h-16 w-16 text-red-500" size={64} weight="duotone" />
       </div>
-      <h3 className="text-2xl font-bold mb-4">Failed to Load Websites</h3>
-      <p className="text-muted-foreground mb-8 max-w-md leading-relaxed">
+      <h3 className="mb-4 font-bold text-2xl">Failed to Load Websites</h3>
+      <p className="mb-8 max-w-md text-muted-foreground leading-relaxed">
         There was an issue fetching your websites. Please check your connection and try again.
       </p>
-      <Button onClick={onRetry} variant="outline" size="lg" data-track="websites-retry-load" data-section="error-state">
+      <Button
+        data-section="error-state"
+        data-track="websites-retry-load"
+        onClick={onRetry}
+        size="lg"
+        variant="outline"
+      >
         Try Again
       </Button>
     </div>
@@ -116,7 +133,7 @@ export default function WebsitesPage() {
   const { domains } = useDomains();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const verifiedDomains = domains.filter(domain => domain.verificationStatus === "VERIFIED");
+  const verifiedDomains = domains.filter((domain) => domain.verificationStatus === "VERIFIED");
 
   const handleRetry = () => {
     refetch();
@@ -127,40 +144,43 @@ export default function WebsitesPage() {
   };
 
   return (
-    <div className="h-full flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="fade-in slide-in-from-bottom-4 flex h-full animate-in flex-col duration-500">
       {/* Enhanced header */}
       <div className="border-b">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:px-4 sm:py-4 gap-3 sm:gap-0">
+        <div className="flex flex-col justify-between gap-3 p-3 sm:flex-row sm:items-center sm:gap-0 sm:px-4 sm:py-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-                <TrendUpIcon size={24} weight="fill" className="h-5 w-5 text-primary" />
+              <div className="rounded-lg border border-primary/20 bg-primary/10 p-2">
+                <TrendUpIcon className="h-5 w-5 text-primary" size={24} weight="fill" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground truncate">
+                <h1 className="truncate font-bold text-foreground text-xl tracking-tight sm:text-2xl">
                   Websites
                 </h1>
-                <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">
+                <p className="mt-0.5 text-muted-foreground text-xs sm:text-sm">
                   Track analytics for all your websites
                 </p>
               </div>
             </div>
           </div>
           <Button
-            size="default"
-            onClick={() => setDialogOpen(true)}
-            data-track="websites-new-website-header"
-            data-section="header"
-            data-button-type="primary"
             className={cn(
-              "gap-2 w-full sm:w-auto px-6 py-3 font-medium",
+              "w-full gap-2 px-6 py-3 font-medium sm:w-auto",
               "bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary",
-              "shadow-lg hover:shadow-xl transition-all duration-300 group relative overflow-hidden"
+              "group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl"
             )}
+            data-button-type="primary"
+            data-section="header"
+            data-track="websites-new-website-header"
+            onClick={() => setDialogOpen(true)}
+            size="default"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-            <PlusIcon size={24} className="h-4 w-4 group-hover:rotate-90 transition-transform duration-300 relative z-10" />
-            <span className="truncate relative z-10">New Website</span>
+            <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-700 group-hover:translate-x-[100%]" />
+            <PlusIcon
+              className="relative z-10 h-4 w-4 transition-transform duration-300 group-hover:rotate-90"
+              size={24}
+            />
+            <span className="relative z-10 truncate">New Website</span>
           </Button>
         </div>
       </div>
@@ -170,10 +190,11 @@ export default function WebsitesPage() {
         {/* Website count indicator */}
         {!isLoading && websites && websites.length > 0 && (
           <div className="mb-6">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/30 rounded-lg px-3 py-2 border border-muted">
-              <GlobeIcon size={24} weight="duotone" className="h-4 w-4 flex-shrink-0" />
+            <div className="flex items-center gap-2 rounded-lg border border-muted bg-muted/30 px-3 py-2 text-muted-foreground text-sm">
+              <GlobeIcon className="h-4 w-4 flex-shrink-0" size={24} weight="duotone" />
               <span>
-                Tracking <span className="font-medium text-foreground">{websites.length}</span> website{websites.length !== 1 ? 's' : ''}
+                Tracking <span className="font-medium text-foreground">{websites.length}</span>{" "}
+                website{websites.length !== 1 ? "s" : ""}
               </span>
             </div>
           </div>
@@ -186,15 +207,17 @@ export default function WebsitesPage() {
         {isError && <ErrorState onRetry={handleRetry} />}
 
         {/* Show empty state */}
-        {!isLoading && !isError && websites && websites.length === 0 && <EnhancedEmptyState onAddWebsite={() => setDialogOpen(true)} />}
+        {!(isLoading || isError) && websites && websites.length === 0 && (
+          <EnhancedEmptyState onAddWebsite={() => setDialogOpen(true)} />
+        )}
 
         {/* Show website grid */}
-        {!isLoading && !isError && websites && websites.length > 0 && (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
+        {!(isLoading || isError) && websites && websites.length > 0 && (
+          <div className="fade-in slide-in-from-bottom-2 grid animate-in gap-6 duration-700 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {websites.map((website, index) => (
               <div
+                className="fade-in slide-in-from-bottom-4 animate-in"
                 key={website.id}
-                className="animate-in fade-in slide-in-from-bottom-4"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <WebsiteCard website={website} />
@@ -206,10 +229,10 @@ export default function WebsitesPage() {
 
       {/* Website Dialog */}
       <WebsiteDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        verifiedDomains={verifiedDomains}
         onCreationSuccess={handleWebsiteCreated}
+        onOpenChange={setDialogOpen}
+        open={dialogOpen}
+        verifiedDomains={verifiedDomains}
       />
     </div>
   );

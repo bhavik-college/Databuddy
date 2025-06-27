@@ -1,27 +1,37 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { authClient } from "@databuddy/auth/client";
+import {
+  ArrowClockwiseIcon,
+  CheckCircleIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  LockKeyIcon,
+  ShieldCheckIcon,
+  SignOutIcon,
+  SparkleIcon,
+  WarningIcon,
+} from "@phosphor-icons/react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { ArrowClockwiseIcon, LockKeyIcon, EyeIcon, EyeSlashIcon, ShieldCheckIcon, WarningIcon, CheckCircleIcon, SparkleIcon, SignOutIcon } from "@phosphor-icons/react";
-import { cn } from "@/lib/utils";
+import { z } from "zod";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
 
 // Define form schema with validation
 const formSchema = z
@@ -42,7 +52,11 @@ const formSchema = z
 type FormValues = z.infer<typeof formSchema>;
 
 // Password strength calculation
-function calculatePasswordStrength(password: string): { score: number; feedback: string; color: string } {
+function calculatePasswordStrength(password: string): {
+  score: number;
+  feedback: string;
+  color: string;
+} {
   if (!password) return { score: 0, feedback: "Enter a password", color: "bg-gray-200" };
 
   let score = 0;
@@ -114,47 +128,52 @@ export function PasswordForm() {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div className="fade-in slide-in-from-bottom-2 animate-in space-y-6 duration-300">
       {/* Security Notice */}
       <Alert className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
-        <ShieldCheckIcon size={16} weight="duotone" className="h-4 w-4 text-amber-600" />
+        <ShieldCheckIcon className="h-4 w-4 text-amber-600" size={16} weight="duotone" />
         <AlertDescription className="text-sm">
-          <strong>Security Tip:</strong> Use a strong password with a mix of letters, numbers, and special characters. Consider using a password manager.
+          <strong>Security Tip:</strong> Use a strong password with a mix of letters, numbers, and
+          special characters. Consider using a password manager.
         </AlertDescription>
       </Alert>
 
       {/* Form */}
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
           <FormField
             control={form.control}
             name="currentPassword"
             render={({ field }) => (
               <FormItem className="space-y-3">
-                <FormLabel className="text-base font-medium">Current Password</FormLabel>
+                <FormLabel className="font-medium text-base">Current Password</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
-                      type={showCurrentPassword ? "text" : "password"}
-                      placeholder="Enter your current password"
                       className={cn(
-                        "pl-10 pr-10 transition-all duration-200",
+                        "pr-10 pl-10 transition-all duration-200",
                         form.formState.errors.currentPassword && "border-destructive"
                       )}
+                      placeholder="Enter your current password"
+                      type={showCurrentPassword ? "text" : "password"}
                       {...field}
                     />
-                    <LockKeyIcon size={16} weight="duotone" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <LockKeyIcon
+                      className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground"
+                      size={16}
+                      weight="duotone"
+                    />
                     <Button
+                      className="-translate-y-1/2 absolute top-1/2 right-1 h-8 w-8 transform p-0"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      size="sm"
                       type="button"
                       variant="ghost"
-                      size="sm"
-                      className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                     >
                       {showCurrentPassword ? (
-                        <EyeSlashIcon size={16} weight="duotone" className="h-4 w-4" />
+                        <EyeSlashIcon className="h-4 w-4" size={16} weight="duotone" />
                       ) : (
-                        <EyeIcon size={16} weight="duotone" className="h-4 w-4" />
+                        <EyeIcon className="h-4 w-4" size={16} weight="duotone" />
                       )}
                     </Button>
                   </div>
@@ -172,30 +191,34 @@ export function PasswordForm() {
             name="newPassword"
             render={({ field }) => (
               <FormItem className="space-y-3">
-                <FormLabel className="text-base font-medium">New Password</FormLabel>
+                <FormLabel className="font-medium text-base">New Password</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
-                      type={showNewPassword ? "text" : "password"}
-                      placeholder="Enter your new password"
                       className={cn(
-                        "pl-10 pr-10 transition-all duration-200",
+                        "pr-10 pl-10 transition-all duration-200",
                         form.formState.errors.newPassword && "border-destructive"
                       )}
+                      placeholder="Enter your new password"
+                      type={showNewPassword ? "text" : "password"}
                       {...field}
                     />
-                    <LockKeyIcon size={16} weight="duotone" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <LockKeyIcon
+                      className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground"
+                      size={16}
+                      weight="duotone"
+                    />
                     <Button
+                      className="-translate-y-1/2 absolute top-1/2 right-1 h-8 w-8 transform p-0"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      size="sm"
                       type="button"
                       variant="ghost"
-                      size="sm"
-                      className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-                      onClick={() => setShowNewPassword(!showNewPassword)}
                     >
                       {showNewPassword ? (
-                        <EyeSlashIcon size={16} weight="duotone" className="h-4 w-4" />
+                        <EyeSlashIcon className="h-4 w-4" size={16} weight="duotone" />
                       ) : (
-                        <EyeIcon size={16} weight="duotone" className="h-4 w-4" />
+                        <EyeIcon className="h-4 w-4" size={16} weight="duotone" />
                       )}
                     </Button>
                   </div>
@@ -203,28 +226,32 @@ export function PasswordForm() {
 
                 {/* Password Strength Indicator */}
                 {newPassword && (
-                  <div className="space-y-2 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                  <div className="fade-in slide-in-from-bottom-1 animate-in space-y-2 duration-200">
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-muted-foreground">Password strength</span>
-                      <span className={cn(
-                        "font-medium",
-                        passwordStrength.score < 40 && "text-red-600",
-                        passwordStrength.score >= 40 && passwordStrength.score < 70 && "text-yellow-600",
-                        passwordStrength.score >= 70 && passwordStrength.score < 90 && "text-blue-600",
-                        passwordStrength.score >= 90 && "text-green-600"
-                      )}>
+                      <span
+                        className={cn(
+                          "font-medium",
+                          passwordStrength.score < 40 && "text-red-600",
+                          passwordStrength.score >= 40 &&
+                            passwordStrength.score < 70 &&
+                            "text-yellow-600",
+                          passwordStrength.score >= 70 &&
+                            passwordStrength.score < 90 &&
+                            "text-blue-600",
+                          passwordStrength.score >= 90 && "text-green-600"
+                        )}
+                      >
                         {passwordStrength.feedback}
                       </span>
                     </div>
-                    <Progress
-                      value={passwordStrength.score}
-                      className="h-2"
-                    />
+                    <Progress className="h-2" value={passwordStrength.score} />
                   </div>
                 )}
 
                 <FormDescription className="text-sm leading-relaxed">
-                  Must be at least 8 characters with letters and numbers. Special characters recommended.
+                  Must be at least 8 characters with letters and numbers. Special characters
+                  recommended.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -236,35 +263,45 @@ export function PasswordForm() {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem className="space-y-3">
-                <FormLabel className="text-base font-medium">Confirm New Password</FormLabel>
+                <FormLabel className="font-medium text-base">Confirm New Password</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm your new password"
                       className={cn(
-                        "pl-10 pr-10 transition-all duration-200",
+                        "pr-10 pl-10 transition-all duration-200",
                         form.formState.errors.confirmPassword && "border-destructive",
-                        field.value && field.value === newPassword && "border-green-500 bg-green-50/50 dark:bg-green-950/20"
+                        field.value &&
+                          field.value === newPassword &&
+                          "border-green-500 bg-green-50/50 dark:bg-green-950/20"
                       )}
+                      placeholder="Confirm your new password"
+                      type={showConfirmPassword ? "text" : "password"}
                       {...field}
                     />
-                    <LockKeyIcon size={16} weight="duotone" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <LockKeyIcon
+                      className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground"
+                      size={16}
+                      weight="duotone"
+                    />
                     <Button
+                      className="-translate-y-1/2 absolute top-1/2 right-1 h-8 w-8 transform p-0"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      size="sm"
                       type="button"
                       variant="ghost"
-                      size="sm"
-                      className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     >
                       {showConfirmPassword ? (
-                        <EyeSlashIcon size={16} weight="duotone" className="h-4 w-4" />
+                        <EyeSlashIcon className="h-4 w-4" size={16} weight="duotone" />
                       ) : (
-                        <EyeIcon size={16} weight="duotone" className="h-4 w-4" />
+                        <EyeIcon className="h-4 w-4" size={16} weight="duotone" />
                       )}
                     </Button>
                     {field.value && field.value === newPassword && (
-                      <CheckCircleIcon size={16} weight="fill" className="absolute right-10 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
+                      <CheckCircleIcon
+                        className="-translate-y-1/2 absolute top-1/2 right-10 h-4 w-4 transform text-green-500"
+                        size={16}
+                        weight="fill"
+                      />
                     )}
                   </div>
                 </FormControl>
@@ -274,24 +311,24 @@ export function PasswordForm() {
           />
 
           {/* Session Management */}
-          <div className="space-y-3 p-4 border border-muted/50 rounded-lg bg-muted/20">
+          <div className="space-y-3 rounded-lg border border-muted/50 bg-muted/20 p-4">
             <div className="flex items-center space-x-3">
               <Checkbox
-                id="revokeOtherSessions"
                 checked={form.watch("revokeOtherSessions")}
+                id="revokeOtherSessions"
                 onCheckedChange={(checked) =>
                   form.setValue("revokeOtherSessions", checked === true)
                 }
               />
               <div className="flex-1">
                 <label
+                  className="flex cursor-pointer items-center gap-2 font-medium text-sm leading-none"
                   htmlFor="revokeOtherSessions"
-                  className="text-sm font-medium leading-none cursor-pointer flex items-center gap-2"
                 >
-                  <SignOutIcon size={16} weight="duotone" className="h-4 w-4" />
+                  <SignOutIcon className="h-4 w-4" size={16} weight="duotone" />
                   Log out from all other devices
                 </label>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="mt-1 text-muted-foreground text-xs">
                   This will sign you out of all other sessions for security
                 </p>
               </div>
@@ -299,20 +336,24 @@ export function PasswordForm() {
           </div>
 
           {/* Action Button */}
-          <div className="pt-4 border-t border-muted/50">
+          <div className="border-muted/50 border-t pt-4">
             <Button
-              type="submit"
+              className="w-full transition-all duration-300 sm:w-auto sm:min-w-40"
               disabled={isLoading || passwordStrength.score < 40}
-              className="w-full sm:w-auto sm:min-w-40 transition-all duration-300"
+              type="submit"
             >
               {isLoading ? (
                 <>
-                  <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />
+                  <ArrowClockwiseIcon
+                    className="mr-2 h-4 w-4 animate-spin"
+                    size={16}
+                    weight="fill"
+                  />
                   Updating Password...
                 </>
               ) : (
                 <>
-                  <ShieldCheckIcon size={16} weight="duotone" className="mr-2 h-4 w-4" />
+                  <ShieldCheckIcon className="mr-2 h-4 w-4" size={16} weight="duotone" />
                   Update Password
                 </>
               )}
@@ -322,14 +363,14 @@ export function PasswordForm() {
       </Form>
 
       {/* Help Text */}
-      <div className="bg-muted/30 rounded-lg p-4 border border-muted/50">
+      <div className="rounded-lg border border-muted/50 bg-muted/30 p-4">
         <div className="flex items-start gap-3">
-          <div className="p-1 rounded-md bg-primary/10">
-            <SparkleIcon size={16} weight="fill" className="h-4 w-4 text-primary" />
+          <div className="rounded-md bg-primary/10 p-1">
+            <SparkleIcon className="h-4 w-4 text-primary" size={16} weight="fill" />
           </div>
           <div className="text-sm">
-            <p className="font-medium mb-1">🔒 Password Security Tips</p>
-            <ul className="text-muted-foreground leading-relaxed space-y-1">
+            <p className="mb-1 font-medium">🔒 Password Security Tips</p>
+            <ul className="space-y-1 text-muted-foreground leading-relaxed">
               <li>• Use a unique password you don't use elsewhere</li>
               <li>• Include uppercase, lowercase, numbers, and symbols</li>
               <li>• Consider using a password manager</li>
@@ -340,4 +381,4 @@ export function PasswordForm() {
       </div>
     </div>
   );
-} 
+}

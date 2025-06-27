@@ -1,10 +1,10 @@
-import Link from "next/link";
+import type { Website } from "@databuddy/shared";
 import { GlobeIcon } from "@phosphor-icons/react";
-import { cn } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import type { Website } from "@databuddy/shared";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 interface WebsiteListProps {
   websites: Website[] | undefined;
@@ -39,30 +39,37 @@ export function WebsiteList({ websites, isLoading, pathname }: WebsiteListProps)
 
   if (!websites?.length) {
     return (
-      <div className="px-3 py-2 text-sm text-muted-foreground bg-accent/30 rounded-md border border-border/50">
+      <div className="rounded-md border border-border/50 bg-accent/30 px-3 py-2 text-muted-foreground text-sm">
         No websites yet
       </div>
     );
   }
 
   return (
-    <div className="bg-accent/20 rounded-md py-1">
+    <div className="rounded-md bg-accent/20 py-1">
       {websites.map((site) => (
         <Link
-          key={site.id}
-          href={`/websites/${site.id}`}
-          prefetch={true}
           className={cn(
-            "flex items-center gap-x-3 px-3 py-2 text-sm rounded-md transition-all cursor-pointer mx-1",
+            "mx-1 flex cursor-pointer items-center gap-x-3 rounded-md px-3 py-2 text-sm transition-all",
             pathname === `/websites/${site.id}`
-              ? "bg-primary/15 text-primary font-medium"
+              ? "bg-primary/15 font-medium text-primary"
               : "text-foreground hover:bg-accent/70"
           )}
+          href={`/websites/${site.id}`}
+          key={site.id}
+          prefetch={true}
         >
-          <GlobeIcon size={32} weight="duotone" className={cn("h-4 w-4 not-dark:text-primary", pathname === `/websites/${site.id}` && "text-primary")} />
+          <GlobeIcon
+            className={cn(
+              "h-4 w-4 not-dark:text-primary",
+              pathname === `/websites/${site.id}` && "text-primary"
+            )}
+            size={32}
+            weight="duotone"
+          />
           <span className="truncate">{site.name || site.domain}</span>
         </Link>
       ))}
     </div>
   );
-} 
+}

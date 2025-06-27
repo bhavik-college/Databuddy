@@ -1,11 +1,11 @@
 import "./globals.css";
 
+import { Databuddy } from "@databuddy/sdk";
 import type { Metadata, Viewport } from "next";
-import NextTopLoader from 'nextjs-toploader';
+import { Geist, Geist_Mono } from "next/font/google";
+import NextTopLoader from "nextjs-toploader";
 import { Toaster } from "sonner";
 import Providers from "./providers";
-import { Databuddy } from "@databuddy/sdk";
-import { Geist, Geist_Mono } from "next/font/google";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -20,12 +20,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://app.databuddy.cc'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://app.databuddy.cc"),
   title: {
     template: "%s | Databuddy Dashboard",
     default: "Databuddy Dashboard",
   },
-  description: "Powerful analytics dashboard for your websites. Track visitors, monitor performance, and gain insights into your audience.",
+  description:
+    "Powerful analytics dashboard for your websites. Track visitors, monitor performance, and gain insights into your audience.",
   keywords: [
     "analytics",
     "dashboard",
@@ -36,33 +37,35 @@ export const metadata: Metadata = {
     "website insights",
     "visitor analytics",
     "performance monitoring",
-    "user behavior"
+    "user behavior",
   ],
-  authors: [{ name: "Databuddy", url: 'https://www.databuddy.cc' }],
+  authors: [{ name: "Databuddy", url: "https://www.databuddy.cc" }],
   creator: "Databuddy",
   publisher: "Databuddy",
   openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: 'https://app.databuddy.cc',
-    title: 'Databuddy Dashboard',
-    description: 'Powerful analytics dashboard for your websites. Track visitors, monitor performance, and gain insights into your audience.',
-    siteName: 'Databuddy Dashboard',
+    type: "website",
+    locale: "en_US",
+    url: "https://app.databuddy.cc",
+    title: "Databuddy Dashboard",
+    description:
+      "Powerful analytics dashboard for your websites. Track visitors, monitor performance, and gain insights into your audience.",
+    siteName: "Databuddy Dashboard",
     images: [
       {
-        url: '/og-image.webp',
+        url: "/og-image.webp",
         width: 1200,
         height: 630,
-        alt: 'Databuddy Dashboard Preview',
-      }
+        alt: "Databuddy Dashboard Preview",
+      },
     ],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Databuddy Dashboard',
-    description: 'Powerful analytics dashboard for your websites. Track visitors, monitor performance, and gain insights into your audience.',
-    images: ['/og-image.webp'],
-    creator: '@databuddy',
+    card: "summary_large_image",
+    title: "Databuddy Dashboard",
+    description:
+      "Powerful analytics dashboard for your websites. Track visitors, monitor performance, and gain insights into your audience.",
+    images: ["/og-image.webp"],
+    creator: "@databuddy",
   },
   robots: {
     index: true,
@@ -70,19 +73,19 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    }
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
   alternates: {
-    canonical: 'https://app.databuddy.cc',
+    canonical: "https://app.databuddy.cc",
   },
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
-    other: { rel: 'icon', url: '/favicon.ico' },
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+    other: { rel: "icon", url: "/favicon.ico" },
   },
 };
 
@@ -102,10 +105,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isLocalhost = process.env.NODE_ENV === 'development';
+  const isLocalhost = process.env.NODE_ENV === "development";
 
   return (
-    <html lang="en" suppressHydrationWarning className={`${geist.variable} ${geistMono.variable} h-full`}>
+    <html
+      className={`${geist.variable} ${geistMono.variable} h-full`}
+      lang="en"
+      suppressHydrationWarning
+    >
       <head />
       <Databuddy
         clientId={isLocalhost ? "5ced32e5-0219-4e75-a18a-ad9826f85698" : "3ed1fce1-5a56-4cb6-a977-66864f6d18e3"}
@@ -115,17 +122,14 @@ export default function RootLayout({
         trackErrors={true}
         trackPerformance={true}
         trackScreenViews={true}
+        trackWebVitals={true}
       />
-      <body className="antialiased h-full min-h-screen bg-background text-foreground flex flex-col">
+      <body className="flex h-full min-h-screen flex-col bg-background text-foreground antialiased">
         <Providers>
-          <NextTopLoader
-            color="hsl(var(--primary))"
-            height={2}
-            showSpinner={false}
-          />
+          <NextTopLoader color="hsl(var(--primary))" height={2} showSpinner={false} />
           <main className="flex-1">{children}</main>
         </Providers>
-        <Toaster duration={1500} position="top-center" closeButton richColors />
+        <Toaster closeButton duration={1500} position="top-center" richColors />
       </body>
     </html>
   );

@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { Globe, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { WebsiteDialog } from "@/components/website-dialog";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { domains } from "@databuddy/db";
+import { Globe, Plus } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { WebsiteDialog } from "@/components/website-dialog";
 import type { CreateWebsiteData } from "@/hooks/use-websites";
+
 type Domain = typeof domains.$inferSelect;
 
 interface EmptyStateProps {
@@ -14,17 +15,21 @@ interface EmptyStateProps {
   verifiedDomains?: Domain[];
 }
 
-export function EmptyState({ 
-  isCreating, 
+export function EmptyState({
+  isCreating,
   hasVerifiedDomains = true,
-  verifiedDomains = []
+  verifiedDomains = [],
 }: EmptyStateProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  
+
   const renderButton = () => {
     const button = (
-      <Button size="lg" disabled={!hasVerifiedDomains || isCreating} onClick={() => hasVerifiedDomains && setDialogOpen(true)}>
-        <Plus className="h-4 w-4 mr-2" />
+      <Button
+        disabled={!hasVerifiedDomains || isCreating}
+        onClick={() => hasVerifiedDomains && setDialogOpen(true)}
+        size="lg"
+      >
+        <Plus className="mr-2 h-4 w-4" />
         Add Your First Website
       </Button>
     );
@@ -33,9 +38,7 @@ export function EmptyState({
       return (
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger asChild>
-              {button}
-            </TooltipTrigger>
+            <TooltipTrigger asChild>{button}</TooltipTrigger>
             <TooltipContent>
               <p>You need a verified domain to create a website</p>
             </TooltipContent>
@@ -48,21 +51,21 @@ export function EmptyState({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-16 border border-dashed rounded-lg bg-accent/20">
-      <Globe className="h-16 w-16 text-muted-foreground mb-5 opacity-80" />
-      <h3 className="text-xl font-semibold mb-2">No websites added yet</h3>
-      <p className="text-muted-foreground text-center max-w-md mb-6">
+    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed bg-accent/20 py-16">
+      <Globe className="mb-5 h-16 w-16 text-muted-foreground opacity-80" />
+      <h3 className="mb-2 font-semibold text-xl">No websites added yet</h3>
+      <p className="mb-6 max-w-md text-center text-muted-foreground">
         Add your first website to start tracking analytics and insights.
         {!hasVerifiedDomains && " You'll need a verified domain first."}
       </p>
-      
+
       {renderButton()}
-      
+
       <WebsiteDialog
-        open={dialogOpen}
         onOpenChange={setDialogOpen}
+        open={dialogOpen}
         verifiedDomains={verifiedDomains}
       />
     </div>
   );
-} 
+}

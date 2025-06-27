@@ -1,27 +1,34 @@
 "use client";
 
+import { authClient, useSession } from "@databuddy/auth/client";
+import {
+  ArrowClockwiseIcon,
+  CheckCircleIcon,
+  EnvelopeSimpleIcon,
+  LockKeyIcon,
+  ShieldCheckIcon,
+  SparkleIcon,
+  WarningIcon,
+} from "@phosphor-icons/react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { authClient, useSession } from "@databuddy/auth/client";
 import { toast } from "sonner";
-import { ArrowClockwiseIcon, EnvelopeSimpleIcon, LockKeyIcon, WarningIcon, ShieldCheckIcon, CheckCircleIcon, SparkleIcon } from "@phosphor-icons/react";
-import { cn } from "@/lib/utils";
-
+import { z } from "zod";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
 
 // Define form schema with validation
 const formSchema = z.object({
@@ -65,29 +72,31 @@ export function EmailForm() {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div className="fade-in slide-in-from-bottom-2 animate-in space-y-6 duration-300">
       {/* Current Email Display */}
       <Card className="border-muted/50 bg-gradient-to-br from-muted/20 to-muted/5">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-600/5 border border-blue-500/20 flex items-center justify-center">
-                <EnvelopeSimpleIcon size={20} weight="duotone" className="h-5 w-5 text-blue-600" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-blue-500/20 bg-gradient-to-br from-blue-500/20 to-blue-600/5">
+                <EnvelopeSimpleIcon className="h-5 w-5 text-blue-600" size={20} weight="duotone" />
               </div>
               <div>
                 <p className="font-medium text-sm">Current Email</p>
-                <p className="text-sm text-muted-foreground">{session?.user?.email || "Not available"}</p>
+                <p className="text-muted-foreground text-sm">
+                  {session?.user?.email || "Not available"}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {session?.user?.emailVerified ? (
-                <Badge variant="secondary" className="text-xs">
-                  <CheckCircleIcon size={12} weight="fill" className="h-3 w-3 mr-1" />
+                <Badge className="text-xs" variant="secondary">
+                  <CheckCircleIcon className="mr-1 h-3 w-3" size={12} weight="fill" />
                   Verified
                 </Badge>
               ) : (
-                <Badge variant="outline" className="text-xs border-amber-300 text-amber-600">
-                  <WarningIcon size={12} weight="duotone" className="h-3 w-3 mr-1" />
+                <Badge className="border-amber-300 text-amber-600 text-xs" variant="outline">
+                  <WarningIcon className="mr-1 h-3 w-3" size={12} weight="duotone" />
                   Unverified
                 </Badge>
               )}
@@ -98,36 +107,42 @@ export function EmailForm() {
 
       {/* Security Notice */}
       <Alert className="border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/20">
-        <ShieldCheckIcon size={16} weight="duotone" className="h-4 w-4 text-blue-600" />
+        <ShieldCheckIcon className="h-4 w-4 text-blue-600" size={16} weight="duotone" />
         <AlertDescription className="text-sm">
-          <strong>Security Notice:</strong> Changing your email requires verification. You'll receive a confirmation link at your new email address.
+          <strong>Security Notice:</strong> Changing your email requires verification. You'll
+          receive a confirmation link at your new email address.
         </AlertDescription>
       </Alert>
 
       {/* Form */}
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
           <FormField
             control={form.control}
             name="newEmail"
             render={({ field }) => (
               <FormItem className="space-y-3">
-                <FormLabel className="text-base font-medium">New Email Address</FormLabel>
+                <FormLabel className="font-medium text-base">New Email Address</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
-                      placeholder="Enter your new email address"
                       className={cn(
                         "pl-10 transition-all duration-200",
                         form.formState.errors.newEmail && "border-destructive"
                       )}
+                      placeholder="Enter your new email address"
                       {...field}
                     />
-                    <EnvelopeSimpleIcon size={16} weight="duotone" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <EnvelopeSimpleIcon
+                      className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground"
+                      size={16}
+                      weight="duotone"
+                    />
                   </div>
                 </FormControl>
                 <FormDescription className="text-sm leading-relaxed">
-                  Enter the new email address you want to use for your account. You'll need to verify this email before the change takes effect.
+                  Enter the new email address you want to use for your account. You'll need to
+                  verify this email before the change takes effect.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -139,19 +154,23 @@ export function EmailForm() {
             name="password"
             render={({ field }) => (
               <FormItem className="space-y-3">
-                <FormLabel className="text-base font-medium">Current Password</FormLabel>
+                <FormLabel className="font-medium text-base">Current Password</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
-                      type="password"
-                      placeholder="Enter your current password"
                       className={cn(
                         "pl-10 transition-all duration-200",
                         form.formState.errors.password && "border-destructive"
                       )}
+                      placeholder="Enter your current password"
+                      type="password"
                       {...field}
                     />
-                    <LockKeyIcon size={16} weight="duotone" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <LockKeyIcon
+                      className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground"
+                      size={16}
+                      weight="duotone"
+                    />
                   </div>
                 </FormControl>
                 <FormDescription className="text-sm leading-relaxed">
@@ -163,20 +182,24 @@ export function EmailForm() {
           />
 
           {/* Action Button */}
-          <div className="pt-4 border-t border-muted/50">
+          <div className="border-muted/50 border-t pt-4">
             <Button
-              type="submit"
+              className="w-full transition-all duration-300 sm:w-auto sm:min-w-40"
               disabled={isLoading}
-              className="w-full sm:w-auto sm:min-w-40 transition-all duration-300"
+              type="submit"
             >
               {isLoading ? (
                 <>
-                  <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />
+                  <ArrowClockwiseIcon
+                    className="mr-2 h-4 w-4 animate-spin"
+                    size={16}
+                    weight="fill"
+                  />
                   Sending Request...
                 </>
               ) : (
                 <>
-                  <EnvelopeSimpleIcon size={16} weight="duotone" className="mr-2 h-4 w-4" />
+                  <EnvelopeSimpleIcon className="mr-2 h-4 w-4" size={16} weight="duotone" />
                   Update Email
                 </>
               )}
@@ -186,14 +209,14 @@ export function EmailForm() {
       </Form>
 
       {/* Help Text */}
-      <div className="bg-muted/30 rounded-lg p-4 border border-muted/50">
+      <div className="rounded-lg border border-muted/50 bg-muted/30 p-4">
         <div className="flex items-start gap-3">
-          <div className="p-1 rounded-md bg-primary/10">
-            <SparkleIcon size={16} weight="duotone" className="h-4 w-4 text-primary" />
+          <div className="rounded-md bg-primary/10 p-1">
+            <SparkleIcon className="h-4 w-4 text-primary" size={16} weight="duotone" />
           </div>
           <div className="text-sm">
-            <p className="font-medium mb-1">📧 Email Change Process</p>
-            <ul className="text-muted-foreground leading-relaxed space-y-1">
+            <p className="mb-1 font-medium">📧 Email Change Process</p>
+            <ul className="space-y-1 text-muted-foreground leading-relaxed">
               <li>• A verification link will be sent to your new email</li>
               <li>• Click the link to confirm the email change</li>
               <li>• Your old email will remain active until verification</li>
@@ -204,4 +227,4 @@ export function EmailForm() {
       </div>
     </div>
   );
-} 
+}

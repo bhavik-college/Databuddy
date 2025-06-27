@@ -1,18 +1,16 @@
 "use client";
 
-import Iridescence from "@/components/bits/Iridiscence";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
-import { Suspense } from "react";
-import { Loader2 } from "lucide-react";
-import { redirect } from "next/navigation";
 import { authClient } from "@databuddy/auth/client";
+import { ChevronLeft, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import Iridescence from "@/components/bits/Iridiscence";
 import { Logo } from "@/components/layout/logo";
+import { Button } from "@/components/ui/button";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
-
-  const { data: session, isPending } = authClient.useSession()
+  const { data: session, isPending } = authClient.useSession();
 
   if (session && !isPending) {
     redirect("/websites");
@@ -21,38 +19,45 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="flex h-screen">
       {/* Iridescence side */}
-      <div className="hidden md:flex md:w-1/2 relative flex-col items-start justify-between p-12 overflow-hidden">
+      <div className="relative hidden flex-col items-start justify-between overflow-hidden p-12 md:flex md:w-1/2">
         <div className="absolute inset-0">
-          <Iridescence
-            color={[0.1, 0.2, 0.9]}
-            speed={0.5}
-            amplitude={0.2}
-          />
+          <Iridescence amplitude={0.2} color={[0.1, 0.2, 0.9]} speed={0.5} />
         </div>
-        <Link href="/" className="relative z-10">
-          <Button variant="outline" className="bg-white/20 text-white border-white/10 hover:bg-white/20 group scale-100 hover:scale-105 transition-all duration-200 cursor-pointer">
-            <ChevronLeft className="h-4 w-4 group-hover:translate-x-[-4px] transition-all duration-200" />
+        <Link className="relative z-10" href="/">
+          <Button
+            className="group scale-100 cursor-pointer border-white/10 bg-white/20 text-white transition-all duration-200 hover:scale-105 hover:bg-white/20"
+            variant="outline"
+          >
+            <ChevronLeft className="h-4 w-4 transition-all duration-200 group-hover:translate-x-[-4px]" />
             Back
           </Button>
         </Link>
         <div className="relative z-10 text-white">
-          <h1 className="text-4xl font-bold mb-4">
-            Build better <br />products with <br />Databuddy
+          <h1 className="mb-4 font-bold text-4xl">
+            Build better <br />
+            products with <br />
+            Databuddy
           </h1>
-          <p className="text-white/70 max-w-md">
+          <p className="max-w-md text-white/70">
             Connect your data sources, build insights, and share them with your team.
           </p>
         </div>
       </div>
-      <div className="w-full md:w-1/2 flex flex-col bg-background overflow-auto">
-        <div className="flex justify-center md:justify-start p-6 md:p-8 pt-8 md:pt-12">
+      <div className="flex w-full flex-col overflow-auto bg-background md:w-1/2">
+        <div className="flex justify-center p-6 pt-8 md:justify-start md:p-8 md:pt-12">
           <Logo />
         </div>
 
         {/* Auth form content - centered */}
-        <div className="flex-1 flex items-center justify-center p-6 md:p-8 pt-0">
+        <div className="flex flex-1 items-center justify-center p-6 pt-0 md:p-8">
           <div className="w-full max-w-md">
-            <Suspense fallback={<div className="flex h-40 items-center justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>}>
+            <Suspense
+              fallback={
+                <div className="flex h-40 items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              }
+            >
               {children}
             </Suspense>
           </div>
@@ -60,4 +65,4 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </div>
     </div>
   );
-} 
+}

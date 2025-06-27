@@ -1,47 +1,47 @@
-import { WarningCircleIcon, TrendUpIcon, UsersIcon, ActivityIcon } from "@phosphor-icons/react";
+import { ActivityIcon, TrendUpIcon, UsersIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { StatCard } from "@/components/analytics/stat-card";
 import type { ErrorSummary } from "./types";
 
 interface ErrorSummaryStatsProps {
-    errorSummary: ErrorSummary;
-    isLoading: boolean;
+  errorSummary: ErrorSummary;
+  isLoading: boolean;
 }
 
 export const ErrorSummaryStats = ({ errorSummary, isLoading }: ErrorSummaryStatsProps) => {
-    return (
-        <div className="grid grid-cols-2 gap-3">
-            <StatCard
-                title="Total Errors"
-                value={errorSummary.totalErrors.toLocaleString()}
-                icon={WarningCircleIcon}
-                isLoading={isLoading}
-                variant="danger"
-                description="All error occurrences"
-            />
-            <StatCard
-                title="Error Rate"
-                value={`${errorSummary.errorRate.toFixed(2)}%`}
-                icon={TrendUpIcon}
-                isLoading={isLoading}
-                variant="danger"
-                description="Error sessions"
-            />
-            <StatCard
-                title="Affected Users"
-                value={errorSummary.affectedUsers.toLocaleString()}
-                icon={UsersIcon}
-                isLoading={isLoading}
-                variant="warning"
-                description="Unique users with errors"
-            />
-            <StatCard
-                title="Affected Sessions"
-                value={errorSummary.affectedSessions.toLocaleString()}
-                icon={ActivityIcon}
-                isLoading={isLoading}
-                variant="warning"
-                description="Unique sessions with errors"
-            />
-        </div>
-    );
-}; 
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <StatCard
+        description="All error occurrences"
+        icon={WarningCircleIcon}
+        isLoading={isLoading}
+        title="Total Errors"
+        value={errorSummary.totalErrors.toLocaleString()}
+        variant="danger"
+      />
+      <StatCard
+        description="Error sessions"
+        icon={TrendUpIcon}
+        isLoading={isLoading}
+        title="Error Rate"
+        value={`${errorSummary.errorRate.toFixed(2)}%`}
+        variant="danger"
+      />
+      <StatCard
+        description="Unique users with errors"
+        icon={UsersIcon}
+        isLoading={isLoading}
+        title="Affected Users"
+        value={errorSummary.affectedUsers.toLocaleString()}
+        variant="warning"
+      />
+      <StatCard
+        description="Unique sessions with errors"
+        icon={ActivityIcon}
+        isLoading={isLoading}
+        title="Affected Sessions"
+        value={errorSummary.affectedSessions.toLocaleString()}
+        variant="warning"
+      />
+    </div>
+  );
+};

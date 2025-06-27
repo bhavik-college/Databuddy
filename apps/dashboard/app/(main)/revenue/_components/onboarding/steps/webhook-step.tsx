@@ -1,173 +1,173 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import {
+  ArrowSquareOutIcon,
+  CheckCircleIcon,
+  CopyIcon,
+  FloppyDiskBackIcon,
+  WarningCircleIcon,
+} from "@phosphor-icons/react";
+import { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { CopyIcon, ArrowSquareOutIcon, WarningCircleIcon, CheckCircleIcon, FloppyDiskBackIcon } from "@phosphor-icons/react";
+import { Switch } from "@/components/ui/switch";
 
 interface WebhookStepProps {
-    webhookSecret: string;
-    isLiveMode: boolean;
-    copied: boolean;
-    copyToClipboard: (text: string, label: string) => void;
-    webhookUrl: string;
-    onBack: () => void;
-    onNext: () => void;
-    onSave: (data: { webhookSecret: string; isLiveMode: boolean }) => void;
-    isSaving?: boolean;
+  webhookSecret: string;
+  isLiveMode: boolean;
+  copied: boolean;
+  copyToClipboard: (text: string, label: string) => void;
+  webhookUrl: string;
+  onBack: () => void;
+  onNext: () => void;
+  onSave: (data: { webhookSecret: string; isLiveMode: boolean }) => void;
+  isSaving?: boolean;
 }
 
 export function WebhookStep({
-    webhookSecret,
-    isLiveMode,
-    copied,
-    copyToClipboard,
-    webhookUrl,
-    onBack,
-    onNext,
-    onSave,
-    isSaving = false,
+  webhookSecret,
+  isLiveMode,
+  copied,
+  copyToClipboard,
+  webhookUrl,
+  onBack,
+  onNext,
+  onSave,
+  isSaving = false,
 }: WebhookStepProps) {
-    // Local state for form inputs
-    const [localWebhookSecret, setLocalWebhookSecret] = useState(webhookSecret);
-    const [localIsLiveMode, setLocalIsLiveMode] = useState(isLiveMode);
-    const [hasChanges, setHasChanges] = useState(false);
+  // Local state for form inputs
+  const [localWebhookSecret, setLocalWebhookSecret] = useState(webhookSecret);
+  const [localIsLiveMode, setLocalIsLiveMode] = useState(isLiveMode);
+  const [hasChanges, setHasChanges] = useState(false);
 
-    // Update local state when props change
-    useEffect(() => {
-        setLocalWebhookSecret(webhookSecret);
-        setLocalIsLiveMode(isLiveMode);
-        setHasChanges(false);
-    }, [webhookSecret, isLiveMode]);
+  // Update local state when props change
+  useEffect(() => {
+    setLocalWebhookSecret(webhookSecret);
+    setLocalIsLiveMode(isLiveMode);
+    setHasChanges(false);
+  }, [webhookSecret, isLiveMode]);
 
-    // Track changes
-    useEffect(() => {
-        const changed = localWebhookSecret !== webhookSecret || localIsLiveMode !== isLiveMode;
-        setHasChanges(changed);
-    }, [localWebhookSecret, localIsLiveMode, webhookSecret, isLiveMode]);
+  // Track changes
+  useEffect(() => {
+    const changed = localWebhookSecret !== webhookSecret || localIsLiveMode !== isLiveMode;
+    setHasChanges(changed);
+  }, [localWebhookSecret, localIsLiveMode, webhookSecret, isLiveMode]);
 
-    const handleSave = () => {
-        onSave({
-            webhookSecret: localWebhookSecret,
-            isLiveMode: localIsLiveMode,
-        });
-    };
+  const handleSave = () => {
+    onSave({
+      webhookSecret: localWebhookSecret,
+      isLiveMode: localIsLiveMode,
+    });
+  };
 
-    return (
-        <div className="space-y-6">
-            <div>
-                <h3 className="font-medium mb-3">Step 1: Configure Stripe Webhook</h3>
-                <div className="space-y-4">
-                    <div>
-                        <Label htmlFor="webhook-url">Webhook Endpoint URL</Label>
-                        <div className="flex gap-2 mt-1">
-                            <Input
-                                id="webhook-url"
-                                value={webhookUrl}
-                                readOnly
-                                className="font-mono text-sm"
-                            />
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => copyToClipboard(webhookUrl, 'Webhook URL')}
-                            >
-                                {copied ? <CheckCircleIcon size={16} weight="fill" className="h-4 w-4" /> : <CopyIcon size={16} weight="duotone" className="h-4 w-4" />}
-                            </Button>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            Add this URL to your Stripe webhook endpoints
-                        </p>
-                    </div>
-
-                    <div>
-                        <Label htmlFor="webhook-secret">Webhook Signing Secret</Label>
-                        <div className="mt-1">
-                            <Input
-                                id="webhook-secret"
-                                value={localWebhookSecret}
-                                placeholder="whsec_..."
-                                className="font-mono text-sm"
-                                onChange={(e) => setLocalWebhookSecret(e.target.value)}
-                            />
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            Get this from your Stripe webhook endpoint settings after creating the webhook
-                        </p>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                        <Switch
-                            id="live-mode"
-                            checked={localIsLiveMode}
-                            onCheckedChange={setLocalIsLiveMode}
-                        />
-                        <Label htmlFor="live-mode">Live Mode</Label>
-                        <Badge variant={localIsLiveMode ? "default" : "secondary"}>
-                            {localIsLiveMode ? "Production" : "Test"}
-                        </Badge>
-                    </div>
-
-                    {hasChanges && (
-                        <div className="flex gap-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleSave}
-                                disabled={isSaving}
-                                className="flex items-center gap-2"
-                            >
-                                <FloppyDiskBackIcon size={16} weight="fill" className="h-4 w-4" />
-                                {isSaving ? 'Saving...' : 'Save Changes'}
-                            </Button>
-                        </div>
-                    )}
-                </div>
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="mb-3 font-medium">Step 1: Configure Stripe Webhook</h3>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="webhook-url">Webhook Endpoint URL</Label>
+            <div className="mt-1 flex gap-2">
+              <Input className="font-mono text-sm" id="webhook-url" readOnly value={webhookUrl} />
+              <Button
+                onClick={() => copyToClipboard(webhookUrl, "Webhook URL")}
+                size="sm"
+                variant="outline"
+              >
+                {copied ? (
+                  <CheckCircleIcon className="h-4 w-4" size={16} weight="fill" />
+                ) : (
+                  <CopyIcon className="h-4 w-4" size={16} weight="duotone" />
+                )}
+              </Button>
             </div>
+            <p className="mt-1 text-muted-foreground text-xs">
+              Add this URL to your Stripe webhook endpoints
+            </p>
+          </div>
 
-            <Separator />
-
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 dark:bg-amber-950/20 dark:border-amber-800">
-                <div className="flex gap-3">
-                    <WarningCircleIcon size={20} weight="duotone" className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
-                    <div>
-                        <h4 className="font-medium text-amber-900 dark:text-amber-100">Stripe Dashboard Setup</h4>
-                        <p className="text-sm text-amber-800 dark:text-amber-200 mt-1">
-                            You'll need to add this webhook URL in your Stripe Dashboard under
-                            Developers → Webhooks → Add endpoint
-                        </p>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="mt-2"
-                            onClick={() => window.open('https://dashboard.stripe.com/webhooks', '_blank')}
-                        >
-                            <ArrowSquareOutIcon size={16} weight="duotone" className="h-4 w-4 mr-2" />
-                            Open Stripe Dashboard
-                        </Button>
-                    </div>
-                </div>
+          <div>
+            <Label htmlFor="webhook-secret">Webhook Signing Secret</Label>
+            <div className="mt-1">
+              <Input
+                className="font-mono text-sm"
+                id="webhook-secret"
+                onChange={(e) => setLocalWebhookSecret(e.target.value)}
+                placeholder="whsec_..."
+                value={localWebhookSecret}
+              />
             </div>
+            <p className="mt-1 text-muted-foreground text-xs">
+              Get this from your Stripe webhook endpoint settings after creating the webhook
+            </p>
+          </div>
 
+          <div className="flex items-center space-x-2">
+            <Switch checked={localIsLiveMode} id="live-mode" onCheckedChange={setLocalIsLiveMode} />
+            <Label htmlFor="live-mode">Live Mode</Label>
+            <Badge variant={localIsLiveMode ? "default" : "secondary"}>
+              {localIsLiveMode ? "Production" : "Test"}
+            </Badge>
+          </div>
+
+          {hasChanges && (
             <div className="flex gap-2">
-                <Button
-                    variant="outline"
-                    onClick={onBack}
-                >
-                    Back
-                </Button>
-                <Button
-                    onClick={onNext}
-                    disabled={!localWebhookSecret || hasChanges}
-                    className="flex-1"
-                >
-                    Continue to Testing
-                </Button>
+              <Button
+                className="flex items-center gap-2"
+                disabled={isSaving}
+                onClick={handleSave}
+                size="sm"
+                variant="outline"
+              >
+                <FloppyDiskBackIcon className="h-4 w-4" size={16} weight="fill" />
+                {isSaving ? "Saving..." : "Save Changes"}
+              </Button>
             </div>
+          )}
         </div>
-    );
-} 
+      </div>
+
+      <Separator />
+
+      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/20">
+        <div className="flex gap-3">
+          <WarningCircleIcon
+            className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400"
+            size={20}
+            weight="duotone"
+          />
+          <div>
+            <h4 className="font-medium text-amber-900 dark:text-amber-100">
+              Stripe Dashboard Setup
+            </h4>
+            <p className="mt-1 text-amber-800 text-sm dark:text-amber-200">
+              You'll need to add this webhook URL in your Stripe Dashboard under Developers →
+              Webhooks → Add endpoint
+            </p>
+            <Button
+              className="mt-2"
+              onClick={() => window.open("https://dashboard.stripe.com/webhooks", "_blank")}
+              size="sm"
+              variant="outline"
+            >
+              <ArrowSquareOutIcon className="mr-2 h-4 w-4" size={16} weight="duotone" />
+              Open Stripe Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        <Button onClick={onBack} variant="outline">
+          Back
+        </Button>
+        <Button className="flex-1" disabled={!localWebhookSecret || hasChanges} onClick={onNext}>
+          Continue to Testing
+        </Button>
+      </div>
+    </div>
+  );
+}

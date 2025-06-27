@@ -3,18 +3,23 @@ import type { NavigationSection as NavigationSectionType } from "./types";
 
 interface NavigationSectionProps {
   title: string;
-  items: NavigationSectionType['items'];
+  items: NavigationSectionType["items"];
   pathname: string;
   currentWebsiteId?: string | null;
 }
 
-export function NavigationSection({ title, items, pathname, currentWebsiteId }: NavigationSectionProps) {
+export function NavigationSection({
+  title,
+  items,
+  pathname,
+  currentWebsiteId,
+}: NavigationSectionProps) {
   return (
     <div>
-      <h3 className="px-2 mb-2 text-xs font-semibold text-muted-foreground tracking-wider uppercase">
+      <h3 className="mb-2 px-2 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
         {title}
       </h3>
-      <div className="space-y-1 ml-1">
+      <div className="ml-1 space-y-1">
         {items.map((item) => {
           let fullPath: string;
           let isActive: boolean;
@@ -25,40 +30,41 @@ export function NavigationSection({ title, items, pathname, currentWebsiteId }: 
           } else if (currentWebsiteId === "sandbox") {
             // Handle sandbox context
             fullPath = item.href === "" ? "/sandbox" : `/sandbox${item.href}`;
-            isActive = item.href === ""
-              ? pathname === "/sandbox"
-              : pathname === fullPath;
+            isActive = item.href === "" ? pathname === "/sandbox" : pathname === fullPath;
           } else if (pathname.startsWith("/demo")) {
             // Handle demo context
-            fullPath = item.href === "" ? `/demo/${currentWebsiteId}` : `/demo/${currentWebsiteId}${item.href}`;
-            isActive = item.href === ""
-              ? pathname === `/demo/${currentWebsiteId}`
-              : pathname === fullPath;
+            fullPath =
+              item.href === ""
+                ? `/demo/${currentWebsiteId}`
+                : `/demo/${currentWebsiteId}${item.href}`;
+            isActive =
+              item.href === "" ? pathname === `/demo/${currentWebsiteId}` : pathname === fullPath;
           } else {
             // Handle website context
             fullPath = `/websites/${currentWebsiteId}${item.href}`;
-            isActive = item.href === ""
-              ? pathname === `/websites/${currentWebsiteId}`
-              : pathname === fullPath;
+            isActive =
+              item.href === ""
+                ? pathname === `/websites/${currentWebsiteId}`
+                : pathname === fullPath;
           }
 
           return (
             <NavigationItem
-              key={item.name}
-              name={item.name}
-              icon={item.icon}
-              href={item.href}
               alpha={item.alpha}
+              currentWebsiteId={currentWebsiteId}
+              href={item.href}
+              icon={item.icon}
               isActive={isActive}
-              isRootLevel={!!item.rootLevel}
               isExternal={item.external}
               isHighlighted={item.highlight}
+              isRootLevel={!!item.rootLevel}
+              key={item.name}
+              name={item.name}
               production={item.production}
-              currentWebsiteId={currentWebsiteId}
             />
           );
         })}
       </div>
     </div>
   );
-} 
+}

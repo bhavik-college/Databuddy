@@ -24,7 +24,7 @@ export interface ErrorSummary {
 export interface ProcessedError {
   error_type: string;
   category: string;
-  severity: 'high' | 'medium' | 'low';
+  severity: "high" | "medium" | "low";
   error_message: string;
   count: number;
   unique_sessions: number;
@@ -38,4 +38,4 @@ export interface ErrorTab {
   label: string;
   data: any[];
   columns: any[];
-} 
+}

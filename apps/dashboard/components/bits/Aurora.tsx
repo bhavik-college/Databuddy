@@ -1,6 +1,5 @@
-import React from "react";
-import { Renderer, Program, Mesh, Color, Triangle } from "ogl";
-import { useEffect, useRef } from "react";
+import { Color, Mesh, Program, Renderer, Triangle } from "ogl";
+import React, { useEffect, useRef } from "react";
 
 export interface CommonProps {
   onReady?: () => void;
@@ -208,7 +207,5 @@ export default function Aurora(props: AuroraProps) {
     };
   }, [amplitude, colorStops]);
 
-  return (
-    <div ref={ctnDom} className="absolute inset-0 -z-10" />
-  );
+  return <div className="-z-10 absolute inset-0" ref={ctnDom} />;
 }

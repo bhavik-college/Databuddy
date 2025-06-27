@@ -1,25 +1,25 @@
 "use client";
 
-import { useEffect } from 'react';
-import { toast } from 'sonner';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Website, CreateWebsiteData } from '@databuddy/shared';
-import { authClient } from '@databuddy/auth/client';
+import { authClient } from "@databuddy/auth/client";
+import type { CreateWebsiteData, Website } from "@databuddy/shared";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 // Re-export types for backward compatibility
 export type { Website, CreateWebsiteData };
 
 // API client functions
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4001";
 
 export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<{ success: boolean; data?: T; error?: string }> {
   const response = await fetch(`${API_BASE_URL}/v1${endpoint}`, {
-    credentials: 'include',
+    credentials: "include",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...options.headers,
     },
     ...options,
@@ -49,40 +49,40 @@ const websiteApi = {
 
   update: async (id: string, name: string): Promise<Website> => {
     const result = await apiRequest<Website>(`/websites/${id}`, {
-      method: 'PATCH',
+      method: "PATCH",
       body: JSON.stringify({ name }),
     });
     if (result.error) throw new Error(result.error);
-    if (!result.data) throw new Error('No data returned from update website');
+    if (!result.data) throw new Error("No data returned from update website");
     return result.data;
   },
 
   delete: async (id: string): Promise<{ success: boolean }> => {
     const result = await apiRequest<{ success: boolean }>(`/websites/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
     if (result.error) throw new Error(result.error);
-    if (!result.data) throw new Error('No data returned from delete website');
+    if (!result.data) throw new Error("No data returned from delete website");
     return result.data;
   },
 };
 
 // Query keys
 export const websiteKeys = {
-  all: ['websites'] as const,
-  lists: () => [...websiteKeys.all, 'list'] as const,
+  all: ["websites"] as const,
+  lists: () => [...websiteKeys.all, "list"] as const,
   list: (filters: string) => [...websiteKeys.lists(), { filters }] as const,
-  details: () => [...websiteKeys.all, 'detail'] as const,
+  details: () => [...websiteKeys.all, "detail"] as const,
   detail: (id: string) => [...websiteKeys.details(), id] as const,
 };
 
 // Helper hook for getting a single website
 export function useWebsite(id: string) {
   return useQuery({
-    queryKey: ['websites', id],
+    queryKey: ["websites", id],
     queryFn: () => websiteApi.getById(id),
     enabled: !!id,
-    staleTime: 30000,
+    staleTime: 30_000,
     refetchOnWindowFocus: false,
   });
 }
@@ -90,10 +90,10 @@ export function useWebsite(id: string) {
 // Helper hook for getting project websites
 export function useProjectWebsites(projectId: string) {
   return useQuery({
-    queryKey: ['websites', 'project', projectId],
+    queryKey: ["websites", "project", projectId],
     queryFn: () => websiteApi.getByProject(projectId),
     enabled: !!projectId,
-    staleTime: 30000,
+    staleTime: 30_000,
     refetchOnWindowFocus: false,
   });
 }
@@ -103,23 +103,23 @@ export function useWebsites() {
   const { data: activeOrganization } = authClient.useActiveOrganization();
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['websites', activeOrganization?.id || 'personal'],
+    queryKey: ["websites", activeOrganization?.id || "personal"],
     queryFn: async () => {
       const endpoint = activeOrganization?.id
         ? `/websites?organizationId=${activeOrganization.id}`
-        : '/websites';
+        : "/websites";
 
       const result = await apiRequest<Website[]>(endpoint);
       if (result.error) throw new Error(result.error);
       return result.data || [];
     },
-    staleTime: 30000,
+    staleTime: 30_000,
     refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
     if (isError) {
-      toast.error('Failed to fetch websites');
+      toast.error("Failed to fetch websites");
     }
   }, [isError]);
 
@@ -127,22 +127,22 @@ export function useWebsites() {
     mutationFn: async (data: CreateWebsiteData) => {
       const endpoint = activeOrganization?.id
         ? `/websites?organizationId=${activeOrganization.id}`
-        : '/websites';
+        : "/websites";
 
       const result = await apiRequest<Website>(endpoint, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(data),
       });
       if (result.error) throw new Error(result.error);
-      if (!result.data) throw new Error('No data returned from create website');
+      if (!result.data) throw new Error("No data returned from create website");
       return result.data;
     },
     onSuccess: () => {
       toast.success("Website created successfully");
-      queryClient.invalidateQueries({ queryKey: ['websites'] });
+      queryClient.invalidateQueries({ queryKey: ["websites"] });
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to create website');
+      toast.error(error.message || "Failed to create website");
     },
   });
 
@@ -150,10 +150,10 @@ export function useWebsites() {
     mutationFn: ({ id, name }: { id: string; name: string }) => websiteApi.update(id, name),
     onSuccess: () => {
       toast.success("Website updated successfully");
-      queryClient.invalidateQueries({ queryKey: ['websites'] });
+      queryClient.invalidateQueries({ queryKey: ["websites"] });
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update website');
+      toast.error(error.message || "Failed to update website");
     },
   });
 
@@ -161,10 +161,10 @@ export function useWebsites() {
     mutationFn: websiteApi.delete,
     onSuccess: () => {
       toast.success("Website deleted successfully");
-      queryClient.invalidateQueries({ queryKey: ['websites'] });
+      queryClient.invalidateQueries({ queryKey: ["websites"] });
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to delete website');
+      toast.error(error.message || "Failed to delete website");
     },
   });
 

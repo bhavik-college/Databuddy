@@ -1,15 +1,15 @@
 "use client";
 
+import { signIn } from "@databuddy/auth/client";
+import { Eye, EyeOff, Github, Loader2, Mail, Sparkles } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
-import Link from "next/link";
-import { signIn } from "@databuddy/auth/client";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Github, Mail, Loader2, Sparkles, Eye, EyeOff } from "lucide-react";
-import { toast } from "sonner";
 
 function LoginPage() {
   const router = useRouter();
@@ -54,7 +54,7 @@ function LoginPage() {
 
   const handleEmailPasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+    if (!(email && password)) {
       toast.error("Please enter both email and password");
       return;
     }
@@ -71,10 +71,16 @@ function LoginPage() {
           },
           onError: (error) => {
             setIsLoading(false);
-            if (error?.error?.code === "EMAIL_NOT_VERIFIED" || error?.error?.message?.toLowerCase().includes("not verified")) {
+            if (
+              error?.error?.code === "EMAIL_NOT_VERIFIED" ||
+              error?.error?.message?.toLowerCase().includes("not verified")
+            ) {
               router.push(`/login/verification-needed?email=${encodeURIComponent(email)}`);
             } else {
-              toast.error(error?.error?.message || "Login failed. Please check your credentials and try again.");
+              toast.error(
+                error?.error?.message ||
+                  "Login failed. Please check your credentials and try again."
+              );
             }
           },
         },
@@ -93,34 +99,34 @@ function LoginPage() {
 
   return (
     <>
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
-        <p className="text-muted-foreground mt-2">
+      <div className="mb-8 text-center">
+        <h1 className="font-bold text-2xl text-foreground">Welcome back</h1>
+        <p className="mt-2 text-muted-foreground">
           Sign in to your account to continue your journey with Databuddy
         </p>
       </div>
-      <div className="bg-card rounded-xl shadow p-6 border border-border relative overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-xl border border-border bg-card p-6 shadow">
+        <div className="-top-40 -right-40 pointer-events-none absolute h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
+        <div className="-bottom-40 -left-40 pointer-events-none absolute h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
         <div className="relative z-10">
           <div className="space-y-6">
             <div className="space-y-3">
               <Button
+                className="flex h-11 w-full cursor-pointer items-center justify-center transition-all duration-200 hover:bg-primary/5"
+                disabled={isLoading}
+                onClick={handleGithubLogin}
                 type="button"
                 variant="outline"
-                className="w-full flex items-center justify-center h-11 hover:bg-primary/5 transition-all duration-200 cursor-pointer"
-                onClick={handleGithubLogin}
-                disabled={isLoading}
               >
                 <Github className="mr-2 h-5 w-5" />
                 Sign in with GitHub
               </Button>
               <Button
+                className="flex h-11 w-full cursor-pointer items-center justify-center transition-all duration-200 hover:bg-primary/5"
+                disabled={isLoading}
+                onClick={handleGoogleLogin}
                 type="button"
                 variant="outline"
-                className="w-full flex items-center justify-center h-11 hover:bg-primary/5 transition-all duration-200 cursor-pointer"
-                onClick={handleGoogleLogin}
-                disabled={isLoading}
               >
                 <Mail className="mr-2 h-5 w-5" />
                 Sign in with Google
@@ -131,58 +137,67 @@ function LoginPage() {
                 <Separator className="w-full" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-card px-4 text-sm text-muted-foreground font-medium">
+                <span className="bg-card px-4 font-medium text-muted-foreground text-sm">
                   or continue with
                 </span>
               </div>
             </div>
-            <form onSubmit={handleEmailPasswordLogin} className="space-y-4">
+            <form className="space-y-4" onSubmit={handleEmailPasswordLogin}>
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-foreground font-medium">Email</Label>
+                <Label className="font-medium text-foreground" htmlFor="email">
+                  Email
+                </Label>
                 <Input
-                  id="email"
-                  type="email"
-                  name="email"
                   autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
                   className="h-11 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                  id="email"
+                  name="email"
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
+                  required
+                  type="email"
+                  value={email}
                 />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-foreground font-medium">Password</Label>
-                  <Link href="/login/forgot" className="text-xs text-primary p-0 h-auto cursor-pointer">Forgot password?</Link>
+                  <Label className="font-medium text-foreground" htmlFor="password">
+                    Password
+                  </Label>
+                  <Link
+                    className="h-auto cursor-pointer p-0 text-primary text-xs"
+                    href="/login/forgot"
+                  >
+                    Forgot password?
+                  </Link>
                 </div>
                 <div className="relative">
                   <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    name="password"
                     autoComplete="current-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
                     className="h-11 pr-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                    id="password"
+                    name="password"
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
+                    required
+                    type={showPassword ? "text" : "password"}
+                    value={password}
                   />
                   <Button
+                    className="absolute top-0 right-0 h-full px-3 text-muted-foreground hover:text-foreground"
+                    onClick={() => setShowPassword(!showPassword)}
+                    size="sm"
                     type="button"
                     variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 text-muted-foreground hover:text-foreground"
-                    onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </Button>
                 </div>
               </div>
               <Button
-                type="submit"
-                className="w-full h-11 shadow relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
+                className="hover:-translate-y-0.5 relative h-11 w-full overflow-hidden shadow transition-all duration-300 hover:shadow-lg hover:shadow-primary/20"
                 disabled={isLoading}
+                type="submit"
               >
                 {isLoading ? (
                   <>
@@ -195,9 +210,9 @@ function LoginPage() {
               </Button>
               <Link href="/login/magic" passHref>
                 <Button
+                  className="flex w-full cursor-pointer items-center justify-center font-medium text-primary hover:text-primary/80"
                   type="button"
                   variant="link"
-                  className="w-full text-primary hover:text-primary/80 font-medium flex items-center justify-center cursor-pointer"
                 >
                   <Sparkles className="mr-2 h-4 w-4" />
                   Sign in with magic link
@@ -208,12 +223,9 @@ function LoginPage() {
         </div>
       </div>
       <div className="mt-6 text-center">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Don&apos;t have an account?{" "}
-          <Link
-            href="/register"
-            className="text-primary hover:text-primary/80 font-medium"
-          >
+          <Link className="font-medium text-primary hover:text-primary/80" href="/register">
             Sign up
           </Link>
         </p>
@@ -224,15 +236,17 @@ function LoginPage() {
 
 export default function Page() {
   return (
-    <Suspense fallback={
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="relative">
-          <div className="absolute inset-0 animate-ping rounded-full bg-primary/20 blur-xl" />
-          <Loader2 className="h-8 w-8 animate-spin text-primary relative" />
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center bg-background">
+          <div className="relative">
+            <div className="absolute inset-0 animate-ping rounded-full bg-primary/20 blur-xl" />
+            <Loader2 className="relative h-8 w-8 animate-spin text-primary" />
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <LoginPage />
     </Suspense>
   );
-} 
+}

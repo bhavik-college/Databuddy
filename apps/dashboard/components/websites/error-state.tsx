@@ -7,13 +7,11 @@ interface ErrorStateProps {
 export function ErrorState({ onRetry }: ErrorStateProps) {
   return (
     <div className="p-6 text-center">
-      <h1 className="text-2xl font-bold mb-4">Websites</h1>
+      <h1 className="mb-4 font-bold text-2xl">Websites</h1>
       <div className="flex flex-col items-center justify-center py-12">
-        <p className="text-muted-foreground mb-4">
-          Failed to load websites. Please try again.
-        </p>
+        <p className="mb-4 text-muted-foreground">Failed to load websites. Please try again.</p>
         <Button onClick={onRetry}>Retry</Button>
       </div>
     </div>
   );
-} 
+}

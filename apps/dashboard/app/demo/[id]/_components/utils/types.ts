@@ -2,7 +2,7 @@ import type { DateRange as BaseDateRange } from "@/hooks/use-analytics";
 
 // Extended date range with granularity
 export interface DateRange extends BaseDateRange {
-  granularity?: 'daily' | 'hourly';
+  granularity?: "daily" | "hourly";
 }
 
 // Base tab props shared across all tabs
@@ -64,31 +64,31 @@ export interface TrackingOptions {
   trackScreenViews: boolean;
   trackHashChanges: boolean;
   trackSessions: boolean;
-  
+
   // Interaction tracking
   trackAttributes: boolean;
   trackOutgoingLinks: boolean;
   trackInteractions: boolean;
-  
+
   // Advanced tracking
   trackEngagement: boolean;
   trackScrollDepth: boolean;
   trackExitIntent: boolean;
   trackBounceRate: boolean;
-  
+
   // Performance tracking
   trackPerformance: boolean;
   trackWebVitals: boolean;
   trackErrors: boolean;
-  
+
   // Optimization
   samplingRate: number;
   enableRetries: boolean;
   maxRetries: number;
   initialRetryDelay: number;
-  
+
   // Batching
   enableBatching: boolean;
   batchSize: number;
   batchTimeout: number;
-} 
+}

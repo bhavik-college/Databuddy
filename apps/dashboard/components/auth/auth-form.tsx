@@ -1,14 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import {
+  loginWithEmail,
+  loginWithGithub,
+  loginWithGoogle,
+  registerWithEmail,
+} from "@databuddy/auth/client";
+import { Github, Loader2, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { loginWithEmail, registerWithEmail, loginWithGithub, loginWithGoogle } from "@databuddy/auth/client";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Github, Mail, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export type AuthFormProps = {
@@ -18,12 +23,7 @@ export type AuthFormProps = {
   className?: string;
 };
 
-export function AuthForm({
-  view,
-  redirectTo,
-  callbackURL,
-  className,
-}: AuthFormProps) {
+export function AuthForm({ view, redirectTo, callbackURL, className }: AuthFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -50,7 +50,7 @@ export function AuthForm({
           router,
           onError: (error) => {
             toast.error("Invalid credentials");
-          }
+          },
         });
 
         if (!result.error) {
@@ -62,18 +62,13 @@ export function AuthForm({
           return;
         }
 
-        const result = await registerWithEmail(
-          formData.email,
-          formData.password,
-          formData.name,
-          {
-            redirectUrl: redirectTo,
-            router,
-            onError: (error) => {
-              toast.error("Failed to create account");
-            }
-          }
-        );
+        const result = await registerWithEmail(formData.email, formData.password, formData.name, {
+          redirectUrl: redirectTo,
+          router,
+          onError: (error) => {
+            toast.error("Failed to create account");
+          },
+        });
 
         if (!result.error) {
           toast.success("Account created successfully");
@@ -89,9 +84,10 @@ export function AuthForm({
   const handleSocialSignIn = async (provider: "github" | "google") => {
     setIsLoading(true);
     try {
-      const result = provider === "github" 
-        ? await loginWithGithub({ redirectUrl: redirectTo, router })
-        : await loginWithGoogle({ redirectUrl: redirectTo, router });
+      const result =
+        provider === "github"
+          ? await loginWithGithub({ redirectUrl: redirectTo, router })
+          : await loginWithGoogle({ redirectUrl: redirectTo, router });
 
       if (result.error) {
         toast.error(`Failed to sign in with ${provider}`);
@@ -109,21 +105,21 @@ export function AuthForm({
         <>
           <div className="grid grid-cols-2 gap-4">
             <Button
-              variant="outline"
-              className="bg-slate-700/50 border-slate-600 hover:bg-slate-700/80 hover:text-white text-slate-100 transition-colors duration-200 group relative cursor-pointer"
-              onClick={() => handleSocialSignIn("github")}
-              disabled={isLoading}
               aria-label="Sign in with Github"
+              className="group relative cursor-pointer border-slate-600 bg-slate-700/50 text-slate-100 transition-colors duration-200 hover:bg-slate-700/80 hover:text-white"
+              disabled={isLoading}
+              onClick={() => handleSocialSignIn("github")}
+              variant="outline"
             >
               <Github className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
               Github
             </Button>
             <Button
-              variant="outline"
-              className="bg-slate-700/50 border-slate-600 hover:bg-slate-700/80 hover:text-white text-slate-100 transition-colors duration-200 group relative cursor-pointer"
-              onClick={() => handleSocialSignIn("google")}
-              disabled={isLoading}
               aria-label="Sign in with Google"
+              className="group relative cursor-pointer border-slate-600 bg-slate-700/50 text-slate-100 transition-colors duration-200 hover:bg-slate-700/80 hover:text-white"
+              disabled={isLoading}
+              onClick={() => handleSocialSignIn("google")}
+              variant="outline"
             >
               <Mail className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
               Google
@@ -134,131 +130,141 @@ export function AuthForm({
               <Separator className="w-full" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-slate-800 px-2 text-slate-400">
-                Or continue with email
-              </span>
+              <span className="bg-slate-800 px-2 text-slate-400">Or continue with email</span>
             </div>
           </div>
         </>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form className="space-y-4" onSubmit={handleSubmit}>
         {view === "signUp" && (
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-white">Full name</Label>
+            <Label className="text-white" htmlFor="name">
+              Full name
+            </Label>
             <Input
+              aria-label="Full name"
+              autoComplete="name"
+              className="border-slate-600 bg-slate-700/50 text-white transition-colors duration-200 placeholder:text-slate-400 focus:border-sky-400 focus:ring-sky-400/10"
+              disabled={isLoading}
               id="name"
               name="name"
-              type="text"
+              onChange={handleChange}
               placeholder="John Doe"
               required
+              type="text"
               value={formData.name}
-              onChange={handleChange}
-              className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-sky-400 focus:ring-sky-400/10 transition-colors duration-200"
-              disabled={isLoading}
-              autoComplete="name"
-              aria-label="Full name"
             />
           </div>
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-white">Email address</Label>
+          <Label className="text-white" htmlFor="email">
+            Email address
+          </Label>
           <Input
+            aria-label="Email address"
+            autoComplete="email"
+            className="border-slate-600 bg-slate-700/50 text-white transition-colors duration-200 placeholder:text-slate-400 focus:border-sky-400 focus:ring-sky-400/10"
+            disabled={isLoading}
             id="email"
             name="email"
-            type="email"
+            onChange={handleChange}
             placeholder="name@example.com"
             required
+            type="email"
             value={formData.email}
-            onChange={handleChange}
-            className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-sky-400 focus:ring-sky-400/10 transition-colors duration-200"
-            disabled={isLoading}
-            autoComplete="email"
-            aria-label="Email address"
           />
         </div>
 
         {(view === "signIn" || view === "signUp" || view === "resetPassword") && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-white">Password</Label>
+              <Label className="text-white" htmlFor="password">
+                Password
+              </Label>
               {view === "signIn" && (
                 <a
+                  className="rounded text-sky-400 text-xs transition-colors duration-200 hover:text-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-400/20 focus:ring-offset-2 focus:ring-offset-slate-800"
                   href="/forgot-password"
-                  className="text-xs text-sky-400 hover:text-sky-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-sky-400/20 focus:ring-offset-2 focus:ring-offset-slate-800 rounded"
                 >
                   Forgot password?
                 </a>
               )}
             </div>
             <Input
+              aria-label="Password"
+              autoComplete={view === "signIn" ? "current-password" : "new-password"}
+              className="border-slate-600 bg-slate-700/50 text-white transition-colors duration-200 placeholder:text-slate-400 focus:border-sky-400 focus:ring-sky-400/10"
+              disabled={isLoading}
               id="password"
               name="password"
-              type="password"
-              required
-              value={formData.password}
               onChange={handleChange}
-              className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-sky-400 focus:ring-sky-400/10 transition-colors duration-200"
-              disabled={isLoading}
-              autoComplete={view === "signIn" ? "current-password" : "new-password"}
-              aria-label="Password"
+              required
+              type="password"
+              value={formData.password}
             />
           </div>
         )}
 
         {view === "signUp" && (
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-white">Confirm password</Label>
+            <Label className="text-white" htmlFor="confirmPassword">
+              Confirm password
+            </Label>
             <Input
+              aria-label="Confirm password"
+              autoComplete="new-password"
+              className="border-slate-600 bg-slate-700/50 text-white transition-colors duration-200 placeholder:text-slate-400 focus:border-sky-400 focus:ring-sky-400/10"
+              disabled={isLoading}
               id="confirmPassword"
               name="confirmPassword"
-              type="password"
-              required
-              value={formData.confirmPassword}
               onChange={handleChange}
-              className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-sky-400 focus:ring-sky-400/10 transition-colors duration-200"
-              disabled={isLoading}
-              autoComplete="new-password"
-              aria-label="Confirm password"
+              required
+              type="password"
+              value={formData.confirmPassword}
             />
           </div>
         )}
 
         {(view === "verifyEmail" || view === "verifyPassword") && (
           <div className="space-y-2">
-            <Label htmlFor="code" className="text-white">Verification code</Label>
+            <Label className="text-white" htmlFor="code">
+              Verification code
+            </Label>
             <Input
+              aria-label="Verification code"
+              autoComplete="one-time-code"
+              className="border-slate-600 bg-slate-700/50 text-white transition-colors duration-200 placeholder:text-slate-400 focus:border-sky-400 focus:ring-sky-400/10"
+              disabled={isLoading}
               id="code"
               name="code"
-              type="text"
-              required
-              value={formData.code}
               onChange={handleChange}
-              className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-sky-400 focus:ring-sky-400/10 transition-colors duration-200"
-              disabled={isLoading}
-              autoComplete="one-time-code"
-              aria-label="Verification code"
+              required
+              type="text"
+              value={formData.code}
             />
           </div>
         )}
 
         <Button
-          type="submit"
-          className="w-full bg-sky-500 hover:bg-sky-600 text-white transition-colors duration-200 focus:ring-2 focus:ring-sky-400/20 focus:ring-offset-2 focus:ring-offset-slate-800"
-          disabled={isLoading}
           aria-label={isLoading ? "Processing..." : view === "signIn" ? "Sign in" : "Sign up"}
+          className="w-full bg-sky-500 text-white transition-colors duration-200 hover:bg-sky-600 focus:ring-2 focus:ring-sky-400/20 focus:ring-offset-2 focus:ring-offset-slate-800"
+          disabled={isLoading}
+          type="submit"
         >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Processing...
             </>
+          ) : view === "signIn" ? (
+            "Sign in"
           ) : (
-            view === "signIn" ? "Sign in" : "Sign up"
+            "Sign up"
           )}
         </Button>
       </form>
     </div>
   );
-} 
+}

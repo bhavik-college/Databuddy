@@ -1,5 +1,5 @@
-import { atom } from 'jotai';
-import { format, subDays, differenceInDays, isValid } from 'date-fns';
+import { differenceInDays, format, isValid, subDays } from "date-fns";
+import { atom } from "jotai";
 // Consider adding nanoid for unique ID generation for complex filters
 // import { nanoid } from 'nanoid';
 
@@ -24,15 +24,15 @@ export const dateRangeAtom = atom<DateRangeState>({
 export const formattedDateRangeAtom = atom((get) => {
   const { startDate, endDate } = get(dateRangeAtom);
   return {
-    startDate: isValid(startDate) ? format(startDate, 'yyyy-MM-dd') : '',
-    endDate: isValid(endDate) ? format(endDate, 'yyyy-MM-dd') : '',
+    startDate: isValid(startDate) ? format(startDate, "yyyy-MM-dd") : "",
+    endDate: isValid(endDate) ? format(endDate, "yyyy-MM-dd") : "",
   };
 });
 
 // --- Time Granularity ---
-export type TimeGranularity = 'daily' | 'hourly';
+export type TimeGranularity = "daily" | "hourly";
 
-export const timeGranularityAtom = atom<TimeGranularity>('daily');
+export const timeGranularityAtom = atom<TimeGranularity>("daily");
 
 /**
  * Action atom to update the date range and intelligently adjust granularity.
@@ -43,10 +43,11 @@ export const setDateRangeAndAdjustGranularityAtom = atom(
   (get, set, newRange: DateRangeState) => {
     set(dateRangeAtom, newRange);
     const diffDays = differenceInDays(newRange.endDate, newRange.startDate);
-    if (diffDays <= 2) { // If 2 days or less, set to hourly
-      set(timeGranularityAtom, 'hourly');
+    if (diffDays <= 2) {
+      // If 2 days or less, set to hourly
+      set(timeGranularityAtom, "hourly");
     } else {
-      set(timeGranularityAtom, 'daily');
+      set(timeGranularityAtom, "daily");
     }
   }
 );
@@ -67,18 +68,18 @@ export const basicFiltersAtom = atom<BasicFilters>({});
 // --- Complex Filters ---
 // Used for building more structured, rule-based queries.
 export type FilterOperator =
-  | 'is'
-  | 'isNot'
-  | 'contains'
-  | 'doesNotContain'
-  | 'startsWith'
-  | 'endsWith'
-  | 'greaterThan'
-  | 'lessThan'
-  | 'in'        // Value is an array, e.g., field IN [val1, val2]
-  | 'notIn'     // Value is an array, e.g., field NOT IN [val1, val2]
-  | 'isSet'     // Checks if a field has a value
-  | 'isNotSet'; // Checks if a field does not have a value
+  | "is"
+  | "isNot"
+  | "contains"
+  | "doesNotContain"
+  | "startsWith"
+  | "endsWith"
+  | "greaterThan"
+  | "lessThan"
+  | "in" // Value is an array, e.g., field IN [val1, val2]
+  | "notIn" // Value is an array, e.g., field NOT IN [val1, val2]
+  | "isSet" // Checks if a field has a value
+  | "isNotSet"; // Checks if a field does not have a value
 
 export interface ComplexFilter {
   id: string; // Should be unique, e.g., generated with nanoid()
@@ -118,19 +119,16 @@ export const setBasicFilterAtom = atom(
 /**
  * Clears a specific basic filter by its key, or all basic filters if no key is provided.
  */
-export const clearBasicFilterAtom = atom(
-  null,
-  (get, set, key?: string) => {
-    if (key) {
-      set(basicFiltersAtom, (prev) => {
-        const { [key]: _, ...rest } = prev;
-        return rest;
-      });
-    } else {
-      set(basicFiltersAtom, {});
-    }
+export const clearBasicFilterAtom = atom(null, (get, set, key?: string) => {
+  if (key) {
+    set(basicFiltersAtom, (prev) => {
+      const { [key]: _, ...rest } = prev;
+      return rest;
+    });
+  } else {
+    set(basicFiltersAtom, {});
   }
-);
+});
 
 /**
  * Adds a new complex filter or updates an existing one based on its ID.
@@ -139,47 +137,38 @@ export const clearBasicFilterAtom = atom(
  * const [, saveFilter] = useAtom(upsertComplexFilterAtom);
  * saveFilter({ id: nanoid(), field: 'geo.city', operator: 'is', value: 'New York' });
  */
-export const upsertComplexFilterAtom = atom(
-  null,
-  (get, set, filter: ComplexFilter) => {
-    set(complexFiltersAtom, (prev) => {
-      const existingIndex = prev.findIndex((f) => f.id === filter.id);
-      if (existingIndex > -1) {
-        const updatedFilters = [...prev];
-        updatedFilters[existingIndex] = filter;
-        return updatedFilters;
-      }
-      return [...prev, filter];
-    });
-  }
-);
+export const upsertComplexFilterAtom = atom(null, (get, set, filter: ComplexFilter) => {
+  set(complexFiltersAtom, (prev) => {
+    const existingIndex = prev.findIndex((f) => f.id === filter.id);
+    if (existingIndex > -1) {
+      const updatedFilters = [...prev];
+      updatedFilters[existingIndex] = filter;
+      return updatedFilters;
+    }
+    return [...prev, filter];
+  });
+});
 
 /**
  * Removes a complex filter by its ID.
  */
-export const removeComplexFilterAtom = atom(
-  null,
-  (get, set, filterId: string) => {
-    set(complexFiltersAtom, (prev) => prev.filter((f) => f.id !== filterId));
-  }
-);
+export const removeComplexFilterAtom = atom(null, (get, set, filterId: string) => {
+  set(complexFiltersAtom, (prev) => prev.filter((f) => f.id !== filterId));
+});
 
 /**
  * Clears all complex filters.
  */
-export const clearComplexFiltersAtom = atom(
-  null,
-  (get, set) => {
-    set(complexFiltersAtom, []);
-  }
-);
+export const clearComplexFiltersAtom = atom(null, (get, set) => {
+  set(complexFiltersAtom, []);
+});
 
 /**
  * Resets all filters (date range, granularity, basic, complex) to their initial states.
  */
 export const clearAllFiltersAtom = atom(null, (get, set) => {
   set(dateRangeAtom, { startDate: initialStartDate, endDate: initialEndDate });
-  set(timeGranularityAtom, 'daily'); // Reset to default granularity
+  set(timeGranularityAtom, "daily"); // Reset to default granularity
   set(basicFiltersAtom, {});
   set(complexFiltersAtom, []);
 });
@@ -200,7 +189,7 @@ export const activeFiltersForApiAtom = atom((get) => {
   for (const key in basicFiltersValue) {
     const value = basicFiltersValue[key];
     if (Array.isArray(value)) {
-      apiReadyBasicFilters[key] = value.join(',');
+      apiReadyBasicFilters[key] = value.join(",");
     } else {
       apiReadyBasicFilters[key] = value;
     }
@@ -228,7 +217,7 @@ export const selectBasicFilterValueAtom = (key: string) =>
  */
 export const selectComplexFilterByIdAtom = (id: string) =>
   atom<ComplexFilter | undefined>((get) =>
-    get(complexFiltersAtom).find(filter => filter.id === id)
+    get(complexFiltersAtom).find((filter) => filter.id === id)
   );
 
 /**

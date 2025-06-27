@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
-import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
-import type { DateRange } from '@/hooks/use-analytics';
+import { type UseQueryOptions, useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+import type { DateRange } from "@/hooks/use-analytics";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 // Response interfaces
 export interface WebsiteRevenueSummary {
@@ -36,30 +36,30 @@ export interface WebsiteRevenueResponse {
 
 // Base params builder - following use-dynamic-query.ts pattern
 function buildParams(
-  websiteId: string, 
-  dateRange?: DateRange, 
+  websiteId: string,
+  dateRange?: DateRange,
   additionalParams?: Record<string, string | number>
 ): URLSearchParams {
   const params = new URLSearchParams({
     website_id: websiteId,
-    ...additionalParams
+    ...additionalParams,
   });
-  
+
   if (dateRange?.start_date) {
-    params.append('start_date', dateRange.start_date);
+    params.append("start_date", dateRange.start_date);
   }
-  
+
   if (dateRange?.end_date) {
-    params.append('end_date', dateRange.end_date);
+    params.append("end_date", dateRange.end_date);
   }
 
   if (dateRange?.granularity) {
-    params.append('granularity', dateRange.granularity);
+    params.append("granularity", dateRange.granularity);
   }
-  
+
   // Add cache busting
-  params.append('_t', Date.now().toString());
-  
+  params.append("_t", Date.now().toString());
+
   return params;
 }
 
@@ -71,22 +71,22 @@ async function fetchWebsiteRevenue(
 ): Promise<WebsiteRevenueResponse> {
   const params = buildParams(websiteId, dateRange);
   const url = `${API_BASE_URL}/v1/revenue/analytics/website/${websiteId}?${params}`;
-  
+
   const response = await fetch(url, {
-    credentials: 'include',
-    signal
+    credentials: "include",
+    signal,
   });
-  
+
   if (!response.ok) {
     throw new Error(`Failed to fetch revenue data: ${response.statusText}`);
   }
-  
+
   const data = await response.json();
-  
+
   if (!data.success) {
-    throw new Error(data.error || 'Failed to fetch revenue data');
+    throw new Error(data.error || "Failed to fetch revenue data");
   }
-  
+
   return data;
 }
 
@@ -98,12 +98,12 @@ const defaultQueryOptions = {
   refetchOnMount: false,
   refetchInterval: 10 * 60 * 1000, // Background refetch every 10 minutes
   retry: (failureCount: number, error: Error) => {
-    if (error instanceof DOMException && error.name === 'AbortError') {
+    if (error instanceof DOMException && error.name === "AbortError") {
       return false;
     }
     return failureCount < 2;
   },
-  networkMode: 'online' as const,
+  networkMode: "online" as const,
   refetchIntervalInBackground: false,
 };
 
@@ -113,7 +113,13 @@ export function useWebsiteRevenue(
   options?: Partial<UseQueryOptions<WebsiteRevenueResponse>>
 ) {
   const query = useQuery({
-    queryKey: ['website-revenue', websiteId, dateRange.start_date, dateRange.end_date, dateRange.granularity],
+    queryKey: [
+      "website-revenue",
+      websiteId,
+      dateRange.start_date,
+      dateRange.end_date,
+      dateRange.granularity,
+    ],
     queryFn: ({ signal }) => fetchWebsiteRevenue(websiteId, dateRange, signal),
     ...defaultQueryOptions,
     ...options,
@@ -130,10 +136,12 @@ export function useWebsiteRevenue(
     }
 
     const { summary } = query.data;
-    
+
     // Calculate refund rate
-    const refundRate = summary.total_transactions > 0 ? 
-      (summary.total_refunds / summary.total_transactions) * 100 : 0;
+    const refundRate =
+      summary.total_transactions > 0
+        ? (summary.total_refunds / summary.total_transactions) * 100
+        : 0;
 
     const hasData = summary.total_revenue > 0 || summary.total_transactions > 0;
 
@@ -162,4 +170,4 @@ export function useWebsiteRevenue(
     refetch: query.refetch,
     isFetching: query.isFetching,
   };
-} 
+}

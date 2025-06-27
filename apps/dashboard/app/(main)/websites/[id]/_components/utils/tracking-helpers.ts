@@ -1,16 +1,16 @@
-import type { TrackingOptions } from "./types";
 import { RECOMMENDED_DEFAULTS } from "./tracking-defaults";
+import type { TrackingOptions } from "./types";
 
 /**
  * Toggle a specific tracking option
  */
 export function toggleTrackingOption(
-  options: TrackingOptions, 
+  options: TrackingOptions,
   option: keyof TrackingOptions
 ): TrackingOptions {
   return {
     ...options,
-    [option]: !options[option]
+    [option]: !options[option],
   };
 }
 
@@ -23,7 +23,7 @@ export function enableAllBasicTracking(options: TrackingOptions): TrackingOption
     trackScreenViews: true,
     trackSessions: true,
     trackInteractions: true,
-    trackOutgoingLinks: true
+    trackOutgoingLinks: true,
   };
 }
 
@@ -36,7 +36,7 @@ export function enableAllInteractionTracking(options: TrackingOptions): Tracking
     trackAttributes: true,
     trackOutgoingLinks: true,
     trackInteractions: true,
-    trackHashChanges: true
+    trackHashChanges: true,
   };
 }
 
@@ -49,7 +49,7 @@ export function enableAllEngagementTracking(options: TrackingOptions): TrackingO
     trackEngagement: true,
     trackScrollDepth: true,
     trackExitIntent: true,
-    trackBounceRate: true
+    trackBounceRate: true,
   };
 }
 
@@ -61,7 +61,7 @@ export function enableAllPerformanceTracking(options: TrackingOptions): Tracking
     ...options,
     trackPerformance: true,
     trackWebVitals: true,
-    trackErrors: true
+    trackErrors: true,
   };
 }
 
@@ -75,7 +75,7 @@ export function enableAllAdvancedTracking(options: TrackingOptions): TrackingOpt
     ...enableAllPerformanceTracking(options),
     trackErrors: true,
     trackPerformance: true,
-    trackWebVitals: true
+    trackWebVitals: true,
   };
 }
 
@@ -87,7 +87,7 @@ export function enableOptimalBatching(options: TrackingOptions): TrackingOptions
     ...options,
     enableBatching: true,
     batchSize: 10,
-    batchTimeout: 2000
+    batchTimeout: 2000,
   };
 }
 
@@ -101,7 +101,7 @@ export function enableAllOptimization(options: TrackingOptions): TrackingOptions
     samplingRate: 1.0,
     enableRetries: true,
     maxRetries: 3,
-    initialRetryDelay: 500
+    initialRetryDelay: 500,
   };
 }
 
@@ -123,7 +123,7 @@ export function enablePrivacyMode(options: TrackingOptions): TrackingOptions {
     trackBounceRate: false,
     trackPerformance: false,
     trackWebVitals: false,
-    trackErrors: false
+    trackErrors: false,
   };
 }
 
@@ -132,4 +132,4 @@ export function enablePrivacyMode(options: TrackingOptions): TrackingOptions {
  */
 export function resetToDefaults(): TrackingOptions {
   return { ...RECOMMENDED_DEFAULTS };
-} 
+}

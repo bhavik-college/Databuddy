@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from 'react';
-import { toast } from 'sonner';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { domains } from '@databuddy/db';
-import { authClient } from '@databuddy/auth/client';
+import { authClient } from "@databuddy/auth/client";
+import type { domains } from "@databuddy/db";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 type Domain = typeof domains.$inferSelect;
 
@@ -13,16 +13,16 @@ interface CreateDomainData {
   projectId?: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4001";
 
 async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<{ success: boolean; data?: T; error?: string }> {
   const response = await fetch(`${API_BASE_URL}/v1${endpoint}`, {
-    credentials: 'include',
+    credentials: "include",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...options.headers,
     },
     ...options,
@@ -46,48 +46,51 @@ const domainApi = {
 
   update: async (id: string, name: string): Promise<Domain> => {
     const result = await apiRequest<Domain>(`/domains/${id}`, {
-      method: 'PATCH',
+      method: "PATCH",
       body: JSON.stringify({ name }),
     });
     if (result.error) throw new Error(result.error);
-    if (!result.data) throw new Error('No data returned from update domain');
+    if (!result.data) throw new Error("No data returned from update domain");
     return result.data;
   },
 
   delete: async (id: string): Promise<{ success: boolean }> => {
     const result = await apiRequest<{ success: boolean }>(`/domains/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
     if (result.error) throw new Error(result.error);
-    if (!result.data) throw new Error('No data returned from delete domain');
+    if (!result.data) throw new Error("No data returned from delete domain");
     return result.data;
   },
 
   verify: async (id: string): Promise<{ verified: boolean; message: string }> => {
-    const result = await apiRequest<{ verified: boolean; message: string }>(`/domains/${id}/verify`, {
-      method: 'POST',
-    });
+    const result = await apiRequest<{ verified: boolean; message: string }>(
+      `/domains/${id}/verify`,
+      {
+        method: "POST",
+      }
+    );
     if (result.error) throw new Error(result.error);
-    if (!result.data) throw new Error('No data returned from verify domain');
+    if (!result.data) throw new Error("No data returned from verify domain");
     return result.data;
   },
 
   regenerateToken: async (id: string): Promise<Domain> => {
     const result = await apiRequest<Domain>(`/domains/${id}/regenerate-token`, {
-      method: 'POST',
+      method: "POST",
     });
     if (result.error) throw new Error(result.error);
-    if (!result.data) throw new Error('No data returned from regenerate token');
+    if (!result.data) throw new Error("No data returned from regenerate token");
     return result.data;
   },
 };
 
 export function useDomain(id: string) {
   return useQuery({
-    queryKey: ['domains', id],
+    queryKey: ["domains", id],
     queryFn: () => domainApi.getById(id),
     enabled: !!id,
-    staleTime: 30000,
+    staleTime: 30_000,
     refetchOnWindowFocus: false,
   });
 }
@@ -97,23 +100,23 @@ export function useDomains() {
   const { data: activeOrganization } = authClient.useActiveOrganization();
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['domains', activeOrganization?.id || 'personal'],
+    queryKey: ["domains", activeOrganization?.id || "personal"],
     queryFn: async () => {
       const endpoint = activeOrganization?.id
         ? `/domains?organizationId=${activeOrganization.id}`
-        : '/domains';
+        : "/domains";
 
       const result = await apiRequest<Domain[]>(endpoint);
       if (result.error) throw new Error(result.error);
       return result.data || [];
     },
-    staleTime: 30000,
+    staleTime: 30_000,
     refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
     if (isError) {
-      toast.error('Failed to fetch domains');
+      toast.error("Failed to fetch domains");
     }
   }, [isError]);
 
@@ -121,22 +124,22 @@ export function useDomains() {
     mutationFn: async (data: CreateDomainData) => {
       const endpoint = activeOrganization?.id
         ? `/domains?organizationId=${activeOrganization.id}`
-        : '/domains';
+        : "/domains";
 
       const result = await apiRequest<Domain>(endpoint, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(data),
       });
       if (result.error) throw new Error(result.error);
-      if (!result.data) throw new Error('No data returned from create domain');
+      if (!result.data) throw new Error("No data returned from create domain");
       return result.data;
     },
     onSuccess: () => {
       toast.success("Domain created successfully");
-      queryClient.invalidateQueries({ queryKey: ['domains'] });
+      queryClient.invalidateQueries({ queryKey: ["domains"] });
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to create domain');
+      toast.error(error.message || "Failed to create domain");
     },
   });
 
@@ -144,10 +147,10 @@ export function useDomains() {
     mutationFn: ({ id, name }: { id: string; name: string }) => domainApi.update(id, name),
     onSuccess: () => {
       toast.success("Domain updated successfully");
-      queryClient.invalidateQueries({ queryKey: ['domains'] });
+      queryClient.invalidateQueries({ queryKey: ["domains"] });
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update domain');
+      toast.error(error.message || "Failed to update domain");
     },
   });
 
@@ -155,24 +158,24 @@ export function useDomains() {
     mutationFn: domainApi.delete,
     onSuccess: () => {
       toast.success("Domain deleted successfully");
-      queryClient.invalidateQueries({ queryKey: ['domains'] });
+      queryClient.invalidateQueries({ queryKey: ["domains"] });
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to delete domain');
+      toast.error(error.message || "Failed to delete domain");
     },
   });
 
   const verifyMutation = useMutation({
     mutationFn: domainApi.verify,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['domains'] });
+      queryClient.invalidateQueries({ queryKey: ["domains"] });
     },
   });
 
   const regenerateTokenMutation = useMutation({
     mutationFn: domainApi.regenerateToken,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['domains'] });
+      queryClient.invalidateQueries({ queryKey: ["domains"] });
     },
   });
 
@@ -194,4 +197,4 @@ export function useDomains() {
   };
 }
 
-export { domainApi }; 
+export { domainApi };

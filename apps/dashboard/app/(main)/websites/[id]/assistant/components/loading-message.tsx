@@ -1,24 +1,24 @@
 "use client";
 
-import React from "react";
 import { Bot } from "lucide-react";
+import React from "react";
 
 export function LoadingMessage() {
   return (
-    <div className="flex gap-3 max-w-[85%]">
-      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-1">
+    <div className="flex max-w-[85%] gap-3">
+      <div className="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-muted">
         <Bot className="h-4 w-4" />
       </div>
-      <div className="bg-muted rounded-lg px-4 py-3 mr-2">
+      <div className="mr-2 rounded-lg bg-muted px-4 py-3">
         <div className="flex items-center gap-2 text-sm">
           <div className="flex space-x-1">
-            <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.3s]" />
-            <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.15s]" />
-            <div className="w-2 h-2 bg-current rounded-full animate-bounce" />
+            <div className="h-2 w-2 animate-bounce rounded-full bg-current [animation-delay:-0.3s]" />
+            <div className="h-2 w-2 animate-bounce rounded-full bg-current [animation-delay:-0.15s]" />
+            <div className="h-2 w-2 animate-bounce rounded-full bg-current" />
           </div>
           <span className="text-muted-foreground">Nova is analyzing...</span>
         </div>
       </div>
     </div>
   );
-} 
+}

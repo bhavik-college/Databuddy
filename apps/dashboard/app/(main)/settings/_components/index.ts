@@ -1,7 +1,7 @@
-export { ProfileForm } from "./profile-form";
+export { AccountDeletion } from "./account-deletion";
 export { EmailForm } from "./email-form";
 export { PasswordForm } from "./password-form";
-export { TwoFactorForm } from "./two-factor-form";
+export { ProfileForm } from "./profile-form";
 export { SessionsForm } from "./sessions-form";
-export { AccountDeletion } from "./account-deletion";
-export { TimezonePreferences } from "./timezone-preferences"; 
+export { TimezonePreferences } from "./timezone-preferences";
+export { TwoFactorForm } from "./two-factor-form";

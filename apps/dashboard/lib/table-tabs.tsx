@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
-import type { ColumnDef, CellContext } from '@tanstack/react-table';
-import { PercentageBadge } from '@/app/(main)/websites/[id]/_components/utils/technology-helpers';
+import type { CellContext, ColumnDef } from "@tanstack/react-table";
+import { useMemo } from "react";
+import { PercentageBadge } from "@/app/(main)/websites/[id]/_components/utils/technology-helpers";
 
 // Generic data item that all tab data should extend
 export interface BaseTabItem {
@@ -24,12 +24,12 @@ export interface TabConfig<T extends BaseTabItem> {
 // Generic function to add percentages to data
 export function addPercentages<T extends BaseTabItem>(data: T[]): T[] {
   if (!data?.length) return [];
-  
+
   const totalVisitors = data.reduce((sum: number, item: T) => sum + (item.visitors || 0), 0);
-  
+
   return data.map((item: T) => ({
     ...item,
-    percentage: totalVisitors > 0 ? Math.round((item.visitors / totalVisitors) * 100) : 0
+    percentage: totalVisitors > 0 ? Math.round((item.visitors / totalVisitors) * 100) : 0,
   }));
 }
 
@@ -43,22 +43,24 @@ export function createTabColumns<T extends BaseTabItem>(
     {
       accessorKey: primaryField,
       header: primaryHeader,
-      cell: customCell || ((info: CellContext<T, unknown>) => {
-        const value = info.getValue() as string;
-        return <span className="font-medium">{value || 'Unknown'}</span>;
-      })
+      cell:
+        customCell ||
+        ((info: CellContext<T, unknown>) => {
+          const value = info.getValue() as string;
+          return <span className="font-medium">{value || "Unknown"}</span>;
+        }),
     },
     {
-      accessorKey: 'visitors',
-      header: 'Visitors',
+      accessorKey: "visitors",
+      header: "Visitors",
     },
     {
-      accessorKey: 'pageviews',
-      header: 'Views',
+      accessorKey: "pageviews",
+      header: "Views",
     },
     {
-      accessorKey: 'percentage',
-      header: 'Share',
+      accessorKey: "percentage",
+      header: "Share",
       cell: (info: CellContext<T, unknown>) => {
         const percentage = info.getValue() as number;
         return <PercentageBadge percentage={percentage} />;
@@ -77,19 +79,13 @@ export interface SimpleTabConfig<T extends BaseTabItem> {
 }
 
 // Hook to create tabs from simple data configuration
-export function useTableTabs(
-  tabsData: Record<string, SimpleTabConfig<any>>
-) {
+export function useTableTabs(tabsData: Record<string, SimpleTabConfig<any>>) {
   return useMemo(() => {
     return Object.entries(tabsData).map(([id, config]) => ({
       id,
       label: config.label,
       data: addPercentages(config.data || []),
-      columns: createTabColumns(
-        config.primaryField,
-        config.primaryHeader,
-        config.customCell
-      )
+      columns: createTabColumns(config.primaryField, config.primaryHeader, config.customCell),
     }));
   }, [tabsData]);
-} 
+}

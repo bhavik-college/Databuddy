@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useSession } from "@databuddy/auth/client";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { AuthLoading } from "./auth-loading";
 
 export interface RedirectToSignInProps {
@@ -14,10 +14,10 @@ export function RedirectToSignIn({ returnTo }: RedirectToSignInProps) {
   const { data: session, isPending } = useSession();
 
   useEffect(() => {
-    if (!isPending && !session?.user) {
+    if (!(isPending || session?.user)) {
       router.push(`/login${returnTo ? `?returnTo=${returnTo}` : ""}`);
     }
   }, [isPending, session, router, returnTo]);
 
   return <AuthLoading />;
-} 
+}

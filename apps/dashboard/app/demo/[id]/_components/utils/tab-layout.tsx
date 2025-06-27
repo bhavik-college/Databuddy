@@ -1,6 +1,6 @@
-import type React from 'react';
+import type React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BORDER_RADIUS } from './ui-components';
+import { BORDER_RADIUS } from "./ui-components";
 
 interface TabLayoutProps {
   title?: string;
@@ -17,20 +17,20 @@ export function TabLayout({
   isLoading = false,
   children,
   className = "",
-  actions
+  actions,
 }: TabLayoutProps) {
   if (isLoading) {
     return <TabLoadingSkeleton />;
   }
 
   return (
-    <div className={`pt-2 space-y-3 ${className}`}>
+    <div className={`space-y-3 pt-2 ${className}`}>
       {(title || description || actions) && (
-        <div className="flex items-center justify-between mb-2">
+        <div className="mb-2 flex items-center justify-between">
           {(title || description) && (
             <div>
-              {title && <h2 className="text-lg font-semibold">{title}</h2>}
-              {description && <p className="text-sm text-muted-foreground">{description}</p>}
+              {title && <h2 className="font-semibold text-lg">{title}</h2>}
+              {description && <p className="text-muted-foreground text-sm">{description}</p>}
             </div>
           )}
           {actions && <div>{actions}</div>}
@@ -42,12 +42,17 @@ export function TabLayout({
 }
 
 export function TabLoadingSkeleton() {
-  const loadingSkeletonIds = ['loading-skeleton-1', 'loading-skeleton-2', 'loading-skeleton-3', 'loading-skeleton-4'];
+  const loadingSkeletonIds = [
+    "loading-skeleton-1",
+    "loading-skeleton-2",
+    "loading-skeleton-3",
+    "loading-skeleton-4",
+  ];
   return (
     <div className="space-y-4 pt-2">
       <div className="grid grid-cols-4 gap-2">
         {loadingSkeletonIds.map((id) => (
-          <Skeleton key={id} className={`h-24 w-full ${BORDER_RADIUS.card}`} />
+          <Skeleton className={`h-24 w-full ${BORDER_RADIUS.card}`} key={id} />
         ))}
       </div>
       <Skeleton className={`h-64 w-full ${BORDER_RADIUS.container}`} />
@@ -57,4 +62,4 @@ export function TabLoadingSkeleton() {
       </div>
     </div>
   );
-} 
+}

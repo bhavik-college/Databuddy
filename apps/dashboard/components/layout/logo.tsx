@@ -1,7 +1,6 @@
-import Link from "next/link";
-import Image from "next/image";
-
 import { Geist_Mono } from "next/font/google";
+import Image from "next/image";
+import Link from "next/link";
 
 const geistMono = Geist_Mono({
   subsets: ["latin"],
@@ -11,23 +10,14 @@ const geistMono = Geist_Mono({
 
 export function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-3">
+    <Link className="flex items-center gap-3" href="/">
       <div className="relative flex-shrink-0 transition-transform duration-200">
         <LogoSVG height={24} width={24} />
       </div>
       <div className="flex items-center">
         <h1
           className={`
-          ${geistMono.variable}
-          text-lg 
-          tracking-wider
-          text-foreground
-          font-semibold
-          leading-none
-          select-none
-          transition-colors 
-          duration-200
-        `}
+          ${geistMono.variable}text-lg select-none font-semibold text-foreground leading-none tracking-wider transition-colors duration-200 `}
         >
           DATABUDDY
         </h1>
@@ -39,12 +29,12 @@ export function Logo() {
 export function LogoSVG({ ...props }: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
-      width="600"
+      aria-hidden="true"
+      fill="none"
       height="600"
       viewBox="0 0 600 600"
-      fill="none"
+      width="600"
       xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
       {...props}
     >
       <path
@@ -52,10 +42,10 @@ export function LogoSVG({ ...props }: React.SVGProps<SVGSVGElement>) {
         fill="currentColor"
       />
       <path
-        fillRule="evenodd"
         clipRule="evenodd"
         d="M600 495C600 497.761 597.761 500 595 500H505C502.239 500 500 502.239 500 505V595C500 597.761 497.761 600 495 600H5C2.23857 600 0 597.761 0 595V5C0 2.23857 2.23858 0 5 0H495C497.761 0 500 2.23858 500 5V95C500 97.7614 502.239 100 505 100H595C597.761 100 600 102.239 600 105V495ZM110 100C107.239 100 105 102.239 105 105V495C105 497.761 107.239 500 110 500H490C492.761 500 495 497.761 495 495V105C495 102.239 492.761 100 490 100H110Z"
         fill="currentColor"
+        fillRule="evenodd"
       />
     </svg>
   );

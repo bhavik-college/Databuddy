@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { authClient, useSession } from "@databuddy/auth/client";
-import { toast } from "sonner";
 import { ArrowClockwiseIcon, CheckCircleIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +22,10 @@ import { Input } from "@/components/ui/input";
 
 // Define form schema with validation
 const profileFormSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name cannot exceed 50 characters"),
+  name: z
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .max(50, "Name cannot exceed 50 characters"),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -70,16 +73,16 @@ export function ProfileForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <FormLabel>Display Name</FormLabel>
                 {session?.user?.name !== form.watch("name") && (
-                  <span className="text-xs text-slate-400">Unsaved changes</span>
+                  <span className="text-slate-400 text-xs">Unsaved changes</span>
                 )}
               </div>
               <FormControl>
@@ -95,18 +98,18 @@ export function ProfileForm() {
 
         <div className="flex justify-end">
           <Button
-            type="submit"
-            disabled={isLoading || session?.user?.name === form.watch("name")}
             className="flex items-center"
+            disabled={isLoading || session?.user?.name === form.watch("name")}
+            type="submit"
           >
             {isLoading ? (
               <>
-                <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />
+                <ArrowClockwiseIcon className="mr-2 h-4 w-4 animate-spin" size={16} weight="fill" />
                 Saving...
               </>
             ) : isSaved ? (
               <>
-                <CheckCircleIcon size={16} weight="fill" className="mr-2 h-4 w-4" />
+                <CheckCircleIcon className="mr-2 h-4 w-4" size={16} weight="fill" />
                 Saved
               </>
             ) : (
@@ -117,4 +120,4 @@ export function ProfileForm() {
       </form>
     </Form>
   );
-} 
+}

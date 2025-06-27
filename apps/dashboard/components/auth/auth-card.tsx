@@ -1,12 +1,25 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { AuthForm } from "./auth-form";
 import { cn } from "@/lib/utils";
+import { AuthForm } from "./auth-form";
 
 export type AuthCardProps = {
-  view?: "signIn" | "signUp" | "forgotPassword" | "resetPassword" | "verifyEmail" | "verifyPassword";
+  view?:
+    | "signIn"
+    | "signUp"
+    | "forgotPassword"
+    | "resetPassword"
+    | "verifyEmail"
+    | "verifyPassword";
   redirectTo?: string;
   callbackURL?: string;
   className?: string;
@@ -28,13 +41,15 @@ export function AuthCard({
   classNames,
 }: AuthCardProps) {
   return (
-    <Card className={cn(
-      "bg-slate-800/80 border-slate-700/50 backdrop-blur-sm shadow-xl",
-      classNames?.base,
-      className
-    )}>
+    <Card
+      className={cn(
+        "border-slate-700/50 bg-slate-800/80 shadow-xl backdrop-blur-sm",
+        classNames?.base,
+        className
+      )}
+    >
       <CardHeader className={cn("space-y-1", classNames?.header)}>
-        <CardTitle className={cn("text-2xl font-medium text-white", classNames?.title)}>
+        <CardTitle className={cn("font-medium text-2xl text-white", classNames?.title)}>
           {view === "signIn" && "Welcome back"}
           {view === "signUp" && "Create an account"}
           {view === "forgotPassword" && "Reset your password"}
@@ -52,23 +67,19 @@ export function AuthCard({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <AuthForm 
-          view={view}
-          redirectTo={redirectTo}
-          callbackURL={callbackURL}
-        />
+        <AuthForm callbackURL={callbackURL} redirectTo={redirectTo} view={view} />
       </CardContent>
       <CardFooter className={cn("border-slate-700/50", classNames?.footer)}>
-        <div className="text-center w-full text-sm text-slate-400">
+        <div className="w-full text-center text-slate-400 text-sm">
           {view === "signIn" && (
             <>
               Don&apos;t have an account?{" "}
-              <a 
-                href="/register" 
+              <a
                 className={cn(
-                  "text-sky-400 hover:text-sky-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-sky-400/20 focus:ring-offset-2 focus:ring-offset-slate-800 rounded",
+                  "rounded text-sky-400 transition-colors duration-200 hover:text-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-400/20 focus:ring-offset-2 focus:ring-offset-slate-800",
                   classNames?.footerLink
                 )}
+                href="/register"
               >
                 Create one now
               </a>
@@ -77,12 +88,12 @@ export function AuthCard({
           {view === "signUp" && (
             <>
               Already have an account?{" "}
-              <a 
-                href="/login" 
+              <a
                 className={cn(
-                  "text-sky-400 hover:text-sky-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-sky-400/20 focus:ring-offset-2 focus:ring-offset-slate-800 rounded",
+                  "rounded text-sky-400 transition-colors duration-200 hover:text-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-400/20 focus:ring-offset-2 focus:ring-offset-slate-800",
                   classNames?.footerLink
                 )}
+                href="/login"
               >
                 Sign in
               </a>
@@ -92,4 +103,4 @@ export function AuthCard({
       </CardFooter>
     </Card>
   );
-} 
+}

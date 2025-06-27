@@ -1,8 +1,8 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { db, user, eq } from "@databuddy/db";
 import { auth } from "@databuddy/auth";
+import { db, eq, user } from "@databuddy/db";
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { cache } from "react";
 import { z } from "zod";
@@ -13,7 +13,7 @@ import { logger } from "@/lib/discord-webhook";
 // Helper to get authenticated user
 const getUser = cache(async () => {
   const session = await auth.api.getSession({
-    headers: await headers()
+    headers: await headers(),
   });
   if (!session) return null;
   return session.user;
@@ -21,8 +21,14 @@ const getUser = cache(async () => {
 
 // Profile update schema
 const profileUpdateSchema = z.object({
-  firstName: z.string().min(1, "First name is required").max(50, "First name cannot exceed 50 characters"),
-  lastName: z.string().min(1, "Last name is required").max(50, "Last name cannot exceed 50 characters"),
+  firstName: z
+    .string()
+    .min(1, "First name is required")
+    .max(50, "First name cannot exceed 50 characters"),
+  lastName: z
+    .string()
+    .min(1, "Last name is required")
+    .max(50, "Last name cannot exceed 50 characters"),
   image: z.string().url("Please enter a valid image URL").optional(),
 });
 
@@ -73,14 +79,14 @@ const profileUpdateSchema = z.object({
 
 //     // Upload to Supabase using the server-side function
 //     const result = await uploadOptimizedImage(
-//       file, 
-//       ["medium"], 
-//       "profile-images", 
+//       file,
+//       ["medium"],
+//       "profile-images",
 //       user.id,
 //       cropData,
 //       edits
 //     );
-    
+
 //     return { url: result.medium };
 //   } catch (error) {
 //     console.error("Profile image upload error:", error);
@@ -109,7 +115,8 @@ export async function updateUserProfile(formData: FormData) {
     });
 
     // Update user in database
-    const updated = await db.update(user)
+    const updated = await db
+      .update(user)
       .set({
         firstName: validatedData.firstName,
         lastName: validatedData.lastName,
@@ -123,18 +130,14 @@ export async function updateUserProfile(formData: FormData) {
     // Log profile update to Discord (only for significant changes)
     const newFullName = `${validatedData.firstName} ${validatedData.lastName}`;
     const hasNameChange = currentUser.name !== newFullName;
-    
+
     if (hasNameChange) {
-      await logger.info(
-        'Profile Updated',
-        'User updated their profile name',
-        {
-          userId: currentUser.id,
-          oldName: currentUser.name || 'Unknown',
-          newName: newFullName,
-          email: currentUser.email
-        }
-      );
+      await logger.info("Profile Updated", "User updated their profile name", {
+        userId: currentUser.id,
+        oldName: currentUser.name || "Unknown",
+        newName: newFullName,
+        email: currentUser.email,
+      });
     }
 
     revalidatePath("/settings");
@@ -143,15 +146,11 @@ export async function updateUserProfile(formData: FormData) {
     console.error("Profile update error:", error);
 
     // Log profile update error
-    await logger.error(
-      'Profile Update Failed',
-      'User profile update encountered an error',
-      {
-        userId: currentUser.id,
-        userName: currentUser.name || currentUser.email,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }
-    );
+    await logger.error("Profile Update Failed", "User profile update encountered an error", {
+      userId: currentUser.id,
+      userName: currentUser.name || currentUser.email,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
 
     if (error instanceof z.ZodError) {
       return { error: error.errors[0].message };
@@ -181,7 +180,8 @@ export async function deactivateUserAccount(formData: FormData) {
     // Password verification would be done here
     // This is a placeholder for actual password verification
 
-    await db.update(user)
+    await db
+      .update(user)
       .set({
         deletedAt: new Date().toISOString(),
         // Store scheduled deletion date in database
@@ -191,13 +191,13 @@ export async function deactivateUserAccount(formData: FormData) {
 
     // Log account deactivation - this is a critical security event
     await logger.warning(
-      'Account Deactivated',
-      'User account was deactivated and scheduled for deletion',
+      "Account Deactivated",
+      "User account was deactivated and scheduled for deletion",
       {
         userId: currentUser.id,
         userName: currentUser.name || currentUser.email,
         email: currentUser.email,
-        deactivatedAt: new Date().toISOString()
+        deactivatedAt: new Date().toISOString(),
       }
     );
 
@@ -208,15 +208,15 @@ export async function deactivateUserAccount(formData: FormData) {
 
     // Log account deactivation error
     await logger.error(
-      'Account Deactivation Failed',
-      'Account deactivation process encountered an error',
+      "Account Deactivation Failed",
+      "Account deactivation process encountered an error",
       {
         userId: currentUser.id,
         userName: currentUser.name || currentUser.email,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : "Unknown error",
       }
     );
 
     return { error: "Failed to process account deletion" };
   }
-} 
+}

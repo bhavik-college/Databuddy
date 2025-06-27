@@ -1,12 +1,12 @@
-import Link from "next/link";
 import { ArrowSquareOut } from "@phosphor-icons/react";
-import { cn } from "@/lib/utils";
-import type { NavigationItem as NavigationItemType } from "./types";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { cn } from "@/lib/utils";
+import type { NavigationItem as NavigationItemType } from "./types";
 
-interface NavigationItemProps extends Omit<NavigationItemType, 'icon'> {
-  icon: NavigationItemType['icon'];
+interface NavigationItemProps extends Omit<NavigationItemType, "icon"> {
+  icon: NavigationItemType["icon"];
   isActive: boolean;
   isRootLevel: boolean;
   isExternal?: boolean;
@@ -24,7 +24,7 @@ export function NavigationItem({
   isExternal,
   isHighlighted,
   production,
-  currentWebsiteId
+  currentWebsiteId,
 }: NavigationItemProps) {
   const router = useRouter();
 
@@ -37,7 +37,7 @@ export function NavigationItem({
     fullPath = `/websites/${currentWebsiteId}${href}`;
   }
 
-  const LinkComponent = isExternal ? 'a' : Link;
+  const LinkComponent = isExternal ? "a" : Link;
 
   if (production === false && process.env.NODE_ENV === "production") {
     return null;
@@ -52,39 +52,35 @@ export function NavigationItem({
   const linkProps = isExternal
     ? { href, target: "_blank", rel: "noopener noreferrer" }
     : {
-      href: fullPath,
-      prefetch: true
-    };
+        href: fullPath,
+        prefetch: true,
+      };
 
   return (
     <LinkComponent
       {...linkProps}
-      data-track="navigation-click"
-      data-nav-item={name.toLowerCase().replace(/\s+/g, '-')}
-      data-nav-type={isRootLevel ? 'main' : 'website'}
-      data-nav-section={isRootLevel ? 'main-nav' : 'website-nav'}
-      data-is-external={isExternal ? 'true' : 'false'}
       className={cn(
-        "group flex items-center gap-x-3 px-3 py-2 text-sm rounded transition-colors",
+        "group flex items-center gap-x-3 rounded px-3 py-2 text-sm transition-colors",
         isActive
-          ? "bg-accent text-foreground font-medium"
-          : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+          ? "bg-accent font-medium text-foreground"
+          : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
       )}
+      data-is-external={isExternal ? "true" : "false"}
+      data-nav-item={name.toLowerCase().replace(/\s+/g, "-")}
+      data-nav-section={isRootLevel ? "main-nav" : "website-nav"}
+      data-nav-type={isRootLevel ? "main" : "website"}
+      data-track="navigation-click"
     >
       <span className="flex-shrink-0">
-        <Icon size={32} weight="duotone" className="h-5 w-5 not-dark:text-primary" />
+        <Icon className="h-5 w-5 not-dark:text-primary" size={32} weight="duotone" />
       </span>
       <span className="flex-grow truncate">{name}</span>
       <div className="flex items-center gap-1.5">
-        {alpha && (
-          <span className="text-xs text-muted-foreground font-mono">
-            ALPHA
-          </span>
-        )}
+        {alpha && <span className="font-mono text-muted-foreground text-xs">ALPHA</span>}
         {isExternal && (
           <ArrowSquareOut
+            className="h-3 w-3 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
             weight="duotone"
-            className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
           />
         )}
       </div>

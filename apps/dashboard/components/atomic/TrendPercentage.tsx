@@ -28,24 +28,28 @@ export const TrendPercentage: React.FC<TrendPercentageProps> = ({
   if (Number.isNaN(value)) {
     // Handle NaN case, perhaps display '--%'
     return (
-      <span id={id} className={cn("text-muted-foreground", className)}>
+      <span className={cn("text-muted-foreground", className)} id={id}>
         --%
       </span>
     );
   }
-  
+
   if (value > 0) {
-    colorClass = invertColor ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400";
+    colorClass = invertColor
+      ? "text-red-600 dark:text-red-400"
+      : "text-green-600 dark:text-green-400";
   }
   if (value < 0) {
-    colorClass = invertColor ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400";
+    colorClass = invertColor
+      ? "text-green-600 dark:text-green-400"
+      : "text-red-600 dark:text-red-400";
   }
 
   return (
-    <span id={id} className={cn("font-medium", colorClass, className)}>
+    <span className={cn("font-medium", colorClass, className)} id={id}>
       {formatPercentage(value, digits)}
     </span>
   );
 };
 
-export default TrendPercentage; 
+export default TrendPercentage;

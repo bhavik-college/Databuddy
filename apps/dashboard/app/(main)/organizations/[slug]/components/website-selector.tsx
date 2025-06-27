@@ -1,46 +1,60 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import type { Website } from "@databuddy/shared";
 import { Globe } from "@phosphor-icons/react";
+import { cn } from "@/lib/utils";
 
-function WebsiteCard({ website, selected, onClick }: { website: Website, selected: boolean, onClick: () => void }) {
-    return (
-        <button
-            onClick={onClick}
-            className={cn(
-                "w-full text-left p-3 rounded border flex items-center gap-3 transition-colors",
-                selected
-                    ? "bg-primary/10 border-primary/30 ring-2 ring-primary/20"
-                    : "bg-background/50 hover:bg-muted/80 border-border/50"
-            )}
-        >
-            <Globe size={18} className="text-muted-foreground" />
-            <div className="flex-1">
-                <p className="font-medium text-sm">{website.name}</p>
-                <p className="text-xs text-muted-foreground">{website.domain}</p>
-            </div>
-        </button>
-    );
+function WebsiteCard({
+  website,
+  selected,
+  onClick,
+}: {
+  website: Website;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className={cn(
+        "flex w-full items-center gap-3 rounded border p-3 text-left transition-colors",
+        selected
+          ? "border-primary/30 bg-primary/10 ring-2 ring-primary/20"
+          : "border-border/50 bg-background/50 hover:bg-muted/80"
+      )}
+      onClick={onClick}
+    >
+      <Globe className="text-muted-foreground" size={18} />
+      <div className="flex-1">
+        <p className="font-medium text-sm">{website.name}</p>
+        <p className="text-muted-foreground text-xs">{website.domain}</p>
+      </div>
+    </button>
+  );
 }
 
-export function WebsiteSelector({ websites, selectedWebsite, onSelectWebsite }: { websites: Website[], selectedWebsite: string | null, onSelectWebsite: (id: string | null) => void }) {
-    return (
-        <div className="space-y-2 p-1 max-h-60 overflow-y-auto">
-            {websites.length > 0 ? (
-                websites.map((w) => (
-                    <WebsiteCard
-                        key={w.id}
-                        website={w}
-                        selected={selectedWebsite === w.id}
-                        onClick={() => onSelectWebsite(w.id === selectedWebsite ? null : w.id)}
-                    />
-                ))
-            ) : (
-                <div className="text-center py-8 text-sm text-muted-foreground">
-                    No websites found.
-                </div>
-            )}
-        </div>
-    );
-} 
+export function WebsiteSelector({
+  websites,
+  selectedWebsite,
+  onSelectWebsite,
+}: {
+  websites: Website[];
+  selectedWebsite: string | null;
+  onSelectWebsite: (id: string | null) => void;
+}) {
+  return (
+    <div className="max-h-60 space-y-2 overflow-y-auto p-1">
+      {websites.length > 0 ? (
+        websites.map((w) => (
+          <WebsiteCard
+            key={w.id}
+            onClick={() => onSelectWebsite(w.id === selectedWebsite ? null : w.id)}
+            selected={selectedWebsite === w.id}
+            website={w}
+          />
+        ))
+      ) : (
+        <div className="py-8 text-center text-muted-foreground text-sm">No websites found.</div>
+      )}
+    </div>
+  );
+}

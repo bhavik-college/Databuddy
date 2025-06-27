@@ -17,4 +17,4 @@ export interface PerformanceSummary {
   slowPages: number;
   totalPages: number;
   performanceScore: number;
-} 
+}

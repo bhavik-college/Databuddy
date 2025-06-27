@@ -1,19 +1,19 @@
 import {
-  GlobeIcon,
-  GearIcon,
-  ClockIcon,
-  UsersIcon,
-  MapPinIcon,
-  ChatCircleIcon,
-  HouseIcon,
-  RobotIcon,
-  TestTubeIcon,
   BugIcon,
-  GitBranchIcon,
-  FunnelIcon,
+  ChatCircleIcon,
+  ClockIcon,
   CurrencyDollarIcon,
+  FunnelIcon,
+  GearIcon,
+  GitBranchIcon,
+  GlobeIcon,
+  HouseIcon,
   LinkIcon,
-  TargetIcon
+  MapPinIcon,
+  RobotIcon,
+  TargetIcon,
+  TestTubeIcon,
+  UsersIcon,
 } from "@phosphor-icons/react";
 import type { NavigationSection } from "./types";
 
@@ -29,16 +29,37 @@ export const mainNavigation: NavigationSection[] = [
   {
     title: "Early Access",
     items: [
-      { name: "Revenue", icon: CurrencyDollarIcon, href: "/revenue", rootLevel: true, highlight: true, alpha: true },
+      {
+        name: "Revenue",
+        icon: CurrencyDollarIcon,
+        href: "/revenue",
+        rootLevel: true,
+        highlight: true,
+        alpha: true,
+      },
     ],
   },
   {
     title: "Resources",
     items: [
-      { name: "Roadmap", icon: MapPinIcon, href: "https://trello.com/b/SOUXD4wE/databuddy", rootLevel: true, external: true, highlight: true },
-      { name: "Feedback", icon: ChatCircleIcon, href: "https://databuddy.featurebase.app/", rootLevel: true, external: true, highlight: true },
+      {
+        name: "Roadmap",
+        icon: MapPinIcon,
+        href: "https://trello.com/b/SOUXD4wE/databuddy",
+        rootLevel: true,
+        external: true,
+        highlight: true,
+      },
+      {
+        name: "Feedback",
+        icon: ChatCircleIcon,
+        href: "https://databuddy.featurebase.app/",
+        rootLevel: true,
+        external: true,
+        highlight: true,
+      },
     ],
-  }
+  },
 ];
 
 export const websiteNavigation: NavigationSection[] = [
@@ -61,7 +82,7 @@ export const websiteNavigation: NavigationSection[] = [
       { name: "Assistant", icon: RobotIcon, href: "/assistant", highlight: true, alpha: true },
       { name: "Revenue", icon: CurrencyDollarIcon, href: "/revenue", highlight: true, alpha: true },
     ],
-  }
+  },
 ];
 
 export const demoNavigation: NavigationSection[] = [
@@ -73,7 +94,7 @@ export const demoNavigation: NavigationSection[] = [
       { name: "Profiles", icon: UsersIcon, href: "/profiles", highlight: true },
       { name: "Map", icon: MapPinIcon, href: "/map", highlight: true },
     ],
-  }
+  },
 ];
 
 export const sandboxNavigation: NavigationSection[] = [

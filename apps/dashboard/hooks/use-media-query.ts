@@ -8,30 +8,30 @@ import { useEffect, useState } from "react";
 export function useMediaQuery(query: string): boolean {
   // Default to false (needed for SSR)
   const [matches, setMatches] = useState(false);
-  
+
   useEffect(() => {
     // Check if window exists (for SSR)
     if (typeof window !== "undefined") {
       const mediaQuery = window.matchMedia(query);
-      
+
       // Set initial state
       setMatches(mediaQuery.matches);
-      
+
       // Define event listener
       const onChange = () => setMatches(mediaQuery.matches);
-      
+
       // Add event listener
       mediaQuery.addEventListener("change", onChange);
-      
+
       // Clean up event listener
       return () => mediaQuery.removeEventListener("change", onChange);
     }
-    
+
     // Return default value during SSR
-    return undefined;
+    return;
   }, [query]);
-  
+
   return matches;
 }
 
-export default useMediaQuery; 
+export default useMediaQuery;

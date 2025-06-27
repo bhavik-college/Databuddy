@@ -1,42 +1,44 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
 import {
-  GlobeIcon,
-  UsersIcon,
-  CursorIcon,
-  WarningIcon,
-  ChartLineIcon,
-  TimerIcon,
-  LayoutIcon,
   CaretDownIcon,
   CaretRightIcon,
+  ChartLineIcon,
+  CursorIcon,
+  GlobeIcon,
+  LayoutIcon,
+  TimerIcon,
+  UsersIcon,
+  WarningIcon,
 } from "@phosphor-icons/react";
 import { differenceInDays } from "date-fns";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
-
-import { StatCard } from "@/components/analytics/stat-card";
-import { MetricsChart } from "@/components/charts/metrics-chart";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { DataTable } from "@/components/analytics/data-table";
-import { useDynamicQuery, useBatchDynamicQuery } from "@/hooks/use-dynamic-query";
+import { StatCard } from "@/components/analytics/stat-card";
 import {
+  ReferrerSourceCell,
+  type ReferrerSourceCellData,
+} from "@/components/atomic/ReferrerSourceCell";
+import { MetricsChart } from "@/components/charts/metrics-chart";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useBatchDynamicQuery, useDynamicQuery } from "@/hooks/use-dynamic-query";
+import {
+  calculatePercentChange,
   formatDateByGranularity,
   getColorVariant,
-  calculatePercentChange,
 } from "../utils/analytics-helpers";
-import { MetricToggles } from "../utils/ui-components";
-import type { FullTabProps, MetricPoint } from "../utils/types";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
-import { ReferrerSourceCell, type ReferrerSourceCellData } from "@/components/atomic/ReferrerSourceCell";
 import {
-  processDeviceData,
-  processBrowserData,
   inferOperatingSystems,
-  TechnologyIcon,
   PercentageBadge,
+  processBrowserData,
+  processDeviceData,
+  TechnologyIcon,
 } from "../utils/technology-helpers";
+import type { FullTabProps, MetricPoint } from "../utils/types";
+import { MetricToggles } from "../utils/ui-components";
 
 // Types
 interface TrendCalculation {
@@ -98,19 +100,19 @@ const MIN_PREVIOUS_SESSIONS_FOR_TREND = 5;
 const MIN_PREVIOUS_VISITORS_FOR_TREND = 5;
 const MIN_PREVIOUS_PAGEVIEWS_FOR_TREND = 10;
 
-
-
-
-
 function UnauthorizedAccessError() {
   const router = useRouter();
 
   return (
-    <Card className="border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-800/50 w-full max-w-lg mx-auto my-8">
+    <Card className="mx-auto my-8 w-full max-w-lg border-red-200 bg-red-50 dark:border-red-800/50 dark:bg-red-950/20">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-red-100 dark:bg-red-900/30 rounded-full">
-            <WarningIcon size={24} weight="fill" className="h-6 w-6 text-red-600 dark:text-red-400" />
+          <div className="rounded-full bg-red-100 p-2.5 dark:bg-red-900/30">
+            <WarningIcon
+              className="h-6 w-6 text-red-600 dark:text-red-400"
+              size={24}
+              weight="fill"
+            />
           </div>
           <div>
             <CardTitle className="text-lg">Access Denied</CardTitle>
@@ -121,12 +123,12 @@ function UnauthorizedAccessError() {
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <p className="text-sm text-muted-foreground mb-5">
+        <p className="mb-5 text-muted-foreground text-sm">
           Contact the website owner if you think this is an error.
         </p>
         <Button
-          onClick={() => router.push("/websites")}
           className="w-full sm:w-auto"
+          onClick={() => router.push("/websites")}
           variant="destructive"
         >
           Back to Websites
@@ -143,39 +145,41 @@ export function WebsiteOverviewTab({
   isRefreshing,
   setIsRefreshing,
 }: FullTabProps) {
-
-  const queries = useMemo(() => [
-    {
-      id: 'overview-summary',
-      parameters: ['summary_metrics', 'today_metrics', 'events_by_date'],
-      limit: 100,
-      granularity: dateRange.granularity
-    },
-    {
-      id: 'overview-pages',
-      parameters: ['top_pages', 'entry_pages', 'exit_pages'],
-      limit: 100,
-      granularity: dateRange.granularity
-    },
-    {
-      id: 'overview-traffic',
-      parameters: ['top_referrers', 'utm_sources', 'utm_mediums', 'utm_campaigns'],
-      limit: 100,
-      granularity: dateRange.granularity
-    },
-    {
-      id: 'overview-tech',
-      parameters: ['device_types', 'browser_versions'],
-      limit: 100,
-      granularity: dateRange.granularity
-    },
-    {
-      id: 'overview-custom-events',
-      parameters: ['custom_events', 'custom_event_details'],
-      limit: 100,
-      granularity: dateRange.granularity
-    }
-  ], [dateRange.granularity]);
+  const queries = useMemo(
+    () => [
+      {
+        id: "overview-summary",
+        parameters: ["summary_metrics", "today_metrics", "events_by_date"],
+        limit: 100,
+        granularity: dateRange.granularity,
+      },
+      {
+        id: "overview-pages",
+        parameters: ["top_pages", "entry_pages", "exit_pages"],
+        limit: 100,
+        granularity: dateRange.granularity,
+      },
+      {
+        id: "overview-traffic",
+        parameters: ["top_referrers", "utm_sources", "utm_mediums", "utm_campaigns"],
+        limit: 100,
+        granularity: dateRange.granularity,
+      },
+      {
+        id: "overview-tech",
+        parameters: ["device_types", "browser_versions"],
+        limit: 100,
+        granularity: dateRange.granularity,
+      },
+      {
+        id: "overview-custom-events",
+        parameters: ["custom_events", "custom_event_details"],
+        limit: 100,
+        granularity: dateRange.granularity,
+      },
+    ],
+    [dateRange.granularity]
+  );
 
   // Fetch all overview data in a single batch query
   const {
@@ -183,37 +187,39 @@ export function WebsiteOverviewTab({
     isLoading: batchLoading,
     error: batchError,
     refetch: refetchBatch,
-    getDataForQuery
-  } = useBatchDynamicQuery(
-    websiteId,
-    dateRange,
-    queries
-  );
+    getDataForQuery,
+  } = useBatchDynamicQuery(websiteId, dateRange, queries);
 
   // Combine all data into analytics object for backward compatibility
-  const analytics = useMemo(() => ({
-    summary: getDataForQuery('overview-summary', 'summary_metrics')?.[0] || null,
-    today: getDataForQuery('overview-summary', 'today_metrics')?.[0] || null,
-    events_by_date: getDataForQuery('overview-summary', 'events_by_date') || [],
-    top_pages: getDataForQuery('overview-pages', 'top_pages') || [],
-    entry_pages: getDataForQuery('overview-pages', 'entry_pages') || [],
-    exit_pages: getDataForQuery('overview-pages', 'exit_pages') || [],
-    top_referrers: getDataForQuery('overview-traffic', 'top_referrers') || [],
-    utm_sources: getDataForQuery('overview-traffic', 'utm_sources') || [],
-    utm_mediums: getDataForQuery('overview-traffic', 'utm_mediums') || [],
-    utm_campaigns: getDataForQuery('overview-traffic', 'utm_campaigns') || [],
-    device_types: getDataForQuery('overview-tech', 'device_types') || [],
-    browser_versions: getDataForQuery('overview-tech', 'browser_versions') || []
-  }), [getDataForQuery]);
+  const analytics = useMemo(
+    () => ({
+      summary: getDataForQuery("overview-summary", "summary_metrics")?.[0] || null,
+      today: getDataForQuery("overview-summary", "today_metrics")?.[0] || null,
+      events_by_date: getDataForQuery("overview-summary", "events_by_date") || [],
+      top_pages: getDataForQuery("overview-pages", "top_pages") || [],
+      entry_pages: getDataForQuery("overview-pages", "entry_pages") || [],
+      exit_pages: getDataForQuery("overview-pages", "exit_pages") || [],
+      top_referrers: getDataForQuery("overview-traffic", "top_referrers") || [],
+      utm_sources: getDataForQuery("overview-traffic", "utm_sources") || [],
+      utm_mediums: getDataForQuery("overview-traffic", "utm_mediums") || [],
+      utm_campaigns: getDataForQuery("overview-traffic", "utm_campaigns") || [],
+      device_types: getDataForQuery("overview-tech", "device_types") || [],
+      browser_versions: getDataForQuery("overview-tech", "browser_versions") || [],
+    }),
+    [getDataForQuery]
+  );
 
   // Extract custom events data
-  const customEventsData = useMemo(() => ({
-    custom_events: getDataForQuery('overview-custom-events', 'custom_events') || [],
-    custom_event_details: getDataForQuery('overview-custom-events', 'custom_event_details') || []
-  }), [getDataForQuery]);
+  const customEventsData = useMemo(
+    () => ({
+      custom_events: getDataForQuery("overview-custom-events", "custom_events") || [],
+      custom_event_details: getDataForQuery("overview-custom-events", "custom_event_details") || [],
+    }),
+    [getDataForQuery]
+  );
 
   const loading = {
-    summary: batchLoading || isRefreshing
+    summary: batchLoading || isRefreshing,
   };
 
   const error = batchError;
@@ -225,7 +231,7 @@ export function WebsiteOverviewTab({
   });
 
   const toggleMetric = useCallback((metric: string) => {
-    setVisibleMetrics(prev => ({ ...prev, [metric]: !prev[metric] }));
+    setVisibleMetrics((prev) => ({ ...prev, [metric]: !prev[metric] }));
   }, []);
 
   useEffect(() => {
@@ -254,7 +260,7 @@ export function WebsiteOverviewTab({
 
   const isLoading = loading.summary || isRefreshing;
 
-  if (error instanceof Error && error.message === 'UNAUTHORIZED_ACCESS') {
+  if (error instanceof Error && error.message === "UNAUTHORIZED_ACCESS") {
     return <UnauthorizedAccessError />;
   }
 
@@ -271,11 +277,14 @@ export function WebsiteOverviewTab({
     return analytics.events_by_date
       .filter((event: any) => {
         const eventDate = dayjs(event.date);
-        return eventDate.isBefore(now) || eventDate.isSame(now, dateRange.granularity === 'hourly' ? 'hour' : 'day');
+        return (
+          eventDate.isBefore(now) ||
+          eventDate.isSame(now, dateRange.granularity === "hourly" ? "hour" : "day")
+        );
       })
       .map((event: any): ChartDataPoint => {
         const filtered: ChartDataPoint = {
-          date: formatDateByGranularity(event.date, dateRange.granularity)
+          date: formatDateByGranularity(event.date, dateRange.granularity),
         };
 
         if (visibleMetrics.pageviews) {
@@ -297,16 +306,15 @@ export function WebsiteOverviewTab({
   const currentTime = useMemo(() => {
     const now = dayjs().utc();
     const dateFrom = dayjs(dateRange.start_date);
-    const dateTo = dayjs(dateRange.end_date).endOf('day');
+    const dateTo = dayjs(dateRange.end_date).endOf("day");
 
     if (now.isAfter(dateFrom) && now.isBefore(dateTo) && chartData.length > 0) {
-      const timeToFormat = dateRange.granularity === 'hourly'
-        ? now.startOf('hour').toDate()
-        : now.toDate();
+      const timeToFormat =
+        dateRange.granularity === "hourly" ? now.startOf("hour").toDate() : now.toDate();
 
       return formatDateByGranularity(timeToFormat, dateRange.granularity);
     }
-    return undefined;
+    return;
   }, [dateRange.granularity, dateRange.start_date, dateRange.end_date]);
 
   const miniChartData = useMemo(() => {
@@ -314,32 +322,32 @@ export function WebsiteOverviewTab({
 
     const visitors = analytics.events_by_date.map((event: any) => ({
       date: event.date,
-      value: event.visitors || 0
+      value: event.visitors || 0,
     }));
 
     const sessions = analytics.events_by_date.map((event: any) => ({
       date: event.date,
-      value: event.sessions || 0
+      value: event.sessions || 0,
     }));
 
     const pageviews = analytics.events_by_date.map((event: any) => ({
       date: event.date,
-      value: event.pageviews || 0
+      value: event.pageviews || 0,
     }));
 
     const pagesPerSession = analytics.events_by_date.map((event: any) => ({
       date: event.date,
-      value: event.sessions > 0 ? (event.pageviews || 0) / event.sessions : 0
+      value: event.sessions > 0 ? (event.pageviews || 0) / event.sessions : 0,
     }));
 
     const bounceRate = analytics.events_by_date.map((event: any) => ({
       date: event.date,
-      value: event.bounce_rate || 0
+      value: event.bounce_rate || 0,
     }));
 
     const sessionDuration = analytics.events_by_date.map((event: any) => ({
       date: event.date,
-      value: event.avg_session_duration || 0
+      value: event.avg_session_duration || 0,
     }));
 
     return {
@@ -348,18 +356,21 @@ export function WebsiteOverviewTab({
       pageviews,
       pagesPerSession,
       bounceRate,
-      sessionDuration
+      sessionDuration,
     };
   }, [analytics.events_by_date]);
 
   const processedTopPages = useMemo(() => {
     if (!analytics.top_pages?.length) return [];
 
-    const totalPageviews = analytics.top_pages.reduce((sum: number, page: any) => sum + (page.pageviews || 0), 0);
+    const totalPageviews = analytics.top_pages.reduce(
+      (sum: number, page: any) => sum + (page.pageviews || 0),
+      0
+    );
 
     return analytics.top_pages.map((page: any) => ({
       ...page,
-      percentage: totalPageviews > 0 ? Math.round((page.pageviews / totalPageviews) * 100) : 0
+      percentage: totalPageviews > 0 ? Math.round((page.pageviews / totalPageviews) * 100) : 0,
     }));
   }, [analytics.top_pages]);
 
@@ -369,7 +380,7 @@ export function WebsiteOverviewTab({
     return analytics.entry_pages.map((page: any) => ({
       ...page,
       pageviews: page.entries,
-      visitors: page.visitors
+      visitors: page.visitors,
     }));
   }, [analytics.entry_pages]);
 
@@ -379,57 +390,57 @@ export function WebsiteOverviewTab({
     return analytics.exit_pages.map((page: any) => ({
       ...page,
       pageviews: page.exits,
-      visitors: page.visitors || page.sessions // fallback to sessions if visitors not available
+      visitors: page.visitors || page.sessions, // fallback to sessions if visitors not available
     }));
   }, [analytics.exit_pages]);
 
   const referrerTabs = useTableTabs({
     referrers: {
       data: analytics.top_referrers || [],
-      label: 'Referrers',
-      primaryField: 'name',
-      primaryHeader: 'Source',
-      customCell: referrerCustomCell
+      label: "Referrers",
+      primaryField: "name",
+      primaryHeader: "Source",
+      customCell: referrerCustomCell,
     },
     utm_sources: {
       data: analytics.utm_sources || [],
-      label: 'UTM Sources',
-      primaryField: 'name',
-      primaryHeader: 'Source'
+      label: "UTM Sources",
+      primaryField: "name",
+      primaryHeader: "Source",
     },
     utm_mediums: {
       data: analytics.utm_mediums || [],
-      label: 'UTM Mediums',
-      primaryField: 'name',
-      primaryHeader: 'Medium'
+      label: "UTM Mediums",
+      primaryField: "name",
+      primaryHeader: "Medium",
     },
     utm_campaigns: {
       data: analytics.utm_campaigns || [],
-      label: 'UTM Campaigns',
-      primaryField: 'name',
-      primaryHeader: 'Campaign'
-    }
+      label: "UTM Campaigns",
+      primaryField: "name",
+      primaryHeader: "Campaign",
+    },
   });
 
   const pagesTabs = useTableTabs({
     top_pages: {
       data: processedTopPages,
-      label: 'Top Pages',
-      primaryField: 'name',
-      primaryHeader: 'Page'
+      label: "Top Pages",
+      primaryField: "name",
+      primaryHeader: "Page",
     },
     entry_pages: {
       data: processedEntryPages,
-      label: 'Entry Pages',
-      primaryField: 'name',
-      primaryHeader: 'Page'
+      label: "Entry Pages",
+      primaryField: "name",
+      primaryHeader: "Page",
     },
     exit_pages: {
       data: processedExitPages,
-      label: 'Exit Pages',
-      primaryField: 'name',
-      primaryHeader: 'Page'
-    }
+      label: "Exit Pages",
+      primaryField: "name",
+      primaryHeader: "Page",
+    },
   });
 
   const dateFrom = useMemo(() => new Date(dateRange.start_date), [dateRange.start_date]);
@@ -437,9 +448,9 @@ export function WebsiteOverviewTab({
   const dateDiff = useMemo(() => differenceInDays(dateTo, dateFrom), [dateTo, dateFrom]);
 
   const metricColors = {
-    pageviews: 'blue-500',
-    visitors: 'green-500',
-    sessions: 'purple-500'
+    pageviews: "blue-500",
+    visitors: "green-500",
+    sessions: "purple-500",
   };
 
   const calculateTrends = useMemo((): TrendCalculation => {
@@ -447,8 +458,8 @@ export function WebsiteOverviewTab({
       return {};
     }
 
-    const events = [...analytics.events_by_date].sort((a, b) =>
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+    const events = [...analytics.events_by_date].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
     const midpoint = Math.floor(events.length / 2);
@@ -459,33 +470,45 @@ export function WebsiteOverviewTab({
       return {};
     }
 
-    const sumCountMetric = (period: MetricPoint[], field: keyof Pick<MetricPoint, 'pageviews' | 'visitors' | 'sessions'>) =>
-      period.reduce((acc, item) => acc + (Number(item[field]) || 0), 0);
+    const sumCountMetric = (
+      period: MetricPoint[],
+      field: keyof Pick<MetricPoint, "pageviews" | "visitors" | "sessions">
+    ) => period.reduce((acc, item) => acc + (Number(item[field]) || 0), 0);
 
-    const currentSumVisitors = sumCountMetric(currentPeriodData, 'visitors');
-    const currentSumSessions = sumCountMetric(currentPeriodData, 'sessions');
-    const currentSumPageviews = sumCountMetric(currentPeriodData, 'pageviews');
-    const currentPagesPerSession = currentSumSessions > 0 ? currentSumPageviews / currentSumSessions : 0;
+    const currentSumVisitors = sumCountMetric(currentPeriodData, "visitors");
+    const currentSumSessions = sumCountMetric(currentPeriodData, "sessions");
+    const currentSumPageviews = sumCountMetric(currentPeriodData, "pageviews");
+    const currentPagesPerSession =
+      currentSumSessions > 0 ? currentSumPageviews / currentSumSessions : 0;
 
-    const previousSumVisitors = sumCountMetric(previousPeriodData, 'visitors');
-    const previousSumSessions = sumCountMetric(previousPeriodData, 'sessions');
-    const previousSumPageviews = sumCountMetric(previousPeriodData, 'pageviews');
-    const previousPagesPerSession = previousSumSessions > 0 ? previousSumPageviews / previousSumSessions : 0;
+    const previousSumVisitors = sumCountMetric(previousPeriodData, "visitors");
+    const previousSumSessions = sumCountMetric(previousPeriodData, "sessions");
+    const previousSumPageviews = sumCountMetric(previousPeriodData, "pageviews");
+    const previousPagesPerSession =
+      previousSumSessions > 0 ? previousSumPageviews / previousSumSessions : 0;
 
-    const averageRateMetric = (period: MetricPoint[], field: keyof Pick<MetricPoint, 'bounce_rate' | 'avg_session_duration'>) => {
-      const validEntries = period.map(item => Number(item[field])).filter(value => !Number.isNaN(value) && value > 0);
+    const averageRateMetric = (
+      period: MetricPoint[],
+      field: keyof Pick<MetricPoint, "bounce_rate" | "avg_session_duration">
+    ) => {
+      const validEntries = period
+        .map((item) => Number(item[field]))
+        .filter((value) => !Number.isNaN(value) && value > 0);
       if (validEntries.length === 0) return 0;
       return validEntries.reduce((acc, value) => acc + value, 0) / validEntries.length;
     };
 
-    const currentBounceRateAvg = averageRateMetric(currentPeriodData, 'bounce_rate');
-    const previousBounceRateAvg = averageRateMetric(previousPeriodData, 'bounce_rate');
-    const currentSessionDurationAvg = averageRateMetric(currentPeriodData, 'avg_session_duration');
-    const previousSessionDurationAvg = averageRateMetric(previousPeriodData, 'avg_session_duration');
+    const currentBounceRateAvg = averageRateMetric(currentPeriodData, "bounce_rate");
+    const previousBounceRateAvg = averageRateMetric(previousPeriodData, "bounce_rate");
+    const currentSessionDurationAvg = averageRateMetric(currentPeriodData, "avg_session_duration");
+    const previousSessionDurationAvg = averageRateMetric(
+      previousPeriodData,
+      "avg_session_duration"
+    );
 
     const calculateTrendPercentage = (current: number, previous: number, minimumBase = 0) => {
       if (previous < minimumBase && !(previous === 0 && current === 0)) {
-        return undefined;
+        return;
       }
       if (previous === 0) {
         return current === 0 ? 0 : undefined;
@@ -516,9 +539,21 @@ export function WebsiteOverviewTab({
     };
 
     return {
-      visitors: createDetailedTrend(currentSumVisitors, previousSumVisitors, MIN_PREVIOUS_VISITORS_FOR_TREND),
-      sessions: createDetailedTrend(currentSumSessions, previousSumSessions, MIN_PREVIOUS_SESSIONS_FOR_TREND),
-      pageviews: createDetailedTrend(currentSumPageviews, previousSumPageviews, MIN_PREVIOUS_PAGEVIEWS_FOR_TREND),
+      visitors: createDetailedTrend(
+        currentSumVisitors,
+        previousSumVisitors,
+        MIN_PREVIOUS_VISITORS_FOR_TREND
+      ),
+      sessions: createDetailedTrend(
+        currentSumSessions,
+        previousSumSessions,
+        MIN_PREVIOUS_SESSIONS_FOR_TREND
+      ),
+      pageviews: createDetailedTrend(
+        currentSumPageviews,
+        previousSumPageviews,
+        MIN_PREVIOUS_PAGEVIEWS_FOR_TREND
+      ),
       pages_per_session: canShowSessionBasedTrend
         ? createDetailedTrend(currentPagesPerSession, previousPagesPerSession)
         : undefined,
@@ -537,7 +572,7 @@ export function WebsiteOverviewTab({
     const transformedData = deviceData.map((item: any) => ({
       device_type: item.name,
       visitors: item.visitors,
-      pageviews: item.pageviews
+      pageviews: item.pageviews,
     }));
     return processDeviceData(transformedData);
   }, [analytics.device_types]);
@@ -548,7 +583,7 @@ export function WebsiteOverviewTab({
     const transformedData = browserData.map((item: any) => ({
       browser: item.name,
       visitors: item.visitors,
-      pageviews: item.pageviews
+      pageviews: item.pageviews,
     }));
     return processBrowserData(transformedData);
   }, [analytics.browser_versions]);
@@ -560,12 +595,12 @@ export function WebsiteOverviewTab({
     const transformedDeviceData = deviceData.map((item: any) => ({
       device_type: item.name,
       visitors: item.visitors,
-      pageviews: item.pageviews
+      pageviews: item.pageviews,
     }));
     const transformedBrowserData = browserData.map((item: any) => ({
       browser: item.name,
       visitors: item.visitors,
-      pageviews: item.pageviews
+      pageviews: item.pageviews,
     }));
     return inferOperatingSystems(transformedDeviceData, transformedBrowserData);
   }, [analytics.device_types, analytics.browser_versions]);
@@ -583,7 +618,6 @@ export function WebsiteOverviewTab({
   };
 
   const processedCustomEventsData = useMemo(() => {
-
     if (!customEventsData?.custom_events?.length) {
       return [];
     }
@@ -591,17 +625,22 @@ export function WebsiteOverviewTab({
     const customEvents = customEventsData.custom_events;
     const eventDetails = customEventsData.custom_event_details || [];
 
-    const totalEvents = customEvents.reduce((sum: number, event: any) => sum + (event.total_events || 0), 0);
+    const totalEvents = customEvents.reduce(
+      (sum: number, event: any) => sum + (event.total_events || 0),
+      0
+    );
 
     return customEvents.map((event: any) => {
       // Find all detail records for this event
-      const eventDetailRecords = eventDetails.filter((detail: any) => detail.event_name === event.name);
+      const eventDetailRecords = eventDetails.filter(
+        (detail: any) => detail.event_name === event.name
+      );
 
       // Group property values by key
       const propertyBreakdown: Record<string, Record<string, number>> = {};
 
       eventDetailRecords.forEach((record: any) => {
-        if (record.properties && typeof record.properties === 'object') {
+        if (record.properties && typeof record.properties === "object") {
           Object.entries(record.properties).forEach(([key, value]) => {
             if (key && value !== null && value !== undefined) {
               if (!propertyBreakdown[key]) propertyBreakdown[key] = {};
@@ -613,341 +652,359 @@ export function WebsiteOverviewTab({
       });
 
       // Create property categories for sub-rows
-      const propertyCategories = Object.entries(propertyBreakdown).map(([propertyKey, values]) => {
-        const propertyTotal = Object.values(values).reduce((sum, count) => sum + count, 0);
+      const propertyCategories = Object.entries(propertyBreakdown)
+        .map(([propertyKey, values]) => {
+          const propertyTotal = Object.values(values).reduce((sum, count) => sum + count, 0);
 
-        const propertyValues = Object.entries(values).map(([propertyValue, count]) => ({
-          value: propertyValue,
-          count,
-          percentage: propertyTotal > 0 ? Math.round((count / propertyTotal) * 100) : 0
-        })).sort((a, b) => b.count - a.count);
+          const propertyValues = Object.entries(values)
+            .map(([propertyValue, count]) => ({
+              value: propertyValue,
+              count,
+              percentage: propertyTotal > 0 ? Math.round((count / propertyTotal) * 100) : 0,
+            }))
+            .sort((a, b) => b.count - a.count);
 
-        return {
-          key: propertyKey,
-          total: propertyTotal,
-          values: propertyValues
-        };
-      }).sort((a, b) => b.total - a.total);
+          return {
+            key: propertyKey,
+            total: propertyTotal,
+            values: propertyValues,
+          };
+        })
+        .sort((a, b) => b.total - a.total);
 
       return {
         ...event,
         percentage: totalEvents > 0 ? Math.round((event.total_events / totalEvents) * 100) : 0,
-        last_occurrence_formatted: event.last_occurrence ?
-          new Date(event.last_occurrence).toLocaleDateString() : 'N/A',
-        first_occurrence_formatted: event.first_occurrence ?
-          new Date(event.first_occurrence).toLocaleDateString() : 'N/A',
-        propertyCategories: propertyCategories
+        last_occurrence_formatted: event.last_occurrence
+          ? new Date(event.last_occurrence).toLocaleDateString()
+          : "N/A",
+        first_occurrence_formatted: event.first_occurrence
+          ? new Date(event.first_occurrence).toLocaleDateString()
+          : "N/A",
+        propertyCategories,
       };
     });
   }, [customEventsData]);
 
-  const deviceColumns = useMemo(() => [
-    {
-      id: 'name',
-      accessorKey: 'name',
-      header: 'Device Type',
-      cell: (info: any) => {
-        const entry = info.row.original;
-        return (
-          <div className="flex items-center gap-3">
-            <TechnologyIcon entry={entry} size="md" />
-            <span className="font-medium">{entry.name}</span>
-          </div>
-        );
-      }
-    },
-    {
-      id: 'visitors',
-      accessorKey: 'visitors',
-      header: 'Visitors',
-    },
-    {
-      id: 'percentage',
-      accessorKey: 'percentage',
-      header: 'Share',
-      cell: (info: any) => {
-        const percentage = info.getValue() as number;
-        return <PercentageBadge percentage={percentage} />;
+  const deviceColumns = useMemo(
+    () => [
+      {
+        id: "name",
+        accessorKey: "name",
+        header: "Device Type",
+        cell: (info: any) => {
+          const entry = info.row.original;
+          return (
+            <div className="flex items-center gap-3">
+              <TechnologyIcon entry={entry} size="md" />
+              <span className="font-medium">{entry.name}</span>
+            </div>
+          );
+        },
       },
-    },
-  ], []);
-
-  const browserColumns = useMemo(() => [
-    {
-      id: 'name',
-      accessorKey: 'name',
-      header: 'Browser',
-      cell: (info: any) => {
-        const entry = info.row.original;
-        return (
-          <div className="flex items-center gap-3">
-            <TechnologyIcon entry={entry} size="md" />
-            <span className="font-medium">{entry.name}</span>
-          </div>
-        );
-      }
-    },
-    {
-      id: 'visitors',
-      accessorKey: 'visitors',
-      header: 'Visitors',
-    },
-    {
-      id: 'percentage',
-      accessorKey: 'percentage',
-      header: 'Share',
-      cell: (info: any) => {
-        const percentage = info.getValue() as number;
-        return <PercentageBadge percentage={percentage} />;
+      {
+        id: "visitors",
+        accessorKey: "visitors",
+        header: "Visitors",
       },
-    },
-  ], []);
-
-  const osColumns = useMemo(() => [
-    {
-      id: 'name',
-      accessorKey: 'name',
-      header: 'Operating System',
-      cell: (info: any) => {
-        const entry = info.row.original;
-        return (
-          <div className="flex items-center gap-3">
-            <TechnologyIcon entry={entry} size="md" />
-            <span className="font-medium">{entry.name}</span>
-          </div>
-        );
-      }
-    },
-    {
-      id: 'visitors',
-      accessorKey: 'visitors',
-      header: 'Visitors',
-    },
-    {
-      id: 'percentage',
-      accessorKey: 'percentage',
-      header: 'Share',
-      cell: (info: any) => {
-        const percentage = info.getValue() as number;
-        return <PercentageBadge percentage={percentage} />;
+      {
+        id: "percentage",
+        accessorKey: "percentage",
+        header: "Share",
+        cell: (info: any) => {
+          const percentage = info.getValue() as number;
+          return <PercentageBadge percentage={percentage} />;
+        },
       },
-    },
-  ], []);
+    ],
+    []
+  );
 
-  const customEventsColumns = useMemo(() => [
-    {
-      id: 'name',
-      accessorKey: 'name',
-      header: 'Event Name',
-      cell: (info: any) => {
-        const eventName = info.getValue() as string;
-        return (
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
-            <span className="font-medium text-foreground">{eventName}</span>
+  const browserColumns = useMemo(
+    () => [
+      {
+        id: "name",
+        accessorKey: "name",
+        header: "Browser",
+        cell: (info: any) => {
+          const entry = info.row.original;
+          return (
+            <div className="flex items-center gap-3">
+              <TechnologyIcon entry={entry} size="md" />
+              <span className="font-medium">{entry.name}</span>
+            </div>
+          );
+        },
+      },
+      {
+        id: "visitors",
+        accessorKey: "visitors",
+        header: "Visitors",
+      },
+      {
+        id: "percentage",
+        accessorKey: "percentage",
+        header: "Share",
+        cell: (info: any) => {
+          const percentage = info.getValue() as number;
+          return <PercentageBadge percentage={percentage} />;
+        },
+      },
+    ],
+    []
+  );
+
+  const osColumns = useMemo(
+    () => [
+      {
+        id: "name",
+        accessorKey: "name",
+        header: "Operating System",
+        cell: (info: any) => {
+          const entry = info.row.original;
+          return (
+            <div className="flex items-center gap-3">
+              <TechnologyIcon entry={entry} size="md" />
+              <span className="font-medium">{entry.name}</span>
+            </div>
+          );
+        },
+      },
+      {
+        id: "visitors",
+        accessorKey: "visitors",
+        header: "Visitors",
+      },
+      {
+        id: "percentage",
+        accessorKey: "percentage",
+        header: "Share",
+        cell: (info: any) => {
+          const percentage = info.getValue() as number;
+          return <PercentageBadge percentage={percentage} />;
+        },
+      },
+    ],
+    []
+  );
+
+  const customEventsColumns = useMemo(
+    () => [
+      {
+        id: "name",
+        accessorKey: "name",
+        header: "Event Name",
+        cell: (info: any) => {
+          const eventName = info.getValue() as string;
+          return (
+            <div className="flex items-center gap-3">
+              <div className="h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
+              <span className="font-medium text-foreground">{eventName}</span>
+            </div>
+          );
+        },
+      },
+      {
+        id: "total_events",
+        accessorKey: "total_events",
+        header: "Events",
+        cell: (info: any) => (
+          <div>
+            <div className="font-medium text-foreground">{info.getValue()?.toLocaleString()}</div>
+            <div className="text-muted-foreground text-xs">total</div>
           </div>
-        );
-      }
-    },
-    {
-      id: 'total_events',
-      accessorKey: 'total_events',
-      header: 'Events',
-      cell: (info: any) => (
-        <div>
-          <div className="font-medium text-foreground">{info.getValue()?.toLocaleString()}</div>
-          <div className="text-xs text-muted-foreground">total</div>
-        </div>
-      )
-    },
-    {
-      id: 'unique_users',
-      accessorKey: 'unique_users',
-      header: 'Users',
-      cell: (info: any) => (
-        <div>
-          <div className="font-medium text-foreground">{info.getValue()?.toLocaleString()}</div>
-          <div className="text-xs text-muted-foreground">unique</div>
-        </div>
-      )
-    },
-    {
-      id: 'percentage',
-      accessorKey: 'percentage',
-      header: 'Share',
-      cell: (info: any) => {
-        const percentage = info.getValue() as number;
-        return <PercentageBadge percentage={percentage} />;
-      }
-    },
-  ], []);
+        ),
+      },
+      {
+        id: "unique_users",
+        accessorKey: "unique_users",
+        header: "Users",
+        cell: (info: any) => (
+          <div>
+            <div className="font-medium text-foreground">{info.getValue()?.toLocaleString()}</div>
+            <div className="text-muted-foreground text-xs">unique</div>
+          </div>
+        ),
+      },
+      {
+        id: "percentage",
+        accessorKey: "percentage",
+        header: "Share",
+        cell: (info: any) => {
+          const percentage = info.getValue() as number;
+          return <PercentageBadge percentage={percentage} />;
+        },
+      },
+    ],
+    []
+  );
 
   return (
     <div className="space-y-6">
       {/* Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-6">
         <StatCard
-          title="UNIQUE VISITORS"
-          value={analytics.summary?.unique_visitors || 0}
-          icon={UsersIcon}
+          chartData={miniChartData.visitors}
+          className="h-full"
           description={`${analytics.today?.visitors || 0} today`}
+          icon={UsersIcon}
+          id="visitors-chart"
           isLoading={isLoading}
-          variant="default"
+          showChart={true}
+          title="UNIQUE VISITORS"
           trend={calculateTrends.visitors}
           trendLabel={calculateTrends.visitors !== undefined ? "vs previous period" : undefined}
-          className="h-full"
-          chartData={miniChartData.visitors}
-          showChart={true}
-          id="visitors-chart"
+          value={analytics.summary?.unique_visitors || 0}
+          variant="default"
         />
         <StatCard
-          title="SESSIONS"
-          value={analytics.summary?.sessions || 0}
-          icon={ChartLineIcon}
+          chartData={miniChartData.sessions}
+          className="h-full"
           description={`${analytics.today?.sessions || 0} today`}
+          icon={ChartLineIcon}
+          id="sessions-chart"
           isLoading={isLoading}
-          variant="default"
+          showChart={true}
+          title="SESSIONS"
           trend={calculateTrends.sessions}
           trendLabel={calculateTrends.sessions !== undefined ? "vs previous period" : undefined}
-          className="h-full"
-          chartData={miniChartData.sessions}
-          showChart={true}
-          id="sessions-chart"
+          value={analytics.summary?.sessions || 0}
+          variant="default"
         />
         <StatCard
-          title="PAGEVIEWS"
-          value={analytics.summary?.pageviews || 0}
-          icon={GlobeIcon}
+          chartData={miniChartData.pageviews}
+          className="h-full"
           description={`${analytics.today?.pageviews || 0} today`}
+          icon={GlobeIcon}
+          id="pageviews-chart"
           isLoading={isLoading}
-          variant="default"
+          showChart={true}
+          title="PAGEVIEWS"
           trend={calculateTrends.pageviews}
           trendLabel={calculateTrends.pageviews !== undefined ? "vs previous period" : undefined}
-          className="h-full"
-          chartData={miniChartData.pageviews}
-          showChart={true}
-          id="pageviews-chart"
-        />
-        <StatCard
-          title="PAGES/SESSION"
-          value={analytics.summary ?
-            (analytics.summary.sessions > 0 ?
-              (analytics.summary.pageviews / analytics.summary.sessions).toFixed(1) :
-              '0'
-            ) : '0'
-          }
-          icon={LayoutIcon}
-          isLoading={isLoading}
+          value={analytics.summary?.pageviews || 0}
           variant="default"
-          trend={calculateTrends.pages_per_session}
-          trendLabel={calculateTrends.pages_per_session !== undefined ? "vs previous period" : undefined}
-          className="h-full"
-          chartData={miniChartData.pagesPerSession}
-          showChart={true}
-          id="pages-per-session-chart"
-          formatValue={(value) => value.toFixed(1)}
         />
         <StatCard
-          title="BOUNCE RATE"
-          value={analytics.summary?.bounce_rate_pct || '0%'}
-          icon={CursorIcon}
+          chartData={miniChartData.pagesPerSession}
+          className="h-full"
+          formatValue={(value) => value.toFixed(1)}
+          icon={LayoutIcon}
+          id="pages-per-session-chart"
           isLoading={isLoading}
+          showChart={true}
+          title="PAGES/SESSION"
+          trend={calculateTrends.pages_per_session}
+          trendLabel={
+            calculateTrends.pages_per_session !== undefined ? "vs previous period" : undefined
+          }
+          value={
+            analytics.summary
+              ? analytics.summary.sessions > 0
+                ? (analytics.summary.pageviews / analytics.summary.sessions).toFixed(1)
+                : "0"
+              : "0"
+          }
+          variant="default"
+        />
+        <StatCard
+          chartData={miniChartData.bounceRate}
+          className="h-full"
+          formatValue={(value) => `${value.toFixed(1)}%`}
+          icon={CursorIcon}
+          id="bounce-rate-chart"
+          invertTrend={true}
+          isLoading={isLoading}
+          showChart={true}
+          title="BOUNCE RATE"
           trend={calculateTrends.bounce_rate}
           trendLabel={calculateTrends.bounce_rate !== undefined ? "vs previous period" : undefined}
+          value={analytics.summary?.bounce_rate_pct || "0%"}
           variant={getColorVariant(analytics.summary?.bounce_rate || 0, 70, 50)}
-          invertTrend={true}
-          className="h-full"
-          chartData={miniChartData.bounceRate}
-          showChart={true}
-          id="bounce-rate-chart"
-          formatValue={(value) => `${value.toFixed(1)}%`}
         />
         <StatCard
-          title="SESSION DURATION"
-          value={analytics.summary?.avg_session_duration_formatted || '0s'}
-          icon={TimerIcon}
-          isLoading={isLoading}
-          variant="default"
-          trend={calculateTrends.session_duration}
-          trendLabel={calculateTrends.session_duration !== undefined ? "vs previous period" : undefined}
-          className="h-full"
           chartData={miniChartData.sessionDuration}
-          showChart={true}
-          id="session-duration-chart"
+          className="h-full"
           formatValue={(value) => {
             if (value < 60) return `${value.toFixed(1)}s`;
             const minutes = Math.floor(value / 60);
             const seconds = Math.round(value % 60);
             return `${minutes}m ${seconds}s`;
           }}
+          icon={TimerIcon}
+          id="session-duration-chart"
+          isLoading={isLoading}
+          showChart={true}
+          title="SESSION DURATION"
+          trend={calculateTrends.session_duration}
+          trendLabel={
+            calculateTrends.session_duration !== undefined ? "vs previous period" : undefined
+          }
+          value={analytics.summary?.avg_session_duration_formatted || "0s"}
+          variant="default"
         />
       </div>
 
       {/* Chart */}
-      <div className="rounded border shadow-sm bg-card">
-        <div className="p-4 border-b flex flex-col sm:flex-row justify-between items-start gap-3">
+      <div className="rounded border bg-card shadow-sm">
+        <div className="flex flex-col items-start justify-between gap-3 border-b p-4 sm:flex-row">
           <div>
-            <h2 className="text-lg font-semibold tracking-tight">Traffic Trends</h2>
-            <p className="text-sm text-muted-foreground">
-              {dateRange.granularity === 'hourly' ? 'Hourly' : 'Daily'} traffic data
+            <h2 className="font-semibold text-lg tracking-tight">Traffic Trends</h2>
+            <p className="text-muted-foreground text-sm">
+              {dateRange.granularity === "hourly" ? "Hourly" : "Daily"} traffic data
             </p>
-            {dateRange.granularity === 'hourly' && dateDiff > 7 && (
-              <div className="mt-1 flex items-center text-amber-600 gap-1 text-xs">
+            {dateRange.granularity === "hourly" && dateDiff > 7 && (
+              <div className="mt-1 flex items-center gap-1 text-amber-600 text-xs">
                 <WarningIcon size={16} weight="fill" />
                 <span>Large date ranges may affect performance</span>
               </div>
             )}
           </div>
 
-          <MetricToggles
-            metrics={visibleMetrics}
-            onToggle={toggleMetric}
-            colors={metricColors}
-          />
+          <MetricToggles colors={metricColors} metrics={visibleMetrics} onToggle={toggleMetric} />
         </div>
         <div>
           <MetricsChart
-            data={chartData}
-            isLoading={isLoading}
-            height={350}
             currentTime={currentTime}
+            data={chartData}
+            height={350}
+            isLoading={isLoading}
           />
         </div>
       </div>
 
       {/* Tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <DataTable
+          description="Referrers and campaign data"
+          initialPageSize={7}
+          isLoading={isLoading}
+          minHeight={230}
           tabs={referrerTabs}
           title="Traffic Sources"
-          description="Referrers and campaign data"
-          isLoading={isLoading}
-          initialPageSize={7}
-          minHeight={230}
         />
 
         <DataTable
+          description="Top pages and entry/exit points"
+          initialPageSize={7}
+          isLoading={isLoading}
+          minHeight={230}
           tabs={pagesTabs}
           title="Pages"
-          description="Top pages and entry/exit points"
-          isLoading={isLoading}
-          initialPageSize={7}
-          minHeight={230}
         />
       </div>
 
       {/* Custom Events Table */}
       <DataTable
-        data={processedCustomEventsData}
         columns={customEventsColumns}
-        title="Custom Events"
+        data={processedCustomEventsData}
         description="User-defined events and interactions with property breakdowns"
-        isLoading={isLoading}
-        initialPageSize={8}
-        minHeight={200}
         emptyMessage="No custom events tracked yet"
         expandable={true}
         getSubRows={(row: any) => row.propertyCategories}
+        initialPageSize={8}
+        isLoading={isLoading}
+        minHeight={200}
         renderSubRow={(subRow: any, parentRow: any, index: number) => {
           const propertyKey = subRow.key;
           const propertyTotal = subRow.total;
@@ -959,43 +1016,54 @@ export function WebsiteOverviewTab({
             <div className="ml-4">
               {/* Property Category Row - Clickable */}
               <button
+                className="flex w-full items-center justify-between rounded border border-border/30 bg-muted/20 px-3 py-2 transition-colors duration-200 hover:bg-muted/40"
                 onClick={() => togglePropertyExpansion(propertyId)}
-                className="w-full flex items-center justify-between py-2 px-3 bg-muted/20 hover:bg-muted/40 transition-colors duration-200 rounded border border-border/30"
               >
                 <div className="flex items-center gap-2">
                   {isPropertyExpanded ? (
-                    <CaretDownIcon size={16} weight="fill" className="h-3 w-3 text-muted-foreground" />
+                    <CaretDownIcon
+                      className="h-3 w-3 text-muted-foreground"
+                      size={16}
+                      weight="fill"
+                    />
                   ) : (
-                    <CaretRightIcon size={16} weight="fill" className="h-3 w-3 text-muted-foreground" />
+                    <CaretRightIcon
+                      className="h-3 w-3 text-muted-foreground"
+                      size={16}
+                      weight="fill"
+                    />
                   )}
-                  <span className="text-sm font-medium text-foreground">{propertyKey}</span>
+                  <span className="font-medium text-foreground text-sm">{propertyKey}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="text-sm font-medium text-foreground">
+                  <div className="font-medium text-foreground text-sm">
                     {propertyTotal.toLocaleString()}
                   </div>
-                  <div className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded font-medium">
-                    {propertyValues.length} {propertyValues.length === 1 ? 'value' : 'values'}
+                  <div className="rounded bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs">
+                    {propertyValues.length} {propertyValues.length === 1 ? "value" : "values"}
                   </div>
                 </div>
               </button>
 
               {/* Property Values - Collapsible */}
               {isPropertyExpanded && (
-                <div className="mt-1 max-h-48 overflow-y-auto border border-border/20 rounded">
+                <div className="mt-1 max-h-48 overflow-y-auto rounded border border-border/20">
                   {propertyValues.map((valueItem: any, valueIndex: number) => (
                     <div
+                      className="flex items-center justify-between border-border/10 border-b px-3 py-2 transition-colors duration-150 last:border-b-0 hover:bg-muted/20"
                       key={`${propertyKey}-${valueItem.value}-${valueIndex}`}
-                      className="flex items-center justify-between py-2 px-3 hover:bg-muted/20 transition-colors duration-150 border-b border-border/10 last:border-b-0"
                     >
-                      <span className="text-sm text-foreground truncate font-mono" title={valueItem.value}>
+                      <span
+                        className="truncate font-mono text-foreground text-sm"
+                        title={valueItem.value}
+                      >
                         {valueItem.value}
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-foreground">
+                        <span className="font-medium text-foreground text-sm">
                           {valueItem.count.toLocaleString()}
                         </span>
-                        <div className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded font-medium min-w-[2.5rem] text-center">
+                        <div className="min-w-[2.5rem] rounded bg-muted px-2 py-0.5 text-center font-medium text-muted-foreground text-xs">
                           {valueItem.percentage}%
                         </div>
                       </div>
@@ -1006,43 +1074,44 @@ export function WebsiteOverviewTab({
             </div>
           );
         }}
+        title="Custom Events"
       />
 
       {/* Technology */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <DataTable
-          data={processedDeviceData}
           columns={deviceColumns}
-          title="Devices"
+          data={processedDeviceData}
           description="Device breakdown"
-          isLoading={isLoading}
           initialPageSize={8}
+          isLoading={isLoading}
           minHeight={200}
           showSearch={false}
+          title="Devices"
         />
 
         <DataTable
-          data={processedBrowserData}
           columns={browserColumns}
-          title="Browsers"
+          data={processedBrowserData}
           description="Browser breakdown"
-          isLoading={isLoading}
           initialPageSize={8}
+          isLoading={isLoading}
           minHeight={200}
           showSearch={false}
+          title="Browsers"
         />
 
         <DataTable
-          data={processedOSData}
           columns={osColumns}
-          title="Operating Systems"
+          data={processedOSData}
           description="OS breakdown"
-          isLoading={isLoading}
           initialPageSize={8}
+          isLoading={isLoading}
           minHeight={200}
           showSearch={false}
+          title="Operating Systems"
         />
       </div>
     </div>
   );
-} 
+}

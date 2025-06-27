@@ -1,7 +1,9 @@
 "use client";
 
+import { logout, signOut, useSession } from "@databuddy/auth/client";
+import { LogOut, Settings, User } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useSession, logout, signOut } from "@databuddy/auth/client";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,10 +15,8 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { UserAvatar } from "./user-avatar";
-import { LogOut, Settings, User } from "lucide-react";
-import { toast } from "sonner";
 import { auth } from "../../../../packages/auth/src/auth";
+import { UserAvatar } from "./user-avatar";
 
 export interface UserButtonProps {
   afterSignOutUrl?: string;
@@ -29,7 +29,6 @@ export function UserButton({ afterSignOutUrl = "/" }: UserButtonProps) {
   const handleSignOut = async () => {
     try {
       await signOut({
-        
         fetchOptions: {
           onSuccess: () => {
             toast.success("Signed out successfully");
@@ -47,7 +46,7 @@ export function UserButton({ afterSignOutUrl = "/" }: UserButtonProps) {
 
   if (isPending) {
     return (
-      <Button variant="ghost" size="icon" className="relative h-8 w-8">
+      <Button className="relative h-8 w-8" size="icon" variant="ghost">
         <UserAvatar />
       </Button>
     );
@@ -55,7 +54,12 @@ export function UserButton({ afterSignOutUrl = "/" }: UserButtonProps) {
 
   if (!session?.user) {
     return (
-      <Button variant="ghost" size="icon" className="relative h-8 w-8" onClick={() => router.push("/login")}>
+      <Button
+        className="relative h-8 w-8"
+        onClick={() => router.push("/login")}
+        size="icon"
+        variant="ghost"
+      >
         <UserAvatar />
       </Button>
     );
@@ -64,15 +68,15 @@ export function UserButton({ afterSignOutUrl = "/" }: UserButtonProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-8 w-8">
+        <Button className="relative h-8 w-8" size="icon" variant="ghost">
           <UserAvatar user={session.user} />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end">
+      <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{session.user.name}</p>
-            <p className="text-xs leading-none text-muted-foreground">{session.user.email}</p>
+            <p className="font-medium text-sm leading-none">{session.user.name}</p>
+            <p className="text-muted-foreground text-xs leading-none">{session.user.email}</p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -97,4 +101,4 @@ export function UserButton({ afterSignOutUrl = "/" }: UserButtonProps) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-} 
+}

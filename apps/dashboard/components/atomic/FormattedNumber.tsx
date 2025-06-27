@@ -9,16 +9,12 @@ interface FormattedNumberProps {
   className?: string;
 }
 
-export const FormattedNumber: React.FC<FormattedNumberProps> = ({
-  id,
-  value,
-  className,
-}) => {
+export const FormattedNumber: React.FC<FormattedNumberProps> = ({ id, value, className }) => {
   return (
-    <span id={id} className={className}>
+    <span className={className} id={id}>
       {formatMetricNumber(value)}
     </span>
   );
 };
 
-export default FormattedNumber; 
+export default FormattedNumber;

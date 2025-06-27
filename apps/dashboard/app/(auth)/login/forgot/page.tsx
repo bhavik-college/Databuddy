@@ -1,13 +1,13 @@
 "use client";
 
+import { authClient } from "@databuddy/auth/client";
+import { ChevronLeft, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, ChevronLeft } from "lucide-react";
-import { toast } from "sonner";
-import Link from "next/link";
-import { authClient } from "@databuddy/auth/client";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -41,34 +41,32 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto mt-12 bg-card rounded-xl shadow p-6 border border-border relative overflow-hidden">
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-foreground">Reset your password</h1>
-        <p className="text-muted-foreground mt-2">We'll send you a link to reset your password</p>
+    <div className="relative mx-auto mt-12 w-full max-w-md overflow-hidden rounded-xl border border-border bg-card p-6 shadow">
+      <div className="mb-8 text-center">
+        <h1 className="font-bold text-2xl text-foreground">Reset your password</h1>
+        <p className="mt-2 text-muted-foreground">We'll send you a link to reset your password</p>
       </div>
-      <form onSubmit={handleForgotPassword} className="space-y-4">
+      <form className="space-y-4" onSubmit={handleForgotPassword}>
         <div className="space-y-2">
-          <Label htmlFor="forgot-email" className="text-foreground font-medium">Email address</Label>
+          <Label className="font-medium text-foreground" htmlFor="forgot-email">
+            Email address
+          </Label>
           <Input
-            id="forgot-email"
-            type="email"
-            name="email"
             autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
             className="h-11 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+            id="forgot-email"
+            name="email"
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="name@example.com"
+            required
+            type="email"
+            value={email}
           />
         </div>
-        <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg text-sm text-blue-800">
+        <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 text-blue-800 text-sm">
           Enter your email address and we'll send you a link to reset your password.
         </div>
-        <Button
-          type="submit"
-          className="w-full h-11 bg-primary"
-          disabled={isLoading}
-        >
+        <Button className="h-11 w-full bg-primary" disabled={isLoading} type="submit">
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -78,12 +76,8 @@ export default function ForgotPasswordPage() {
             "Send reset link"
           )}
         </Button>
-        <Link href="/login" className="block mt-4">
-          <Button
-            variant="outline"
-            className="w-full"
-            type="button"
-          >
+        <Link className="mt-4 block" href="/login">
+          <Button className="w-full" type="button" variant="outline">
             <ChevronLeft className="mr-2 h-4 w-4" />
             Back to login
           </Button>
@@ -91,4 +85,4 @@ export default function ForgotPasswordPage() {
       </form>
     </div>
   );
-} 
+}

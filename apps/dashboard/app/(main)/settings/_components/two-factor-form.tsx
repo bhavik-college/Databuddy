@@ -1,14 +1,27 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import {
+  authClient,
+  enableTwoFactor,
+  generateBackupCodes,
+  useSession,
+  verifyTwoFactorCode,
+} from "@databuddy/auth/client";
+import {
+  ArrowClockwiseIcon,
+  CheckCircleIcon,
+  CopyIcon,
+  DownloadIcon,
+  KeyIcon,
+  ShieldCheckIcon,
+} from "@phosphor-icons/react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { useSession, authClient } from "@databuddy/auth/client";
-import { enableTwoFactor, verifyTwoFactorCode, generateBackupCodes } from "@databuddy/auth/client";
 import { toast } from "sonner";
-import { ArrowClockwiseIcon, CopyIcon, CheckCircleIcon, KeyIcon, ShieldCheckIcon, DownloadIcon } from "@phosphor-icons/react";
-
+import { z } from "zod";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -18,8 +31,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const setupFormSchema = z.object({
   password: z.string().min(1, "Password is required"),
@@ -34,7 +45,9 @@ export function TwoFactorForm() {
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
-  const [setupStep, setSetupStep] = useState<'initial' | 'qrcode' | 'verify' | 'complete'>('initial');
+  const [setupStep, setSetupStep] = useState<"initial" | "qrcode" | "verify" | "complete">(
+    "initial"
+  );
   const [qrCodeURI, setQrCodeURI] = useState<string | null>(null);
   const [backupCodes, setBackupCodes] = useState<string[] | null>(null);
   const [copied, setCopied] = useState(false);
@@ -65,8 +78,8 @@ export function TwoFactorForm() {
         if (user) {
           setIsEnabled(
             !!(user as any).twoFactorEnabled ||
-            !!(user as any).mfaEnabled ||
-            !!(user as any).hasTwoFactor
+              !!(user as any).mfaEnabled ||
+              !!(user as any).hasTwoFactor
           );
         }
       } catch (error) {
@@ -81,7 +94,7 @@ export function TwoFactorForm() {
 
   // Focus OTP input when QR code is shown
   useEffect(() => {
-    if (setupStep === 'qrcode' && otpInputRef.current) {
+    if (setupStep === "qrcode" && otpInputRef.current) {
       otpInputRef.current.focus();
     }
   }, [setupStep]);
@@ -95,12 +108,12 @@ export function TwoFactorForm() {
           if (data?.totpURI) {
             setQrCodeURI(data.totpURI);
             setBackupCodes(data.backupCodes || []);
-            setSetupStep('qrcode');
+            setSetupStep("qrcode");
           }
         },
         onError: (error) => {
           toast.error(error.message || "Failed to enable 2FA");
-        }
+        },
       });
 
       if (!result.success) {
@@ -121,14 +134,14 @@ export function TwoFactorForm() {
         trustDevice: data.trustDevice,
         onSuccess: () => {
           toast.success("Two-factor authentication enabled successfully");
-          setSetupStep('complete');
+          setSetupStep("complete");
           setIsEnabled(true);
           // Force a session refresh
           window.location.reload();
         },
         onError: (error) => {
           toast.error(error.message || "Failed to verify code");
-        }
+        },
       });
 
       if (!result.success) {
@@ -143,21 +156,25 @@ export function TwoFactorForm() {
 
   // Handle disable 2FA
   const handleDisable2FA = async () => {
-    if (!confirm("Are you sure you want to disable two-factor authentication? This will make your account less secure.")) {
+    if (
+      !confirm(
+        "Are you sure you want to disable two-factor authentication? This will make your account less secure."
+      )
+    ) {
       return;
     }
 
     setIsLoading(true);
     try {
       const response = await authClient.twoFactor.disable({
-        password: prompt("Enter your password to confirm") || ""
+        password: prompt("Enter your password to confirm") || "",
       });
       if (response.error) {
         toast.error(response.error.message || "Failed to disable 2FA");
       } else {
         toast.success("Two-factor authentication disabled");
         setIsEnabled(false);
-        setSetupStep('initial');
+        setSetupStep("initial");
         // Force a session refresh
         window.location.reload();
       }
@@ -182,7 +199,7 @@ export function TwoFactorForm() {
         },
         onError: (error) => {
           toast.error(error.message || "Failed to generate backup codes");
-        }
+        },
       });
 
       if (!result.success) {
@@ -198,7 +215,7 @@ export function TwoFactorForm() {
   // Copy backup codes to clipboard
   const copyBackupCodes = () => {
     if (backupCodes) {
-      navigator.clipboard.writeText(backupCodes.join('\n'));
+      navigator.clipboard.writeText(backupCodes.join("\n"));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -212,12 +229,12 @@ export function TwoFactorForm() {
     const content = `
       Databuddy Two-Factor Authentication Backup Codes
       Save these codes in a safe place. Each code can only be used once.
-      ${backupCodes.join('\n')}
+      ${backupCodes.join("\n")}
       Generated on: ${new Date().toLocaleString()}
     `;
 
-    const element = document.createElement('a');
-    const file = new Blob([content], { type: 'text/plain' });
+    const element = document.createElement("a");
+    const file = new Blob([content], { type: "text/plain" });
     element.href = URL.createObjectURL(file);
     element.download = fileName;
     document.body.appendChild(element);
@@ -231,11 +248,11 @@ export function TwoFactorForm() {
   const formatOtpInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     // Allow only digits
-    const digitsOnly = value.replace(/\D/g, '');
+    const digitsOnly = value.replace(/\D/g, "");
     // Limit to 6 digits
     const truncated = digitsOnly.slice(0, 6);
     // Update the form value
-    verifyForm.setValue('code', truncated);
+    verifyForm.setValue("code", truncated);
   };
 
   // Show backup codes component
@@ -243,23 +260,23 @@ export function TwoFactorForm() {
     if (!backupCodes || backupCodes.length === 0) return null;
 
     return (
-      <div className="p-4 border rounded-md bg-muted/50">
-        <div className="flex justify-between items-center mb-2">
+      <div className="rounded-md border bg-muted/50 p-4">
+        <div className="mb-2 flex items-center justify-between">
           <h4 className="font-medium">Your Backup Codes</h4>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={downloadBackupCodes}>
-              <DownloadIcon size={16} weight="duotone" className="h-4 w-4 mr-2" />
+            <Button onClick={downloadBackupCodes} size="sm" variant="outline">
+              <DownloadIcon className="mr-2 h-4 w-4" size={16} weight="duotone" />
               Download
             </Button>
-            <Button variant="outline" size="sm" onClick={copyBackupCodes}>
+            <Button onClick={copyBackupCodes} size="sm" variant="outline">
               {copied ? (
                 <>
-                  <CheckCircleIcon size={16} weight="duotone" className="h-4 w-4 mr-2" />
+                  <CheckCircleIcon className="mr-2 h-4 w-4" size={16} weight="duotone" />
                   Copied
                 </>
               ) : (
                 <>
-                  <CopyIcon size={16} weight="duotone" className="h-4 w-4 mr-2" />
+                  <CopyIcon className="mr-2 h-4 w-4" size={16} weight="duotone" />
                   Copy
                 </>
               )}
@@ -268,7 +285,7 @@ export function TwoFactorForm() {
         </div>
         <div className="grid grid-cols-2 gap-2">
           {backupCodes.map((code, index) => (
-            <code key={index + code} className="p-1 text-xs bg-muted rounded">
+            <code className="rounded bg-muted p-1 text-xs" key={index + code}>
               {code}
             </code>
           ))}
@@ -277,31 +294,34 @@ export function TwoFactorForm() {
     );
   };
 
-  if (setupStep === 'qrcode') {
+  if (setupStep === "qrcode") {
     return (
       <div className="space-y-4">
         <Alert>
-          <ShieldCheckIcon size={16} weight="duotone" className="h-4 w-4" />
+          <ShieldCheckIcon className="h-4 w-4" size={16} weight="duotone" />
           <AlertTitle>Set up two-factor authentication</AlertTitle>
           <AlertDescription>
             Scan the QR code below with your authenticator app and enter the code it provides.
           </AlertDescription>
         </Alert>
 
-        <div className="flex flex-col items-center justify-center p-6 border rounded-md">
+        <div className="flex flex-col items-center justify-center rounded-md border p-6">
           {qrCodeURI && (
             <div className="mb-4">
               <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrCodeURI)}`}
                 alt="QR Code for 2FA"
-                width={200}
                 height={200}
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrCodeURI)}`}
+                width={200}
               />
             </div>
           )}
 
           <Form {...verifyForm}>
-            <form onSubmit={verifyForm.handleSubmit(onVerifySubmit)} className="w-full max-w-md space-y-4">
+            <form
+              className="w-full max-w-md space-y-4"
+              onSubmit={verifyForm.handleSubmit(onVerifySubmit)}
+            >
               <FormField
                 control={verifyForm.control}
                 name="code"
@@ -313,15 +333,15 @@ export function TwoFactorForm() {
                         placeholder="Enter 6-digit code"
                         {...field}
                         autoComplete="one-time-code"
+                        className="text-center font-mono text-lg tracking-widest"
                         inputMode="numeric"
-                        pattern="\d{6}"
                         maxLength={6}
-                        ref={otpInputRef}
                         onChange={(e) => {
                           formatOtpInput(e);
                           field.onChange(e);
                         }}
-                        className="text-center text-lg tracking-widest font-mono"
+                        pattern="\d{6}"
+                        ref={otpInputRef}
                       />
                     </FormControl>
                     <FormMessage />
@@ -335,26 +355,27 @@ export function TwoFactorForm() {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                     <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>
-                        Trust this device
-                      </FormLabel>
+                      <FormLabel>Trust this device</FormLabel>
                     </div>
                   </FormItem>
                 )}
               />
 
               <div className="flex justify-between">
-                <Button type="button" variant="outline" onClick={() => setSetupStep('initial')}>
+                <Button onClick={() => setSetupStep("initial")} type="button" variant="outline">
                   Back
                 </Button>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading && <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />}
+                <Button disabled={isLoading} type="submit">
+                  {isLoading && (
+                    <ArrowClockwiseIcon
+                      className="mr-2 h-4 w-4 animate-spin"
+                      size={16}
+                      weight="fill"
+                    />
+                  )}
                   Verify
                 </Button>
               </div>
@@ -363,10 +384,11 @@ export function TwoFactorForm() {
         </div>
 
         <Alert>
-          <KeyIcon size={16} weight="duotone" className="h-4 w-4" />
+          <KeyIcon className="h-4 w-4" size={16} weight="duotone" />
           <AlertTitle>Backup Codes</AlertTitle>
           <AlertDescription>
-            Save these backup codes somewhere safe. You can use them to log in if you lose access to your authenticator app.
+            Save these backup codes somewhere safe. You can use them to log in if you lose access to
+            your authenticator app.
           </AlertDescription>
         </Alert>
 
@@ -375,11 +397,11 @@ export function TwoFactorForm() {
     );
   }
 
-  if (setupStep === 'complete') {
+  if (setupStep === "complete") {
     return (
       <div className="space-y-4">
-        <Alert className="bg-green-500/10 border-green-500/20">
-          <CheckCircleIcon size={16} weight="duotone" className="h-4 w-4 text-green-500" />
+        <Alert className="border-green-500/20 bg-green-500/10">
+          <CheckCircleIcon className="h-4 w-4 text-green-500" size={16} weight="duotone" />
           <AlertTitle>Two-factor authentication enabled</AlertTitle>
           <AlertDescription>
             Your account is now protected with two-factor authentication.
@@ -388,8 +410,10 @@ export function TwoFactorForm() {
 
         <BackupCodesDisplay />
 
-        <Button variant="destructive" onClick={handleDisable2FA} disabled={isLoading}>
-          {isLoading && <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />}
+        <Button disabled={isLoading} onClick={handleDisable2FA} variant="destructive">
+          {isLoading && (
+            <ArrowClockwiseIcon className="mr-2 h-4 w-4 animate-spin" size={16} weight="fill" />
+          )}
           Disable Two-Factor Authentication
         </Button>
       </div>
@@ -400,22 +424,26 @@ export function TwoFactorForm() {
     <div className="space-y-4">
       {isEnabled ? (
         <>
-          <Alert className="bg-green-500/10 border-green-500/20">
-            <CheckCircleIcon size={16} weight="duotone" className="h-4 w-4 text-green-500" />
+          <Alert className="border-green-500/20 bg-green-500/10">
+            <CheckCircleIcon className="h-4 w-4 text-green-500" size={16} weight="duotone" />
             <AlertTitle>Two-factor authentication is enabled</AlertTitle>
             <AlertDescription>
               Your account is protected with two-factor authentication.
             </AlertDescription>
           </Alert>
 
-          <div className="flex gap-2 mt-4">
-            <Button variant="outline" onClick={handleRegenerateBackupCodes} disabled={isLoading}>
-              {isLoading && <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />}
+          <div className="mt-4 flex gap-2">
+            <Button disabled={isLoading} onClick={handleRegenerateBackupCodes} variant="outline">
+              {isLoading && (
+                <ArrowClockwiseIcon className="mr-2 h-4 w-4 animate-spin" size={16} weight="fill" />
+              )}
               Generate New Backup Codes
             </Button>
 
-            <Button variant="destructive" onClick={handleDisable2FA} disabled={isLoading}>
-              {isLoading && <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />}
+            <Button disabled={isLoading} onClick={handleDisable2FA} variant="destructive">
+              {isLoading && (
+                <ArrowClockwiseIcon className="mr-2 h-4 w-4 animate-spin" size={16} weight="fill" />
+              )}
               Disable Two-Factor Authentication
             </Button>
           </div>
@@ -423,15 +451,16 @@ export function TwoFactorForm() {
       ) : (
         <>
           <Alert>
-            <ShieldCheckIcon size={16} weight="duotone" className="h-4 w-4" />
+            <ShieldCheckIcon className="h-4 w-4" size={16} weight="duotone" />
             <AlertTitle>Add an extra layer of security</AlertTitle>
             <AlertDescription>
-              Two-factor authentication adds an additional layer of security to your account by requiring more than just a password to sign in.
+              Two-factor authentication adds an additional layer of security to your account by
+              requiring more than just a password to sign in.
             </AlertDescription>
           </Alert>
 
           <Form {...setupForm}>
-            <form onSubmit={setupForm.handleSubmit(onSetupSubmit)} className="space-y-4">
+            <form className="space-y-4" onSubmit={setupForm.handleSubmit(onSetupSubmit)}>
               <FormField
                 control={setupForm.control}
                 name="password"
@@ -439,15 +468,21 @@ export function TwoFactorForm() {
                   <FormItem>
                     <FormLabel>Your Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input placeholder="••••••••" type="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Button type="submit" disabled={isLoading} className="w-full">
-                {isLoading && <ArrowClockwiseIcon size={16} weight="fill" className="mr-2 h-4 w-4 animate-spin" />}
+              <Button className="w-full" disabled={isLoading} type="submit">
+                {isLoading && (
+                  <ArrowClockwiseIcon
+                    className="mr-2 h-4 w-4 animate-spin"
+                    size={16}
+                    weight="fill"
+                  />
+                )}
                 Enable Two-Factor Authentication
               </Button>
             </form>
@@ -456,4 +491,4 @@ export function TwoFactorForm() {
       )}
     </div>
   );
-} 
+}

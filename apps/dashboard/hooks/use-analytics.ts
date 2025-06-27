@@ -1,5 +1,5 @@
-import { useCallback, useMemo } from 'react';
-import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
 
 // Types
 export interface AnalyticsSummary {
@@ -24,7 +24,7 @@ export interface TodayStats {
 export interface DateRange {
   start_date: string;
   end_date: string;
-  granularity?: 'hourly' | 'daily';
+  granularity?: "hourly" | "daily";
   timezone?: string;
 }
 
@@ -171,7 +171,7 @@ export interface MiniChartDataPoint {
   value: number;
 }
 
-export type TimeInterval = 'day' | 'week' | 'month';
+export type TimeInterval = "day" | "week" | "month";
 
 export interface ProfileData {
   visitor_id: string;
@@ -390,26 +390,26 @@ interface BatchMiniChartResponse extends ApiResponse {
   data: Record<string, MiniChartDataPoint[]>;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 // Base params builder
 function buildParams(
-  websiteId: string, 
-  dateRange?: DateRange, 
+  websiteId: string,
+  dateRange?: DateRange,
   additionalParams?: Record<string, string | number>
 ): URLSearchParams {
   const params = new URLSearchParams({
     website_id: websiteId,
   });
-  
+
   if (dateRange) {
-    params.append('start_date', dateRange.start_date);
-    params.append('end_date', dateRange.end_date);
+    params.append("start_date", dateRange.start_date);
+    params.append("end_date", dateRange.end_date);
     if (dateRange.granularity) {
-      params.append('granularity', dateRange.granularity);
+      params.append("granularity", dateRange.granularity);
     }
     if (dateRange.timezone) {
-      params.append('timezone', dateRange.timezone);
+      params.append("timezone", dateRange.timezone);
     }
   }
 
@@ -418,10 +418,10 @@ function buildParams(
       params.append(key, value.toString());
     }
   }
-  
+
   // Add cache busting
-  params.append('_t', Date.now().toString());
-  
+  params.append("_t", Date.now().toString());
+
   return params;
 }
 
@@ -435,22 +435,22 @@ async function fetchAnalyticsData<T extends ApiResponse>(
 ): Promise<T> {
   const params = buildParams(websiteId, dateRange, additionalParams);
   const url = `${API_BASE_URL}/v1${endpoint}?${params}`;
-  
+
   const response = await fetch(url, {
-    credentials: 'include',
-    signal
+    credentials: "include",
+    signal,
   });
-  
+
   if (!response.ok) {
     throw new Error(`Failed to fetch data from ${endpoint}`);
   }
-  
+
   const data = await response.json();
-  
+
   if (!data.success) {
     throw new Error(data.error || `Failed to fetch data from ${endpoint}`);
   }
-  
+
   return data;
 }
 
@@ -462,22 +462,31 @@ const defaultQueryOptions = {
   refetchOnMount: false,
   refetchInterval: 10 * 60 * 1000, // Background refetch every 10 minutes
   retry: (failureCount: number, error: Error) => {
-    if (error instanceof DOMException && error.name === 'AbortError') {
+    if (error instanceof DOMException && error.name === "AbortError") {
       return false;
     }
     return failureCount < 2;
   },
-  networkMode: 'online' as const,
+  networkMode: "online" as const,
   refetchIntervalInBackground: false,
 };
 
 export function useWebsiteAnalytics(websiteId: string, dateRange: DateRange) {
-  const fetchData = useCallback(async ({ signal }: { signal?: AbortSignal }) => {
-    return fetchAnalyticsData<SummaryResponse>('/analytics/summary', websiteId, dateRange, undefined, signal);
-  }, [websiteId, dateRange]);
+  const fetchData = useCallback(
+    async ({ signal }: { signal?: AbortSignal }) => {
+      return fetchAnalyticsData<SummaryResponse>(
+        "/analytics/summary",
+        websiteId,
+        dateRange,
+        undefined,
+        signal
+      );
+    },
+    [websiteId, dateRange]
+  );
 
   const summaryQuery = useQuery({
-    queryKey: ['analytics', 'summary', websiteId, dateRange],
+    queryKey: ["analytics", "summary", websiteId, dateRange],
     queryFn: fetchData,
     ...defaultQueryOptions,
     // Prefetch next likely date ranges
@@ -485,7 +494,7 @@ export function useWebsiteAnalytics(websiteId: string, dateRange: DateRange) {
       prefetchRelated: true,
     },
   });
-  
+
   return {
     analytics: {
       tracking_setup: summaryQuery.data?.tracking_setup,
@@ -510,14 +519,14 @@ export function useWebsiteAnalytics(websiteId: string, dateRange: DateRange) {
     },
     loading: {
       summary: summaryQuery.isLoading,
-      any: summaryQuery.isLoading
+      any: summaryQuery.isLoading,
     },
     error: {
       summary: summaryQuery.isError,
-      any: summaryQuery.isError
+      any: summaryQuery.isError,
     },
     queries: { summary: summaryQuery },
-    refetch: () => summaryQuery.refetch()
+    refetch: () => summaryQuery.refetch(),
   };
 }
 
@@ -526,9 +535,10 @@ export function useWebsiteAnalytics(websiteId: string, dateRange: DateRange) {
  */
 export function useAnalyticsSummary(websiteId: string, dateRange?: DateRange) {
   return useQuery({
-    queryKey: ['analytics', 'summary', websiteId, dateRange],
-    queryFn: () => fetchAnalyticsData<SimpleSummaryResponse>('/analytics/summary', websiteId, dateRange),
-    ...defaultQueryOptions
+    queryKey: ["analytics", "summary", websiteId, dateRange],
+    queryFn: () =>
+      fetchAnalyticsData<SimpleSummaryResponse>("/analytics/summary", websiteId, dateRange),
+    ...defaultQueryOptions,
   });
 }
 
@@ -537,10 +547,11 @@ export function useAnalyticsSummary(websiteId: string, dateRange?: DateRange) {
  */
 export function useMiniChartData(websiteId: string, options?: { enabled?: boolean }) {
   return useQuery({
-    queryKey: ['analytics', 'mini-chart', websiteId],
-    queryFn: () => fetchAnalyticsData<MiniChartResponse>(`/analytics/mini-chart/${websiteId}`, websiteId),
+    queryKey: ["analytics", "mini-chart", websiteId],
+    queryFn: () =>
+      fetchAnalyticsData<MiniChartResponse>(`/analytics/mini-chart/${websiteId}`, websiteId),
     ...defaultQueryOptions,
-    enabled: options?.enabled !== undefined ? options.enabled : true
+    enabled: options?.enabled !== undefined ? options.enabled : true,
   });
 }
 
@@ -552,17 +563,17 @@ export function useMiniChartData(websiteId: string, options?: { enabled?: boolea
 export function useBatchedMiniCharts(websiteIds: string[]) {
   // Ensure stable query key by sorting IDs
   const sortedIds = useMemo(() => [...websiteIds].sort(), [websiteIds]);
-  const idsString = useMemo(() => sortedIds.join(','), [sortedIds]);
-  
+  const idsString = useMemo(() => sortedIds.join(","), [sortedIds]);
+
   const query = useQuery({
-    queryKey: ['analytics', 'batch-mini-charts', idsString],
+    queryKey: ["analytics", "batch-mini-charts", idsString],
     queryFn: async () => {
       if (!websiteIds.length) return {};
-      
+
       // Use the first ID for the middleware, and pass all IDs in the query
       const primaryWebsiteId = websiteIds[0];
       const response = await fetchAnalyticsData<BatchMiniChartResponse>(
-        '/analytics/mini-chart/batch-mini-charts',
+        "/analytics/mini-chart/batch-mini-charts",
         primaryWebsiteId,
         undefined,
         { ids: idsString }
@@ -574,98 +585,73 @@ export function useBatchedMiniCharts(websiteIds: string[]) {
     staleTime: 10 * 60 * 1000, // 10 minutes for mini charts
     enabled: websiteIds.length > 0,
     meta: {
-      batchSize: websiteIds.length
-    }
+      batchSize: websiteIds.length,
+    },
   });
-  
+
   // The query function now directly returns the data object
   const chartsData: Record<string, MiniChartDataPoint[]> = query.data || {};
-  
+
   return {
     chartsData,
     isLoading: query.isLoading,
     isError: query.isError,
-    refetch: query.refetch
+    refetch: query.refetch,
   };
 }
 
 /**
  * Hook to fetch top pages data
  */
-export function useAnalyticsPages(
-  websiteId: string,
-  dateRange?: DateRange,
-  limit = 10
-) {
+export function useAnalyticsPages(websiteId: string, dateRange?: DateRange, limit = 10) {
   return useQuery({
-    queryKey: ['analytics', 'pages', websiteId, dateRange, limit],
-    queryFn: () => fetchAnalyticsData<PagesResponse>(
-      '/analytics/pages', 
-      websiteId, 
-      dateRange, 
-      { limit }
-    ),
-    ...defaultQueryOptions
+    queryKey: ["analytics", "pages", websiteId, dateRange, limit],
+    queryFn: () =>
+      fetchAnalyticsData<PagesResponse>("/analytics/pages", websiteId, dateRange, { limit }),
+    ...defaultQueryOptions,
   });
 }
 
 /**
  * Hook to fetch referrer data
  */
-export function useAnalyticsReferrers(
-  websiteId: string,
-  dateRange?: DateRange,
-  limit = 10
-) {
+export function useAnalyticsReferrers(websiteId: string, dateRange?: DateRange, limit = 10) {
   return useQuery({
-    queryKey: ['analytics', 'referrers', websiteId, dateRange, limit],
-    queryFn: () => fetchAnalyticsData<ReferrersResponse>(
-      '/analytics/referrers', 
-      websiteId, 
-      dateRange, 
-      { limit }
-    ),
-    ...defaultQueryOptions
+    queryKey: ["analytics", "referrers", websiteId, dateRange, limit],
+    queryFn: () =>
+      fetchAnalyticsData<ReferrersResponse>("/analytics/referrers", websiteId, dateRange, {
+        limit,
+      }),
+    ...defaultQueryOptions,
   });
 }
 
 /**
  * Hook to fetch device information
  */
-export function useAnalyticsDevices(
-  websiteId: string,
-  dateRange?: DateRange,
-  limit = 10
-) {
+export function useAnalyticsDevices(websiteId: string, dateRange?: DateRange, limit = 10) {
   return useQuery({
-    queryKey: ['analytics', 'devices', websiteId, dateRange, limit],
-    queryFn: () => fetchAnalyticsData<DevicesResponse>(
-      '/analytics/devices', 
-      websiteId, 
-      dateRange, 
-      { limit }
-    ),
-    ...defaultQueryOptions
+    queryKey: ["analytics", "devices", websiteId, dateRange, limit],
+    queryFn: () =>
+      fetchAnalyticsData<DevicesResponse>("/analytics/devices", websiteId, dateRange, { limit }),
+    ...defaultQueryOptions,
   });
 }
 
 /**
  * Hook to fetch location data
  */
-export function useAnalyticsLocations(
-  websiteId: string,
-  dateRange?: DateRange,
-  limit = 10,
-) {
+export function useAnalyticsLocations(websiteId: string, dateRange?: DateRange, limit = 10) {
   return useQuery({
-    queryKey: ['analytics', 'locations', websiteId, dateRange, limit],
-    queryFn: () => fetchAnalyticsData<LocationsResponse>(
-      '/analytics/locations', 
-      websiteId, 
-      dateRange, 
-      // { limit }
-    ),
-    ...defaultQueryOptions
+    queryKey: ["analytics", "locations", websiteId, dateRange, limit],
+    queryFn: () =>
+      fetchAnalyticsData<LocationsResponse>(
+        "/analytics/locations",
+        websiteId,
+        dateRange
+        // { limit }
+      ),
+    ...defaultQueryOptions,
   });
 }
 
@@ -679,13 +665,13 @@ export function useAnalyticsSessions(
   page = 1
 ) {
   return useQuery<SessionsResponse>({
-    queryKey: ['analytics', 'sessions', websiteId, dateRange, limit, page],
-    queryFn: ({ signal }) => 
+    queryKey: ["analytics", "sessions", websiteId, dateRange, limit, page],
+    queryFn: ({ signal }) =>
       fetchAnalyticsData<SessionsResponse>(
-        '/analytics/sessions', 
-        websiteId, 
-        dateRange, 
-        { limit, page }, 
+        "/analytics/sessions",
+        websiteId,
+        dateRange,
+        { limit, page },
         signal
       ),
     enabled: !!websiteId,
@@ -697,19 +683,15 @@ export function useAnalyticsSessions(
 /**
  * Hook to fetch sessions list with infinite scrolling
  */
-export function useInfiniteAnalyticsSessions(
-  websiteId: string,
-  dateRange?: DateRange,
-  limit = 50
-) {
+export function useInfiniteAnalyticsSessions(websiteId: string, dateRange?: DateRange, limit = 50) {
   return useInfiniteQuery({
-    queryKey: ['analytics', 'sessions-infinite', websiteId, dateRange, limit],
-    queryFn: ({ pageParam = 1, signal }) => 
+    queryKey: ["analytics", "sessions-infinite", websiteId, dateRange, limit],
+    queryFn: ({ pageParam = 1, signal }) =>
       fetchAnalyticsData<SessionsResponse>(
-        '/analytics/sessions', 
-        websiteId, 
-        dateRange, 
-        { limit, page: pageParam }, 
+        "/analytics/sessions",
+        websiteId,
+        dateRange,
+        { limit, page: pageParam },
         signal
       ),
     enabled: !!websiteId,
@@ -728,22 +710,19 @@ export function useInfiniteAnalyticsSessions(
 /**
  * Hook to fetch details for a specific session
  */
-export function useAnalyticsSessionDetails(
-  websiteId: string,
-  sessionId: string,
-  enabled = true
-) {
+export function useAnalyticsSessionDetails(websiteId: string, sessionId: string, enabled = true) {
   return useQuery({
-    queryKey: ['analytics', 'session', websiteId, sessionId],
-    queryFn: ({ signal }) => fetchAnalyticsData<SessionDetailsResponse>(
-      `/analytics/sessions/${sessionId}`, 
-      websiteId, 
-      undefined, 
-      undefined,
-      signal
-    ),
+    queryKey: ["analytics", "session", websiteId, sessionId],
+    queryFn: ({ signal }) =>
+      fetchAnalyticsData<SessionDetailsResponse>(
+        `/analytics/sessions/${sessionId}`,
+        websiteId,
+        undefined,
+        undefined,
+        signal
+      ),
     ...defaultQueryOptions,
-    enabled: enabled && !!sessionId
+    enabled: enabled && !!sessionId,
   });
 }
 
@@ -757,34 +736,31 @@ export function useAnalyticsProfiles(
   page = 1
 ) {
   return useQuery({
-    queryKey: ['analytics', 'profiles', websiteId, dateRange, limit, page],
-    queryFn: ({ signal }) => fetchAnalyticsData<ProfilesResponse>(
-      '/analytics/profiles', 
-      websiteId, 
-      dateRange, 
-      { limit, page },
-      signal
-    ),
-    ...defaultQueryOptions
+    queryKey: ["analytics", "profiles", websiteId, dateRange, limit, page],
+    queryFn: ({ signal }) =>
+      fetchAnalyticsData<ProfilesResponse>(
+        "/analytics/profiles",
+        websiteId,
+        dateRange,
+        { limit, page },
+        signal
+      ),
+    ...defaultQueryOptions,
   });
 }
 
 /**
  * Hook to fetch visitor profiles with infinite scrolling
  */
-export function useInfiniteAnalyticsProfiles(
-  websiteId: string,
-  dateRange?: DateRange,
-  limit = 50
-) {
+export function useInfiniteAnalyticsProfiles(websiteId: string, dateRange?: DateRange, limit = 50) {
   return useInfiniteQuery({
-    queryKey: ['analytics', 'profiles-infinite', websiteId, dateRange, limit],
-    queryFn: ({ pageParam = 1, signal }) => 
+    queryKey: ["analytics", "profiles-infinite", websiteId, dateRange, limit],
+    queryFn: ({ pageParam = 1, signal }) =>
       fetchAnalyticsData<ProfilesResponse>(
-        '/analytics/profiles', 
-        websiteId, 
-        dateRange, 
-        { limit, page: pageParam }, 
+        "/analytics/profiles",
+        websiteId,
+        dateRange,
+        { limit, page: pageParam },
         signal
       ),
     enabled: !!websiteId,
@@ -803,21 +779,17 @@ export function useInfiniteAnalyticsProfiles(
 /**
  * Hook to fetch website error analytics
  */
-export function useWebsiteErrors(
-  websiteId: string,
-  dateRange?: DateRange,
-  limit = 50,
-  page = 1
-) {
+export function useWebsiteErrors(websiteId: string, dateRange?: DateRange, limit = 50, page = 1) {
   return useQuery({
-    queryKey: ['analytics', 'errors', websiteId, dateRange, limit, page],
-    queryFn: ({ signal }) => fetchAnalyticsData<ErrorsData>(
-      '/analytics/errors', 
-      websiteId, 
-      dateRange, 
-      { limit, page },
-      signal
-    ),
-    ...defaultQueryOptions
+    queryKey: ["analytics", "errors", websiteId, dateRange, limit, page],
+    queryFn: ({ signal }) =>
+      fetchAnalyticsData<ErrorsData>(
+        "/analytics/errors",
+        websiteId,
+        dateRange,
+        { limit, page },
+        signal
+      ),
+    ...defaultQueryOptions,
   });
-} 
+}

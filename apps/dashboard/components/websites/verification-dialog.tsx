@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, memo } from "react";
 import { Check, Copy, Loader2, RefreshCw } from "lucide-react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -12,17 +12,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Website } from "@/hooks/use-websites";
+
 // Helper to extract domain string from domain object or string
 function getDomainString(domain: string | { name: string } | any): string {
-  if (typeof domain === 'string') {
+  if (typeof domain === "string") {
     return domain;
   }
-  
-  if (domain && typeof domain === 'object' && 'name' in domain) {
+
+  if (domain && typeof domain === "object" && "name" in domain) {
     return domain.name;
   }
-  
-  return '';
+
+  return "";
 }
 
 // Extended Website type for verification properties
@@ -50,28 +51,28 @@ export const VerificationDialog = memo(function VerificationDialog({
   isVerifying,
   isRegenerating,
 }: VerificationDialogProps) {
-  const [displayToken, setDisplayToken] = useState<string>('');
-  
+  const [displayToken, setDisplayToken] = useState<string>("");
+
   // Reset token when dialog closes
   useEffect(() => {
     if (!open) {
-      setDisplayToken('');
+      setDisplayToken("");
     }
   }, [open]);
-  
+
   // Memoize these functions to prevent recreating on each render
   const getDomainForDNS = useCallback((domainInput: string | object | undefined) => {
     try {
       // Extract domain as string
-      const domainStr = getDomainString(domainInput || '');
-      if (!domainStr) return '';
-      
+      const domainStr = getDomainString(domainInput || "");
+      if (!domainStr) return "";
+
       // Ensure domain has a protocol
-      const domainWithProtocol = domainStr.startsWith('http') ? domainStr : `https://${domainStr}`;
-      return new URL(domainWithProtocol).hostname.replace(/^www\./, '');
+      const domainWithProtocol = domainStr.startsWith("http") ? domainStr : `https://${domainStr}`;
+      return new URL(domainWithProtocol).hostname.replace(/^www\./, "");
     } catch (error) {
-      console.error('Invalid domain:', domainInput);
-      return typeof domainInput === 'string' ? domainInput : '';
+      console.error("Invalid domain:", domainInput);
+      return typeof domainInput === "string" ? domainInput : "";
     }
   }, []);
 
@@ -79,17 +80,17 @@ export const VerificationDialog = memo(function VerificationDialog({
     if (!website) return;
     onVerify(website.id);
   }, [website, onVerify]);
-  
+
   const handleRegenerateToken = useCallback(async () => {
     if (!website) return;
-    
+
     try {
       const result = await onRegenerateToken(website.id);
       if (result.error) {
         toast.error(result.error);
         return;
       }
-      
+
       if (result.data?.verificationToken) {
         setDisplayToken(result.data.verificationToken);
         toast.success("Token regenerated", {
@@ -97,7 +98,7 @@ export const VerificationDialog = memo(function VerificationDialog({
         });
       }
     } catch (error) {
-      console.error('Error regenerating token:', error);
+      console.error("Error regenerating token:", error);
       toast.error("Failed to regenerate token");
     }
   }, [website, onRegenerateToken]);
@@ -107,15 +108,15 @@ export const VerificationDialog = memo(function VerificationDialog({
   }, [onOpenChange]);
 
   const isVerified = website?.verificationStatus === "VERIFIED";
-  
+
   // If not open, don't render anything (optimization)
   if (!open) return null;
 
   // Get domain string for display
-  const domainForDisplay = getDomainString(website?.domain || '');
+  const domainForDisplay = getDomainString(website?.domain || "");
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog onOpenChange={handleClose} open={open}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Verify Domain</DialogTitle>
@@ -123,27 +124,27 @@ export const VerificationDialog = memo(function VerificationDialog({
             Verify ownership of {domainForDisplay} by adding a DNS record.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <div className="space-y-2">
             <h4 className="font-medium">DNS Verification</h4>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Add the following DNS TXT record to verify ownership of your domain:
             </p>
             <div className="rounded-md bg-muted p-3 font-mono text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">TXT Record:</span>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="h-6 px-2"
                   onClick={() => {
                     const dnsRecord = `_databuddy.${getDomainForDNS(website?.domain)}`;
                     navigator.clipboard.writeText(dnsRecord);
                     toast("DNS record name copied to clipboard");
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
-                  <Copy className="h-3 w-3 mr-1" />
+                  <Copy className="mr-1 h-3 w-3" />
                   Copy
                 </Button>
               </div>
@@ -151,31 +152,32 @@ export const VerificationDialog = memo(function VerificationDialog({
               <div className="mt-2 flex items-center justify-between">
                 <span className="text-muted-foreground">Value:</span>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="h-6 px-2"
                   onClick={() => {
                     navigator.clipboard.writeText(displayToken);
                     toast("Verification token copied to clipboard");
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
-                  <Copy className="h-3 w-3 mr-1" />
+                  <Copy className="mr-1 h-3 w-3" />
                   Copy
                 </Button>
               </div>
               <div className="mt-1">{displayToken}</div>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Note: DNS changes can take up to 48 hours to propagate. If verification fails, wait a while and try again.
+            <p className="mt-2 text-muted-foreground text-xs">
+              Note: DNS changes can take up to 48 hours to propagate. If verification fails, wait a
+              while and try again.
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={handleVerifyDomain}
-              disabled={isVerifying || isVerified}
               className="flex-1"
+              disabled={isVerifying || isVerified}
+              onClick={handleVerifyDomain}
+              size="sm"
+              variant="outline"
             >
               {isVerifying ? (
                 <>
@@ -195,10 +197,10 @@ export const VerificationDialog = memo(function VerificationDialog({
               )}
             </Button>
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRegenerateToken}
               disabled={isRegenerating || isVerified}
+              onClick={handleRegenerateToken}
+              size="sm"
+              variant="ghost"
             >
               {isRegenerating ? (
                 <>
@@ -215,11 +217,11 @@ export const VerificationDialog = memo(function VerificationDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
+          <Button onClick={handleClose} variant="outline">
             Close
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-}); 
+});

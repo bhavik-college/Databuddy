@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Loader2, ArrowRight, Database, Users, ActivitySquare, Server } from "lucide-react";
+import { ActivitySquare, ArrowRight, Database, Loader2, Server, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 
 interface AnimatedLoadingProps {
   type: "sessions" | "profiles" | "errors";
@@ -20,7 +20,7 @@ export function AnimatedLoading({
   const [progress, setProgress] = useState(0);
   const [stage, setStage] = useState(0);
   const [fetchDetails, setFetchDetails] = useState("");
-  
+
   // Different loading messages for each tab type
   const stages = {
     sessions: [
@@ -29,7 +29,7 @@ export function AnimatedLoading({
       "Processing visitor journeys...",
       "Analyzing user behavior...",
       "Building timeline visualization...",
-      "Almost there..."
+      "Almost there...",
     ],
     profiles: [
       "Establishing connection...",
@@ -37,7 +37,7 @@ export function AnimatedLoading({
       "Analyzing visitor patterns...",
       "Calculating return visit rates...",
       "Correlating demographic data...",
-      "Almost there..."
+      "Almost there...",
     ],
     errors: [
       "Establishing connection...",
@@ -45,8 +45,8 @@ export function AnimatedLoading({
       "Analyzing error patterns...",
       "Categorizing issues...",
       "Prioritizing critical errors...",
-      "Almost there..."
-    ]
+      "Almost there...",
+    ],
   };
 
   // Details specific to each type
@@ -55,39 +55,41 @@ export function AnimatedLoading({
       "Fetching session events",
       "Calculating session durations",
       "Mapping visitor journeys",
-      "Analyzing bounce rates"
+      "Analyzing bounce rates",
     ],
     profiles: [
       "Fetching visitor devices",
-      "Analyzing geographic data", 
+      "Analyzing geographic data",
       "Processing user behaviors",
-      "Identifying returning visitors"
+      "Identifying returning visitors",
     ],
     errors: [
       "Retrieving error stacks",
       "Analyzing application errors",
       "Processing network issues",
-      "Identifying browser-specific errors"
-    ]
+      "Identifying browser-specific errors",
+    ],
   };
 
   const icons = {
     sessions: <ActivitySquare className="h-8 w-8 text-blue-500" />,
     profiles: <Users className="h-8 w-8 text-indigo-500" />,
-    errors: <Server className="h-8 w-8 text-red-500" />
+    errors: <Server className="h-8 w-8 text-red-500" />,
   };
 
   const gradients = {
     sessions: "bg-gradient-to-br from-blue-50 to-sky-100 dark:from-blue-950/50 dark:to-sky-900/30",
-    profiles: "bg-gradient-to-br from-indigo-50 to-purple-100 dark:from-indigo-950/50 dark:to-purple-900/30",
-    errors: "bg-gradient-to-br from-red-50 to-orange-100 dark:from-red-950/50 dark:to-orange-900/30"
+    profiles:
+      "bg-gradient-to-br from-indigo-50 to-purple-100 dark:from-indigo-950/50 dark:to-purple-900/30",
+    errors:
+      "bg-gradient-to-br from-red-50 to-orange-100 dark:from-red-950/50 dark:to-orange-900/30",
   };
 
   // Update progress based on external or animated progress
   useEffect(() => {
     if (externalProgress !== undefined) {
       setProgress(externalProgress);
-      
+
       // Update stage based on progress
       const stageIndex = Math.min(
         Math.floor((externalProgress / 100) * stages[type].length),
@@ -102,22 +104,22 @@ export function AnimatedLoading({
             clearInterval(interval);
             return 100;
           }
-          
+
           // Slow down progress as it increases
-          const increment = Math.max(0.5, 3 - (prev / 20));
+          const increment = Math.max(0.5, 3 - prev / 20);
           const newProgress = prev + increment;
-          
+
           // Update stage based on progress
           const stageIndex = Math.min(
             Math.floor((newProgress / 100) * stages[type].length),
             stages[type].length - 1
           );
           setStage(stageIndex);
-          
+
           return newProgress;
         });
       }, 150);
-      
+
       return () => clearInterval(interval);
     }
   }, [externalProgress, type]);
@@ -129,75 +131,74 @@ export function AnimatedLoading({
       const randomIndex = Math.floor(Math.random() * fetchMessages[type].length);
       setFetchDetails(fetchMessages[type][randomIndex]);
     };
-    
+
     // Initial update
     updateFetchDetails();
-    
+
     // Set interval to update periodically
     const intervalId = setInterval(updateFetchDetails, 2000);
-    
+
     return () => {
       clearInterval(intervalId);
     };
-    }, [type]);
+  }, [type]);
 
   return (
-    <div className={cn(
-      "p-8 rounded-lg border shadow-sm animate-in fade-in", 
-      gradients[type],
-      className
-    )}>
-      <div className="flex flex-col items-center justify-center max-w-lg mx-auto">
-        <div className="mb-6 flex items-center justify-center h-16 w-16 rounded-full bg-background/80 backdrop-blur-sm shadow-sm">
+    <div
+      className={cn(
+        "fade-in animate-in rounded-lg border p-8 shadow-sm",
+        gradients[type],
+        className
+      )}
+    >
+      <div className="mx-auto flex max-w-lg flex-col items-center justify-center">
+        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-background/80 shadow-sm backdrop-blur-sm">
           {icons[type]}
         </div>
-        
-        <h3 className="text-xl font-semibold text-center mb-2">
-          {stages[type][stage]}
-        </h3>
-        
-        <div className="w-full space-y-6 mb-6">
+
+        <h3 className="mb-2 text-center font-semibold text-xl">{stages[type][stage]}</h3>
+
+        <div className="mb-6 w-full space-y-6">
           {/* Main progress bar */}
-          <Progress 
-            value={progress} 
-            className="h-2 w-full" 
-          />
-          
+          <Progress className="h-2 w-full" value={progress} />
+
           {/* Progress details */}
-          <div className="flex justify-between items-center text-sm">
+          <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">
-              {fetchDetails} <Loader2 className="inline-block h-3 w-3 animate-spin ml-1" />
+              {fetchDetails} <Loader2 className="ml-1 inline-block h-3 w-3 animate-spin" />
             </span>
-            <Badge variant="outline" className="ml-auto font-mono">
+            <Badge className="ml-auto font-mono" variant="outline">
               {Math.round(progress)}%
             </Badge>
           </div>
         </div>
-        
+
         {/* Processing details */}
         <div className="w-full">
           <div className="flex flex-col space-y-3 text-sm">
             {[...Array(4)].map((_, i) => {
-              const isActive = progress > (i * 25);
-              const isPrevious = progress > ((i + 1) * 25);
-              
+              const isActive = progress > i * 25;
+              const isPrevious = progress > (i + 1) * 25;
+
               return (
-                <div 
-                  key={`${type}-${i + 1}`} 
+                <div
                   className={cn(
-                    "flex items-center p-2.5 rounded-md transition-colors duration-300",
+                    "flex items-center rounded-md p-2.5 transition-colors duration-300",
                     isActive ? "bg-background/80 backdrop-blur-sm" : "bg-transparent",
                     isPrevious ? "text-muted-foreground" : "text-foreground"
                   )}
+                  key={`${type}-${i + 1}`}
                 >
-                  <div className={cn(
-                    "mr-3 h-4 w-4 rounded-full flex items-center justify-center",
-                    isActive ? "bg-primary/20" : "bg-muted",
-                  )}>
+                  <div
+                    className={cn(
+                      "mr-3 flex h-4 w-4 items-center justify-center rounded-full",
+                      isActive ? "bg-primary/20" : "bg-muted"
+                    )}
+                  >
                     {isPrevious ? (
                       <div className="h-1.5 w-1.5 rounded-full bg-primary" />
                     ) : isActive ? (
-                      <Loader2 className="h-3 w-3 text-primary animate-spin" />
+                      <Loader2 className="h-3 w-3 animate-spin text-primary" />
                     ) : null}
                   </div>
                   <span>{`Step ${i + 1}: ${fetchMessages[type][i % fetchMessages[type].length]}`}</span>
@@ -210,4 +211,4 @@ export function AnimatedLoading({
       </div>
     </div>
   );
-} 
+}

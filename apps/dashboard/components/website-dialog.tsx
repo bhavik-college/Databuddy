@@ -1,15 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { toast } from "sonner";
 import { Globe, Terminal } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import * as z from "zod";
 import { Badge } from "@/components/ui/badge";
-import type { Website } from "@/hooks/use-websites";
-import type { CreateWebsiteData } from "@/hooks/use-websites";
-import { useWebsites } from "@/hooks/use-websites";
-
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +16,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -36,6 +32,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { CreateWebsiteData, Website } from "@/hooks/use-websites";
+import { useWebsites } from "@/hooks/use-websites";
 
 type VerifiedDomain = {
   id: string;
@@ -79,7 +77,7 @@ function CreateWebsiteForm({
 }: {
   onClose: () => void;
   verifiedDomains: VerifiedDomain[];
-  initialValues?: { name?: string; domainId?: string; } | null;
+  initialValues?: { name?: string; domainId?: string } | null;
   onCreationSuccess?: () => void;
 }) {
   const { createWebsite, isCreating } = useWebsites();
@@ -93,43 +91,48 @@ function CreateWebsiteForm({
   });
 
   const handleSubmit = async (data: CreateFormData) => {
-    const selectedDomain = verifiedDomains.find(d => d.id === data.domainId);
+    const selectedDomain = verifiedDomains.find((d) => d.id === data.domainId);
     if (!selectedDomain) {
       toast.error("Please select a verified domain");
       return;
     }
 
-    createWebsite({
-      name: data.name,
-      domainId: data.domainId,
-      domain: selectedDomain.name,
-      subdomain: data.subdomain,
-    }, {
-      onSuccess: () => {
-        toast.success("Website created successfully");
-        if (onCreationSuccess) {
-          onCreationSuccess();
-        }
-        onClose();
+    createWebsite(
+      {
+        name: data.name,
+        domainId: data.domainId,
+        domain: selectedDomain.name,
+        subdomain: data.subdomain,
       },
-      onError: (error) => {
-        toast.error(error.message);
+      {
+        onSuccess: () => {
+          toast.success("Website created successfully");
+          if (onCreationSuccess) {
+            onCreationSuccess();
+          }
+          onClose();
+        },
+        onError: (error) => {
+          toast.error(error.message);
+        },
       }
-    });
+    );
   };
 
-  const selectedDomain = verifiedDomains.find(d => d.id === form.watch("domainId"));
-  const verifiedDomainsList = verifiedDomains.filter(domain => domain.verificationStatus === "VERIFIED");
+  const selectedDomain = verifiedDomains.find((d) => d.id === form.watch("domainId"));
+  const verifiedDomainsList = verifiedDomains.filter(
+    (domain) => domain.verificationStatus === "VERIFIED"
+  );
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
+      <form className="space-y-3" onSubmit={form.handleSubmit(handleSubmit)}>
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-medium">Name</FormLabel>
+              <FormLabel className="font-medium text-xs">Name</FormLabel>
               <FormControl>
                 <Input placeholder="My Website" {...field} className="h-9" />
               </FormControl>
@@ -143,19 +146,15 @@ function CreateWebsiteForm({
           name="domainId"
           render={({ field }) => (
             <FormItem>
-              <div className="flex items-center justify-between mb-1.5">
-                <FormLabel className="text-xs font-medium">Domain</FormLabel>
+              <div className="mb-1.5 flex items-center justify-between">
+                <FormLabel className="font-medium text-xs">Domain</FormLabel>
                 {field.value && selectedDomain?.verificationStatus === "VERIFIED" && (
-                  <Badge variant="outline" className="h-5 px-1.5 text-xs font-normal">
+                  <Badge className="h-5 px-1.5 font-normal text-xs" variant="outline">
                     Verified
                   </Badge>
                 )}
               </div>
-              <Select
-                onValueChange={field.onChange}
-                value={field.value}
-                defaultValue={field.value}
-              >
+              <Select defaultValue={field.value} onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger className="h-9">
                     <SelectValue placeholder="Select a verified domain" />
@@ -163,7 +162,7 @@ function CreateWebsiteForm({
                 </FormControl>
                 <SelectContent>
                   {verifiedDomainsList.length === 0 ? (
-                    <div className="p-2 text-sm text-muted-foreground">
+                    <div className="p-2 text-muted-foreground text-sm">
                       No verified domains available
                     </div>
                   ) : (
@@ -186,7 +185,7 @@ function CreateWebsiteForm({
             name="subdomain"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-medium">Subdomain (Optional)</FormLabel>
+                <FormLabel className="font-medium text-xs">Subdomain (Optional)</FormLabel>
                 <div className="flex items-center">
                   <FormControl>
                     <Input
@@ -195,7 +194,7 @@ function CreateWebsiteForm({
                       className="h-9 rounded-r-none border-r-0"
                     />
                   </FormControl>
-                  <div className="flex h-9 items-center rounded-r-md border bg-muted px-3 text-sm text-muted-foreground">
+                  <div className="flex h-9 items-center rounded-r-md border bg-muted px-3 text-muted-foreground text-sm">
                     .{selectedDomain.name}
                   </div>
                 </div>
@@ -208,19 +207,15 @@ function CreateWebsiteForm({
         <DialogFooter className="pt-2">
           <div className="flex w-full gap-2">
             <Button
+              className="h-9 flex-1"
+              disabled={isCreating}
+              onClick={onClose}
               type="button"
               variant="outline"
-              onClick={onClose}
-              disabled={isCreating}
-              className="flex-1 h-9"
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isCreating}
-              className="flex-1 h-9"
-            >
+            <Button className="h-9 flex-1" disabled={isCreating} type="submit">
               {isCreating ? "Creating..." : "Create"}
             </Button>
           </div>
@@ -248,29 +243,32 @@ function EditWebsiteForm({
   });
 
   const handleSubmit = async (data: EditFormData) => {
-    updateWebsite({ id: website.id, name: data.name }, {
-      onSuccess: () => {
-        toast.success("Website updated successfully");
-        if (onUpdateSuccess) {
-          onUpdateSuccess();
-        }
-        onClose();
-      },
-      onError: (error) => {
-        toast.error(error.message);
+    updateWebsite(
+      { id: website.id, name: data.name },
+      {
+        onSuccess: () => {
+          toast.success("Website updated successfully");
+          if (onUpdateSuccess) {
+            onUpdateSuccess();
+          }
+          onClose();
+        },
+        onError: (error) => {
+          toast.error(error.message);
+        },
       }
-    });
+    );
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
+      <form className="space-y-3" onSubmit={form.handleSubmit(handleSubmit)}>
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-medium">Name</FormLabel>
+              <FormLabel className="font-medium text-xs">Name</FormLabel>
               <FormControl>
                 <Input placeholder="My Website" {...field} className="h-9" />
               </FormControl>
@@ -282,19 +280,15 @@ function EditWebsiteForm({
         <DialogFooter className="pt-2">
           <div className="flex w-full gap-2">
             <Button
+              className="h-9 flex-1"
+              disabled={isUpdating}
+              onClick={onClose}
               type="button"
               variant="outline"
-              onClick={onClose}
-              disabled={isUpdating}
-              className="flex-1 h-9"
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isUpdating}
-              className="flex-1 h-9"
-            >
+            <Button className="h-9 flex-1" disabled={isUpdating} type="submit">
               {isUpdating ? "Updating..." : "Update"}
             </Button>
           </div>
@@ -320,15 +314,16 @@ export function WebsiteDialog({
     onOpenChange(false);
   };
 
-  const selectedDomain = verifiedDomains.find(d => d.id === initialValues?.domainId);
-  const isLocalhost = selectedDomain?.name.includes('localhost') || selectedDomain?.name.includes('127.0.0.1');
+  const selectedDomain = verifiedDomains.find((d) => d.id === initialValues?.domainId);
+  const isLocalhost =
+    selectedDomain?.name.includes("localhost") || selectedDomain?.name.includes("127.0.0.1");
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog onOpenChange={handleClose} open={open}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="mb-1 flex items-center gap-2">
             {isLocalhost ? <Terminal className="h-5 w-5" /> : <Globe className="h-5 w-5" />}
             <DialogTitle>{isEditing ? "Edit Website" : "Add Website"}</DialogTitle>
           </div>
@@ -341,19 +336,19 @@ export function WebsiteDialog({
 
         {isEditing && website ? (
           <EditWebsiteForm
-            website={website}
             onClose={handleClose}
             onUpdateSuccess={onUpdateSuccess}
+            website={website}
           />
         ) : (
           <CreateWebsiteForm
-            onClose={handleClose}
-            verifiedDomains={verifiedDomains}
             initialValues={initialValues}
+            onClose={handleClose}
             onCreationSuccess={onCreationSuccess}
+            verifiedDomains={verifiedDomains}
           />
         )}
       </DialogContent>
     </Dialog>
   );
-} 
+}

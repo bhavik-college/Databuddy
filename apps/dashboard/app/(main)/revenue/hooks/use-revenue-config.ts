@@ -1,95 +1,103 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import type { OnboardingStep, RevenueConfig, CreateRevenueConfigData } from "../utils/types";
+import type { CreateRevenueConfigData, OnboardingStep, RevenueConfig } from "../utils/types";
 
 // API client functions - self-contained to avoid double API calls
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4001";
 
 async function apiRequest<T>(
-  endpoint: string, 
+  endpoint: string,
   options: RequestInit = {}
 ): Promise<{ success: boolean; data?: T; error?: string }> {
   const response = await fetch(`${API_BASE_URL}/v1${endpoint}`, {
-    credentials: 'include',
+    credentials: "include",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...options.headers,
     },
     ...options,
   });
 
   const data = await response.json();
-  
+
   if (!response.ok) {
     throw new Error(data.error || `HTTP error! status: ${response.status}`);
   }
-  
+
   return data;
 }
 
 // API functions
 const revenueApi = {
   getConfig: async (): Promise<RevenueConfig | null> => {
-    const result = await apiRequest<RevenueConfig>('/revenue/config');
+    const result = await apiRequest<RevenueConfig>("/revenue/config");
     if (result.error) throw new Error(result.error);
     return result.data || null;
   },
 
   createOrUpdateConfig: async (data: CreateRevenueConfigData): Promise<RevenueConfig> => {
-    const result = await apiRequest<RevenueConfig>('/revenue/config', {
-      method: 'POST',
+    const result = await apiRequest<RevenueConfig>("/revenue/config", {
+      method: "POST",
       body: JSON.stringify(data),
     });
     if (result.error) throw new Error(result.error);
-    if (!result.data) throw new Error('No data returned from save revenue config');
+    if (!result.data) throw new Error("No data returned from save revenue config");
     return result.data;
   },
 
   regenerateWebhookToken: async (): Promise<{ webhookToken: string }> => {
-    const result = await apiRequest<{ webhookToken: string }>('/revenue/config/regenerate-webhook-token', {
-      method: 'POST',
-    });
+    const result = await apiRequest<{ webhookToken: string }>(
+      "/revenue/config/regenerate-webhook-token",
+      {
+        method: "POST",
+      }
+    );
     if (result.error) throw new Error(result.error);
-    if (!result.data) throw new Error('No data returned from regenerate webhook token');
+    if (!result.data) throw new Error("No data returned from regenerate webhook token");
     return result.data;
   },
 
   deleteConfig: async (): Promise<{ success: boolean }> => {
-    const result = await apiRequest<{ success: boolean }>('/revenue/config', {
-      method: 'DELETE',
+    const result = await apiRequest<{ success: boolean }>("/revenue/config", {
+      method: "DELETE",
     });
     if (result.error) throw new Error(result.error);
-    if (!result.data) throw new Error('No data returned from delete revenue config');
+    if (!result.data) throw new Error("No data returned from delete revenue config");
     return result.data;
   },
 };
 
 // Query keys
 const revenueKeys = {
-  all: ['revenue'] as const,
-  config: () => [...revenueKeys.all, 'config'] as const,
+  all: ["revenue"] as const,
+  config: () => [...revenueKeys.all, "config"] as const,
 };
 
 export function useRevenueConfig() {
-  const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>('overview');
+  const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>("overview");
   const [copied, setCopied] = useState(false);
   const queryClient = useQueryClient();
-  
+
   // Fetch revenue config with React Query
-  const { data: config, isLoading, isError, refetch } = useQuery({
+  const {
+    data: config,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: revenueKeys.config(),
     queryFn: async () => {
       try {
         return await revenueApi.getConfig();
       } catch (error) {
-        console.error('Error fetching revenue config:', error);
+        console.error("Error fetching revenue config:", error);
         throw error;
       }
     },
-    staleTime: 30000, // 30 seconds
+    staleTime: 30_000, // 30 seconds
     refetchOnWindowFocus: false,
   });
 
@@ -100,18 +108,18 @@ export function useRevenueConfig() {
     },
     onSuccess: (newData) => {
       toast.success("Revenue configuration saved successfully");
-      
+
       queryClient.setQueryData(revenueKeys.config(), newData);
 
-      queryClient.invalidateQueries({ 
+      queryClient.invalidateQueries({
         predicate: (query) => {
-          return query.queryKey[0] === 'batch-dynamic-query';
-        }
+          return query.queryKey[0] === "batch-dynamic-query";
+        },
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to save revenue configuration');
-    }
+      toast.error(error.message || "Failed to save revenue configuration");
+    },
   });
 
   // Regenerate webhook token mutation
@@ -124,8 +132,8 @@ export function useRevenueConfig() {
       queryClient.invalidateQueries({ queryKey: revenueKeys.config() });
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to regenerate webhook token');
-    }
+      toast.error(error.message || "Failed to regenerate webhook token");
+    },
   });
 
   // Delete config mutation
@@ -138,16 +146,16 @@ export function useRevenueConfig() {
       queryClient.invalidateQueries({ queryKey: revenueKeys.config() });
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to delete revenue configuration');
-    }
+      toast.error(error.message || "Failed to delete revenue configuration");
+    },
   });
 
   // Derived values from config
-  const webhookToken = config?.webhookToken || '';
-  const webhookSecret = config?.webhookSecret || '';
+  const webhookToken = config?.webhookToken || "";
+  const webhookSecret = config?.webhookSecret || "";
   const isLiveMode = config?.isLiveMode ?? false;
   const webhookUrl = useMemo(() => {
-    return webhookToken ? `https://basket.databuddy.cc/stripe/webhook/${webhookToken}` : '';
+    return webhookToken ? `https://basket.databuddy.cc/stripe/webhook/${webhookToken}` : "";
   }, [webhookToken]);
 
   const copyToClipboard = useCallback((text: string, label: string) => {
@@ -157,27 +165,36 @@ export function useRevenueConfig() {
     setTimeout(() => setCopied(false), 2000);
   }, []);
 
-  const updateConfig = useCallback((updates: { webhookSecret?: string; isLiveMode?: boolean }) => {
-    const updateData: CreateRevenueConfigData = {
-      isLiveMode: updates.isLiveMode ?? config?.isLiveMode ?? false,
-      isActive: true
-    };
-    
-    // Only include webhookSecret if it's explicitly provided
-    if (updates.webhookSecret !== undefined) {
-      updateData.webhookSecret = updates.webhookSecret;
-    }
-    
-    createOrUpdateMutation.mutate(updateData);
-  }, [createOrUpdateMutation, config?.isLiveMode]);
+  const updateConfig = useCallback(
+    (updates: { webhookSecret?: string; isLiveMode?: boolean }) => {
+      const updateData: CreateRevenueConfigData = {
+        isLiveMode: updates.isLiveMode ?? config?.isLiveMode ?? false,
+        isActive: true,
+      };
 
-  const setWebhookSecret = useCallback((secret: string) => {
-    updateConfig({ webhookSecret: secret });
-  }, [updateConfig]);
+      // Only include webhookSecret if it's explicitly provided
+      if (updates.webhookSecret !== undefined) {
+        updateData.webhookSecret = updates.webhookSecret;
+      }
 
-  const setIsLiveMode = useCallback((mode: boolean) => {
-    updateConfig({ isLiveMode: mode });
-  }, [updateConfig]);
+      createOrUpdateMutation.mutate(updateData);
+    },
+    [createOrUpdateMutation, config?.isLiveMode]
+  );
+
+  const setWebhookSecret = useCallback(
+    (secret: string) => {
+      updateConfig({ webhookSecret: secret });
+    },
+    [updateConfig]
+  );
+
+  const setIsLiveMode = useCallback(
+    (mode: boolean) => {
+      updateConfig({ isLiveMode: mode });
+    },
+    [updateConfig]
+  );
 
   // Computed states for setup completion
   const isWebhookConfigured = !!(webhookSecret && webhookToken);
@@ -192,29 +209,29 @@ export function useRevenueConfig() {
     isLiveMode,
     copied,
     webhookUrl,
-    
+
     // Setup status
     isWebhookConfigured,
     isSetupComplete,
     setupProgress,
-    
+
     // Actions
     setOnboardingStep,
     setWebhookSecret,
     setIsLiveMode,
     updateConfig,
     copyToClipboard,
-    
+
     // API states
     isLoading,
     isError,
     isCreating: createOrUpdateMutation.isPending,
     isRegeneratingToken: regenerateTokenMutation.isPending,
     isDeleting: deleteMutation.isPending,
-    
+
     // API actions
     regenerateWebhookToken: regenerateTokenMutation.mutate,
     deleteConfig: deleteMutation.mutate,
     refetch,
   };
-} 
+}

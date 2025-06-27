@@ -1,14 +1,28 @@
 "use client";
 
-import type React from 'react';
-import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { GlobeIcon, TrendUpIcon, TargetIcon, MedalIcon, ChartLineIcon, UsersIcon, ActivityIcon } from '@phosphor-icons/react';
-import { Button } from '@/components/ui/button';
-import { getTierInfo, formatRank } from '../utils';
+import {
+  ActivityIcon,
+  ChartLineIcon,
+  GlobeIcon,
+  MedalIcon,
+  TargetIcon,
+  TrendUpIcon,
+  UsersIcon,
+} from "@phosphor-icons/react";
+import type React from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { formatRank, getTierInfo } from "../utils";
 
 // Use the correct type from the backend API
 interface DomainRankData {
@@ -33,7 +47,7 @@ const StatCard = ({
   value,
   subtitle,
   description,
-  className = ""
+  className = "",
 }: {
   icon: React.ReactNode;
   title: string;
@@ -44,16 +58,16 @@ const StatCard = ({
 }) => (
   <Card className={className}>
     <CardContent className="p-3 sm:p-4">
-      <div className="flex items-start justify-between mb-2 sm:mb-3">
+      <div className="mb-2 flex items-start justify-between sm:mb-3">
         <div className="flex items-center gap-2">
           {icon}
-          <span className="text-xs sm:text-sm font-medium">{title}</span>
+          <span className="font-medium text-xs sm:text-sm">{title}</span>
         </div>
       </div>
       <div className="space-y-1">
-        <div className="text-lg sm:text-2xl font-bold">{value}</div>
-        {subtitle && <div className="text-xs sm:text-sm text-muted-foreground">{subtitle}</div>}
-        {description && <div className="text-xs text-muted-foreground mt-2">{description}</div>}
+        <div className="font-bold text-lg sm:text-2xl">{value}</div>
+        {subtitle && <div className="text-muted-foreground text-xs sm:text-sm">{subtitle}</div>}
+        {description && <div className="mt-2 text-muted-foreground text-xs">{description}</div>}
       </div>
     </CardContent>
   </Card>
@@ -70,60 +84,72 @@ const ScoreIndicator = ({ score, maxScore = 100 }: { score: number; maxScore?: n
   };
 
   return (
-    <div className="relative w-16 h-16 sm:w-24 sm:h-24 mx-auto">
-      <svg className="w-16 h-16 sm:w-24 sm:h-24 transform -rotate-90" viewBox="0 0 36 36">
+    <div className="relative mx-auto h-16 w-16 sm:h-24 sm:w-24">
+      <svg className="-rotate-90 h-16 w-16 transform sm:h-24 sm:w-24" viewBox="0 0 36 36">
         <title>Domain Rank Score Indicator</title>
         <path
+          className="text-muted/20"
           d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          className="text-muted/20"
         />
         <path
+          className={getColor()}
           d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
           strokeDasharray={`${percentage}, 100`}
-          className={getColor()}
+          strokeWidth="2"
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-sm sm:text-xl font-bold">{score.toFixed(1)}</div>
-          <div className="text-xs text-muted-foreground">/{maxScore}</div>
+          <div className="font-bold text-sm sm:text-xl">{score.toFixed(1)}</div>
+          <div className="text-muted-foreground text-xs">/{maxScore}</div>
         </div>
       </div>
     </div>
   );
 };
 
-export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: DomainRankDetailsProps) {
+export function DomainRankDetails({
+  isOpen,
+  onClose,
+  rankData,
+  domainName,
+}: DomainRankDetailsProps) {
   if (!rankData || rankData.status_code !== 200) {
     return (
-      <Drawer open={isOpen} onOpenChange={onClose}>
+      <Drawer onOpenChange={onClose} open={isOpen}>
         <DrawerContent className="max-h-[85vh]">
           <div className="mx-auto w-full max-w-4xl">
-            <DrawerHeader className="text-center px-4 sm:px-6">
+            <DrawerHeader className="px-4 text-center sm:px-6">
               <DrawerTitle className="flex items-center justify-center gap-2 text-lg sm:text-xl">
-                <TrendUpIcon size={16} weight="fill" className="h-4 w-4 sm:h-5 sm:w-5" />
+                <TrendUpIcon className="h-4 w-4 sm:h-5 sm:w-5" size={16} weight="fill" />
                 Domain Rank Details
               </DrawerTitle>
               <DrawerDescription className="text-sm">
-                Ranking data for <span className="font-mono font-medium">{domainName}</span>
+                Ranking data for <span className="font-medium font-mono">{domainName}</span>
               </DrawerDescription>
             </DrawerHeader>
 
-            <div className="p-4 sm:p-6 text-center">
-              <div className="text-muted-foreground mb-4">
-                <GlobeIcon size={48} weight="duotone" className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 opacity-30" />
+            <div className="p-4 text-center sm:p-6">
+              <div className="mb-4 text-muted-foreground">
+                <GlobeIcon
+                  className="mx-auto mb-4 h-12 w-12 opacity-30 sm:h-16 sm:w-16"
+                  size={48}
+                  weight="duotone"
+                />
               </div>
-              <h3 className="text-base sm:text-lg font-medium mb-2">No Ranking Data Available</h3>
-              <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
-                {rankData?.error || "Unable to retrieve ranking data for this domain. This may be because the domain is new, not indexed, or not publicly accessible."}
+              <h3 className="mb-2 font-medium text-base sm:text-lg">No Ranking Data Available</h3>
+              <p className="mb-4 text-muted-foreground text-sm leading-relaxed">
+                {rankData?.error ||
+                  "Unable to retrieve ranking data for this domain. This may be because the domain is new, not indexed, or not publicly accessible."}
               </p>
-              <Button variant="outline" onClick={onClose}>Close</Button>
+              <Button onClick={onClose} variant="outline">
+                Close
+              </Button>
             </div>
           </div>
         </DrawerContent>
@@ -134,89 +160,118 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
   const tierInfo = getTierInfo(rankData.page_rank_decimal);
 
   return (
-    <Drawer open={isOpen} onOpenChange={onClose}>
+    <Drawer onOpenChange={onClose} open={isOpen}>
       <DrawerContent className="max-h-[85vh]">
         <div className="mx-auto w-full max-w-4xl overflow-y-auto">
-          <DrawerHeader className="text-center px-4 sm:px-6">
+          <DrawerHeader className="px-4 text-center sm:px-6">
             <DrawerTitle className="flex items-center justify-center gap-2 text-lg sm:text-xl">
-              <TrendUpIcon size={16} weight="fill" className="h-4 w-4 sm:h-5 sm:w-5" />
+              <TrendUpIcon className="h-4 w-4 sm:h-5 sm:w-5" size={16} weight="fill" />
               Domain Rank Analysis
             </DrawerTitle>
             <DrawerDescription className="text-sm">
-              Comprehensive ranking metrics for <span className="font-mono font-medium">{domainName}</span>
+              Comprehensive ranking metrics for{" "}
+              <span className="font-medium font-mono">{domainName}</span>
             </DrawerDescription>
           </DrawerHeader>
 
-          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+          <div className="space-y-4 p-4 sm:space-y-6 sm:p-6">
             {/* Hero Section with Score */}
             <Card className="relative overflow-hidden">
               <div className={`absolute inset-0 ${tierInfo.color} opacity-5`} />
-              <CardContent className="p-4 sm:p-8 text-center relative">
+              <CardContent className="relative p-4 text-center sm:p-8">
                 <div className="mb-4 sm:mb-6">
                   <ScoreIndicator score={rankData.page_rank_decimal} />
                 </div>
-                <h2 className="text-xl sm:text-3xl font-bold mb-2">Domain Rank {rankData.page_rank_decimal.toFixed(1)}</h2>
-                <Badge className={`${tierInfo.color} text-white mb-2 sm:mb-3 text-xs sm:text-sm`}>
+                <h2 className="mb-2 font-bold text-xl sm:text-3xl">
+                  Domain Rank {rankData.page_rank_decimal.toFixed(1)}
+                </h2>
+                <Badge className={`${tierInfo.color} mb-2 text-white text-xs sm:mb-3 sm:text-sm`}>
                   {tierInfo.tier}
                 </Badge>
-                <p className="text-muted-foreground max-w-md mx-auto text-sm">
+                <p className="mx-auto max-w-md text-muted-foreground text-sm">
                   {tierInfo.description}
                 </p>
               </CardContent>
             </Card>
 
             {/* Key Metrics Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
               <StatCard
-                icon={<TargetIcon size={12} weight="fill" className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />}
+                description="Domain strength based on backlink profile analysis"
+                icon={
+                  <TargetIcon
+                    className="h-3 w-3 text-blue-500 sm:h-4 sm:w-4"
+                    size={12}
+                    weight="fill"
+                  />
+                }
+                subtitle="Authority score"
                 title="Domain Authority"
                 value={`${rankData.page_rank_decimal.toFixed(1)}/100`}
-                subtitle="Authority score"
-                description="Domain strength based on backlink profile analysis"
               />
 
               <StatCard
-                icon={<GlobeIcon size={12} weight="fill" className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />}
+                description="Ranking among all indexed websites globally"
+                icon={
+                  <GlobeIcon
+                    className="h-3 w-3 text-green-500 sm:h-4 sm:w-4"
+                    size={12}
+                    weight="fill"
+                  />
+                }
+                subtitle="Worldwide position"
                 title="Global Rank"
                 value={`#${formatRank(rankData.rank)}`}
-                subtitle="Worldwide position"
-                description="Ranking among all indexed websites globally"
               />
 
               <StatCard
-                icon={<ChartLineIcon size={12} weight="fill" className="h-3 w-3 sm:h-4 sm:w-4 text-purple-500" />}
+                description="Percentage-based authority measurement"
+                icon={
+                  <ChartLineIcon
+                    className="h-3 w-3 text-purple-500 sm:h-4 sm:w-4"
+                    size={12}
+                    weight="fill"
+                  />
+                }
+                subtitle="Domain strength"
                 title="Authority Score"
                 value={`${Math.round(rankData.page_rank_decimal)}%`}
-                subtitle="Domain strength"
-                description="Percentage-based authority measurement"
               />
 
               <StatCard
-                icon={<ActivityIcon size={12} weight="fill" className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500" />}
+                description="Domain is indexed and being tracked"
+                icon={
+                  <ActivityIcon
+                    className="h-3 w-3 text-orange-500 sm:h-4 sm:w-4"
+                    size={12}
+                    weight="fill"
+                  />
+                }
+                subtitle="Ranking available"
                 title="Status"
                 value="Active"
-                subtitle="Ranking available"
-                description="Domain is indexed and being tracked"
               />
             </div>
 
             {/* Detailed Breakdown */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
               {/* Score Breakdown */}
               <Card>
                 <CardHeader className="pb-3 sm:pb-4">
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                    <ChartLineIcon size={12} weight="fill" className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <ChartLineIcon className="h-3 w-3 sm:h-4 sm:w-4" size={12} weight="fill" />
                     Score Breakdown
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4">
                   <div className="space-y-2 sm:space-y-3">
-                    <div className="flex justify-between items-center text-sm">
+                    <div className="flex items-center justify-between text-sm">
                       <span>Domain Authority</span>
-                      <span className="font-medium">{rankData.page_rank_decimal.toFixed(1)}/100</span>
+                      <span className="font-medium">
+                        {rankData.page_rank_decimal.toFixed(1)}/100
+                      </span>
                     </div>
-                    <Progress value={Math.min(100, rankData.page_rank_decimal)} className="h-2" />
+                    <Progress className="h-2" value={Math.min(100, rankData.page_rank_decimal)} />
                   </div>
 
                   <Separator />
@@ -228,7 +283,9 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
                     </div>
                     <div className="flex justify-between">
                       <span>Tier Classification:</span>
-                      <Badge variant="outline" className="text-xs">{tierInfo.tier}</Badge>
+                      <Badge className="text-xs" variant="outline">
+                        {tierInfo.tier}
+                      </Badge>
                     </div>
                   </div>
                 </CardContent>
@@ -238,20 +295,22 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
               <Card>
                 <CardHeader className="pb-3 sm:pb-4">
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                    <UsersIcon size={12} weight="fill" className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <UsersIcon className="h-3 w-3 sm:h-4 sm:w-4" size={12} weight="fill" />
                     Ranking Context
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4">
-                  <div className="p-3 bg-muted/50 rounded-lg">
-                    <div className="text-xs sm:text-sm font-medium mb-1">Global Position</div>
-                    <div className="text-xl sm:text-2xl font-bold">#{formatRank(rankData.rank)}</div>
-                    <div className="text-xs text-muted-foreground">
+                  <div className="rounded-lg bg-muted/50 p-3">
+                    <div className="mb-1 font-medium text-xs sm:text-sm">Global Position</div>
+                    <div className="font-bold text-xl sm:text-2xl">
+                      #{formatRank(rankData.rank)}
+                    </div>
+                    <div className="text-muted-foreground text-xs">
                       Among all websites worldwide
                     </div>
                   </div>
 
-                  <div className="text-xs text-muted-foreground space-y-1">
+                  <div className="space-y-1 text-muted-foreground text-xs">
                     <p>• Higher ranks indicate stronger backlink profiles</p>
                     <p>• Rankings are updated periodically based on crawl data</p>
                     <p>• Consider this alongside other SEO metrics</p>
@@ -264,14 +323,14 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
             <Card>
               <CardHeader className="pb-3 sm:pb-4">
                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <MedalIcon size={12} weight="fill" className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <MedalIcon className="h-3 w-3 sm:h-4 sm:w-4" size={12} weight="fill" />
                   Understanding Your Domain Rank
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
+                <div className="grid grid-cols-1 gap-4 text-xs sm:text-sm md:grid-cols-2">
                   <div>
-                    <h4 className="font-medium mb-2">What Domain Rank Measures:</h4>
+                    <h4 className="mb-2 font-medium">What Domain Rank Measures:</h4>
                     <ul className="space-y-1 text-muted-foreground">
                       <li>• Strength of your backlink profile</li>
                       <li>• Quality and quantity of referring domains</li>
@@ -280,7 +339,7 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-medium mb-2">How to Improve:</h4>
+                    <h4 className="mb-2 font-medium">How to Improve:</h4>
                     <ul className="space-y-1 text-muted-foreground">
                       <li>• Earn high-quality backlinks from authoritative sites</li>
                       <li>• Create valuable, linkable content</li>
@@ -293,12 +352,21 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
             </Card>
 
             {/* Footer Actions */}
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center pt-4 gap-4">
-              <div className="text-xs text-muted-foreground text-center sm:text-left">
-                Data provided by <a href="https://www.domcop.com/openpagerank/what-is-openpagerank" target="_blank" rel="noopener noreferrer" className="underline">OpenPageRank</a> • Updated periodically
+            <div className="flex flex-col gap-4 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-center text-muted-foreground text-xs sm:text-left">
+                Data provided by{" "}
+                <a
+                  className="underline"
+                  href="https://www.domcop.com/openpagerank/what-is-openpagerank"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  OpenPageRank
+                </a>{" "}
+                • Updated periodically
               </div>
-              <div className="flex gap-2 justify-center sm:justify-end">
-                <Button variant="outline" size="sm" onClick={onClose} className="w-full sm:w-auto">
+              <div className="flex justify-center gap-2 sm:justify-end">
+                <Button className="w-full sm:w-auto" onClick={onClose} size="sm" variant="outline">
                   Close
                 </Button>
               </div>
@@ -308,4 +376,4 @@ export function DomainRankDetails({ isOpen, onClose, rankData, domainName }: Dom
       </DrawerContent>
     </Drawer>
   );
-} 
+}
