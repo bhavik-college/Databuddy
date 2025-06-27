@@ -10,7 +10,7 @@ import {
   type Funnel,
   useAutocompleteData,
   useBulkGoalAnalytics,
-  useFunnels,
+  useGoals,
 } from "@/hooks/use-funnels";
 import { useWebsite } from "@/hooks/use-websites";
 import {
@@ -131,23 +131,17 @@ export default function GoalsPage() {
 
   const { data: websiteData } = useWebsite(websiteId);
 
-  // Filter funnels to only show single-step goals
   const {
-    data: allFunnels,
-    isLoading: funnelsLoading,
-    error: funnelsError,
-    refetch: refetchFunnels,
-    createFunnel,
-    updateFunnel,
-    deleteFunnel,
+    data: goals,
+    isLoading: goalsLoading,
+    error: goalsError,
+    refetch: refetchGoals,
+    createGoal,
+    updateGoal,
+    deleteGoal,
     isCreating,
     isUpdating,
-  } = useFunnels(websiteId);
-
-  // Filter to only single-step funnels (goals)
-  const goals = useMemo(() => {
-    return allFunnels?.filter((funnel) => funnel.steps?.length === 1) || [];
-  }, [allFunnels]);
+  } = useGoals(websiteId);
 
   // Get goal IDs for bulk analytics
   const goalIds = useMemo(() => goals.map((goal) => goal.id), [goals]);
@@ -166,7 +160,7 @@ export default function GoalsPage() {
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      await Promise.all([refetchFunnels(), autocompleteQuery.refetch()]);
+      await Promise.all([refetchGoals(), autocompleteQuery.refetch()]);
       if (goalIds.length > 0) {
         refetchAnalytics();
       }
@@ -175,56 +169,44 @@ export default function GoalsPage() {
     } finally {
       setIsRefreshing(false);
     }
-  }, [refetchFunnels, refetchAnalytics, autocompleteQuery.refetch, goalIds.length]);
+  }, [refetchGoals, refetchAnalytics, autocompleteQuery.refetch, goalIds.length]);
 
-  const handleCreateGoal = async (data: CreateFunnelData) => {
+  const handleSaveGoal = async (data: CreateFunnelData | Funnel) => {
     try {
-      // Ensure it's a single-step goal
-      const goalData = {
-        ...data,
-        steps: data.steps.slice(0, 1), // Only take the first step
-      };
-      await createFunnel(goalData);
+      if ('id' in data) {
+        // Updating existing goal
+        const goalData = { ...data, steps: data.steps.slice(0, 1) };
+        await updateGoal({
+          goalId: goalData.id,
+          updates: {
+            name: goalData.name,
+            description: goalData.description,
+            steps: goalData.steps,
+            filters: goalData.filters,
+          },
+        });
+      } else {
+        // Creating new goal
+        const goalData = { ...data, steps: data.steps.slice(0, 1) };
+        await createGoal(goalData);
+      }
       setIsDialogOpen(false);
       setEditingGoal(null);
     } catch (error) {
-      console.error("Failed to create goal:", error);
-    }
-  };
-
-  const handleUpdateGoal = async (goal: Funnel) => {
-    try {
-      // Ensure it's a single-step goal
-      const goalData = {
-        ...goal,
-        steps: goal.steps.slice(0, 1), // Only take the first step
-      };
-      await updateFunnel({
-        funnelId: goal.id,
-        updates: {
-          name: goalData.name,
-          description: goalData.description,
-          steps: goalData.steps,
-          filters: goalData.filters,
-        },
-      });
-      setIsDialogOpen(false);
-      setEditingGoal(null);
-    } catch (error) {
-      console.error("Failed to update goal:", error);
+      console.error("Failed to save goal:", error);
     }
   };
 
   const handleDeleteGoal = async (goalId: string) => {
     try {
-      await deleteFunnel(goalId);
+      await deleteGoal(goalId);
       setDeletingGoalId(null);
     } catch (error) {
       console.error("Failed to delete goal:", error);
     }
   };
 
-  if (funnelsError) {
+  if (goalsError) {
     return (
       <div className="mx-auto max-w-[1600px] p-6">
         <Card className="rounded border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
@@ -233,7 +215,7 @@ export default function GoalsPage() {
               <TrendDownIcon className="h-5 w-5 text-red-600" size={16} weight="duotone" />
               <p className="font-medium text-red-600">Error loading goal data</p>
             </div>
-            <p className="mt-2 text-red-600/80 text-sm">{funnelsError.message}</p>
+            <p className="mt-2 text-red-600/80 text-sm">{goalsError.message}</p>
           </CardContent>
         </Card>
       </div>
@@ -245,56 +227,56 @@ export default function GoalsPage() {
       <Suspense fallback={<PageHeaderSkeleton />}>
         <PageHeader
           goalsCount={goals.length}
-          hasError={!!funnelsError}
-          isLoading={funnelsLoading}
+          hasError={!!goalsError}
+          isLoading={goalsLoading}
           isRefreshing={isRefreshing}
+          onRefresh={handleRefresh}
           onCreateGoal={() => {
             setEditingGoal(null);
             setIsDialogOpen(true);
           }}
-          onRefresh={handleRefresh}
           websiteName={websiteData?.name || ""}
         />
       </Suspense>
 
-      <Suspense fallback={<GoalsListSkeleton />}>
-        <GoalsList
-          analyticsLoading={analyticsLoading}
-          goalAnalytics={goalAnalytics}
-          goals={goals}
-          isLoading={funnelsLoading}
-          onCreateGoal={() => {
-            setEditingGoal(null);
-            setIsDialogOpen(true);
-          }}
-          onDeleteGoal={setDeletingGoalId}
-          onEditGoal={(goal: Funnel) => {
-            setEditingGoal(goal);
-            setIsDialogOpen(true);
-          }}
-        />
-      </Suspense>
-
-      {isDialogOpen && (
-        <Suspense fallback={null}>
-          <EditGoalDialog
-            autocompleteData={autocompleteQuery.data}
-            goal={editingGoal}
-            isCreating={isCreating}
-            isOpen={isDialogOpen}
-            isUpdating={isUpdating}
-            onClose={() => {
-              setIsDialogOpen(false);
+      {isVisible && (
+        <Suspense fallback={<GoalsListSkeleton />}>
+          <GoalsList
+            analyticsLoading={analyticsLoading}
+            goalAnalytics={goalAnalytics}
+            goals={goals}
+            isLoading={goalsLoading}
+            onCreateGoal={() => {
               setEditingGoal(null);
+              setIsDialogOpen(true);
             }}
-            onCreate={handleCreateGoal}
-            onSubmit={handleUpdateGoal}
+            onDeleteGoal={(goalId) => setDeletingGoalId(goalId)}
+            onEditGoal={(goal) => {
+              setEditingGoal(goal);
+              setIsDialogOpen(true);
+            }}
           />
         </Suspense>
       )}
 
-      {!!deletingGoalId && (
-        <Suspense fallback={null}>
+      {isDialogOpen && (
+        <Suspense>
+          <EditGoalDialog
+            autocompleteData={autocompleteQuery.data?.data}
+            goal={editingGoal}
+            isOpen={isDialogOpen}
+            isSaving={isCreating || isUpdating}
+            onClose={() => {
+              setIsDialogOpen(false);
+              setEditingGoal(null);
+            }}
+            onSave={handleSaveGoal}
+          />
+        </Suspense>
+      )}
+
+      {deletingGoalId && (
+        <Suspense>
           <DeleteGoalDialog
             isOpen={!!deletingGoalId}
             onClose={() => setDeletingGoalId(null)}

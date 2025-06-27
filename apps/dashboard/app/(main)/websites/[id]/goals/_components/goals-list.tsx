@@ -17,7 +17,7 @@ interface GoalsListProps {
   onEditGoal: (goal: Funnel) => void;
   onDeleteGoal: (goalId: string) => void;
   onCreateGoal: () => void;
-  goalAnalytics?: GoalAnalytics[];
+  goalAnalytics?: Record<string, any>;
   analyticsLoading?: boolean;
 }
 
@@ -27,7 +27,7 @@ export function GoalsList({
   onEditGoal,
   onDeleteGoal,
   onCreateGoal,
-  goalAnalytics = [],
+  goalAnalytics = {},
   analyticsLoading = false,
 }: GoalsListProps) {
   if (isLoading) {
@@ -38,25 +38,21 @@ export function GoalsList({
     return <EmptyState onCreateGoal={onCreateGoal} />;
   }
 
-  const getAnalyticsForGoal = (goalId: string) => {
-    return goalAnalytics.find((analytics) => analytics.goalId === goalId);
-  };
-
   return (
     <div className="space-y-3">
       {goals.map((goal) => {
-        const analytics = getAnalyticsForGoal(goal.id);
+        const analytics = goalAnalytics[goal.id];
 
         return (
           <GoalCard
-            completions={analytics?.completions || 0}
-            conversionRate={analytics?.conversionRate || 0}
+            completions={analytics?.total_users_completed || 0}
+            conversionRate={analytics?.overall_conversion_rate || 0}
             goal={goal}
             isLoading={analyticsLoading}
             key={goal.id}
             onDelete={() => onDeleteGoal(goal.id)}
             onEdit={() => onEditGoal(goal)}
-            totalUsers={analytics?.totalUsers || 0}
+            totalUsers={analytics?.total_users_entered || 0}
           />
         );
       })}

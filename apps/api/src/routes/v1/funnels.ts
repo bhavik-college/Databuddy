@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
-import { eq, and, isNull, desc } from 'drizzle-orm'
+import { eq, and, isNull, desc, sql } from 'drizzle-orm'
 
 import { authMiddleware } from '../../middleware/auth'
 import { websiteAuthHook } from '../../middleware/website'
@@ -211,7 +211,8 @@ funnelRouter.get('/', async (c) => {
       .from(funnelDefinitions)
       .where(and(
         eq(funnelDefinitions.websiteId, website.id),
-        isNull(funnelDefinitions.deletedAt)
+        isNull(funnelDefinitions.deletedAt),
+        sql`jsonb_array_length(${funnelDefinitions.steps}) > 1`
       ))
       .orderBy(desc(funnelDefinitions.createdAt))
 
@@ -235,6 +236,51 @@ funnelRouter.get('/', async (c) => {
     }, 500)
   }
 })
+
+// Get all goals for a website
+funnelRouter.get('/goals', async (c) => {
+    try {
+      const website = c.get('website')
+  
+      const goals = await db
+        .select({
+          id: funnelDefinitions.id,
+          name: funnelDefinitions.name,
+          description: funnelDefinitions.description,
+          steps: funnelDefinitions.steps,
+          filters: funnelDefinitions.filters,
+          isActive: funnelDefinitions.isActive,
+          createdAt: funnelDefinitions.createdAt,
+          updatedAt: funnelDefinitions.updatedAt,
+        })
+        .from(funnelDefinitions)
+        .where(and(
+          eq(funnelDefinitions.websiteId, website.id),
+          isNull(funnelDefinitions.deletedAt),
+          sql`jsonb_array_length(${funnelDefinitions.steps}) = 1`
+        ))
+        .orderBy(desc(funnelDefinitions.createdAt))
+  
+      return c.json({
+        success: true,
+        data: goals,
+        meta: {
+          total: goals.length,
+          website_id: website.id
+        }
+      })
+    } catch (error: any) {
+      logger.error('Failed to fetch goals', {
+        error: error.message,
+        website_id: c.get('website')?.id
+      })
+  
+      return c.json({
+        success: false,
+        error: 'Failed to fetch goals'
+      }, 500)
+    }
+  })
 
 // Get a specific funnel
 funnelRouter.get('/:id', async (c) => {
@@ -298,6 +344,13 @@ funnelRouter.post(
       const user = c.get('user')
       const { name, description, steps, filters } = await c.req.json()
 
+      if (steps.length <= 1) {
+        return c.json({
+            success: false,
+            error: 'Funnels must have more than one step.'
+        }, 400)
+      }
+
       const funnelId = crypto.randomUUID()
 
       const [newFunnel] = await db
@@ -340,6 +393,63 @@ funnelRouter.post(
   }
 )
 
+// Create a new goal
+funnelRouter.post(
+    '/goals',
+    async (c) => {
+      try {
+        const website = c.get('website')
+        const user = c.get('user')
+        const { name, description, steps, filters } = await c.req.json()
+  
+        if (steps.length !== 1) {
+          return c.json({
+              success: false,
+              error: 'Goals must have exactly one step.'
+          }, 400)
+        }
+  
+        const goalId = crypto.randomUUID()
+  
+        const [newGoal] = await db
+          .insert(funnelDefinitions)
+          .values({
+            id: goalId,
+            websiteId: website.id,
+            name,
+            description,
+            steps,
+            filters,
+            createdBy: user.id,
+          })
+          .returning()
+  
+        logger.info('Goal created', {
+          goal_id: goalId,
+          name,
+          website_id: website.id,
+          user_id: user.id
+        })
+  
+        return c.json({
+          success: true,
+          data: newGoal
+        }, 201)
+      } catch (error: any) {
+        logger.error('Failed to create goal', {
+          error: error.message,
+          website_id: c.get('website')?.id,
+          user_id: c.get('user')?.id
+        })
+  
+        return c.json({
+          success: false,
+          error: 'Failed to create goal'
+        }, 500)
+      }
+    }
+  )
+
 // Update a funnel
 funnelRouter.put(
   '/:id',
@@ -348,6 +458,13 @@ funnelRouter.put(
       const website = c.get('website')
       const funnelId = c.req.param('id')
       const updates = await c.req.json()
+
+      if (updates.steps && updates.steps.length <= 1) {
+        return c.json({
+            success: false,
+            error: 'Funnels must have more than one step.'
+        }, 400)
+      }
 
       const [updatedFunnel] = await db
         .update(funnelDefinitions)
@@ -387,6 +504,61 @@ funnelRouter.put(
     }
   }
 )
+
+// Update a goal
+funnelRouter.put(
+    '/:id/goals',
+    async (c) => {
+      try {
+        const website = c.get('website')
+        const goalId = c.req.param('id')
+        const updates = await c.req.json()
+  
+        if (updates.steps && updates.steps.length !== 1) {
+          return c.json({
+              success: false,
+              error: 'Goals must have exactly one step.'
+          }, 400)
+        }
+  
+        const [updatedGoal] = await db
+          .update(funnelDefinitions)
+          .set({
+            ...updates,
+            updatedAt: new Date().toISOString(),
+          })
+          .where(and(
+            eq(funnelDefinitions.id, goalId),
+            eq(funnelDefinitions.websiteId, website.id),
+            isNull(funnelDefinitions.deletedAt)
+          ))
+          .returning()
+  
+        if (!updatedGoal) {
+          return c.json({
+            success: false,
+            error: 'Goal not found'
+          }, 404)
+        }
+  
+        return c.json({
+          success: true,
+          data: updatedGoal
+        })
+      } catch (error: any) {
+        logger.error('Failed to update goal', {
+          error: error.message,
+          goal_id: c.req.param('id'),
+          website_id: c.get('website')?.id
+        })
+  
+        return c.json({
+          success: false,
+          error: 'Failed to update goal'
+        }, 500)
+      }
+    }
+  )
 
 // Delete a funnel (soft delete)
 funnelRouter.delete('/:id', async (c) => {
@@ -438,114 +610,49 @@ funnelRouter.delete('/:id', async (c) => {
   }
 })
 
-// Funnel Goals endpoints
-
-// Create a goal for a funnel
-funnelRouter.post(
-  '/:id/goals',
-  async (c) => {
+// Delete a goal (soft delete)
+funnelRouter.delete('/:id/goals', async (c) => {
     try {
       const website = c.get('website')
-      const funnelId = c.req.param('id')
-      const { goalType, targetValue, description } = await c.req.json()
-
-      // Verify funnel exists and belongs to website
-      const funnel = await db
-        .select({ id: funnelDefinitions.id })
-        .from(funnelDefinitions)
+      const goalId = c.req.param('id')
+  
+      const [deletedGoal] = await db
+        .update(funnelDefinitions)
+        .set({
+          deletedAt: new Date().toISOString(),
+          isActive: false,
+        })
         .where(and(
-          eq(funnelDefinitions.id, funnelId),
+          eq(funnelDefinitions.id, goalId),
           eq(funnelDefinitions.websiteId, website.id),
           isNull(funnelDefinitions.deletedAt)
         ))
-        .limit(1)
-
-      if (funnel.length === 0) {
+        .returning({ id: funnelDefinitions.id })
+  
+      if (!deletedGoal) {
         return c.json({
           success: false,
-          error: 'Funnel not found'
+          error: 'Goal not found'
         }, 404)
       }
-
-      const [newGoal] = await db
-        .insert(funnelGoals)
-        .values({
-          id: crypto.randomUUID(),
-          funnelId,
-          goalType,
-          targetValue,
-          description,
-        })
-        .returning()
-
+  
       return c.json({
         success: true,
-        data: newGoal
-      }, 201)
+        message: 'Goal deleted successfully'
+      })
     } catch (error: any) {
-      logger.error('Failed to create funnel goal', {
+      logger.error('Failed to delete goal', {
         error: error.message,
-        funnel_id: c.req.param('id'),
+        goal_id: c.req.param('id'),
         website_id: c.get('website')?.id
       })
-
+  
       return c.json({
         success: false,
-        error: 'Failed to create goal'
+        error: 'Failed to delete goal'
       }, 500)
     }
-  }
-)
-
-// Get goals for a funnel
-funnelRouter.get('/:id/goals', async (c) => {
-  try {
-    const website = c.get('website')
-    const funnelId = c.req.param('id')
-
-    // Verify funnel exists and belongs to website
-    const funnel = await db
-      .select({ id: funnelDefinitions.id })
-      .from(funnelDefinitions)
-      .where(and(
-        eq(funnelDefinitions.id, funnelId),
-        eq(funnelDefinitions.websiteId, website.id),
-        isNull(funnelDefinitions.deletedAt)
-      ))
-      .limit(1)
-
-    if (funnel.length === 0) {
-      return c.json({
-        success: false,
-        error: 'Funnel not found'
-      }, 404)
-    }
-
-    const goals = await db
-      .select()
-      .from(funnelGoals)
-      .where(and(
-        eq(funnelGoals.funnelId, funnelId),
-        eq(funnelGoals.isActive, true)
-      ))
-
-    return c.json({
-      success: true,
-      data: goals
-    })
-  } catch (error: any) {
-    logger.error('Failed to fetch funnel goals', {
-      error: error.message,
-      funnel_id: c.req.param('id'),
-      website_id: c.get('website')?.id
-    })
-
-    return c.json({
-      success: false,
-      error: 'Failed to fetch goals'
-    }, 500)
-  }
-})
+  })
 
 // Get funnel analytics
 funnelRouter.get('/:id/analytics', async (c) => {
