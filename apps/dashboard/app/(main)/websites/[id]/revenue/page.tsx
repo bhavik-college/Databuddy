@@ -54,7 +54,7 @@ const PageHeaderSkeleton = () => (
     {/* Metrics Skeleton */}
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
       {[...Array(4)].map((_, i) => (
-        <div className="overflow-hidden rounded-lg border bg-card" key={i}>
+        <div className="overflow-hidden rounded-lg border bg-card" key={`${i + 1}-metrics-skeleton`}>
           <div className="p-3 sm:p-4">
             <div className="mb-1.5 flex items-center justify-between sm:mb-2">
               <Skeleton className="h-2.5 w-16 rounded sm:h-3 sm:w-20" />
@@ -74,7 +74,7 @@ const PageHeaderSkeleton = () => (
 const RevenueMetricsSkeleton = () => (
   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
     {[...Array(4)].map((_, i) => (
-      <div className="overflow-hidden rounded-lg border bg-card" key={i}>
+      <div className="overflow-hidden rounded-lg border bg-card" key={`${i + 1}-metrics-skeleton`}>
         <div className="p-3 sm:p-4">
           <div className="mb-1.5 flex items-center justify-between sm:mb-2">
             <Skeleton className="h-2.5 w-16 rounded sm:h-3 sm:w-20" />
@@ -289,7 +289,7 @@ export default function WebsiteRevenuePage() {
                     {[...Array(5)].map((_, i) => (
                       <div
                         className="flex items-center justify-between rounded-lg border p-3"
-                        key={i}
+                        key={`${i + 1}-item`}
                       >
                         <div className="space-y-2">
                           <Skeleton className="h-4 w-32" />

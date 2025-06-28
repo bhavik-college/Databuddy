@@ -1,6 +1,6 @@
 "use client";
 
-import { GlobeIcon, XIcon } from "@phosphor-icons/react";
+import { XIcon } from "@phosphor-icons/react";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -19,14 +19,6 @@ import { WebsiteHeader } from "./navigation/website-header";
 import { OrganizationSelector } from "./organization-selector";
 import { TopHeader } from "./top-header";
 
-const WebsiteList = dynamic(
-  () => import("./navigation/website-list").then((mod) => mod.WebsiteList),
-  {
-    ssr: false,
-    loading: () => null,
-  }
-);
-
 const NavigationSection = dynamic(
   () => import("./navigation/navigation-section").then((mod) => mod.NavigationSection),
   {
@@ -38,9 +30,8 @@ const NavigationSection = dynamic(
 export function Sidebar() {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { websites, isLoading } = useWebsites();
+  const { websites } = useWebsites();
 
-  // Check if we're on a specific website page
   const websitePathMatch = pathname.match(/^\/websites\/([^/]+)(?:\/(.*))?$/);
   const demoPathMatch = pathname.match(/^\/demo\/([^/]+)(?:\/(.*))?$/);
   const currentWebsiteId = websitePathMatch
@@ -49,27 +40,19 @@ export function Sidebar() {
       ? demoPathMatch[1]
       : null;
 
-  // Check context - demo takes precedence over website
   const isInDemoContext = pathname.startsWith("/demo");
   const isInSandboxContext = pathname.startsWith("/sandbox");
   const isInWebsiteContext = !(isInDemoContext || isInSandboxContext) && !!currentWebsiteId;
 
-  // Find current website details
   const currentWebsite =
     isInWebsiteContext || isInDemoContext
       ? websites?.find((site: any) => site.id === currentWebsiteId)
       : null;
 
-  // Close sidebar when route changes on mobile
-  useEffect(() => {
-    setIsMobileOpen(false);
-  }, [pathname]);
-
   const closeSidebar = useCallback(() => {
     setIsMobileOpen(false);
   }, []);
 
-  // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isMobileOpen) {
@@ -88,7 +71,11 @@ export function Sidebar() {
 
       {/* Mobile backdrop */}
       {isMobileOpen && (
-        <div className="fixed inset-0 z-30 bg-black/20 md:hidden" onClick={closeSidebar} />
+        <div
+          className="fixed inset-0 z-30 bg-black/20 md:hidden"
+          onKeyDown={closeSidebar}
+          onClick={closeSidebar}
+        />
       )}
 
       {/* Sidebar */}
@@ -172,16 +159,6 @@ export function Sidebar() {
                     title={section.title}
                   />
                 ))}
-
-                {!isInDemoContext && (
-                  <div className="border-t pt-4">
-                    <h3 className="mb-2 flex items-center gap-2 px-2 font-medium text-muted-foreground text-xs uppercase tracking-wide">
-                      <GlobeIcon className="h-5 w-5" size={32} weight="duotone" />
-                      Websites
-                    </h3>
-                    <WebsiteList isLoading={isLoading} pathname={pathname} websites={websites} />
-                  </div>
-                )}
               </div>
             )}
           </div>

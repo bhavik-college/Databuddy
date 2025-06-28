@@ -43,11 +43,10 @@ export function FunnelCard({
 }: FunnelCardProps) {
   return (
     <Card
-      className={`group transition-all duration-200 ${
-        isExpanded
+      className={`group transition-all duration-200 ${isExpanded
           ? "border-primary/30 bg-gradient-to-r from-background to-primary/5 shadow-lg"
           : "hover:border-border hover:shadow-md"
-      } cursor-pointer rounded`}
+        } cursor-pointer rounded`}
       onClick={() => onToggle(funnel.id)}
     >
       <CardHeader className="pb-4">
@@ -59,9 +58,8 @@ export function FunnelCard({
                 {funnel.name}
               </CardTitle>
               <CaretDownIcon
-                className={`h-4 w-4 flex-shrink-0 text-muted-foreground transition-transform duration-200 ${
-                  isExpanded ? "rotate-180 text-primary" : ""
-                }`}
+                className={`h-4 w-4 flex-shrink-0 text-muted-foreground transition-transform duration-200 ${isExpanded ? "rotate-180 text-primary" : ""
+                  }`}
                 size={16}
                 weight="fill"
               />
