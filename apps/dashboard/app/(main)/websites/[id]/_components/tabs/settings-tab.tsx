@@ -56,7 +56,6 @@ import {
   generateNpmComponentCode,
   generateScriptTag,
 } from "../utils/code-generators";
-// Import utilities and types
 import { RECOMMENDED_DEFAULTS } from "../utils/tracking-defaults";
 import {
   enableAllAdvancedTracking,

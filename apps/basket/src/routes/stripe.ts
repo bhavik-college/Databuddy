@@ -1,14 +1,14 @@
 import { Elysia } from "elysia";
-import Stripe from 'stripe'
-import { db, userStripeConfig, eq } from '@databuddy/db'
-import { clickHouse } from '@databuddy/db'
+import Stripe from "stripe";
+import { db, userStripeConfig, eq } from "@databuddy/db";
+import { clickHouse } from "@databuddy/db";
 
 /**
  * STRIPE CHECKOUT SETUP GUIDE
- * 
+ *
  * To properly track revenue analytics, you MUST include metadata in payment_intent_data
  * when creating Stripe Checkout sessions server-side:
- * 
+ *
  * Example:
  * ```typescript
  * const session = await stripe.checkout.sessions.create({
@@ -27,7 +27,7 @@ import { clickHouse } from '@databuddy/db'
  *   }
  * });
  * ```
- * 
+ *
  * IMPORTANT:
  * - payment_intent_data.metadata is the ONLY metadata that propagates to webhooks
  * - client_id is required for linking payments to your analytics
@@ -35,270 +35,332 @@ import { clickHouse } from '@databuddy/db'
  * - This links Stripe payments to your analytics events automatically
  */
 
-const app = new Elysia()
+const app = new Elysia();
 
 interface StripeConfig {
-    webhookSecret: string
-    userId: string
-    webhookToken: string
-    isLiveMode: boolean
+	webhookSecret: string;
+	userId: string;
+	webhookToken: string;
+	isLiveMode: boolean;
 }
 
-const IS_PRODUCTION = process.env.NODE_ENV === 'production'
-const ENABLE_MODE_VALIDATION = process.env.ENABLE_MODE_VALIDATION === 'true' || IS_PRODUCTION
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+const ENABLE_MODE_VALIDATION =
+	process.env.ENABLE_MODE_VALIDATION === "true" || IS_PRODUCTION;
 
 // Secure webhook endpoint using webhook token: /stripe/webhook/{webhookToken}
-app.post('/stripe/webhook/:webhookToken', async ({ params, request, set }) => {
-    const clientIp = getClientIp(request)
+app.post("/stripe/webhook/:webhookToken", async ({ params, request, set }) => {
+	const clientIp = getClientIp(request);
 
-    const config = await getStripeConfigByToken(params.webhookToken)
-    if (!config) {
-        logSecurityEvent('invalid_webhook_token', params.webhookToken, clientIp)
-        set.status = 404
-        return { error: 'Webhook endpoint not found' }
-    }
+	const config = await getStripeConfigByToken(params.webhookToken);
+	if (!config) {
+		logSecurityEvent("invalid_webhook_token", params.webhookToken, clientIp);
+		set.status = 404;
+		return { error: "Webhook endpoint not found" };
+	}
 
-    return handleWebhook(request, set, config)
-})
+	return handleWebhook(request, set, config);
+});
 
 /**
  * Get client IP address from request
  */
 function getClientIp(request: Request): string {
-    return request.headers.get('cf-connecting-ip') ||
-        request.headers.get('x-forwarded-for')?.split(',')[0] ||
-        request.headers.get('x-real-ip') ||
-        'unknown'
+	return (
+		request.headers.get("cf-connecting-ip") ||
+		request.headers.get("x-forwarded-for")?.split(",")[0] ||
+		request.headers.get("x-real-ip") ||
+		"unknown"
+	);
 }
 /**
  * Get Stripe configuration by webhook token
  */
-async function getStripeConfigByToken(webhookToken: string): Promise<StripeConfig | null> {
-    try {
-        const userConfig = await db
-            .select({
-                webhookSecret: userStripeConfig.webhookSecret,
-                userId: userStripeConfig.userId,
-                isLiveMode: userStripeConfig.isLiveMode,
-                isActive: userStripeConfig.isActive
-            })
-            .from(userStripeConfig)
-            .where(eq(userStripeConfig.webhookToken, webhookToken))
-            .limit(1)
+async function getStripeConfigByToken(
+	webhookToken: string,
+): Promise<StripeConfig | null> {
+	try {
+		const userConfig = await db
+			.select({
+				webhookSecret: userStripeConfig.webhookSecret,
+				userId: userStripeConfig.userId,
+				isLiveMode: userStripeConfig.isLiveMode,
+				isActive: userStripeConfig.isActive,
+			})
+			.from(userStripeConfig)
+			.where(eq(userStripeConfig.webhookToken, webhookToken))
+			.limit(1);
 
-        if (!userConfig.length || !userConfig[0].isActive) {
-            return null
-        }
+		if (!userConfig.length || !userConfig[0].isActive) {
+			return null;
+		}
 
-        const config = userConfig[0]
-        return {
-            webhookSecret: config.webhookSecret,
-            userId: config.userId,
-            webhookToken: webhookToken,
-            isLiveMode: config.isLiveMode
-        }
-    } catch (error) {
-        console.error(`Error fetching Stripe config for token ${webhookToken}:`, error)
-        return null
-    }
+		const config = userConfig[0];
+		return {
+			webhookSecret: config.webhookSecret,
+			userId: config.userId,
+			webhookToken: webhookToken,
+			isLiveMode: config.isLiveMode,
+		};
+	} catch (error) {
+		console.error(
+			`Error fetching Stripe config for token ${webhookToken}:`,
+			error,
+		);
+		return null;
+	}
 }
 
 /**
  * Webhook handler with conditional security
  */
 async function handleWebhook(request: Request, set: any, config: StripeConfig) {
-    const sig = request.headers.get('stripe-signature')
-    const body = await request.text()
+	const sig = request.headers.get("stripe-signature");
+	const body = await request.text();
 
-    if (!sig) {
-        set.status = 400
-        return { error: 'Missing stripe-signature header' }
-    }
+	if (!sig) {
+		set.status = 400;
+		return { error: "Missing stripe-signature header" };
+	}
 
-    try {
-        const event = await Stripe.webhooks.constructEventAsync(body, sig, config.webhookSecret)
+	try {
+		const event = await Stripe.webhooks.constructEventAsync(
+			body,
+			sig,
+			config.webhookSecret,
+		);
 
-        // Validate live/test mode consistency (conditional)
-        if (ENABLE_MODE_VALIDATION && event.livemode !== config.isLiveMode) {
-            logSecurityEvent('livemode_mismatch', config.webhookToken, getClientIp(request), {
-                eventLivemode: event.livemode,
-                configLivemode: config.isLiveMode,
-                eventType: event.type
-            })
-            set.status = 400
-            return { error: 'Live/test mode mismatch' }
-        }
+		// Validate live/test mode consistency (conditional)
+		if (ENABLE_MODE_VALIDATION && event.livemode !== config.isLiveMode) {
+			logSecurityEvent(
+				"livemode_mismatch",
+				config.webhookToken,
+				getClientIp(request),
+				{
+					eventLivemode: event.livemode,
+					configLivemode: config.isLiveMode,
+					eventType: event.type,
+				},
+			);
+			set.status = 400;
+			return { error: "Live/test mode mismatch" };
+		}
 
-        console.log(`📦 Stripe webhook received for user ${config.userId}:`, {
-            type: event.type,
-            id: event.id,
-            livemode: event.livemode
-        })
+		console.log(`📦 Stripe webhook received for user ${config.userId}:`, {
+			type: event.type,
+			id: event.id,
+			livemode: event.livemode,
+		});
 
-        try {
-            await processWebhookEvent(event, config)
-            console.log(`✅ Successfully processed ${event.type}`)
-        } catch (processingError) {
-            console.error(`❌ Error processing webhook event:`, processingError)
-        }
+		try {
+			await processWebhookEvent(event, config);
+			console.log(`✅ Successfully processed ${event.type}`);
+		} catch (processingError) {
+			console.error("❌ Error processing webhook event:", processingError);
+		}
 
-        set.status = 200
-        return { received: true, eventType: event.type }
+		set.status = 200;
+		return { received: true, eventType: event.type };
+	} catch (err) {
+		console.error("⚠️ Webhook signature verification failed:", err);
+		logSecurityEvent(
+			"signature_verification_failed",
+			config.webhookToken,
+			getClientIp(request),
+		);
+		// updateWebhookFailure(config.webhookToken) // Commented out - no DB fields yet
 
-    } catch (err) {
-        console.error(`⚠️ Webhook signature verification failed:`, err)
-        logSecurityEvent('signature_verification_failed', config.webhookToken, getClientIp(request))
-        // updateWebhookFailure(config.webhookToken) // Commented out - no DB fields yet
-
-        set.status = 400
-        return { error: 'Invalid signature' }
-    }
+		set.status = 400;
+		return { error: "Invalid signature" };
+	}
 }
 
 /**
  * Process webhook events and store data
  */
 async function processWebhookEvent(event: Stripe.Event, config: StripeConfig) {
-    const handlers: Record<string, (data: any) => Promise<void>> = {
-        'payment_intent.succeeded': (pi: Stripe.PaymentIntent) => insertPaymentIntent(pi, config),
-        'payment_intent.created': (pi: Stripe.PaymentIntent) => insertPaymentIntent(pi, config),
-        'payment_intent.canceled': (pi: Stripe.PaymentIntent) => insertPaymentIntent(pi, config),
-        'payment_intent.payment_failed': (pi: Stripe.PaymentIntent) => insertPaymentIntent(pi, config),
-        'payment_intent.requires_action': (pi: Stripe.PaymentIntent) => insertPaymentIntent(pi, config),
-        'charge.succeeded': (charge: Stripe.Charge) => insertCharge(charge, config),
-        'charge.failed': (charge: Stripe.Charge) => insertCharge(charge, config),
-        'charge.captured': (charge: Stripe.Charge) => insertCharge(charge, config),
-        'charge.dispute.created': (charge: Stripe.Charge) => insertCharge(charge, config),
-        'refund.created': (refund: Stripe.Refund) => insertRefund(refund, config),
-        'refund.updated': (refund: Stripe.Refund) => insertRefund(refund, config),
-        'refund.failed': (refund: Stripe.Refund) => insertRefund(refund, config),
-    }
+	const handlers: Record<string, (data: any) => Promise<void>> = {
+		"payment_intent.succeeded": (pi: Stripe.PaymentIntent) =>
+			insertPaymentIntent(pi, config),
+		"payment_intent.created": (pi: Stripe.PaymentIntent) =>
+			insertPaymentIntent(pi, config),
+		"payment_intent.canceled": (pi: Stripe.PaymentIntent) =>
+			insertPaymentIntent(pi, config),
+		"payment_intent.payment_failed": (pi: Stripe.PaymentIntent) =>
+			insertPaymentIntent(pi, config),
+		"payment_intent.requires_action": (pi: Stripe.PaymentIntent) =>
+			insertPaymentIntent(pi, config),
+		"charge.succeeded": (charge: Stripe.Charge) => insertCharge(charge, config),
+		"charge.failed": (charge: Stripe.Charge) => insertCharge(charge, config),
+		"charge.captured": (charge: Stripe.Charge) => insertCharge(charge, config),
+		"charge.dispute.created": (charge: Stripe.Charge) =>
+			insertCharge(charge, config),
+		"refund.created": (refund: Stripe.Refund) => insertRefund(refund, config),
+		"refund.updated": (refund: Stripe.Refund) => insertRefund(refund, config),
+		"refund.failed": (refund: Stripe.Refund) => insertRefund(refund, config),
+	};
 
-    const handler = handlers[event.type]
-    if (handler) {
-        await handler(event.data.object as any)
-    } else {
-        console.log(`🔄 Unhandled event type: ${event.type}`)
-    }
+	const handler = handlers[event.type];
+	if (handler) {
+		await handler(event.data.object as any);
+	} else {
+		console.log(`🔄 Unhandled event type: ${event.type}`);
+	}
 }
 
 function extractClientId(stripeObject: any): string | null {
-    return stripeObject.metadata?.client_id || null
+	return stripeObject.metadata?.client_id || null;
 }
 
 function extractSessionId(stripeObject: any): string | null {
-    return stripeObject.metadata?.session_id || null
+	return stripeObject.metadata?.session_id || null;
 }
 
-function validateClientId(clientId: string | null, objectId: string, objectType: string): void {
-    if (!clientId) {
-        throw new Error(`Missing required client_id in ${objectType} ${objectId} metadata. Please include client_id in your Stripe Checkout session metadata.`)
-    }
+function validateClientId(
+	clientId: string | null,
+	objectId: string,
+	objectType: string,
+): void {
+	if (!clientId) {
+		throw new Error(
+			`Missing required client_id in ${objectType} ${objectId} metadata. Please include client_id in your Stripe Checkout session metadata.`,
+		);
+	}
 }
 
 async function insertStripeData(table: string, data: any): Promise<void> {
-    await clickHouse.insert({
-        table,
-        values: [data],
-        format: 'JSONEachRow'
-    })
+	await clickHouse.insert({
+		table,
+		values: [data],
+		format: "JSONEachRow",
+	});
 }
 
-async function insertPaymentIntent(pi: Stripe.PaymentIntent, config: StripeConfig) {
-    const clientId = extractClientId(pi)
-    const sessionId = extractSessionId(pi)
+async function insertPaymentIntent(
+	pi: Stripe.PaymentIntent,
+	config: StripeConfig,
+) {
+	const clientId = extractClientId(pi);
+	const sessionId = extractSessionId(pi);
 
-    validateClientId(clientId, pi.id, 'PaymentIntent')
+	validateClientId(clientId, pi.id, "PaymentIntent");
 
-    await insertStripeData('analytics.stripe_payment_intents', {
-        id: pi.id,
-        client_id: clientId,
-        webhook_token: config.webhookToken,
-        created: new Date(pi.created * 1000).toISOString().replace('T', ' ').replace('Z', ''),
-        status: pi.status,
-        currency: pi.currency,
-        amount: pi.amount,
-        amount_received: pi.amount_received,
-        amount_capturable: pi.amount_capturable,
-        livemode: pi.livemode ? 1 : 0,
-        metadata: pi.metadata,
-        payment_method_types: pi.payment_method_types,
-        failure_reason: pi.last_payment_error?.message || null,
-        canceled_at: pi.canceled_at ? new Date(pi.canceled_at * 1000).toISOString().replace('T', ' ').replace('Z', '') : null,
-        cancellation_reason: pi.cancellation_reason,
-        description: pi.description,
-        application_fee_amount: pi.application_fee_amount,
-        setup_future_usage: pi.setup_future_usage,
-        session_id: sessionId
-    })
+	await insertStripeData("analytics.stripe_payment_intents", {
+		id: pi.id,
+		client_id: clientId,
+		webhook_token: config.webhookToken,
+		created: new Date(pi.created * 1000)
+			.toISOString()
+			.replace("T", " ")
+			.replace("Z", ""),
+		status: pi.status,
+		currency: pi.currency,
+		amount: pi.amount,
+		amount_received: pi.amount_received,
+		amount_capturable: pi.amount_capturable,
+		livemode: pi.livemode ? 1 : 0,
+		metadata: pi.metadata,
+		payment_method_types: pi.payment_method_types,
+		failure_reason: pi.last_payment_error?.message || null,
+		canceled_at: pi.canceled_at
+			? new Date(pi.canceled_at * 1000)
+					.toISOString()
+					.replace("T", " ")
+					.replace("Z", "")
+			: null,
+		cancellation_reason: pi.cancellation_reason,
+		description: pi.description,
+		application_fee_amount: pi.application_fee_amount,
+		setup_future_usage: pi.setup_future_usage,
+		session_id: sessionId,
+	});
 
-    console.log(`✅ PaymentIntent ${pi.id} processed for client ${clientId}`)
+	console.log(`✅ PaymentIntent ${pi.id} processed for client ${clientId}`);
 }
 
 async function insertCharge(charge: Stripe.Charge, config: StripeConfig) {
-    const clientId = extractClientId(charge)
-    const sessionId = extractSessionId(charge)
-    const card = charge.payment_method_details?.card
+	const clientId = extractClientId(charge);
+	const sessionId = extractSessionId(charge);
+	const card = charge.payment_method_details?.card;
 
-    validateClientId(clientId, charge.id, 'Charge')
+	validateClientId(clientId, charge.id, "Charge");
 
-    await insertStripeData('analytics.stripe_charges', {
-        id: charge.id,
-        client_id: clientId,
-        webhook_token: config.webhookToken,
-        created: new Date(charge.created * 1000).toISOString().replace('T', ' ').replace('Z', ''),
-        status: charge.status,
-        currency: charge.currency,
-        amount: charge.amount,
-        amount_captured: charge.amount_captured,
-        amount_refunded: charge.amount_refunded,
-        paid: charge.paid ? 1 : 0,
-        refunded: charge.refunded ? 1 : 0,
-        livemode: charge.livemode ? 1 : 0,
-        failure_code: charge.failure_code,
-        failure_message: charge.failure_message,
-        outcome_type: charge.outcome?.type || null,
-        risk_level: charge.outcome?.risk_level || null,
-        card_brand: card?.brand || null,
-        payment_intent_id: charge.payment_intent as string || null,
-        session_id: sessionId
-    })
+	await insertStripeData("analytics.stripe_charges", {
+		id: charge.id,
+		client_id: clientId,
+		webhook_token: config.webhookToken,
+		created: new Date(charge.created * 1000)
+			.toISOString()
+			.replace("T", " ")
+			.replace("Z", ""),
+		status: charge.status,
+		currency: charge.currency,
+		amount: charge.amount,
+		amount_captured: charge.amount_captured,
+		amount_refunded: charge.amount_refunded,
+		paid: charge.paid ? 1 : 0,
+		refunded: charge.refunded ? 1 : 0,
+		livemode: charge.livemode ? 1 : 0,
+		failure_code: charge.failure_code,
+		failure_message: charge.failure_message,
+		outcome_type: charge.outcome?.type || null,
+		risk_level: charge.outcome?.risk_level || null,
+		card_brand: card?.brand || null,
+		payment_intent_id: (charge.payment_intent as string) || null,
+		session_id: sessionId,
+	});
 
-    console.log(`✅ Charge ${charge.id} processed for client ${clientId}`)
+	console.log(`✅ Charge ${charge.id} processed for client ${clientId}`);
 }
 
 async function insertRefund(refund: Stripe.Refund, config: StripeConfig) {
-    const clientId = extractClientId(refund)
-    const sessionId = extractSessionId(refund)
+	const clientId = extractClientId(refund);
+	const sessionId = extractSessionId(refund);
 
-    validateClientId(clientId, refund.id, 'Refund')
+	validateClientId(clientId, refund.id, "Refund");
 
-    await insertStripeData('analytics.stripe_refunds', {
-        id: refund.id,
-        client_id: clientId,
-        webhook_token: config.webhookToken,
-        created: new Date(refund.created * 1000).toISOString().replace('T', ' ').replace('Z', ''),
-        amount: refund.amount,
-        status: refund.status,
-        reason: refund.reason,
-        currency: refund.currency,
-        charge_id: refund.charge as string,
-        payment_intent_id: refund.payment_intent as string || null,
-        metadata: refund.metadata,
-        session_id: sessionId
-    })
+	await insertStripeData("analytics.stripe_refunds", {
+		id: refund.id,
+		client_id: clientId,
+		webhook_token: config.webhookToken,
+		created: new Date(refund.created * 1000)
+			.toISOString()
+			.replace("T", " ")
+			.replace("Z", ""),
+		amount: refund.amount,
+		status: refund.status,
+		reason: refund.reason,
+		currency: refund.currency,
+		charge_id: refund.charge as string,
+		payment_intent_id: (refund.payment_intent as string) || null,
+		metadata: refund.metadata,
+		session_id: sessionId,
+	});
 
-    console.log(`✅ Refund ${refund.id} processed for client ${clientId}`)
+	console.log(`✅ Refund ${refund.id} processed for client ${clientId}`);
 }
 
-function logSecurityEvent(eventType: string, webhookToken: string, ip: string, metadata?: any) {
-    const logData = { webhookToken, ip, timestamp: new Date().toISOString(), metadata }
+function logSecurityEvent(
+	eventType: string,
+	webhookToken: string,
+	ip: string,
+	metadata?: any,
+) {
+	const logData = {
+		webhookToken,
+		ip,
+		timestamp: new Date().toISOString(),
+		metadata,
+	};
 
-    if (IS_PRODUCTION) {
-        console.warn(`🚨 Security Event: ${eventType}`, logData)
-    } else {
-        console.log(`🔍 Security Event (disabled): ${eventType}`, { webhookToken, ip })
-    }
+	if (IS_PRODUCTION) {
+		console.warn(`🚨 Security Event: ${eventType}`, logData);
+	} else {
+		console.log(`🔍 Security Event (disabled): ${eventType}`, {
+			webhookToken,
+			ip,
+		});
+	}
 }
 
 // Commented out until DB fields are added
@@ -307,7 +369,7 @@ function logSecurityEvent(eventType: string, webhookToken: string, ip: string, m
 //  */
 // async function updateWebhookSuccess(webhookToken: string) {
 //     if (webhookToken === 'global') return
-//     
+//
 //     try {
 //         await db
 //             .update(userStripeConfig)
@@ -327,7 +389,7 @@ function logSecurityEvent(eventType: string, webhookToken: string, ip: string, m
 //  */
 // async function updateWebhookFailure(webhookToken: string) {
 //     if (webhookToken === 'global') return
-//     
+//
 //     try {
 //         await db
 //             .update(userStripeConfig)
