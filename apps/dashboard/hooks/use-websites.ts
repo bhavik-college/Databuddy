@@ -2,7 +2,7 @@
 
 import { authClient } from "@databuddy/auth/client";
 import type { CreateWebsiteData, Website } from "@databuddy/shared";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Re-export types for backward compatibility
 export type { Website, CreateWebsiteData };
@@ -112,6 +112,7 @@ export function useProjectWebsites(projectId: string) {
 
 export function useWebsites() {
 	const { data: activeOrganization } = authClient.useActiveOrganization();
+	const queryClient = useQueryClient();
 
 	const { data, isLoading, isError, refetch } = useQuery({
 		queryKey: ["websites", activeOrganization?.id || "personal"],
@@ -128,10 +129,21 @@ export function useWebsites() {
 		refetchOnWindowFocus: false,
 	});
 
+	const { mutate: deleteWebsite, isPending: isDeleting } = useMutation({
+		mutationFn: websiteApi.delete,
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ["websites", activeOrganization?.id || "personal"],
+			});
+		},
+	});
+
 	return {
 		websites: data || [],
 		isLoading,
 		isError,
 		refetch,
+		deleteWebsite,
+		isDeleting,
 	};
 }

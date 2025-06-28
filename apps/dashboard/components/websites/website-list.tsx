@@ -93,8 +93,8 @@ function WebsiteRow({ website }: WebsiteRowProps) {
         </TableCell>
       </TableRow>
       <WebsiteDialog
-        onOpenChange={setDialogOpen}
         open={dialogOpen}
+        onOpenChange={setDialogOpen}
         website={website}
       />
     </>
