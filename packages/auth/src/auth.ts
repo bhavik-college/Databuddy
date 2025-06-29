@@ -85,7 +85,7 @@ export const auth = betterAuth({
                 from: 'noreply@databuddy.cc',
                 to: user.email,
                 subject: 'Verify your email',
-                html: `<p>Click <a href="${url}">here</a> to verify your email</p>`
+                react: VerificationEmail({ url })
             });
         }
     },
@@ -117,8 +117,8 @@ export const auth = betterAuth({
                 await resend.emails.send({
                     from: 'noreply@databuddy.cc',
                     to: email,
-                    subject: 'Verify your email',
-                    html: `<p>Your verification code is ${otp}</p>`
+                    subject: 'Your verification code',
+                    react: OtpEmail({ otp })
                 })
             },
         }),
@@ -130,7 +130,7 @@ export const auth = betterAuth({
                     from: 'noreply@databuddy.cc',
                     to: email,
                     subject: 'Login to Databuddy',
-                    html: `<p>Click <a href="${url}">here</a> to verify your email</p>`
+                    react: MagicLinkEmail({ url })
                 });
             }
         }),
@@ -181,12 +181,7 @@ export const auth = betterAuth({
                     from: 'noreply@databuddy.cc',
                     to: email,
                     subject: `You're invited to join ${organization.name}`,
-                    html: `
-                        <p>Hi there!</p>
-                        <p>${inviter.user.name} has invited you to join <strong>${organization.name}</strong>.</p>
-                        <p><a href="${invitationLink}">Click here to accept the invitation</a></p>
-                        <p>This invitation will expire in 48 hours.</p>
-                    `
+                    react: InvitationEmail({ inviterName: inviter.user.name, organizationName: organization.name, invitationLink: invitationLink })
                 });
             }
         }),
