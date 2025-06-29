@@ -12,6 +12,7 @@ import { NoPaymentMethodDialog } from "./no-payment-method-dialog";
 import { CancelSubscriptionDialog } from "./cancel-subscription-dialog";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { PricingTiersTooltip } from "./pricing-tiers-tooltip";
 
 function UsageCard({ feature, onUpgrade }: {
   feature: FeatureUsage,
@@ -175,7 +176,12 @@ function PlanStatusCard({ plan, statusDetails, onUpgrade, onCancelClick, onManag
             <div className="text-3xl font-bold">
               {plan?.price.primary_text || 'Free'}
             </div>
-            <div className="text-sm text-muted-foreground">{plan?.price.secondary_text}</div>
+            <div className="text-sm text-muted-foreground flex items-center gap-1">
+              {plan?.price.secondary_text}
+              {/* {plan?.price.display === 'tiered' && plan.price.tiers && (
+                <PricingTiersTooltip tiers={plan.price.tiers} />
+              )} */}
+            </div>
           </div>
         </div>
       </CardHeader>

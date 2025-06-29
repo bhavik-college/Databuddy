@@ -67,6 +67,10 @@ export interface Price {
   feature_id?: string | null;
   interval?: string;
   price?: number;
+  display?: {
+    primary_text: string;
+    secondary_text?: string;
+  };
 }
 
 export interface PlanItem {
@@ -84,6 +88,10 @@ export interface PlanItem {
   tiers?: any[];
   usage_model?: string;
   billing_units?: number;
+  display?: {
+    primary_text: string;
+    secondary_text?: string;
+  };
 }
 
 export interface Plan {
@@ -137,6 +145,9 @@ const PLANS_DATA: SubscriptionResponse = {
           "included_usage": 25,
           "interval": "day",
           "reset_usage_when_enabled": true,
+          "display": {
+            "primary_text": "25 assistant messages"
+          },
           "primary_text": "25 assistant messages",
           "primaryText": "25 assistant messages"
         },
@@ -147,6 +158,9 @@ const PLANS_DATA: SubscriptionResponse = {
           "included_usage": 25000,
           "interval": "month",
           "reset_usage_when_enabled": true,
+          "display": {
+            "primary_text": "25,000 events"
+          },
           "primary_text": "25,000 events",
           "primaryText": "25,000 events"
         },
@@ -157,15 +171,18 @@ const PLANS_DATA: SubscriptionResponse = {
           "included_usage": 5,
           "interval": null,
           "reset_usage_when_enabled": true,
+          "display": {
+            "primary_text": "5 websites"
+          },
           "primary_text": "5 websites",
           "primaryText": "5 websites"
         }
       ],
-      "scenario": "active",
-      "button_text": "Current Plan",
+      "scenario": "downgrade",
+      "button_text": "Get Started",
       "free_trial": null,
       "interval_group": null,
-      "buttonText": "Current Plan"
+      "buttonText": "Get Started"
     },
     {
       "id": "pro",
@@ -178,31 +195,14 @@ const PLANS_DATA: SubscriptionResponse = {
         "feature_id": null,
         "interval": "month",
         "price": 9.99,
+        "display": {
+          "primary_text": "$9.99",
+          "secondary_text": "month"
+        },
         "primaryText": "$9.99",
         "secondaryText": "per month"
       },
       "items": [
-        {
-          "type": "priced_feature",
-          "feature_id": "assistant_message",
-          "feature_type": "single_use",
-          "included_usage": 50,
-          "interval": "month",
-          "price": null,
-          "tiers": [
-            {
-              "to": "inf",
-              "amount": 0.02
-            }
-          ],
-          "usage_model": "pay_per_use",
-          "billing_units": 1,
-          "reset_usage_when_enabled": true,
-          "primary_text": "50 included",
-          "secondary_text": "then $0.02 per assistant message",
-          "primaryText": "50 included",
-          "secondaryText": "then $0.02 per assistant message"
-        },
         {
           "type": "priced_feature",
           "feature_id": "events",
@@ -212,17 +212,50 @@ const PLANS_DATA: SubscriptionResponse = {
           "price": null,
           "tiers": [
             {
-              "to": "inf",
+              "to": 2000000,
+              "amount": 0.000035
+            },
+            {
+              "to": 10000000,
+              "amount": 0.00003
+            },
+            {
+              "to": 50000000,
               "amount": 0.00002
+            },
+            {
+              "to": 250000000,
+              "amount": 0.000015
+            },
+            {
+              "to": "inf",
+              "amount": 0.00001
             }
           ],
           "usage_model": "pay_per_use",
           "billing_units": 1,
+          "reset_usage_when_enabled": false,
+          "display": {
+            "primary_text": "50,000 events",
+            "secondary_text": "Then tiered pricing from $0.00001/event"
+          },
+          "primary_text": "50,000 events included",
+          "secondary_text": "Then tiered pricing from $0.00001/event",
+          "primaryText": "50,000 events included",
+          "secondaryText": "Then tiered pricing from $0.00001/event"
+        },
+        {
+          "type": "feature",
+          "feature_id": "assistant_message",
+          "feature_type": "single_use",
+          "included_usage": 75,
+          "interval": "day",
           "reset_usage_when_enabled": true,
-          "primary_text": "50,000 included",
-          "secondary_text": "then $0.00002 per event",
-          "primaryText": "50,000 included",
-          "secondaryText": "then $0.00002 per event"
+          "display": {
+            "primary_text": "75 assistant messages"
+          },
+          "primary_text": "75 assistant messages",
+          "primaryText": "75 assistant messages"
         },
         {
           "type": "feature",
@@ -231,11 +264,14 @@ const PLANS_DATA: SubscriptionResponse = {
           "included_usage": "inf",
           "interval": null,
           "reset_usage_when_enabled": true,
-          "primary_text": "Unlimited website",
-          "primaryText": "Unlimited website"
+          "display": {
+            "primary_text": "Unlimited websites"
+          },
+          "primary_text": "Unlimited websites",
+          "primaryText": "Unlimited websites"
         }
       ],
-      "scenario": "upgrade",
+      "scenario": "downgrade",
       "button_text": "Get Started",
       "free_trial": {
         "duration": "day",
@@ -257,37 +293,14 @@ const PLANS_DATA: SubscriptionResponse = {
         "feature_id": null,
         "interval": "month",
         "price": 24.99,
+        "display": {
+          "primary_text": "$24.99",
+          "secondary_text": "month"
+        },
         "primaryText": "$24.99",
         "secondaryText": "per month"
       },
-      "free_trial": {
-        "duration": "day",
-        "length": 14,
-        "unique_fingerprint": true,
-        "trial_available": true
-      },
       "items": [
-        {
-          "type": "priced_feature",
-          "feature_id": "assistant_message",
-          "feature_type": "single_use",
-          "included_usage": 250,
-          "interval": "month",
-          "price": null,
-          "tiers": [
-            {
-              "to": "inf",
-              "amount": 0.02
-            }
-          ],
-          "usage_model": "pay_per_use",
-          "billing_units": 1,
-          "reset_usage_when_enabled": true,
-          "primary_text": "250 included",
-          "secondary_text": "then $0.02 per assistant message",
-          "primaryText": "250 included",
-          "secondaryText": "then $0.02 per assistant message"
-        },
         {
           "type": "priced_feature",
           "feature_id": "events",
@@ -297,17 +310,50 @@ const PLANS_DATA: SubscriptionResponse = {
           "price": null,
           "tiers": [
             {
+              "to": 2000000,
+              "amount": 0.000035
+            },
+            {
+              "to": 10000000,
+              "amount": 0.00003
+            },
+            {
+              "to": 50000000,
+              "amount": 0.00002
+            },
+            {
+              "to": 250000000,
+              "amount": 0.000015
+            },
+            {
               "to": "inf",
-              "amount": 0.00017
+              "amount": 0.00001
             }
           ],
           "usage_model": "pay_per_use",
           "billing_units": 1,
+          "reset_usage_when_enabled": false,
+          "display": {
+            "primary_text": "250,000 events",
+            "secondary_text": "Then tiered pricing from $0.00001/event"
+          },
+          "primary_text": "250,000 events included",
+          "secondary_text": "Then tiered pricing from $0.00001/event",
+          "primaryText": "250,000 events included",
+          "secondaryText": "Then tiered pricing from $0.00001/event"
+        },
+        {
+          "type": "feature",
+          "feature_id": "assistant_message",
+          "feature_type": "single_use",
+          "included_usage": 250,
+          "interval": "day",
           "reset_usage_when_enabled": true,
-          "primary_text": "250,000 included",
-          "secondary_text": "then $0.00017 per event",
-          "primaryText": "250,000 included",
-          "secondaryText": "then $0.00017 per event"
+          "display": {
+            "primary_text": "250 assistant messages"
+          },
+          "primary_text": "250 assistant messages",
+          "primaryText": "250 assistant messages"
         },
         {
           "type": "feature",
@@ -316,12 +362,21 @@ const PLANS_DATA: SubscriptionResponse = {
           "included_usage": "inf",
           "interval": null,
           "reset_usage_when_enabled": true,
-          "primary_text": "Unlimited website",
-          "primaryText": "Unlimited website"
+          "display": {
+            "primary_text": "Unlimited websites"
+          },
+          "primary_text": "Unlimited websites",
+          "primaryText": "Unlimited websites"
         }
       ],
-      "scenario": "upgrade",
+      "scenario": "downgrade",
       "button_text": "Get Started",
+      "free_trial": {
+        "duration": "day",
+        "length": 14,
+        "unique_fingerprint": true,
+        "trial_available": true
+      },
       "interval_group": null,
       "buttonText": "Get Started"
     },
@@ -336,6 +391,10 @@ const PLANS_DATA: SubscriptionResponse = {
         "feature_id": null,
         "interval": "month",
         "price": 49.99,
+        "display": {
+          "primary_text": "$49.99",
+          "secondary_text": "month"
+        },
         "primaryText": "$49.99",
         "secondaryText": "per month"
       },
@@ -349,17 +408,37 @@ const PLANS_DATA: SubscriptionResponse = {
           "price": null,
           "tiers": [
             {
+              "to": 2000000,
+              "amount": 0.000035
+            },
+            {
+              "to": 10000000,
+              "amount": 0.00003
+            },
+            {
+              "to": 50000000,
+              "amount": 0.00002
+            },
+            {
+              "to": 250000000,
+              "amount": 0.000015
+            },
+            {
               "to": "inf",
-              "amount": 0.00015
+              "amount": 0.00001
             }
           ],
           "usage_model": "pay_per_use",
           "billing_units": 1,
           "reset_usage_when_enabled": true,
-          "primary_text": "1,000,000 included",
-          "secondary_text": "then $0.00015 per event",
-          "primaryText": "1,000,000 included",
-          "secondaryText": "then $0.00015 per event"
+          "display": {
+            "primary_text": "1,000,000 events",
+            "secondary_text": "Then tiered pricing from $0.00001/event"
+          },
+          "primary_text": "1,000,000 events included",
+          "secondary_text": "Then tiered pricing from $0.00001/event",
+          "primaryText": "1,000,000 events included",
+          "secondaryText": "Then tiered pricing from $0.00001/event"
         },
         {
           "type": "feature",
@@ -368,6 +447,9 @@ const PLANS_DATA: SubscriptionResponse = {
           "included_usage": 500,
           "interval": "day",
           "reset_usage_when_enabled": true,
+          "display": {
+            "primary_text": "500 assistant messages"
+          },
           "primary_text": "500 assistant messages",
           "primaryText": "500 assistant messages"
         },
@@ -378,12 +460,15 @@ const PLANS_DATA: SubscriptionResponse = {
           "included_usage": "inf",
           "interval": null,
           "reset_usage_when_enabled": true,
-          "primary_text": "Unlimited website",
-          "primaryText": "Unlimited website"
+          "display": {
+            "primary_text": "Unlimited websites"
+          },
+          "primary_text": "Unlimited websites",
+          "primaryText": "Unlimited websites"
         }
       ],
-      "scenario": "upgrade",
-      "button_text": "Get Started",
+      "scenario": "active",
+      "button_text": "Current Plan",
       "free_trial": {
         "duration": "day",
         "length": 7,
@@ -391,7 +476,7 @@ const PLANS_DATA: SubscriptionResponse = {
         "trial_available": true
       },
       "interval_group": null,
-      "buttonText": "Get Started"
+      "buttonText": "Current Plan"
     }
   ],
   "paymentMethods": []

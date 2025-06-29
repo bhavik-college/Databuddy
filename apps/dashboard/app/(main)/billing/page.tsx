@@ -14,9 +14,14 @@ const HistoryTab = lazy(() => import("./components/history-tab").then(m => ({ de
 
 function TabSkeleton() {
   return (
-    <div className="space-y-4">
-      <Skeleton className="h-32 w-full" />
-      <Skeleton className="h-48 w-full" />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="space-y-8">
+        <div className="text-center space-y-4">
+          <Skeleton className="h-10 w-64 mx-auto" />
+          <Skeleton className="h-6 w-96 mx-auto" />
+        </div>
+        <Skeleton className="h-96 w-full rounded-xl" />
+      </div>
     </div>
   );
 }
@@ -37,7 +42,6 @@ export default function BillingPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [hasLoadedInvoices, setHasLoadedInvoices] = useState(false);
 
-  // Capture invoice data once when it first loads
   useEffect(() => {
     if (!isLoading && customerData?.invoices && !hasLoadedInvoices) {
       setInvoices(customerData.invoices as Invoice[]);
@@ -50,45 +54,64 @@ export default function BillingPage() {
   };
 
   return (
-    <TabLayout
-      title="Billing & Subscription"
-      description="Manage your subscription, usage, and billing preferences"
-    >
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <div className="border-b">
-          <TabsList className="h-10 bg-transparent p-0 w-full justify-start overflow-x-auto">
-            {TABS.map(tab => (
-              <TabsTrigger
-                key={tab.id}
-                value={tab.id}
-                className="text-xs sm:text-sm h-10 px-2 sm:px-4 rounded-none touch-manipulation hover:bg-muted/50 relative transition-colors whitespace-nowrap cursor-pointer data-[state=active]:shadow-none"
-              >
-                <tab.icon className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">{tab.label}</span>
-                {activeTab === tab.id && (
-                  <div className="absolute bottom-0 left-0 w-full h-[2px] bg-primary" />
-                )}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <TabLayout
+        title="Billing & Subscription"
+        description="Manage your subscription, usage, and billing preferences"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+          {/* Enhanced Tab Navigation */}
+          <div className="border-b border-border/50">
+            <div className="max-w-7xl mx-auto">
+              <TabsList className="h-12 bg-transparent p-0 w-full justify-start overflow-x-auto border-0">
+                {TABS.map(tab => (
+                  <TabsTrigger
+                    key={tab.id}
+                    value={tab.id}
+                    className="text-sm h-12 px-6 rounded-none touch-manipulation hover:bg-muted/50 relative transition-all duration-200 whitespace-nowrap cursor-pointer data-[state=active]:shadow-none data-[state=active]:bg-transparent font-medium"
+                  >
+                    <tab.icon className="h-4 w-4 mr-2" />
+                    <span>{tab.label}</span>
+                    {activeTab === tab.id && (
+                      <div className="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-primary to-primary/80 rounded-t-full" />
+                    )}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
+          </div>
 
-        <TabsContent value="overview">
-          <Suspense fallback={<TabSkeleton />}>
-            <OverviewTab onNavigateToPlans={navigateToPlans} />
-          </Suspense>
-        </TabsContent>
-        <TabsContent value="plans">
-          <Suspense fallback={<TabSkeleton />}>
-            <PlansTab />
-          </Suspense>
-        </TabsContent>
-        <TabsContent value="history">
-          <Suspense fallback={<TabSkeleton />}>
-            <HistoryTab invoices={invoices} customerData={customerData as Customer} isLoading={isLoading && !hasLoadedInvoices} />
-          </Suspense>
-        </TabsContent>
-      </Tabs>
-    </TabLayout>
+          {/* Tab Content with improved spacing */}
+          <div className="py-4">
+            <TabsContent value="overview" className="mt-0">
+              <Suspense fallback={<TabSkeleton />}>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <OverviewTab onNavigateToPlans={navigateToPlans} />
+                </div>
+              </Suspense>
+            </TabsContent>
+
+            <TabsContent value="plans" className="mt-0">
+              <Suspense fallback={<TabSkeleton />}>
+                <PlansTab />
+              </Suspense>
+            </TabsContent>
+
+            <TabsContent value="history" className="mt-0">
+              <Suspense fallback={<TabSkeleton />}>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <HistoryTab
+                    invoices={invoices}
+                    customerData={customerData as Customer}
+                    isLoading={isLoading && !hasLoadedInvoices}
+                  />
+                </div>
+              </Suspense>
+            </TabsContent>
+          </div>
+        </Tabs>
+      </TabLayout>
+    </div>
   );
 } 

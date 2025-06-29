@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { NoPaymentMethodDialog } from "./no-payment-method-dialog";
+import { PricingTiersTooltip } from "./pricing-tiers-tooltip";
 
 function PlanCard({ plan, onUpgrade, isLoading }: { plan: Plan, onUpgrade: (id: string) => void, isLoading: boolean }) {
   const isCurrent = plan.scenario === 'active';
@@ -46,8 +47,8 @@ function PlanCard({ plan, onUpgrade, isLoading }: { plan: Plan, onUpgrade: (id: 
     if (isScheduled) {
       return {
         badge: (
-          <Badge className="bg-blue-500 hover:bg-blue-600 shadow-lg">
-            <ClockIcon size={12} className="mr-1" />
+          <Badge variant="secondary" className="shadow-sm">
+            <ClockIcon size={12} className="mr-1.5" />
             Scheduled
           </Badge>
         ),
@@ -58,8 +59,8 @@ function PlanCard({ plan, onUpgrade, isLoading }: { plan: Plan, onUpgrade: (id: 
     if (isPopular) {
       return {
         badge: (
-          <Badge className="shadow-lg">
-            <StarIcon size={12} className="mr-1" />
+          <Badge variant="default" className="shadow-sm">
+            <StarIcon size={12} className="mr-1.5" />
             Most Popular
           </Badge>
         ),
@@ -127,9 +128,9 @@ function PlanCard({ plan, onUpgrade, isLoading }: { plan: Plan, onUpgrade: (id: 
 
   return (
     <Card className={cn(
-      "relative overflow-hidden transition-all duration-200 hover:shadow-lg h-full flex flex-col",
-      isCurrent && "ring-2 ring-primary/20 border-primary/50",
-      isPopular && "ring-2 ring-primary/20 border-primary/50 shadow-md"
+      "relative overflow-hidden transition-all duration-300 hover:shadow-lg h-full flex flex-col",
+      isCurrent && "ring-2 ring-emerald-200 border-emerald-200 dark:ring-emerald-800 dark:border-emerald-800",
+      isPopular && "ring-2 ring-orange-200 border-orange-200 dark:ring-orange-800 dark:border-orange-800 shadow-md"
     )}>
       {/* Badge positioned absolutely at top */}
       {badgeInfo.show && (
@@ -139,30 +140,27 @@ function PlanCard({ plan, onUpgrade, isLoading }: { plan: Plan, onUpgrade: (id: 
       )}
 
       {/* Header with consistent padding */}
-      <CardHeader className={cn(
-        "text-center pb-3 flex-shrink-0",
-        badgeInfo.show ? "pt-10" : "pt-4"
-      )}>
-        <div className="space-y-2">
-          <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
+      <CardHeader className="text-center pb-4 flex-shrink-0 pt-6">
+        <div className="space-y-3">
+          <CardTitle className="text-2xl font-bold tracking-tight">{plan.name}</CardTitle>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-baseline justify-center gap-1">
-              <span className="text-3xl font-bold tracking-tight">{plan.price.primary_text}</span>
+              <span className="text-4xl font-bold tracking-tight">{plan.price.primary_text}</span>
               {plan.price.secondary_text && plan.price.secondary_text.trim() && (
-                <span className="text-muted-foreground text-sm font-medium">{plan.price.secondary_text}</span>
+                <span className="text-muted-foreground text-base font-medium">{plan.price.secondary_text}</span>
               )}
             </div>
 
             {/* Free Trial Info */}
             {plan.free_trial && plan.free_trial.trial_available && !isCurrent && (
-              <div className="text-sm text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-3 py-1 rounded-full inline-block font-medium">
+              <div className="text-sm text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-3 py-1.5 rounded-full inline-block font-medium border border-emerald-200 dark:border-emerald-800">
                 🎉 {plan.free_trial.length} {plan.free_trial.duration} free trial
               </div>
             )}
 
             {plan.current_period_end && (
-              <div className="text-sm text-muted-foreground bg-muted/50 px-3 py-1 rounded-full inline-block">
+              <div className="text-sm text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full inline-block border">
                 {plan.canceled_at ? (
                   <span>Access until {new Date(plan.current_period_end).toLocaleDateString()}</span>
                 ) : plan.status === 'scheduled' ? (
@@ -177,9 +175,9 @@ function PlanCard({ plan, onUpgrade, isLoading }: { plan: Plan, onUpgrade: (id: 
       </CardHeader>
 
       {/* Content area that grows to fill space */}
-      <CardContent className="flex-1 flex flex-col px-4 pb-4">
+      <CardContent className="flex-1 flex flex-col px-6 pb-6">
         {/* Features list */}
-        <div className="space-y-2 flex-1 mb-4">
+        <div className="space-y-3 flex-1 mb-6">
           {plan.items.map((item, index) => {
             const getFeatureText = () => {
               let mainText = item.primary_text || item.primaryText || '';
@@ -199,17 +197,22 @@ function PlanCard({ plan, onUpgrade, isLoading }: { plan: Plan, onUpgrade: (id: 
             };
 
             return (
-              <div key={item.feature_id || index} className="flex items-start gap-2">
-                <div className="flex-shrink-0 w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+              <div key={item.feature_id || index} className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center mt-0.5 border border-primary/20">
                   <CheckIcon size={12} className="text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-foreground leading-snug">
+                  <div className="text-sm font-medium text-foreground leading-relaxed">
                     {getFeatureText()}
                   </div>
                   {(item.secondary_text || item.secondaryText) && (
-                    <div className="text-xs text-muted-foreground mt-0.5 leading-snug">
+                    <div className="text-xs text-muted-foreground mt-1 leading-relaxed">
                       {item.secondary_text || item.secondaryText}
+                    </div>
+                  )}
+                  {item.tiers && item.tiers.length > 0 && (
+                    <div className="mt-2">
+                      <PricingTiersTooltip tiers={item.tiers} />
                     </div>
                   )}
                 </div>
@@ -224,12 +227,12 @@ function PlanCard({ plan, onUpgrade, isLoading }: { plan: Plan, onUpgrade: (id: 
           disabled={buttonConfig.disabled}
           variant={buttonConfig.variant}
           className={cn(
-            "w-full font-semibold transition-all duration-200",
-            !buttonConfig.disabled && "cursor-pointer",
+            "w-full font-semibold transition-all duration-200 h-11",
+            !buttonConfig.disabled && "cursor-pointer hover:shadow-md",
             buttonConfig.disabled && "cursor-default",
-            isPopular && !buttonConfig.disabled && "shadow-md hover:shadow-lg"
+            isPopular && !buttonConfig.disabled && "bg-primary text-white hover:bg-primary/90",
+            isCurrent && buttonConfig.disabled && "text-muted-foreground bg-muted hover:bg-muted/90"
           )}
-          size="default"
         >
           {buttonConfig.text}
         </Button>
@@ -245,13 +248,13 @@ export function PlansTab() {
   if (isDataLoading) {
     return (
       <div className="space-y-8">
-        <div className="text-center space-y-2">
-          <Skeleton className="h-8 w-48 mx-auto" />
-          <Skeleton className="h-4 w-96 mx-auto" />
+        <div className="text-center space-y-3">
+          <Skeleton className="h-9 w-64 mx-auto" />
+          <Skeleton className="h-5 w-96 mx-auto" />
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-[480px] w-full" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-[520px] w-full" />
           ))}
         </div>
       </div>
@@ -269,16 +272,16 @@ export function PlansTab() {
       />
 
       <div className="space-y-8">
-        <div className="text-center space-y-2">
-          <h2 className="text-2xl font-bold">Choose Your Plan</h2>
-          <p className="text-muted-foreground text-md max-w-2xl mx-auto text-center">
-            Select the perfect plan for your needs. Upgrade or downgrade at any time.
+        <div className="text-center space-y-3 max-w-2xl mx-auto">
+          <h2 className="text-3xl font-bold tracking-tight">Choose Your Plan</h2>
+          <p className="text-muted-foreground text-lg leading-relaxed">
+            Select the perfect plan for your needs. All plans include our core features with the flexibility to upgrade or downgrade at any time.
           </p>
         </div>
 
         {plans.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 rounded border flex items-center justify-center mx-auto mb-4">
+          <div className="text-center py-16">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
               <CrownIcon size={32} className="text-muted-foreground" />
             </div>
             <h3 className="text-xl font-semibold mb-2">No Plans Available</h3>
@@ -287,7 +290,7 @@ export function PlansTab() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
             {plans.map((plan: Plan) => (
               <PlanCard
                 key={plan.id}
@@ -299,13 +302,18 @@ export function PlansTab() {
           </div>
         )}
 
-        <div className="text-center pt-4">
-          <p className="text-sm text-muted-foreground text-center">
-            All plans include our core features. Need help choosing?{" "}
-            <Button variant="link" className="h-auto p-0 text-sm cursor-pointer hover:underline" onClick={onManageBilling}>
-              Contact support
-            </Button>
-          </p>
+        <div className="text-center pt-6 border-t">
+          <div className="space-y-2 max-w-2xl mx-auto">
+            <p className="text-muted-foreground">
+              All plans include our core analytics features, real-time data processing, and dedicated support.
+            </p>
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-sm text-muted-foreground">Need help choosing?</span>
+              <Button variant="link" className="h-auto p-0 text-sm cursor-pointer hover:underline" onClick={onManageBilling}>
+                Contact our team
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </>
