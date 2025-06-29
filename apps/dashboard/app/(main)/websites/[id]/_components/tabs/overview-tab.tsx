@@ -345,20 +345,6 @@ export function WebsiteOverviewTab({
       });
   }, [analytics.events_by_date, visibleMetrics, dateRange.granularity]);
 
-  const currentTime = useMemo(() => {
-    const now = dayjs().utc();
-    const dateFrom = dayjs(dateRange.start_date);
-    const dateTo = dayjs(dateRange.end_date).endOf("day");
-
-    if (now.isAfter(dateFrom) && now.isBefore(dateTo) && chartData.length > 0) {
-      const timeToFormat =
-        dateRange.granularity === "hourly" ? now.startOf("hour").toDate() : now.toDate();
-
-      return formatDateByGranularity(timeToFormat, dateRange.granularity);
-    }
-    return;
-  }, [dateRange.granularity, dateRange.start_date, dateRange.end_date]);
-
   const miniChartData = useMemo(() => {
     if (!analytics.events_by_date?.length) return {};
 
@@ -692,17 +678,17 @@ export function WebsiteOverviewTab({
       // Group property values by key
       const propertyBreakdown: Record<string, Record<string, number>> = {};
 
-      eventDetailRecords.forEach((record: any) => {
+      for (const record of eventDetailRecords) {
         if (record.properties && typeof record.properties === "object") {
-          Object.entries(record.properties).forEach(([key, value]) => {
+          for (const [key, value] of Object.entries(record.properties)) {
             if (key && value !== null && value !== undefined) {
               if (!propertyBreakdown[key]) propertyBreakdown[key] = {};
               const stringValue = String(value);
               propertyBreakdown[key][stringValue] = (propertyBreakdown[key][stringValue] || 0) + 1;
             }
-          });
+          }
         }
-      });
+      }
 
       // Create property categories for sub-rows
       const propertyCategories = Object.entries(propertyBreakdown)
@@ -1021,7 +1007,6 @@ export function WebsiteOverviewTab({
         </div>
         <div>
           <MetricsChart
-            currentTime={currentTime}
             data={chartData}
             height={350}
             isLoading={isLoading}
@@ -1072,6 +1057,7 @@ export function WebsiteOverviewTab({
               <button
                 className="flex w-full items-center justify-between rounded border border-border/30 bg-muted/20 px-3 py-2 hover:bg-muted/40"
                 onClick={() => togglePropertyExpansion(propertyId)}
+                type="button"
               >
                 <div className="flex items-center gap-2">
                   {isPropertyExpanded ? (
