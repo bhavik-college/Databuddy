@@ -194,7 +194,7 @@ async function insertError(errorData: any, clientId: string): Promise<void> {
 			values: [errorEvent],
 			format: "JSONEachRow",
 		})
-		.then(() => {})
+		.then(() => { })
 		.catch((err) => {
 			logger.error("Failed to insert error event", {
 				error: err as Error,
@@ -243,7 +243,7 @@ async function insertWebVitals(
 			values: [webVitalsEvent],
 			format: "JSONEachRow",
 		})
-		.then(() => {})
+		.then(() => { })
 		.catch((err) => {
 			logger.error("Failed to insert web vitals event", {
 				error: err as Error,
@@ -383,7 +383,7 @@ async function insertTrackEvent(
 			values: [trackEvent],
 			format: "JSONEachRow",
 		})
-		.then(() => {})
+		.then(() => { })
 		.catch((err) => {
 			logger.error("Failed to insert track event", {
 				error: err as Error,
@@ -486,7 +486,7 @@ async function logBlockedTraffic(
 				values: [blockedEvent],
 				format: "JSONEachRow",
 			})
-			.then(() => {})
+			.then(() => { })
 			.catch((err) => {
 				logger.error("Failed to log blocked traffic", { error: err as Error });
 			});

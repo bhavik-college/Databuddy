@@ -52,7 +52,7 @@ async function fetchIpGeo(ip: string): Promise<GeoLocation> {
   try {
     const url = urlConstructor(ip);
     logger.debug(`Fetching geo location for IP: ${ip.substring(0, 8)}...`);
-    
+
     const response = await fetch(url, {
       signal: AbortSignal.timeout(4000),
     });
@@ -72,16 +72,16 @@ async function fetchIpGeo(ip: string): Promise<GeoLocation> {
     }
 
     const data = await response.json();
-    logger.debug(`Received geo data for IP ${ip.substring(0, 8)}...:`, { 
-      country: (data as any)?.country, 
-      region: (data as any)?.region 
+    logger.debug(`Received geo data for IP ${ip.substring(0, 8)}...:`, {
+      country: (data as any)?.country,
+      region: (data as any)?.region
     });
-    
+
     const parsed = GeoLocationSchema.safeParse(data);
 
     if (!parsed.success) {
-        logger.warn(new Error(`Invalid geo location data: ${parsed.error.message}`));
-        return DEFAULT_GEO;
+      logger.warn(new Error(`Invalid geo location data: ${parsed.error.message}`));
+      return DEFAULT_GEO;
     }
 
     return parsed.data;
@@ -116,16 +116,16 @@ export const getGeoLocation = async (ip: string): Promise<GeoLocation> => {
 export function getClientIp(req: Request): string | undefined {
   const cfIp = req.headers.get('cf-connecting-ip');
   if (cfIp) return cfIp;
-  
+
   const forwardedFor = req.headers.get('x-forwarded-for');
   if (forwardedFor) {
-    const firstIp = forwardedFor.split(',')[0]?.trim(); 
+    const firstIp = forwardedFor.split(',')[0]?.trim();
     if (firstIp) return firstIp;
   }
-  
+
   const realIp = req.headers.get('x-real-ip');
   if (realIp) return realIp;
-  
+
   return undefined;
 }
 
@@ -145,12 +145,12 @@ export function anonymizeIp(ip: string): string {
 
   // Use a static salt for consistent hashing across requests
   const salt = process.env.IP_HASH_SALT || 'databuddy-ip-anonymization-salt-2024';
-  
+
   try {
     // Hash the full IP with salt for complete anonymization
     const hash = createHash('sha256');
     hash.update(`${ip}${salt}`);
-    
+
     // Return first 12 characters of hash for storage efficiency
     return hash.digest('hex').substring(0, 12);
   } catch (error) {
@@ -174,17 +174,15 @@ export async function getGeoData(ip: string): Promise<GeoLocation> {
  */
 export function extractIpFromRequest(request: Request): string {
   const cfIp = request.headers.get('cf-connecting-ip');
-  if (cfIp && cfIp.trim()) return cfIp.trim();
-  
+  if (cfIp) return cfIp.trim();
+
   const forwardedFor = request.headers.get('x-forwarded-for');
-  if (forwardedFor) {
-    const firstIp = forwardedFor.split(',')[0]?.trim();
-    if (firstIp) return firstIp;
-  }
-  
+  const firstIp = forwardedFor?.split(',')[0]?.trim();
+  if (firstIp) return firstIp;
+
   const realIp = request.headers.get('x-real-ip');
-  if (realIp && realIp.trim()) return realIp.trim();
-  
+  if (realIp) return realIp.trim();
+
   return '';
 }
 

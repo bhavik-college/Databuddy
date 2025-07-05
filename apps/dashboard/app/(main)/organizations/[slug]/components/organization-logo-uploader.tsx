@@ -41,12 +41,17 @@ export function OrganizationLogoUploader({ organization }: OrganizationLogoUploa
     if (!isOpen && fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    if (!isOpen) {
+      setImageSrc(null);
+      setCrop(undefined);
+      setCompletedCrop(undefined);
+    }
     setIsModalOpen(isOpen);
   };
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     const { width, height } = e.currentTarget;
-    const crop = centerCrop(
+    const percentCrop = centerCrop(
       makeAspectCrop(
         {
           unit: "%",
@@ -59,7 +64,15 @@ export function OrganizationLogoUploader({ organization }: OrganizationLogoUploa
       width,
       height
     );
-    setCrop(crop);
+    setCrop(percentCrop);
+    const pixelCrop = {
+      unit: "px" as const,
+      x: Math.round((percentCrop.x / 100) * width),
+      y: Math.round((percentCrop.y / 100) * height),
+      width: Math.round((percentCrop.width / 100) * width),
+      height: Math.round((percentCrop.height / 100) * height),
+    };
+    setCompletedCrop(pixelCrop);
   }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,7 +88,7 @@ export function OrganizationLogoUploader({ organization }: OrganizationLogoUploa
   };
 
   const handleUpload = async () => {
-    if (!(completedCrop && imageRef.current)) {
+    if (!imageSrc || !(completedCrop && imageRef.current)) {
       toast.error("Please crop the image before uploading.");
       return;
     }
@@ -114,12 +127,14 @@ export function OrganizationLogoUploader({ organization }: OrganizationLogoUploa
             <AvatarImage alt={organization.name} src={preview || undefined} />
             <AvatarFallback>{organization.name.charAt(0)}</AvatarFallback>
           </Avatar>
-          <div
+          <button
+            type="button"
             className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black bg-opacity-50 opacity-0 transition-opacity group-hover:opacity-100"
             onClick={() => fileInputRef.current?.click()}
+            aria-label="Upload new organization logo"
           >
             <UploadSimple className="text-white" size={24} />
-          </div>
+          </button>
         </div>
         <div className="grid gap-2">
           <p className="font-medium">Update your logo</p>
@@ -156,7 +171,10 @@ export function OrganizationLogoUploader({ organization }: OrganizationLogoUploa
             <Button onClick={() => handleModalOpenChange(false)} variant="outline">
               Cancel
             </Button>
-            <Button disabled={isUploadingOrganizationLogo} onClick={handleUpload}>
+            <Button
+              disabled={isUploadingOrganizationLogo || !imageSrc || !completedCrop}
+              onClick={handleUpload}
+            >
               {isUploadingOrganizationLogo ? "Uploading..." : "Save and Upload"}
             </Button>
           </DialogFooter>

@@ -264,9 +264,9 @@ async function insertPaymentIntent(
 		failure_reason: pi.last_payment_error?.message || null,
 		canceled_at: pi.canceled_at
 			? new Date(pi.canceled_at * 1000)
-					.toISOString()
-					.replace("T", " ")
-					.replace("Z", "")
+				.toISOString()
+				.replace("T", " ")
+				.replace("Z", "")
 			: null,
 		cancellation_reason: pi.cancellation_reason,
 		description: pi.description,

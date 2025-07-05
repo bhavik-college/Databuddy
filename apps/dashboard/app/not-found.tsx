@@ -4,16 +4,15 @@ import { ArrowLeft, BarChart, Home } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/layout/logo";
 
 export default function NotFound() {
   const [mounted, setMounted] = useState(false);
   const [randomDigit, setRandomDigit] = useState("4");
 
-  // Generate glitch effect
   useEffect(() => {
     setMounted(true);
 
-    // Simple glitch effect - change middle digit randomly
     const interval = setInterval(() => {
       const digits = ["0", "1", "4", "5", "?", "!", "x"];
       const randomIndex = Math.floor(Math.random() * digits.length);
@@ -27,17 +26,13 @@ export default function NotFound() {
 
   return (
     <div className="flex h-screen flex-col items-center justify-center bg-background p-4">
-      {/* Logo/Branding */}
       <div className="absolute top-8 right-0 left-0 flex justify-center">
         <div className="flex items-center gap-2">
-          <BarChart className="h-8 w-8 text-primary" />
-          <span className="font-bold text-2xl tracking-tight">Databuddy</span>
+          <Logo />
         </div>
       </div>
 
-      {/* Main content with better hierarchy */}
       <div className="flex w-full max-w-md flex-col items-center">
-        {/* 404 Display */}
         <div className="mb-4 flex items-baseline font-mono">
           <span className="font-bold text-8xl text-primary md:text-9xl">4</span>
           <div className="relative mx-2">
@@ -49,10 +44,8 @@ export default function NotFound() {
           <span className="font-bold text-8xl text-primary md:text-9xl">4</span>
         </div>
 
-        {/* Horizontal line */}
         <div className="mb-4 h-px w-16 bg-border" />
 
-        {/* Simple mascot */}
         <div className="mb-6 text-4xl">
           <span
             aria-label="sad face"
@@ -69,7 +62,6 @@ export default function NotFound() {
           We&apos;ve lost this page in the data stream.
         </p>
 
-        {/* Action buttons with brand colors */}
         <div className="flex w-full max-w-xs flex-col gap-4 sm:flex-row">
           <Button asChild className="flex-1 bg-primary hover:bg-primary/90" variant="default">
             <Link href="/websites">
@@ -89,12 +81,10 @@ export default function NotFound() {
         </div>
       </div>
 
-      {/* Error code */}
       <div className="absolute bottom-8 rounded-md border border-accent bg-accent/50 px-4 py-2 font-mono text-muted-foreground text-xs">
         <code>ERR_PAGE_NOT_FOUND @ {window.location.pathname}</code>
       </div>
 
-      {/* Subtle brand pattern */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-5">
         <div className="-right-24 -top-24 absolute h-96 w-96 rounded-full border-8 border-primary border-dashed" />
         <div className="-left-24 -bottom-24 absolute h-96 w-96 rounded-full border-8 border-primary border-dashed" />

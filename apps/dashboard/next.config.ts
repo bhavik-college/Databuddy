@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["@phosphor-icons/react"],
   },
   images: {
-    domains: ["qdpxznrqyzyebbrmqvpi.supabase.co", "localhost"],
+    domains: ["cdn.databuddy.cc", "localhost"],
   },
   output: "standalone",
 };

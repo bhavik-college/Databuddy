@@ -18,12 +18,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="flex h-screen">
-      {/* Iridescence side */}
       <div className="relative hidden flex-col items-start justify-between overflow-hidden p-12 md:flex md:w-1/2">
         <div className="absolute inset-0">
           <Iridescence amplitude={0.2} color={[0.1, 0.2, 0.9]} speed={0.5} />
         </div>
-        <Link className="relative z-10" href="/">
+        <Link className="relative z-10" href="https://www.databuddy.cc">
           <Button
             className="group scale-100 cursor-pointer border-white/10 bg-white/20 text-white transition-all duration-200 hover:scale-105 hover:bg-white/20"
             variant="outline"
@@ -48,7 +47,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <Logo />
         </div>
 
-        {/* Auth form content - centered */}
         <div className="flex flex-1 items-center justify-center p-6 pt-0 md:p-8">
           <div className="w-full max-w-md">
             <Suspense
