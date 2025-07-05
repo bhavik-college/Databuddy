@@ -111,8 +111,10 @@ export function useProjectWebsites(projectId: string) {
 }
 
 export function useWebsites() {
-	const { data: activeOrganization } = authClient.useActiveOrganization();
+	const { data: activeOrganization, isPending: isLoadingOrganization } = authClient.useActiveOrganization();
 	const queryClient = useQueryClient();
+
+	const enabled = !isLoadingOrganization;
 
 	const { data, isLoading, isError, refetch } = useQuery({
 		queryKey: ["websites", activeOrganization?.id || "personal"],
@@ -120,11 +122,11 @@ export function useWebsites() {
 			const endpoint = activeOrganization?.id
 				? `/websites?organizationId=${activeOrganization.id}`
 				: "/websites";
-
 			const result = await apiRequest<Website[]>(endpoint);
 			if (result.error) throw new Error(result.error);
 			return result.data || [];
 		},
+		enabled,
 		staleTime: 30_000,
 		refetchOnWindowFocus: false,
 	});
@@ -140,7 +142,7 @@ export function useWebsites() {
 
 	return {
 		websites: data || [],
-		isLoading,
+		isLoading: isLoading || isLoadingOrganization,
 		isError,
 		refetch,
 		deleteWebsite,
