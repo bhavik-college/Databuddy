@@ -73,6 +73,23 @@ async function getUserWebsiteIds(userId: string): Promise<string[]> {
   }
 }
 
+// Helper to clamp limits
+function clampLimit(value: number, max = 1000, min = 1) {
+  if (Number.isNaN(value) || value < min) return min;
+  if (value > max) return max;
+  return value;
+}
+
+// Helper to validate ISO date string (basic)
+function isValidDateString(date: any): boolean {
+  return typeof date === 'string' && /^\d{4}-\d{2}-\d{2}/.test(date);
+}
+
+// Helper to validate UUID (basic)
+function isValidUUID(id: any): boolean {
+  return typeof id === 'string' && /^[0-9a-fA-F-]{32,36}$/.test(id);
+}
+
 // GET /revenue/config - Get user's revenue configuration (auto-create if doesn't exist)
 revenueRouter.get('/config', async (c: Context) => {
   const user = c.get('user');
@@ -155,16 +172,16 @@ revenueRouter.get('/analytics/batch', async (c: Context) => {
   const endDate = c.req.query('end_date');
   const granularity = c.req.query('granularity') || 'daily';
   const isLiveMode = c.req.query('live_mode') === 'true';
-  const trendsLimit = Number.parseInt(c.req.query('trends_limit') || '100');
-  const transactionsLimit = Number.parseInt(c.req.query('transactions_limit') || '50');
-  const countryLimit = Number.parseInt(c.req.query('country_limit') || '20');
+  const trendsLimit = clampLimit(Number.parseInt(c.req.query('trends_limit') || '100'));
+  const transactionsLimit = clampLimit(Number.parseInt(c.req.query('transactions_limit') || '50'));
+  const countryLimit = clampLimit(Number.parseInt(c.req.query('country_limit') || '20'));
 
   if (!user) {
     return c.json({ success: false, error: "Unauthorized" }, 401);
   }
 
-  if (!startDate || !endDate) {
-    return c.json({ success: false, error: "start_date and end_date are required" }, 400);
+  if (!startDate || !endDate || !isValidDateString(startDate) || !isValidDateString(endDate)) {
+    return c.json({ success: false, error: "start_date and end_date are required and must be valid ISO date strings" }, 400);
   }
 
   try {
@@ -192,7 +209,8 @@ revenueRouter.get('/analytics/batch', async (c: Context) => {
       });
     }
 
-    const websiteIdList = websiteIds.map(id => `'${id}'`).join(',');
+    // Escape all website IDs for SQL safety
+    const websiteIdList = websiteIds.map(id => escapeSqlString(id)).join(',');
     const liveModeCondition = `AND livemode = ${isLiveMode ? 1 : 0}`;
     const timeFormat = granularity === 'hourly'
       ? 'toDateTime(toStartOfHour(toDateTime(created)))'
@@ -415,14 +433,14 @@ revenueRouter.get('/analytics/trends', async (c: Context) => {
   const endDate = c.req.query('end_date');
   const granularity = c.req.query('granularity') || 'daily';
   const isLiveMode = c.req.query('live_mode') === 'true';
-  const limit = Number.parseInt(c.req.query('limit') || '100');
+  const limit = clampLimit(Number.parseInt(c.req.query('limit') || '100'));
 
   if (!user) {
     return c.json({ success: false, error: "Unauthorized" }, 401);
   }
 
-  if (!startDate || !endDate) {
-    return c.json({ success: false, error: "start_date and end_date are required" }, 400);
+  if (!startDate || !endDate || !isValidDateString(startDate) || !isValidDateString(endDate)) {
+    return c.json({ success: false, error: "start_date and end_date are required and must be valid ISO date strings" }, 400);
   }
 
   try {
@@ -484,14 +502,14 @@ revenueRouter.get('/analytics/transactions', async (c: Context) => {
   const startDate = c.req.query('start_date');
   const endDate = c.req.query('end_date');
   const isLiveMode = c.req.query('live_mode') === 'true';
-  const limit = Number.parseInt(c.req.query('limit') || '50');
+  const limit = clampLimit(Number.parseInt(c.req.query('limit') || '50'));
 
   if (!user) {
     return c.json({ success: false, error: "Unauthorized" }, 401);
   }
 
-  if (!startDate || !endDate) {
-    return c.json({ success: false, error: "start_date and end_date are required" }, 400);
+  if (!startDate || !endDate || !isValidDateString(startDate) || !isValidDateString(endDate)) {
+    return c.json({ success: false, error: "start_date and end_date are required and must be valid ISO date strings" }, 400);
   }
 
   try {
@@ -550,14 +568,14 @@ revenueRouter.get('/analytics/breakdown/country', async (c: Context) => {
   const startDate = c.req.query('start_date');
   const endDate = c.req.query('end_date');
   const isLiveMode = c.req.query('live_mode') === 'true';
-  const limit = Number.parseInt(c.req.query('limit') || '20');
+  const limit = clampLimit(Number.parseInt(c.req.query('limit') || '20'));
 
   if (!user) {
     return c.json({ success: false, error: "Unauthorized" }, 401);
   }
 
-  if (!startDate || !endDate) {
-    return c.json({ success: false, error: "start_date and end_date are required" }, 400);
+  if (!startDate || !endDate || !isValidDateString(startDate) || !isValidDateString(endDate)) {
+    return c.json({ success: false, error: "start_date and end_date are required and must be valid ISO date strings" }, 400);
   }
 
   try {
@@ -803,8 +821,12 @@ revenueRouter.get('/analytics/website/:websiteId', async (c: Context) => {
     return c.json({ success: false, error: "Unauthorized" }, 401);
   }
 
-  if (!startDate || !endDate) {
-    return c.json({ success: false, error: "start_date and end_date are required" }, 400);
+  if (!startDate || !endDate || !isValidDateString(startDate) || !isValidDateString(endDate)) {
+    return c.json({ success: false, error: "start_date and end_date are required and must be valid ISO date strings" }, 400);
+  }
+
+  if (!isValidUUID(websiteId)) {
+    return c.json({ success: false, error: "Invalid websiteId format" }, 400);
   }
 
   try {
