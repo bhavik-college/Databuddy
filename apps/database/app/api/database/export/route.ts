@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { chQueryWithMeta } from '@databuddy/db/clickhouse'
+import { type NextRequest, NextResponse } from 'next/server'
+import { chQueryWithMeta } from '@databuddy/db'
 
 export async function POST(request: NextRequest) {
   try {
     const { tableName, query: customQuery, limit = 10000 } = await request.json()
-    
+
     if (!tableName && !customQuery) {
       return NextResponse.json({
         success: false,
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     const query = customQuery || `SELECT * FROM ${tableName} LIMIT ${limit}`
     const result = await chQueryWithMeta(query)
-    
+
     // Convert to CSV
     const headers = result.meta?.map(col => col.name).join(',') || ''
     const rows = result.data.map(row =>
@@ -31,11 +31,11 @@ export async function POST(request: NextRequest) {
         return stringValue
       }).join(',')
     ).join('\n')
-    
+
     const csv = `${headers}\n${rows}`
-    
+
     const filename = (tableName || 'custom_query').replace('.', '_')
-    
+
     return new NextResponse(csv, {
       headers: {
         'Content-Type': 'text/csv',

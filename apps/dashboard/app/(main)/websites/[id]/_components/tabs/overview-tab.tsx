@@ -100,7 +100,8 @@ const MIN_PREVIOUS_SESSIONS_FOR_TREND = 5;
 const MIN_PREVIOUS_VISITORS_FOR_TREND = 5;
 const MIN_PREVIOUS_PAGEVIEWS_FOR_TREND = 10;
 
-function LiveUserIndicator({ count }: { count: number }) {
+function LiveUserIndicator({ websiteId }: { websiteId: string }) {
+  const { activeUsers: count } = useRealTimeStats(websiteId);
   const [prevCount, setPrevCount] = useState(count);
   const [change, setChange] = useState<"up" | "down" | null>(null);
 
@@ -185,8 +186,6 @@ export function WebsiteOverviewTab({
   isRefreshing,
   setIsRefreshing,
 }: FullTabProps) {
-  const { activeUsers } = useRealTimeStats(websiteId);
-
   const queries = useMemo(
     () => [
       {
@@ -1001,7 +1000,7 @@ export function WebsiteOverviewTab({
           </div>
 
           <div className="flex flex-col items-end gap-3 sm:flex-row sm:items-center">
-            <LiveUserIndicator count={activeUsers} />
+            <LiveUserIndicator websiteId={websiteId} />
             <MetricToggles colors={metricColors} metrics={visibleMetrics} onToggle={toggleMetric} />
           </div>
         </div>

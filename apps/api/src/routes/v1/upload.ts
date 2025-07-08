@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { s3 } from "../../lib/s3";
 import { authMiddleware } from "../../middleware/auth";
 import { rateLimiter } from "../../middleware/rate-limiter";
-import { AppVariables } from "../../types";
+import type { AppVariables } from "../../types";
 import { db, organization, member, and, eq, inArray } from "@databuddy/db";
 
 type UploadContext = {
