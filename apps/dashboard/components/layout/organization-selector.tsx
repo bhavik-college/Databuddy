@@ -38,20 +38,6 @@ export function OrganizationSelector() {
   const [isOpen, setIsOpen] = React.useState(false);
   const [showCreateDialog, setShowCreateDialog] = React.useState(false);
 
-  if (isLoading) {
-    return (
-      <div className="rounded border border-border/50 bg-accent/30 px-2 py-2">
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-8 w-8 rounded-full" />
-          <div className="space-y-1">
-            <Skeleton className="h-4 w-24 rounded" />
-            <Skeleton className="h-3 w-16 rounded" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const handleSelectOrganization = React.useCallback(
     (organizationId: string | null) => {
       if (organizationId === activeOrganization?.id) return;
@@ -71,6 +57,20 @@ export function OrganizationSelector() {
     router.push("/organizations");
     setIsOpen(false);
   }, [router]);
+
+  if (isLoading) {
+    return (
+      <div className="rounded border border-border/50 bg-accent/30 px-2 py-2">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-8 w-8 rounded-full" />
+          <div className="space-y-1">
+            <Skeleton className="h-4 w-24 rounded" />
+            <Skeleton className="h-3 w-16 rounded" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
