@@ -38,7 +38,7 @@ const testimonials = [
 		link: "https://x.com/bruvimtired/status/1938972393357062401",
 		social: <XIcon />,
 		profession: "Software Engineer, @mail0dotcom",
-		description: "Migrated from Google Analytics - much better insights and 65x faster performance.",
+		description: "if you're not using @trydatabuddy then your analytics are going down the drain.",
 		avatar: "ahmet.jpg",
 	},
 	{
