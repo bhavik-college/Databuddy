@@ -8,6 +8,9 @@ import type { session } from "@databuddy/db";
 import type { ReactNode } from "react";
 import { AutumnProvider } from "autumn-js/react";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { trpc } from "@/lib/trpc";
+import { httpBatchLink } from "@trpc/client";
+import superjson from "superjson";
 
 type Session = typeof session.$inferSelect;
 
@@ -67,7 +70,7 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
 };
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const [clientQueryClient] = useState(
+  const [queryClient] = useState(
     () =>
       new QueryClient({
         ...defaultQueryClientOptions,
@@ -82,15 +85,33 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       })
   );
 
+  const [trpcClient] = useState(() =>
+    trpc.createClient({
+      links: [
+        httpBatchLink({
+          url: `${process.env.NEXT_PUBLIC_API_URL}/trpc`,
+          fetch: (url, options) =>
+            fetch(url, {
+              ...options,
+              credentials: "include",
+            }),
+          transformer: superjson,
+        }),
+      ],
+    })
+  );
+
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-      <QueryClientProvider client={clientQueryClient}>
-        <SessionProvider>
-          <AutumnProvider backendUrl={process.env.NEXT_PUBLIC_API_URL}>
-            <NuqsAdapter>{children}</NuqsAdapter>
-          </AutumnProvider>
-        </SessionProvider>
-      </QueryClientProvider>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <SessionProvider>
+            <AutumnProvider backendUrl={process.env.NEXT_PUBLIC_API_URL}>
+              <NuqsAdapter>{children}</NuqsAdapter>
+            </AutumnProvider>
+          </SessionProvider>
+        </QueryClientProvider>
+      </trpc.Provider>
     </ThemeProvider>
   );
 }

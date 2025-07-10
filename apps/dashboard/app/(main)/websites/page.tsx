@@ -15,6 +15,7 @@ import { WebsiteDialog } from "@/components/website-dialog";
 import { useWebsites } from "@/hooks/use-websites";
 import { WebsiteCard } from "./_components/website-card";
 import { cn } from "@/lib/utils";
+import type { Website } from "@databuddy/shared";
 
 function WebsiteLoadingSkeleton() {
   return (
@@ -238,8 +239,13 @@ export default function WebsitesPage() {
         {/* Show website grid */}
         {!isLoading && !isError && websites && websites.length > 0 && (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {websites.map((website, index) => (
-              <WebsiteCard website={website} key={website.id} />
+            {websites.map((website: Website) => (
+              <WebsiteCard
+                website={website}
+                key={website.id}
+                chartData={[]}
+                isLoadingChart={false}
+              />
             ))}
           </div>
         )}
@@ -247,7 +253,7 @@ export default function WebsitesPage() {
 
       {/* Website Dialog */}
       <WebsiteDialog
-        onCreationSuccess={handleWebsiteCreated}
+        onSave={handleWebsiteCreated}
         onOpenChange={setDialogOpen}
         open={dialogOpen}
       />

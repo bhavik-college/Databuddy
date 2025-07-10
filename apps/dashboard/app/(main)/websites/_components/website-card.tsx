@@ -13,10 +13,11 @@ import { FaviconImage } from "@/components/analytics/favicon-image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { MiniChartDataPoint } from "@/hooks/use-analytics";
-import { useMiniChartData } from "@/hooks/use-analytics";
 
 interface WebsiteCardProps {
   website: Website;
+  chartData?: MiniChartDataPoint[];
+  isLoadingChart?: boolean;
 }
 
 const formatNumber = (num: number) => {
@@ -85,10 +86,8 @@ const Chart = memo(({ data, id }: { data: MiniChartDataPoint[]; id: string }) =>
 
 Chart.displayName = "Chart";
 
-export const WebsiteCard = memo(({ website }: WebsiteCardProps) => {
-  const { data: response, isLoading, isError } = useMiniChartData(website.id);
-
-  const data = response?.data || [];
+export const WebsiteCard = memo(({ website, chartData, isLoadingChart }: WebsiteCardProps) => {
+  const data = chartData || [];
 
   // Memoize expensive calculations
   const { totalViews, trend } = useMemo(
@@ -134,7 +133,7 @@ export const WebsiteCard = memo(({ website }: WebsiteCardProps) => {
         </CardHeader>
 
         <CardContent className="pt-0 pb-3">
-          {isLoading ? (
+          {isLoadingChart ? (
             <div className="space-y-2">
               <div className="flex justify-between">
                 <Skeleton className="h-3 w-12 rounded" />
@@ -142,7 +141,7 @@ export const WebsiteCard = memo(({ website }: WebsiteCardProps) => {
               </div>
               <Skeleton className="h-12 w-full rounded" />
             </div>
-          ) : isError ? (
+          ) : !chartData ? (
             <div className="py-4 text-center text-muted-foreground text-xs">Failed to load</div>
           ) : data.length > 0 ? (
             <div className="space-y-2">
@@ -175,7 +174,7 @@ export const WebsiteCard = memo(({ website }: WebsiteCardProps) => {
                 )}
               </div>
               <div className="transition-colors duration-300 [--chart-color:theme(colors.primary.DEFAULT)] group-hover:[--chart-color:theme(colors.primary.600)]">
-                <Chart data={data} id={website.id} />
+                {/* <Chart data={data} id={website.id} /> */}
               </div>
             </div>
           ) : (

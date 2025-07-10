@@ -1,2 +1,3 @@
 export { appRouter, type AppRouter } from './root';
-export { createTRPCContext } from './trpc'; 
+export { createTRPCRouter } from './trpc';
+export { createTRPCContext } from './trpc';

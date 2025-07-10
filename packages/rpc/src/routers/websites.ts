@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { createTRPCRouter, protectedProcedure, publicProcedure } from '../trpc';
 import { and, eq, isNull, websites } from '@databuddy/db';
 import { TRPCError } from '@trpc/server';
 import { nanoid } from 'nanoid';
@@ -12,16 +12,31 @@ const createWebsiteSchema = z.object({
         .string()
         .min(1)
         .max(100)
-        .regex(/^[a-zA-Z0-9\s\-_.]+$/, 'Invalid website name format'),
-    domain: z
-        .string()
+        .regex(/^[a-zA-Z0-9\s\-_.]+$/, "Invalid website name format"),
+    domain: z.preprocess((val) => {
+        if (typeof val !== "string") {
+            return val;
+        }
+        let domain = val.trim();
+        if (domain.startsWith("http://") || domain.startsWith("https://")) {
+            try {
+                domain = new URL(domain).hostname;
+            } catch (e) {
+                // let validation fail
+            }
+        }
+        return domain;
+    }, z.string()
         .min(1)
         .max(253)
-        .regex(/^[a-zA-Z0-9.-]+$/, 'Invalid domain format'),
+        .regex(
+            /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$/,
+            "Invalid domain format"
+        )),
     subdomain: z
         .string()
         .max(63)
-        .regex(/^[a-zA-Z0-9-]*$/, 'Invalid subdomain format')
+        .regex(/^[a-zA-Z0-9-]*$/, "Invalid subdomain format")
         .optional(),
     organizationId: z.string().optional(),
 });
@@ -54,10 +69,10 @@ export const websitesRouter = createTRPCRouter({
             });
         }),
 
-    getById: protectedProcedure
+    getById: publicProcedure
         .input(z.object({ id: z.string() }))
         .query(async ({ ctx, input }) => {
-            return authorizeWebsiteAccess(ctx, input.id, 'update');
+            return authorizeWebsiteAccess(ctx, input.id, 'read');
         }),
 
     create: protectedProcedure

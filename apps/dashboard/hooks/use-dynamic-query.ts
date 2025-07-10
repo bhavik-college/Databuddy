@@ -11,6 +11,7 @@ export interface DynamicQueryRequest {
   page?: number;
   filters?: DynamicQueryFilter[];
   granularity?: "hourly" | "daily";
+  groupBy?: string;
 }
 
 export interface DynamicQueryFilter {
@@ -307,11 +308,7 @@ export type ParameterDataMap = {
   // Error-related parameters
   recent_errors: ErrorData;
   error_types: ErrorTypeData;
-  errors_by_page: ErrorBreakdownData;
-  errors_by_browser: ErrorBreakdownData;
-  errors_by_os: ErrorBreakdownData;
-  errors_by_country: ErrorBreakdownData;
-  errors_by_device: ErrorBreakdownData;
+  errors_breakdown: ErrorBreakdownData;
   error_trends: ErrorTrendData;
   sessions_summary: SessionsSummaryData;
   // Custom Events parameters
@@ -478,6 +475,7 @@ async function fetchDynamicQuery(
       page: query.page || 1,
       filters: query.filters || [],
       granularity: query.granularity || dateRange.granularity || "daily",
+      groupBy: query.groupBy,
     }))
     : {
       ...queryData,
@@ -488,6 +486,7 @@ async function fetchDynamicQuery(
       page: queryData.page || 1,
       filters: queryData.filters || [],
       granularity: queryData.granularity || dateRange.granularity || "daily",
+      groupBy: queryData.groupBy,
     };
 
   const response = await fetch(url, {
@@ -1062,17 +1061,21 @@ export function useEnhancedErrorData(
 ) {
   const filters = options?.filters || [];
 
+  const breakdownQueries: DynamicQueryRequest[] = [
+    { id: "errors_by_page", parameters: ["errors_breakdown"], groupBy: "page", filters },
+    { id: "errors_by_browser", parameters: ["errors_breakdown"], groupBy: "browser", filters },
+    { id: "errors_by_os", parameters: ["errors_breakdown"], groupBy: "os", filters },
+    { id: "errors_by_country", parameters: ["errors_breakdown"], groupBy: "country", filters },
+    { id: "errors_by_device", parameters: ["errors_breakdown"], groupBy: "device", filters },
+  ];
+
   return useBatchDynamicQuery(
     websiteId,
     dateRange,
     [
       { id: "recent_errors", parameters: ["recent_errors"], limit: 100, filters },
       { id: "error_types", parameters: ["error_types"], limit: 100, filters },
-      { id: "errors_by_page", parameters: ["errors_by_page"], filters },
-      { id: "errors_by_browser", parameters: ["errors_by_browser"], filters },
-      { id: "errors_by_os", parameters: ["errors_by_os"], filters },
-      { id: "errors_by_country", parameters: ["errors_by_country"], filters },
-      { id: "errors_by_device", parameters: ["errors_by_device"], filters },
+      ...breakdownQueries,
       { id: "error_trends", parameters: ["error_trends"], limit: 30, filters },
       { id: "sessions_summary", parameters: ["sessions_summary"], filters },
     ],

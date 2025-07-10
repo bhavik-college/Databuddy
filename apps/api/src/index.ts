@@ -112,21 +112,17 @@ app.use(
 	autumnHandler({
 		identify: async (c: Context) => {
 			try {
-				logger.info(`[Autumn] Processing request: ${c.req.method} ${c.req.url}`);
-
 				const session = await auth.api.getSession({
 					headers: c.req.raw.headers,
 				});
 
 				if (!session?.user?.id) {
-					logger.warn("[Autumn] No valid session found for request");
 					return {
 						customerId: undefined,
 						customerData: {},
 					};
 				}
 
-				logger.info(`[Autumn] Identified customer: ${session.user.id}`);
 
 				return {
 					customerId: session.user.id,

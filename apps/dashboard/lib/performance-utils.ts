@@ -27,7 +27,7 @@ export function calculatePerformanceSummary(pages: PerformanceEntry[]): Performa
     if (loadTime < SCORE_THRESHOLDS.FAST) fastPages++;
     else if (loadTime > SCORE_THRESHOLDS.MODERATE) slowPages++;
 
-    let score;
+    let score: number;
     if (loadTime <= SCORE_THRESHOLDS.FAST) {
       score = 100;
     } else if (loadTime <= SCORE_THRESHOLDS.MODERATE) {

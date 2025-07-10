@@ -131,7 +131,7 @@ function WebsiteDetailsPage() {
     [setDateRangeAction]
   );
 
-  const { data, isLoading, isError, error, refetch: refetchWebsiteData } = useWebsite(id as string);
+  const { data, isLoading, isError, refetch: refetchWebsiteData } = useWebsite(id as string);
 
   const { analytics: analyticsData, loading: analyticsLoading } = useWebsiteAnalytics(
     id as string,

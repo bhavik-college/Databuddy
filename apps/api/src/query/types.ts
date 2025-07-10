@@ -12,6 +12,7 @@ export type ParameterBuilder = (
   granularity?: 'hourly' | 'daily',
   timezone?: string,
   filters?: any[],
+  groupBy?: string,
 ) => string | QueryWithParams
 
 export interface BuilderConfig {
@@ -35,13 +36,13 @@ export type AnalyticsContext = {
   };
 };
 
-export interface FilterSchema {
+export interface FilterRequest {
   field: string;
   operator: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'not_in' | 'contains' | 'starts_with';
   value: string | number | Array<string | number>;
 }
 
-export interface QuerySchema {
+export interface QueryRequest {
   id?: string;
   startDate: string;
   endDate: string;
@@ -49,6 +50,6 @@ export interface QuerySchema {
   parameters: string[];
   limit: number;
   page: number;
-  filters: FilterSchema[];
+  filters: FilterRequest[];
   granularity: 'hourly' | 'daily';
 } 

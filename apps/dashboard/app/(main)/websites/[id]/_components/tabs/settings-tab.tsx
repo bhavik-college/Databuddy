@@ -49,7 +49,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { WebsiteDialog } from "@/components/website-dialog";
-import { websiteApi } from "@/hooks/use-websites";
+import { useDeleteWebsite } from "@/hooks/use-websites";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   generateNpmCode,
@@ -83,20 +83,7 @@ export function WebsiteSettingsTab({
     "tracking"
   );
   const [trackingOptions, setTrackingOptions] = useState<TrackingOptions>(RECOMMENDED_DEFAULTS);
-  const { mutate: deleteWebsiteMutation, isPending: isMutationDeleting } =
-    useMutation({
-      mutationFn: (id: string) => websiteApi.delete(id),
-      onSuccess: () => {
-        toast.success("Website deleted successfully");
-        queryClient.invalidateQueries({ queryKey: ["websites"] });
-        router.push("/websites");
-        setShowDeleteDialog(false);
-      },
-      onError: (error: Error) => {
-        toast.error(error.message || "Failed to delete website");
-        setShowDeleteDialog(false);
-      },
-    });
+  const deleteWebsiteMutation = useDeleteWebsite();
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -110,7 +97,17 @@ export function WebsiteSettingsTab({
   };
 
   const handleDeleteWebsite = async () => {
-    deleteWebsiteMutation(websiteId);
+    toast.promise(deleteWebsiteMutation.mutate({ id: websiteId }).then(() => {
+      router.push("/websites");
+      return "Website deleted successfully!";
+    }), {
+      loading: "Deleting website...",
+      success: () => {
+        router.push("/websites");
+        return "Website deleted successfully!";
+      },
+      error: "Failed to delete website.",
+    });
   };
 
   const handleWebsiteUpdated = () => {
@@ -213,14 +210,14 @@ export function WebsiteSettingsTab({
       {/* Edit Dialog */}
       <WebsiteDialog
         onOpenChange={setShowEditDialog}
-        onUpdateSuccess={handleWebsiteUpdated}
+        onSave={handleWebsiteUpdated}
         open={showEditDialog}
         website={websiteData}
       />
 
       {/* Delete Dialog */}
       <DeleteWebsiteDialog
-        isDeleting={isMutationDeleting}
+        isDeleting={deleteWebsiteMutation.isPending}
         onConfirmDelete={handleDeleteWebsite}
         onOpenChange={setShowDeleteDialog}
         open={showDeleteDialog}

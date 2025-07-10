@@ -1,9 +1,7 @@
-import { TRPCError, initTRPC, type inferAsyncReturnType } from '@trpc/server';
-import superjson from 'superjson';
-import { ZodError } from 'zod';
-
-import { auth } from '@databuddy/auth';
+import { initTRPC, TRPCError, type inferAsyncReturnType } from '@trpc/server';
 import { db } from '@databuddy/db';
+import { apiAuth as auth } from '@databuddy/auth';
+import superjson from 'superjson';
 
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const session = await auth.api.getSession({
@@ -21,16 +19,10 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
 
 export type Context = inferAsyncReturnType<typeof createTRPCContext>;
 
-export const t = initTRPC.context<Context>().create({
+export const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
-  errorFormatter({ shape, error }) {
-    return {
-      ...shape,
-      data: {
-        ...shape.data,
-        zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
-      },
-    };
+  errorFormatter({ shape }) {
+    return shape;
   },
 });
 

@@ -36,6 +36,7 @@ export const querySchema = z.object({
   limit: z.number().min(1).max(1000).default(100),
   page: z.number().min(1).default(1),
   filters: z.array(filterSchema).default([]),
+  groupBy: z.string().optional(),
   granularity: z.enum(['hourly', 'daily']).default('daily')
 });
 
@@ -228,11 +229,11 @@ function groupQueriesByColumnStructure(
       const builder = PARAMETER_BUILDERS[parameter as keyof typeof PARAMETER_BUILDERS]
       if (!builder) continue
 
-      const { startDate, endDate, limit, page, filters, timeZone, granularity } = query
+      const { startDate, endDate, limit, page, filters, timeZone, granularity, groupBy } = query
       const offset = (page - 1) * limit
 
       const finalEndDate = endDate.includes('T') ? endDate : `${endDate} 23:59:59`
-      const builderResult = builder(websiteId, startDate, finalEndDate, limit, offset, granularity, timeZone, filters)
+      const builderResult = builder(websiteId, startDate, finalEndDate, limit, offset, granularity, timeZone, filters, groupBy)
 
       if (typeof builderResult !== 'string') {
         throw new Error('Cannot unify parameterized queries')
@@ -297,7 +298,7 @@ function buildUnifiedQueries(
     const subQueries: string[] = []
 
     for (const { query, parameter } of group.queries) {
-      const { startDate, endDate, limit, page, filters, timeZone, granularity } = query
+      const { startDate, endDate, limit, page, filters, timeZone, granularity, groupBy } = query
       const offset = (page - 1) * limit
 
       const builder = PARAMETER_BUILDERS[parameter as keyof typeof PARAMETER_BUILDERS]
@@ -305,7 +306,7 @@ function buildUnifiedQueries(
 
       const finalEndDate = endDate.includes('T') ? endDate : `${endDate} 23:59:59`
 
-      const builderResult = builder(websiteId, startDate, finalEndDate, limit, offset, granularity, timeZone, filters)
+      const builderResult = builder(websiteId, startDate, finalEndDate, limit, offset, granularity, timeZone, filters, groupBy)
 
       if (typeof builderResult !== 'string') {
         // This should have been caught by groupQueriesByColumnStructure, but for type safety:
