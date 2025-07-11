@@ -93,7 +93,7 @@ export function WebsiteDialog({
     toast.promise(promise(), {
       loading: "Loading...",
       success: (result) => {
-        onSave(result as Website);
+        onSave(result as unknown as Website);
         onOpenChange(false);
         return `Website ${isEditing ? "updated" : "created"} successfully!`;
       },
@@ -146,24 +146,28 @@ export function WebsiteDialog({
                   <FormItem>
                     <FormLabel>Domain</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="your-company.com"
-                        {...field}
-                        onChange={(e) => {
-                          let domain = e.target.value.trim();
-                          if (
-                            domain.startsWith("http://") ||
-                            domain.startsWith("https://")
-                          ) {
-                            try {
-                              domain = new URL(domain).hostname;
-                            } catch {
-                              // if parsing fails, we fallback to the original value
+                      <div className="flex items-center">
+                        <span className="inline-flex h-10 items-center rounded-l-md border border-r-0 border-input bg-muted px-3 text-sm text-muted-foreground">
+                          https://
+                        </span>
+                        <Input
+                          placeholder="your-company.com"
+                          {...field}
+                          className="rounded-l-none"
+                          onChange={(e) => {
+                            let domain = e.target.value.trim();
+                            if (
+                              domain.startsWith("http://") ||
+                              domain.startsWith("https://")
+                            ) {
+                              try {
+                                domain = new URL(domain).hostname;
+                              } catch { }
                             }
-                          }
-                          field.onChange(domain.replace(/^www\./, ""));
-                        }}
-                      />
+                            field.onChange(domain.replace(/^www\./, ""));
+                          }}
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

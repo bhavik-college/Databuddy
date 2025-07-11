@@ -1,10 +1,12 @@
 import { websitesRouter } from "./routers/websites";
-import { analyticsRouter } from "./routers/analytics";
+import { miniChartsRouter } from "./routers/mini-charts";
+import { funnelsRouter } from "./routers/funnels";
 import { createTRPCRouter } from "./trpc";
 
 export const appRouter = createTRPCRouter({
   websites: websitesRouter,
-  analytics: analyticsRouter,
+  miniCharts: miniChartsRouter,
+  funnels: funnelsRouter,
 });
 
 export type AppRouter = typeof appRouter;

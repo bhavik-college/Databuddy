@@ -118,15 +118,6 @@ export async function chQueryWithMeta<T extends Record<string, any>>(
     }),
   };
 
-  logger.info('query info', {
-    // query: cleanQuery(query),
-    rows: json.rows,
-    stats: response.statistics,
-    beforeParse: beforeParse - start,
-    afterParse: afterParse - beforeParse,
-    elapsed: Date.now() - start,
-  });
-
   return response;
 }
 

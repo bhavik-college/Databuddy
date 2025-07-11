@@ -7,47 +7,46 @@ import { checkAndTrackWebsiteCreation, getBillingCustomerId, trackWebsiteUsage }
 import { authorizeWebsiteAccess } from '../utils/auth';
 import { logger as discordLogger } from '../utils/discord-webhook';
 
+const websiteNameSchema = z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(/^[a-zA-Z0-9\s\-_.]+$/, "Invalid website name format");
+
+const domainSchema = z.preprocess((val) => {
+    if (typeof val !== "string") return val;
+    let domain = val.trim();
+    if (domain.startsWith("http://") || domain.startsWith("https://")) {
+        try {
+            domain = new URL(domain).hostname;
+        } catch {
+        }
+    }
+    return domain;
+}, z.string()
+    .min(1)
+    .max(253)
+    .regex(
+        /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$/,
+        "Invalid domain format"
+    ));
+
+const subdomainSchema = z
+    .string()
+    .max(63)
+    .regex(/^[a-zA-Z0-9-]*$/, "Invalid subdomain format")
+    .optional();
+
 const createWebsiteSchema = z.object({
-    name: z
-        .string()
-        .min(1)
-        .max(100)
-        .regex(/^[a-zA-Z0-9\s\-_.]+$/, "Invalid website name format"),
-    domain: z.preprocess((val) => {
-        if (typeof val !== "string") {
-            return val;
-        }
-        let domain = val.trim();
-        if (domain.startsWith("http://") || domain.startsWith("https://")) {
-            try {
-                domain = new URL(domain).hostname;
-            } catch (e) {
-                // let validation fail
-            }
-        }
-        return domain;
-    }, z.string()
-        .min(1)
-        .max(253)
-        .regex(
-            /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$/,
-            "Invalid domain format"
-        )),
-    subdomain: z
-        .string()
-        .max(63)
-        .regex(/^[a-zA-Z0-9-]*$/, "Invalid subdomain format")
-        .optional(),
+    name: websiteNameSchema,
+    domain: domainSchema,
+    subdomain: subdomainSchema,
     organizationId: z.string().optional(),
 });
 
 const updateWebsiteSchema = z.object({
     id: z.string(),
-    name: z
-        .string()
-        .min(1)
-        .max(100)
-        .regex(/^[a-zA-Z0-9\s\-_.]+$/, 'Invalid website name format'),
+    name: websiteNameSchema,
 });
 
 const transferWebsiteSchema = z.object({

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowClockwiseIcon,
   ChartLineIcon,
   GlobeIcon,
   PlusIcon,
@@ -15,7 +16,7 @@ import { WebsiteDialog } from "@/components/website-dialog";
 import { useWebsites } from "@/hooks/use-websites";
 import { WebsiteCard } from "./_components/website-card";
 import { cn } from "@/lib/utils";
-import type { Website } from "@databuddy/shared";
+import { trpc } from "@/lib/trpc";
 
 function WebsiteLoadingSkeleton() {
   return (
@@ -151,6 +152,17 @@ export default function WebsitesPage() {
   const { websites, isLoading, isError, refetch } = useWebsites();
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const websiteIds = websites.map((w) => w.id);
+
+  const { data: chartData, isLoading: isLoadingChart } = trpc.miniCharts.getMiniCharts.useQuery(
+    {
+      websiteIds,
+    },
+    {
+      enabled: !isLoading && websiteIds.length > 0,
+    }
+  );
+
   const handleRetry = () => {
     refetch();
   };
@@ -184,24 +196,35 @@ export default function WebsitesPage() {
               </div>
             </div>
           </div>
-          <Button
-            className={cn(
-              "w-full gap-2 px-6 py-3 font-medium sm:w-auto",
-              "bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary",
-              "group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl"
-            )}
-            data-button-type="primary"
-            data-section="header"
-            data-track="websites-new-website-header"
-            onClick={() => setDialogOpen(true)}
-            size="default"
-          >
-            <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-700 group-hover:translate-x-[100%]" />
-            <PlusIcon
-              className="relative z-10 h-4 w-4 transition-transform duration-300 group-hover:rotate-90"
-            />
-            <span className="relative z-10 truncate">New Website</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => refetch()}
+              disabled={isLoading}
+              aria-label="Refresh websites"
+            >
+              <ArrowClockwiseIcon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </Button>
+            <Button
+              className={cn(
+                "w-full gap-2 px-6 py-3 font-medium sm:w-auto",
+                "bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary",
+                "group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl"
+              )}
+              data-button-type="primary"
+              data-section="header"
+              data-track="websites-new-website-header"
+              onClick={() => setDialogOpen(true)}
+              size="default"
+            >
+              <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-700 group-hover:translate-x-[100%]" />
+              <PlusIcon
+                className="relative z-10 h-4 w-4 transition-transform duration-300 group-hover:rotate-90"
+              />
+              <span className="relative z-10 truncate">New Website</span>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -239,12 +262,12 @@ export default function WebsitesPage() {
         {/* Show website grid */}
         {!isLoading && !isError && websites && websites.length > 0 && (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {websites.map((website: Website) => (
+            {websites.map((website) => (
               <WebsiteCard
                 website={website}
                 key={website.id}
-                chartData={[]}
-                isLoadingChart={false}
+                chartData={chartData?.[website.id] || []}
+                isLoadingChart={isLoadingChart}
               />
             ))}
           </div>

@@ -174,7 +174,7 @@ export const WebsiteCard = memo(({ website, chartData, isLoadingChart }: Website
                 )}
               </div>
               <div className="transition-colors duration-300 [--chart-color:theme(colors.primary.DEFAULT)] group-hover:[--chart-color:theme(colors.primary.600)]">
-                {/* <Chart data={data} id={website.id} /> */}
+                <Chart data={data} id={website.id} />
               </div>
             </div>
           ) : (

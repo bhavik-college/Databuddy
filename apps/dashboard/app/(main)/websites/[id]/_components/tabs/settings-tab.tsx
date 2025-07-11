@@ -97,10 +97,7 @@ export function WebsiteSettingsTab({
   };
 
   const handleDeleteWebsite = async () => {
-    toast.promise(deleteWebsiteMutation.mutate({ id: websiteId }).then(() => {
-      router.push("/websites");
-      return "Website deleted successfully!";
-    }), {
+    toast.promise(deleteWebsiteMutation.mutateAsync({ id: websiteId }), {
       loading: "Deleting website...",
       success: () => {
         router.push("/websites");
