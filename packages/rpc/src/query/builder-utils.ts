@@ -1,46 +1,91 @@
-import { sql, type SQL } from 'drizzle-orm'
-import type { QueryDateRange, QueryFilters } from './types'
-import { getWhereClause } from './utils'
+import type { QueryDateRange, QueryFilters, QueryWithParams } from './types'
+import { buildCommonWhereClauses, getWhereClause } from './utils'
 
 type QueryOptions = {
-    select: (SQL | string)[]
-    groupBy?: (SQL | string)[]
-    orderBy?: (SQL | string)[]
-    baseWhere?: (SQL | string)[]
+  select: string
+  groupBy?: string
+  orderBy?: string
+  baseWhere?: string[]
 }
 
-export function createQueryBuilder(table: `analytics.${string}`) {
-    return (
-        websiteId: string,
-        dateRange: QueryDateRange,
-        options: QueryOptions,
-        filters?: QueryFilters,
-        limit = 100,
-        offset = 0
-    ): SQL => {
-        const { select, groupBy, orderBy, baseWhere } = options
+export function createQueryBuilder(table: string, baseWhereClauses: string[] = []) {
+  return (
+    websiteId: string,
+    dateRange: QueryDateRange,
+    options: QueryOptions,
+    filters?: QueryFilters,
+    limit = 100,
+    offset = 0
+  ): QueryWithParams => {
+    const { select, groupBy, orderBy, baseWhere } = options
 
-        const whereClauses = [
-            sql`website_id = ${websiteId}`,
-            sql`timestamp >= ${dateRange.from}`,
-            sql`timestamp <= ${dateRange.to}`,
-            ...(baseWhere || []).map(w => (typeof w === 'string' ? sql.raw(w) : w)),
-        ]
+    // Build base where clauses
+    const { clause: baseWhereClause, params: baseParams } = buildCommonWhereClauses(
+      websiteId,
+      dateRange.from,
+      dateRange.to,
+      { event_filter: 'event_name = \'error\'' }
+    )
 
-        const filterWhere = getWhereClause(filters)
-        if (filterWhere) {
-            whereClauses.push(filterWhere)
-        }
+    // Add base where clauses
+    const allBaseWhere = [...baseWhereClauses, ...(baseWhere || [])]
+    const baseWhereClauseWithExtras = allBaseWhere.length > 0
+      ? `${baseWhereClause} AND ${allBaseWhere.join(' AND ')}`
+      : baseWhereClause
 
-        const finalQuery = sql`
-      SELECT ${sql.join(select.map(s => (typeof s === 'string' ? sql.raw(s) : s)), sql`, `)}
-      FROM ${sql.raw(table)}
-      WHERE ${sql.join(whereClauses, sql` AND `)}
-      ${groupBy ? sql`GROUP BY ${sql.join(groupBy.map(g => (typeof g === 'string' ? sql.raw(g) : g)), sql`, `)}` : sql``}
-      ${orderBy ? sql`ORDER BY ${sql.join(orderBy.map(o => (typeof o === 'string' ? sql.raw(o) : o)), sql`, `)}` : sql``}
-      LIMIT ${limit}
-      OFFSET ${offset}
+    // Build filter where clauses
+    const { clause: filterWhereClause, params: filterParams } = getWhereClause(filters)
+
+    // Combine all where clauses
+    const whereClause = [baseWhereClauseWithExtras, filterWhereClause]
+      .filter(Boolean)
+      .join(' AND ')
+
+    // Build the final query
+    const query = `
+      SELECT ${select}
+      FROM ${table}
+      WHERE ${whereClause}
+      ${groupBy ? `GROUP BY ${groupBy}` : ''}
+      ${orderBy ? `ORDER BY ${orderBy}` : ''}
+      LIMIT {limit:UInt64} OFFSET {offset:UInt64}
     `
-        return finalQuery
+
+    // Combine all parameters
+    const params: Record<string, unknown> = {
+      ...baseParams,
+      ...filterParams,
+      limit,
+      offset
     }
+
+    return { query, params }
+  }
+}
+
+export function createStandardQuery(
+  nameColumn: string,
+  groupByColumns: string[],
+  extraWhere?: string,
+  orderBy = 'visitors DESC'
+) {
+  return (
+    websiteId: string,
+    dateRange: QueryDateRange,
+    filters?: QueryFilters,
+    limit?: number,
+    offset?: number
+  ): QueryWithParams => {
+    const builder = createQueryBuilder('analytics.events', extraWhere ? [extraWhere] : [])
+    return builder(websiteId, dateRange, {
+      select: `
+        ${nameColumn} as name,
+        uniq(anonymous_id) as visitors,
+        COUNT(*) as pageviews,
+        uniq(session_id) as sessions
+      `,
+      groupBy: groupByColumns.join(', '),
+      orderBy
+    }, filters, limit, offset)
+  }
 } 
