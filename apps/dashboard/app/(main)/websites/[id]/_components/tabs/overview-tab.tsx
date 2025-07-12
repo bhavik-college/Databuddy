@@ -162,7 +162,7 @@ export function WebsiteOverviewTab({
       },
       {
         id: "overview-tech",
-        parameters: ["device_types", "browser_versions"],
+        parameters: ["device_types", "browsers"],
         limit: 100,
         granularity: dateRange.granularity,
       },
@@ -199,7 +199,7 @@ export function WebsiteOverviewTab({
       utm_mediums: getDataForQuery("overview-traffic", "utm_mediums") || [],
       utm_campaigns: getDataForQuery("overview-traffic", "utm_campaigns") || [],
       device_types: getDataForQuery("overview-tech", "device_types") || [],
-      browser_versions: getDataForQuery("overview-tech", "browser_versions") || [],
+      browser_versions: getDataForQuery("overview-tech", "browsers") || [],
     }),
     [getDataForQuery]
   );

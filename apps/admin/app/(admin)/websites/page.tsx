@@ -22,7 +22,6 @@ import { DataTableToolbar } from "@/components/admin/data-table-toolbar";
 import { WebsiteActions } from "./website-actions";
 import { WebsiteEventMetrics, formatNumber } from "@/components/website-event-metrics";
 import type { WebsiteWithUser } from "@/types/website";
-import { toast } from "sonner";
 import { WebsiteIdCopy } from "@/components/website-id-copy";
 
 // Helper function to get initials
