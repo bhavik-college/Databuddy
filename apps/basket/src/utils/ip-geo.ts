@@ -17,8 +17,6 @@ let loadPromise: Promise<void> | null = null;
 let loadError: Error | null = null;
 
 async function loadDatabaseFromCdn(): Promise<Buffer> {
-  console.log("Loading GeoIP database from CDN...");
-
   try {
     const response = await fetch(CDN_URL);
     if (!response.ok) {
@@ -27,7 +25,6 @@ async function loadDatabaseFromCdn(): Promise<Buffer> {
 
     const arrayBuffer = await response.arrayBuffer();
     const dbBuffer = Buffer.from(arrayBuffer);
-    console.log(`Database CDN size: ${dbBuffer.length} bytes`);
 
     // Validate that we got a reasonable file size (should be ~50-100MB)
     if (dbBuffer.length < 1000000) { // Less than 1MB
@@ -57,23 +54,12 @@ async function loadDatabase() {
   isLoading = true;
   loadPromise = (async () => {
     try {
-      console.log("Loading GeoIP database...");
-
       const dbBuffer = await loadDatabaseFromCdn();
 
       // Add a small delay to prevent overwhelming the system
       await new Promise(resolve => setTimeout(resolve, 100));
 
       reader = Reader.openBuffer(dbBuffer) as GeoIPReader;
-      console.log("GeoIP database loaded successfully");
-
-      // Test the database with a known IP to verify it's working
-      try {
-        const testResponse = reader.city("8.8.8.8");
-        console.log("Database test successful - 8.8.8.8 found:", testResponse.country?.names?.en);
-      } catch (testError) {
-        console.error("Database test failed:", testError);
-      }
     } catch (error) {
       console.error("Failed to load GeoIP database:", error);
       loadError = error as Error;
@@ -115,28 +101,20 @@ export async function getGeoLocation(ip: string) {
       await loadDatabase();
     } catch (error) {
       console.error("Failed to load database for IP lookup:", error);
-      console.error("Current working directory:", process.cwd());
-      console.error("CDN URL:", CDN_URL);
       return { country: undefined, region: undefined };
     }
   }
 
   if (!reader) {
-    console.error("Database reader is null - database failed to load");
     return { country: undefined, region: undefined };
   }
 
   try {
-    console.log(`Looking up IP: ${ip}`);
     const response = reader.city(ip);
 
     // Extract region data
     const region = response.subdivisions?.[0]?.names?.en;
 
-    console.log(`IP ${ip} found in database:`, {
-      country: response.country?.names?.en,
-      region: region,
-    });
     return {
       country: response.country?.names?.en,
       region: region,
@@ -144,7 +122,6 @@ export async function getGeoLocation(ip: string) {
   } catch (error) {
     // Handle AddressNotFoundError specifically (IP not in database)
     if (error instanceof AddressNotFoundError) {
-      console.log(`IP ${ip} not found in GeoIP database`);
       return { country: undefined, region: undefined };
     }
 
