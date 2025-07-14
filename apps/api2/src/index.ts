@@ -7,17 +7,17 @@ import cors from '@elysiajs/cors';
 
 const app = new Elysia();
 
+const isDev = process.env.NODE_ENV === 'development';
 const allowedOrigins = [
   'https://staging.databuddy.cc',
   'https://app.databuddy.cc',
-  process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : true
-]
+];
 app.get('/', () => {
   return 'Hello World';
 })
   .use(cors({
     credentials: true,
-    origin: allowedOrigins as any
+    origin: isDev ? 'http://localhost:3000' : allowedOrigins
   }))
   .use(query)
   .all('/trpc/*', async ({ request }) => {
