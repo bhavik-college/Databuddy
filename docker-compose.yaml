@@ -21,7 +21,7 @@ services:
 
   # ClickHouse for Analytics
   clickhouse:
-    image: clickhouse/clickhouse-server:25.3.1-alpine
+    image: clickhouse/clickhouse-server:25.5.1-alpine
     container_name: databuddy-clickhouse
     environment:
       CLICKHOUSE_DB: databuddy_analytics
