@@ -152,8 +152,8 @@ export const summaryBuilders: Record<string, ParameterBuilder> = {
         LEFT JOIN hourly_visitors hv ON hr.hour = hv.hour
         ORDER BY hr.hour ASC
       `;
-    } 
-      return `
+    }
+    return `
         WITH date_range AS (
           SELECT 
             toDate(parseDateTimeBestEffort(${escapeSqlString(startDate)}), ${escapeSqlString(timezone)}) + number as date
@@ -213,7 +213,7 @@ export const summaryBuilders: Record<string, ParameterBuilder> = {
         LEFT JOIN daily_visitors dv ON dr.date = dv.date
         ORDER BY dr.date ASC
       `;
-    
+
   },
 
   sessions_summary: (websiteId: string, startDate: string, endDate: string, limit: number, offset: number, granularity: 'hourly' | 'daily' = 'daily') => `

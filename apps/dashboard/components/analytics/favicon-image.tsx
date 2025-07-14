@@ -10,6 +10,11 @@ interface FaviconImageProps {
   className?: string;
 }
 
+// Local storage cache key helper
+function getFaviconCacheKey(domain: string) {
+  return `favicon-cache:${domain.toLowerCase()}`;
+}
+
 export function FaviconImage({ domain, altText, size = 20, className = "" }: FaviconImageProps) {
   const [faviconUrl, setFaviconUrl] = useState<string>("");
   const [hasError, setHasError] = useState<boolean>(false);
@@ -38,8 +43,6 @@ export function FaviconImage({ domain, altText, size = 20, className = "" }: Fav
     try {
       // Clean the domain - remove protocol, www, and get just the hostname
       let hostname = effectiveDomain.replace(/^https?:\/\//, "").replace(/^www\./, "");
-
-      // Remove any path, query, or fragment
       hostname = hostname.split("/")[0].split("?")[0].split("#")[0];
 
       // Validate hostname format
@@ -50,17 +53,22 @@ export function FaviconImage({ domain, altText, size = 20, className = "" }: Fav
         return;
       }
 
+      // Check localStorage cache
+      const cacheKey = getFaviconCacheKey(hostname);
+      const cachedUrl = typeof window !== "undefined" ? localStorage.getItem(cacheKey) : null;
+      if (cachedUrl) {
+        setFaviconUrl(cachedUrl);
+        setIsLoading(false);
+        return;
+      }
+
       // Use better favicon services that don't default to HTTP
       const faviconSources = [
-        // DuckDuckGo's service is more reliable and doesn't assume HTTP
         `https://icons.duckduckgo.com/ip3/${hostname}.ico`,
-        // Fallback to direct favicon
         `https://${hostname}/favicon.ico`,
-        // Last resort: try with www prefix
         `https://www.${hostname}/favicon.ico`,
       ];
 
-      // Try the first source
       setFaviconUrl(faviconSources[0]);
       setIsLoading(false);
     } catch (e) {
@@ -73,30 +81,30 @@ export function FaviconImage({ domain, altText, size = 20, className = "" }: Fav
 
   const handleImageError = () => {
     const effectiveDomain = domain;
-
     if (!effectiveDomain) {
       setHasError(true);
       setIsLoading(false);
       return;
     }
-
     try {
       let hostname = effectiveDomain.replace(/^https?:\/\//, "").replace(/^www\./, "");
       hostname = hostname.split("/")[0].split("?")[0].split("#")[0];
-
       const faviconSources = [
         `https://icons.duckduckgo.com/ip3/${hostname}.ico`,
         `https://${hostname}/favicon.ico`,
         `https://www.${hostname}/favicon.ico`,
       ];
-
       const nextIndex = currentSourceIndex + 1;
-
       if (nextIndex < faviconSources.length) {
         setCurrentSourceIndex(nextIndex);
         setFaviconUrl(faviconSources[nextIndex]);
         setIsLoading(true);
       } else {
+        // Remove cache entry if all fail
+        const cacheKey = getFaviconCacheKey(hostname);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem(cacheKey);
+        }
         setHasError(true);
         setIsLoading(false);
       }
@@ -109,6 +117,15 @@ export function FaviconImage({ domain, altText, size = 20, className = "" }: Fav
   const handleImageLoad = () => {
     setIsLoading(false);
     setHasError(false);
+    // Cache the favicon URL for this domain
+    try {
+      let hostname = domain.replace(/^https?:\/\//, "").replace(/^www\./, "");
+      hostname = hostname.split("/")[0].split("?")[0].split("#")[0];
+      const cacheKey = getFaviconCacheKey(hostname);
+      if (typeof window !== "undefined" && faviconUrl) {
+        localStorage.setItem(cacheKey, faviconUrl);
+      }
+    } catch { }
   };
 
   if (hasError || !faviconUrl) {

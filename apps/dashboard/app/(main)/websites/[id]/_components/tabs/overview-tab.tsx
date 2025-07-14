@@ -318,7 +318,7 @@ export function WebsiteOverviewTab({
 
     const createChartSeries = (field: string, transform?: (value: any) => number) =>
       filteredEvents.map((event: any) => ({
-        date: event.date,
+        date: formatDateByGranularity(event.date, dateRange.granularity),
         value: transform ? transform(event[field]) : (event[field] || 0),
       }));
 
@@ -330,7 +330,7 @@ export function WebsiteOverviewTab({
       bounceRate: createChartSeries('bounce_rate'),
       sessionDuration: createChartSeries('avg_session_duration'),
     };
-  }, [analytics.events_by_date, filterFutureEvents]);
+  }, [analytics.events_by_date, filterFutureEvents, dateRange.granularity]);
 
   // Page processing utilities
   const processedTopPages = useMemo(() =>
