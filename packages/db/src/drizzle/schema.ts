@@ -614,6 +614,52 @@ export const funnelDefinitions = pgTable(
 	],
 );
 
+export const goals = pgTable(
+	"goals",
+	{
+		id: text().primaryKey().notNull(),
+		websiteId: text().notNull(),
+		type: text().notNull(), // e.g., 'PAGE_VIEW', 'EVENT', 'CUSTOM'
+		target: text().notNull(), // event name or page path
+		name: text().notNull(),
+		description: text(),
+		filters: jsonb(),
+		isActive: boolean().default(true).notNull(),
+		createdBy: text().notNull(),
+		createdAt: timestamp({ precision: 3, mode: "string" })
+			.default(sql`CURRENT_TIMESTAMP`)
+			.notNull(),
+		updatedAt: timestamp({ precision: 3, mode: "string" })
+			.default(sql`CURRENT_TIMESTAMP`)
+			.notNull(),
+		deletedAt: timestamp({ precision: 3, mode: "string" }),
+	},
+	(table) => [
+		index("goals_websiteId_idx").using(
+			"btree",
+			table.websiteId.asc().nullsLast().op("text_ops"),
+		),
+		index("goals_createdBy_idx").using(
+			"btree",
+			table.createdBy.asc().nullsLast().op("text_ops"),
+		),
+		foreignKey({
+			columns: [table.websiteId],
+			foreignColumns: [websites.id],
+			name: "goals_websiteId_fkey",
+		})
+			.onUpdate("cascade")
+			.onDelete("cascade"),
+		foreignKey({
+			columns: [table.createdBy],
+			foreignColumns: [user.id],
+			name: "goals_createdBy_fkey",
+		})
+			.onUpdate("cascade")
+			.onDelete("restrict"),
+	],
+);
+
 export const team = pgTable(
 	"team",
 	{

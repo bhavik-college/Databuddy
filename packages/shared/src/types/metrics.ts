@@ -48,21 +48,6 @@ export interface UTMData {
     pageviews: number;
 }
 
-export interface ErrorData {
-    error_message: string;
-    error_stack?: string;
-    page_url: string;
-    anonymous_id: string;
-    session_id: string;
-    time: string;
-    browser_name: string;
-    os_name: string;
-    device_type: string;
-    country: string;
-    region?: string;
-    city?: string;
-}
-
 export interface CustomEventData {
     name: string;
     total_events: number;
