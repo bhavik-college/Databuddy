@@ -17,16 +17,14 @@ app.get('/', () => {
 })
   .onBeforeHandle(({ request, set }) => {
     const origin = request.headers.get('origin');
-    if (origin) {
-      set.headers ??= {};
-      set.headers['Access-Control-Allow-Origin'] = origin;
-      set.headers['Access-Control-Allow-Credentials'] = 'true';
-      set.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Cookie, Cache-Control, X-Website-Id';
-      set.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS, GET, DELETE, PUT, PATCH, HEAD';
-      set.headers['Access-Control-Expose-Headers'] = 'Content-Type, Set-Cookie';
-      set.headers['Access-Control-Max-Age'] = '600';
-      set.headers.Vary = 'Origin, Access-Control-Request-Headers';
-    }
+    set.headers ??= {};
+    set.headers['Access-Control-Allow-Origin'] = origin || 'https://staging.databuddy.cc';
+    set.headers['Access-Control-Allow-Credentials'] = 'true';
+    set.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Cookie, Cache-Control, X-Website-Id';
+    set.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS, GET, DELETE, PUT, PATCH, HEAD';
+    set.headers['Access-Control-Expose-Headers'] = 'Content-Type, Set-Cookie';
+    set.headers['Access-Control-Max-Age'] = '600';
+    set.headers.Vary = 'Origin, Access-Control-Request-Headers';
   })
   .options('*', () => new Response(null, { status: 204 }))
   .use(query)
