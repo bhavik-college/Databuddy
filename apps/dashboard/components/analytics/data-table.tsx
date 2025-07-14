@@ -529,9 +529,6 @@ export function DataTable<TData extends { name: string | number }, TValue>({
                           onClick={() => {
                             if (hasSubRows) {
                               toggleRowExpansion(row.id);
-                            } else if (onRowClick && row.original.name) {
-                              const field = getFieldFromTabId(activeTab);
-                              onRowClick(field, row.original.name);
                             }
                           }}
                           onMouseEnter={() => handleRowMouseEnter(row.original, row.id)}
