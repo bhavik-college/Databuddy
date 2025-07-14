@@ -41,6 +41,7 @@ import type { FullTabProps, MetricPoint } from "../utils/types";
 import { MetricToggles } from "../utils/ui-components";
 
 import { useTableTabs } from "@/lib/table-tabs";
+import { getUserTimezone } from "@/lib/timezone";
 
 interface ChartDataPoint {
   date: string;
@@ -278,12 +279,20 @@ export function WebsiteOverviewTab({
 
   // Utility functions for data processing
   const filterFutureEvents = useCallback((events: any[]) => {
-    const endOfToday = dayjs().utc().endOf('day');
+    const userTimezone = getUserTimezone();
+    const now = dayjs().tz(userTimezone);
+
     return events.filter((event: any) => {
-      const eventDate = dayjs(event.date);
+      const eventDate = dayjs.utc(event.date).tz(userTimezone);
+
+      if (dateRange.granularity === 'hourly') {
+        return eventDate.isBefore(now);
+      }
+
+      const endOfToday = now.endOf('day');
       return eventDate.isBefore(endOfToday) || eventDate.isSame(endOfToday, 'day');
     });
-  }, []);
+  }, [dateRange.granularity]);
 
   const chartData = useMemo(() => {
     if (!analytics.events_by_date?.length) return [];
