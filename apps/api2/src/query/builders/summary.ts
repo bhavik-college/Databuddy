@@ -93,8 +93,8 @@ export const SummaryBuilders: Record<string, SimpleQueryConfig> = {
           sql: `
                 WITH hour_range AS (
                   SELECT arrayJoin(arrayMap(
-                    h -> toDateTime({startDate:String} + ' 00:00:00') + (h * 3600),
-                    range(toUInt32(dateDiff('hour', toDateTime({startDate:String} + ' 00:00:00'), toDateTime({endDate:String} + ' 23:59:59')) + 1))
+                    h -> toDateTime(concat({startDate:String}, ' 00:00:00')) + (h * 3600),
+                    range(toUInt32(dateDiff('hour', toDateTime(concat({startDate:String}, ' 00:00:00')), toDateTime(concat({endDate:String}, ' 23:59:59'))) + 1))
                   )) AS datetime
                 ),
                 session_details AS (
