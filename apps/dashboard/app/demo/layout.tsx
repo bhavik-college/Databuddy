@@ -27,46 +27,20 @@ import { cn } from "@/lib/utils";
 
 const demoNavigation = [
   {
-    title: "Analytics",
+    title: "Web Analytics",
     items: [
       { name: "Overview", icon: HouseIcon, href: "/demo/OXmNQsViBT-FOS_wZCTHc", highlight: true },
-      {
-        name: "Sessions",
-        icon: ClockIcon,
-        href: "/demo/OXmNQsViBT-FOS_wZCTHc/sessions",
-        highlight: true,
-      },
-      {
-        name: "Funnels",
-        icon: FunnelIcon,
-        href: "/demo/OXmNQsViBT-FOS_wZCTHc/funnels",
-        highlight: true,
-      },
-      {
-        name: "Goals",
-        icon: TargetIcon,
-        href: "/demo/OXmNQsViBT-FOS_wZCTHc/goals",
-        highlight: true,
-      },
-      {
-        name: "Journeys",
-        icon: GitBranchIcon,
-        href: "/demo/OXmNQsViBT-FOS_wZCTHc/journeys",
-        highlight: true,
-      },
-      {
-        name: "Errors",
-        icon: BugIcon,
-        href: "/demo/OXmNQsViBT-FOS_wZCTHc/errors",
-        highlight: true,
-      },
-      {
-        name: "Profiles",
-        icon: UsersIcon,
-        href: "/demo/OXmNQsViBT-FOS_wZCTHc/profiles",
-        highlight: true,
-      },
+      { name: "Sessions", icon: ClockIcon, href: "/demo/OXmNQsViBT-FOS_wZCTHc/sessions", highlight: true },
+      { name: "Errors", icon: BugIcon, href: "/demo/OXmNQsViBT-FOS_wZCTHc/errors", highlight: true },
       { name: "Map", icon: MapPinIcon, href: "/demo/OXmNQsViBT-FOS_wZCTHc/map", highlight: true },
+    ],
+  },
+  {
+    title: "Product Analytics",
+    items: [
+      { name: "Profiles", icon: UsersIcon, href: "/demo/OXmNQsViBT-FOS_wZCTHc/profiles", highlight: true },
+      { name: "Funnels", icon: FunnelIcon, href: "/demo/OXmNQsViBT-FOS_wZCTHc/funnels", highlight: true },
+      { name: "Goals", icon: TargetIcon, href: "/demo/OXmNQsViBT-FOS_wZCTHc/goals", highlight: true },
     ],
   },
 ];
