@@ -75,32 +75,38 @@ const ALLOWED_OPERATORS = new Set([
 ]);
 
 // Utility functions
-const buildFilterConditions = (filters: Array<{ field: string; operator: string; value: string | string[] }>) => {
+const buildFilterConditions = (
+    filters: Array<{ field: string; operator: string; value: string | string[] }>,
+    paramPrefix: string,
+    params: Record<string, unknown>
+): string => {
     if (!filters || filters.length === 0) return '';
-
-    const filterConditions = filters.map((filter) => {
+    const filterConditions = filters.map((filter, i) => {
         if (!ALLOWED_FIELDS.has(filter.field)) return '';
         if (!ALLOWED_OPERATORS.has(filter.operator)) return '';
-
         const field = filter.field;
         const value = Array.isArray(filter.value) ? filter.value : [filter.value];
-
+        const key = `${paramPrefix}_${i}`;
         switch (filter.operator) {
             case 'equals':
-                return `${field} = ${sqlEscape(value[0])}`;
+                params[key] = value[0];
+                return `${field} = {${key}:String}`;
             case 'contains':
-                return `${field} LIKE '%${value[0].replace(/'/g, "''")}%'`;
+                params[key] = `%${value[0]}%`;
+                return `${field} LIKE {${key}:String}`;
             case 'not_equals':
-                return `${field} != ${sqlEscape(value[0])}`;
+                params[key] = value[0];
+                return `${field} != {${key}:String}`;
             case 'in':
-                return `${field} IN (${value.map(v => sqlEscape(v)).join(', ')})`;
+                params[key] = value;
+                return `${field} IN {${key}:Array(String)}`;
             case 'not_in':
-                return `${field} NOT IN (${value.map(v => sqlEscape(v)).join(', ')})`;
+                params[key] = value;
+                return `${field} NOT IN {${key}:Array(String)}`;
             default:
                 return '';
         }
     }).filter(Boolean);
-
     return filterConditions.length > 0 ? ` AND ${filterConditions.join(' AND ')}` : '';
 };
 
@@ -119,110 +125,94 @@ export const funnelsRouter = createTRPCRouter({
             const { startDate, endDate } = input.startDate && input.endDate
                 ? { startDate: input.startDate, endDate: input.endDate }
                 : getDefaultDateRange();
-
+            const params = { websiteId: website.id, startDate, endDate };
             const query = `
-				SELECT 'customEvents' as category, event_name as value
-				FROM analytics.events
-				WHERE client_id = '${website.id}'
-					AND time >= parseDateTimeBestEffort('${startDate}')
-					AND time <= parseDateTimeBestEffort('${endDate}')
-					AND event_name NOT IN ('screen_view', 'page_exit', 'error', 'web_vitals', 'link_out')
-					AND event_name != ''
-				GROUP BY event_name
-				
-				UNION ALL
-				
-				SELECT 'pagePaths' as category, 
-					CASE 
-						WHEN path LIKE 'http%' THEN 
-							substring(path, position(path, '/', 9))
-						ELSE path
-					END as value
-				FROM analytics.events
-				WHERE client_id = '${website.id}'
-					AND time >= parseDateTimeBestEffort('${startDate}')
-					AND time <= parseDateTimeBestEffort('${endDate}')
-					AND event_name = 'screen_view'
-					AND path != ''
-				GROUP BY value
-				HAVING value != '' AND value != '/'
-				
-				UNION ALL
-				
-				SELECT 'browsers' as category, browser_name as value
-				FROM analytics.events
-				WHERE client_id = '${website.id}'
-					AND time >= parseDateTimeBestEffort('${startDate}')
-					AND time <= parseDateTimeBestEffort('${endDate}')
-					AND browser_name IS NOT NULL AND browser_name != '' AND browser_name != 'Unknown'
-				GROUP BY browser_name
-				
-				UNION ALL
-				
-				SELECT 'operatingSystems' as category, os_name as value
-				FROM analytics.events
-				WHERE client_id = '${website.id}'
-					AND time >= parseDateTimeBestEffort('${startDate}')
-					AND time <= parseDateTimeBestEffort('${endDate}')
-					AND os_name IS NOT NULL AND os_name != '' AND os_name != 'Unknown'
-				GROUP BY os_name
-				
-				UNION ALL
-				
-				SELECT 'countries' as category, country as value
-				FROM analytics.events
-				WHERE client_id = '${website.id}'
-					AND time >= parseDateTimeBestEffort('${startDate}')
-					AND time <= parseDateTimeBestEffort('${endDate}')
-					AND country IS NOT NULL AND country != ''
-				GROUP BY country
-				
-				UNION ALL
-				
-				SELECT 'deviceTypes' as category, device_type as value
-				FROM analytics.events
-				WHERE client_id = '${website.id}'
-					AND time >= parseDateTimeBestEffort('${startDate}')
-					AND time <= parseDateTimeBestEffort('${endDate}')
-					AND device_type IS NOT NULL AND device_type != ''
-				GROUP BY device_type
-				
-				UNION ALL
-				
-				SELECT 'utmSources' as category, utm_source as value
-				FROM analytics.events
-				WHERE client_id = '${website.id}'
-					AND time >= parseDateTimeBestEffort('${startDate}')
-					AND time <= parseDateTimeBestEffort('${endDate}')
-					AND utm_source IS NOT NULL AND utm_source != ''
-				GROUP BY utm_source
-				
-				UNION ALL
-				
-				SELECT 'utmMediums' as category, utm_medium as value
-				FROM analytics.events
-				WHERE client_id = '${website.id}'
-					AND time >= parseDateTimeBestEffort('${startDate}')
-					AND time <= parseDateTimeBestEffort('${endDate}')
-					AND utm_medium IS NOT NULL AND utm_medium != ''
-				GROUP BY utm_medium
-				
-				UNION ALL
-				
-				SELECT 'utmCampaigns' as category, utm_campaign as value
-				FROM analytics.events
-				WHERE client_id = '${website.id}'
-					AND time >= parseDateTimeBestEffort('${startDate}')
-					AND time <= parseDateTimeBestEffort('${endDate}')
-					AND utm_campaign IS NOT NULL AND utm_campaign != ''
-				GROUP BY utm_campaign
-			`;
+                SELECT 'customEvents' as category, event_name as value
+                FROM analytics.events
+                WHERE client_id = {websiteId:String}
+                    AND time >= parseDateTimeBestEffort({startDate:String})
+                    AND time <= parseDateTimeBestEffort({endDate:String})
+                    AND event_name NOT IN ('screen_view', 'page_exit', 'error', 'web_vitals', 'link_out')
+                    AND event_name != ''
+                GROUP BY event_name
+                UNION ALL
+                SELECT 'pagePaths' as category, 
+                    CASE 
+                        WHEN path LIKE 'http%' THEN 
+                            substring(path, position(path, '/', 9))
+                        ELSE path
+                    END as value
+                FROM analytics.events
+                WHERE client_id = {websiteId:String}
+                    AND time >= parseDateTimeBestEffort({startDate:String})
+                    AND time <= parseDateTimeBestEffort({endDate:String})
+                    AND event_name = 'screen_view'
+                    AND path != ''
+                GROUP BY value
+                HAVING value != '' AND value != '/'
+                UNION ALL
+                SELECT 'browsers' as category, browser_name as value
+                FROM analytics.events
+                WHERE client_id = {websiteId:String}
+                    AND time >= parseDateTimeBestEffort({startDate:String})
+                    AND time <= parseDateTimeBestEffort({endDate:String})
+                    AND browser_name IS NOT NULL AND browser_name != '' AND browser_name != 'Unknown'
+                GROUP BY browser_name
+                UNION ALL
+                SELECT 'operatingSystems' as category, os_name as value
+                FROM analytics.events
+                WHERE client_id = {websiteId:String}
+                    AND time >= parseDateTimeBestEffort({startDate:String})
+                    AND time <= parseDateTimeBestEffort({endDate:String})
+                    AND os_name IS NOT NULL AND os_name != '' AND os_name != 'Unknown'
+                GROUP BY os_name
+                UNION ALL
+                SELECT 'countries' as category, country as value
+                FROM analytics.events
+                WHERE client_id = {websiteId:String}
+                    AND time >= parseDateTimeBestEffort({startDate:String})
+                    AND time <= parseDateTimeBestEffort({endDate:String})
+                    AND country IS NOT NULL AND country != ''
+                GROUP BY country
+                UNION ALL
+                SELECT 'deviceTypes' as category, device_type as value
+                FROM analytics.events
+                WHERE client_id = {websiteId:String}
+                    AND time >= parseDateTimeBestEffort({startDate:String})
+                    AND time <= parseDateTimeBestEffort({endDate:String})
+                    AND device_type IS NOT NULL AND device_type != ''
+                GROUP BY device_type
+                UNION ALL
+                SELECT 'utmSources' as category, utm_source as value
+                FROM analytics.events
+                WHERE client_id = {websiteId:String}
+                    AND time >= parseDateTimeBestEffort({startDate:String})
+                    AND time <= parseDateTimeBestEffort({endDate:String})
+                    AND utm_source IS NOT NULL AND utm_source != ''
+                GROUP BY utm_source
+                UNION ALL
+                SELECT 'utmMediums' as category, utm_medium as value
+                FROM analytics.events
+                WHERE client_id = {websiteId:String}
+                    AND time >= parseDateTimeBestEffort({startDate:String})
+                    AND time <= parseDateTimeBestEffort({endDate:String})
+                    AND utm_medium IS NOT NULL AND utm_medium != ''
+                GROUP BY utm_medium
+                UNION ALL
+                SELECT 'utmCampaigns' as category, utm_campaign as value
+                FROM analytics.events
+                WHERE client_id = {websiteId:String}
+                    AND time >= parseDateTimeBestEffort({startDate:String})
+                    AND time <= parseDateTimeBestEffort({endDate:String})
+                    AND utm_campaign IS NOT NULL AND utm_campaign != ''
+                GROUP BY utm_campaign
+            `;
 
             try {
                 const results = await chQuery<{
                     category: string;
                     value: string;
-                }>(query);
+                }>(query, params);
 
                 const categorized = {
                     customEvents: results.filter(r => r.category === 'customEvents').map(r => r.value),
@@ -460,9 +450,7 @@ export const funnelsRouter = createTRPCRouter({
             const { startDate, endDate } = input.startDate && input.endDate
                 ? { startDate: input.startDate, endDate: input.endDate }
                 : getDefaultDateRange();
-
             try {
-                // Get the funnel definition
                 const funnel = await ctx.db
                     .select()
                     .from(funnelDefinitions)
@@ -472,65 +460,65 @@ export const funnelsRouter = createTRPCRouter({
                         isNull(funnelDefinitions.deletedAt)
                     ))
                     .limit(1);
-
                 if (funnel.length === 0) {
                     throw new TRPCError({
                         code: 'NOT_FOUND',
                         message: 'Funnel not found',
                     });
                 }
-
                 const funnelData = funnel[0];
                 const steps = funnelData.steps as Array<{ type: string; target: string; name: string; conditions?: any }>;
                 const filters = funnelData.filters as Array<{ field: string; operator: string; value: string | string[] }> || [];
-
-                const filterConditions = buildFilterConditions(filters);
-
+                const params: Record<string, unknown> = {
+                    websiteId: website.id,
+                    startDate,
+                    endDate: endDate + ' 23:59:59',
+                };
+                const filterClause = buildFilterConditions(filters, 'f', params);
                 const stepQueries = steps.map((step, index) => {
+                    const stepNameKey = `step_name_${index}`;
+                    const targetKey = `target_${index}`;
                     let whereCondition = '';
-
                     if (step.type === 'PAGE_VIEW') {
-                        const targetPath = step.target.replace(/'/g, "''");
-                        whereCondition = `event_name = 'screen_view' AND (path = '${targetPath}' OR path LIKE '%${targetPath}%')`;
+                        params[targetKey] = step.target;
+                        whereCondition = `event_name = 'screen_view' AND (path = {${targetKey}:String} OR path LIKE {${targetKey}_like:String})`;
+                        params[`${targetKey}_like`] = `%${step.target}%`;
                     } else if (step.type === 'EVENT') {
-                        const eventName = step.target.replace(/'/g, "''");
-                        whereCondition = `event_name = '${eventName}'`;
+                        params[targetKey] = step.target;
+                        whereCondition = `event_name = {${targetKey}:String}`;
                     }
-
+                    params[stepNameKey] = step.name;
                     return `
-						SELECT 
-							${index + 1} as step_number,
-							'${step.name.replace(/'/g, "''")}' as step_name,
-							session_id,
-							MIN(time) as first_occurrence
-						FROM analytics.events
-						WHERE client_id = '${website.id}'
-							AND time >= parseDateTimeBestEffort('${startDate}')
-							AND time <= parseDateTimeBestEffort('${endDate} 23:59:59')
-							AND ${whereCondition}${filterConditions}
-						GROUP BY session_id`;
+                    SELECT 
+                      ${index + 1} as step_number,
+                      {${stepNameKey}:String} as step_name,
+                      session_id,
+                      MIN(time) as first_occurrence
+                    FROM analytics.events
+                    WHERE client_id = {websiteId:String}
+                      AND time >= parseDateTimeBestEffort({startDate:String})
+                      AND time <= parseDateTimeBestEffort({endDate:String})
+                      AND ${whereCondition}${filterClause}
+                    GROUP BY session_id`;
                 });
-
                 const analysisQuery = `
-					WITH all_step_events AS (
-						${stepQueries.join('\n						UNION ALL\n')}
-					)
-					SELECT 
-						step_number,
-						step_name,
-						session_id,
-						first_occurrence
-					FROM all_step_events
-					ORDER BY session_id, first_occurrence
-				`;
-
+                  WITH all_step_events AS (
+                    ${stepQueries.join('\n                    UNION ALL\n')}
+                  )
+                  SELECT 
+                    step_number,
+                    step_name,
+                    session_id,
+                    first_occurrence
+                  FROM all_step_events
+                  ORDER BY session_id, first_occurrence
+                `;
                 const rawResults = await chQuery<{
                     step_number: number;
                     step_name: string;
                     session_id: string;
                     first_occurrence: number;
-                }>(analysisQuery);
-
+                }>(analysisQuery, params);
                 // Process the results to calculate proper funnel progression
                 const sessionEvents = new Map<string, Array<{ step_number: number, step_name: string, first_occurrence: number }>>();
 
@@ -629,9 +617,7 @@ export const funnelsRouter = createTRPCRouter({
             const { startDate, endDate } = input.startDate && input.endDate
                 ? { startDate: input.startDate, endDate: input.endDate }
                 : getDefaultDateRange();
-
             try {
-                // Get the funnel definition
                 const funnel = await ctx.db
                     .select()
                     .from(funnelDefinitions)
@@ -641,85 +627,85 @@ export const funnelsRouter = createTRPCRouter({
                         isNull(funnelDefinitions.deletedAt)
                     ))
                     .limit(1);
-
                 if (funnel.length === 0) {
                     throw new TRPCError({
                         code: 'NOT_FOUND',
                         message: 'Funnel not found',
                     });
                 }
-
                 const funnelData = funnel[0];
                 const steps = funnelData.steps as Array<{ type: string; target: string; name: string; conditions?: any }>;
                 const filters = funnelData.filters as Array<{ field: string; operator: string; value: string | string[] }> || [];
-
                 if (!steps || steps.length === 0) {
                     throw new TRPCError({
                         code: 'BAD_REQUEST',
                         message: 'Funnel has no steps',
                     });
                 }
-
-                const filterConditions = buildFilterConditions(filters);
-
+                const params: Record<string, unknown> = {
+                    websiteId: website.id,
+                    startDate,
+                    endDate: endDate + ' 23:59:59',
+                };
+                const filterClause = buildFilterConditions(filters, 'f', params);
                 const stepQueries = steps.map((step, index) => {
+                    const stepNameKey = `step_name_${index}`;
+                    const targetKey = `target_${index}`;
                     let whereCondition = '';
-
                     if (step.type === 'PAGE_VIEW') {
-                        const targetPath = step.target.replace(/'/g, "''");
-                        whereCondition = `event_name = 'screen_view' AND (path = '${targetPath}' OR path LIKE '%${targetPath}%')`;
+                        params[targetKey] = step.target;
+                        whereCondition = `event_name = 'screen_view' AND (path = {${targetKey}:String} OR path LIKE {${targetKey}_like:String})`;
+                        params[`${targetKey}_like`] = `%${step.target}%`;
                     } else if (step.type === 'EVENT') {
-                        const eventName = step.target.replace(/'/g, "''");
-                        whereCondition = `event_name = '${eventName}'`;
+                        params[targetKey] = step.target;
+                        whereCondition = `event_name = {${targetKey}:String}`;
                     }
-
+                    params[stepNameKey] = step.name;
                     return `
-						SELECT 
-							${index + 1} as step_number,
-							'${step.name.replace(/'/g, "''")}' as step_name,
-							session_id,
-							MIN(time) as first_occurrence,
-							any(referrer) as session_referrer
-						FROM analytics.events
-						WHERE client_id = '${website.id}'
-							AND time >= parseDateTimeBestEffort('${startDate}')
-							AND time <= parseDateTimeBestEffort('${endDate} 23:59:59')
-							AND ${whereCondition}${filterConditions}
-						GROUP BY session_id`;
+                    SELECT 
+                      ${index + 1} as step_number,
+                      {${stepNameKey}:String} as step_name,
+                      session_id,
+                      MIN(time) as first_occurrence,
+                      any(referrer) as session_referrer
+                    FROM analytics.events
+                    WHERE client_id = {websiteId:String}
+                      AND time >= parseDateTimeBestEffort({startDate:String})
+                      AND time <= parseDateTimeBestEffort({endDate:String})
+                      AND ${whereCondition}${filterClause}
+                    GROUP BY session_id`;
                 });
-
                 const sessionReferrerQuery = `
-					WITH all_step_events AS (
-						${stepQueries.join('\n						UNION ALL\n')}
-					),
-					session_referrers AS (
-						SELECT DISTINCT
-							session_id,
-							argMin(referrer, time) as first_referrer
-						FROM analytics.events
-						WHERE client_id = '${website.id}'
-							AND time >= parseDateTimeBestEffort('${startDate}')
-							AND time <= parseDateTimeBestEffort('${endDate} 23:59:59')${filterConditions}
-						GROUP BY session_id
-					)
-					SELECT 
-						t1.step_number,
-						t1.step_name,
-						t1.session_id,
-						t1.first_occurrence,
-						t2.first_referrer as referrer
-					FROM all_step_events t1
-					JOIN session_referrers t2 ON t1.session_id = t2.session_id
-					ORDER BY t1.session_id, t1.first_occurrence
-				`;
-
+                  WITH all_step_events AS (
+                    ${stepQueries.join('\n                    UNION ALL\n')}
+                  ),
+                  session_referrers AS (
+                    SELECT DISTINCT
+                      session_id,
+                      argMin(referrer, time) as first_referrer
+                    FROM analytics.events
+                    WHERE client_id = {websiteId:String}
+                      AND time >= parseDateTimeBestEffort({startDate:String})
+                      AND time <= parseDateTimeBestEffort({endDate:String})${filterClause}
+                    GROUP BY session_id
+                  )
+                  SELECT 
+                    t1.step_number,
+                    t1.step_name,
+                    t1.session_id,
+                    t1.first_occurrence,
+                    t2.first_referrer as referrer
+                  FROM all_step_events t1
+                  JOIN session_referrers t2 ON t1.session_id = t2.session_id
+                  ORDER BY t1.session_id, t1.first_occurrence
+                `;
                 const rawResults = await chQuery<{
                     step_number: number;
                     step_name: string;
                     session_id: string;
                     first_occurrence: number;
                     referrer: string;
-                }>(sessionReferrerQuery);
+                }>(sessionReferrerQuery, params);
 
 
                 // Group events by session
