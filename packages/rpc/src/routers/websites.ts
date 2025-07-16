@@ -225,18 +225,7 @@ export const websitesRouter = createTRPCRouter({
     isTrackingSetup: publicProcedure
         .input(z.object({ websiteId: z.string() }))
         .query(async ({ ctx, input }) => {
-            const website = await ctx.db.query.websites.findFirst({
-                where: eq(websites.id, input.websiteId),
-            });
-            if (!website) {
-                throw new TRPCError({ code: 'NOT_FOUND', message: 'Website not found.' });
-            }
-            const isPublic = Boolean(website.isPublic);
-            if (!isPublic) {
-                if (!ctx.user) {
-                    throw new TRPCError({ code: 'UNAUTHORIZED' });
-                }
-            }
+            await authorizeWebsiteAccess(ctx, input.websiteId, 'read');
             const result = await chQuery<{ count: number }>(
                 `SELECT COUNT(*) as count FROM analytics.events WHERE client_id = {websiteId:String} AND event_name = 'screen_view' LIMIT 1`,
                 { websiteId: input.websiteId }
