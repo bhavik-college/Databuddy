@@ -222,9 +222,21 @@ export const websitesRouter = createTRPCRouter({
             return updatedWebsite;
         }),
 
-    isTrackingSetup: protectedProcedure
+    isTrackingSetup: publicProcedure
         .input(z.object({ websiteId: z.string() }))
-        .query(async ({ input }) => {
+        .query(async ({ ctx, input }) => {
+            const website = await ctx.db.query.websites.findFirst({
+                where: eq(websites.id, input.websiteId),
+                columns: { isPublic: true, userId: true, organizationId: true },
+            });
+            if (!website) {
+                throw new TRPCError({ code: 'NOT_FOUND', message: 'Website not found.' });
+            }
+            if (!website.isPublic) {
+                if (!ctx.user) {
+                    throw new TRPCError({ code: 'UNAUTHORIZED' });
+                }
+            }
             const result = await chQuery<{ count: number }>(
                 `SELECT COUNT(*) as count FROM analytics.events WHERE client_id = {websiteId:String} AND event_name = 'screen_view' LIMIT 1`,
                 { websiteId: input.websiteId }
