@@ -50,11 +50,11 @@ export default function DemoPage() {
 
             {/* Demo Container */}
             <div className={`transition-all duration-300 ${isFullscreen
-              ? 'fixed inset-0 z-50 bg-black p-4'
-              : 'mx-auto max-w-[95vw]'
-              }`}>
-              <div className="relative overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900 shadow-2xl h-full">
-                <div className="flex items-center justify-between border-b border-neutral-700 bg-neutral-800/50 px-6 py-4">
+              ? 'fixed inset-0 z-50 bg-black p-2 sm:p-4 flex flex-col' // Add flex-col for mobile stacking
+              : 'mx-auto max-w-[100vw] sm:max-w-[95vw]'
+              }`} style={isFullscreen ? { minHeight: '100dvh', minWidth: '100vw' } : {}}>
+              <div className="relative overflow-hidden rounded-lg sm:rounded-xl border border-neutral-800 bg-neutral-900 shadow-2xl h-full flex flex-col" style={{ minHeight: isFullscreen ? '100dvh' : '60vw' }}>
+                <div className="flex items-center justify-between border-b border-neutral-700 bg-neutral-800/50 px-4 sm:px-6 py-3 sm:py-4">
                   <div className="flex items-center gap-3">
                     <div className="flex gap-2">
                       <div className="h-3 w-3 rounded-full bg-red-500" />
@@ -72,31 +72,39 @@ export default function DemoPage() {
                     </div>
                     <button
                       onClick={toggleFullscreen}
-                      className="flex items-center gap-2 px-3 py-1.5 text-xs text-neutral-400 hover:text-white hover:bg-neutral-700 rounded-md transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 sm:py-1.5 text-xs text-neutral-400 hover:text-white hover:bg-neutral-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400"
                       data-track="demo-fullscreen-toggle"
                       data-section="demo"
                       data-action={isFullscreen ? 'exit-fullscreen' : 'enter-fullscreen'}
+                      style={{ minWidth: 110 }}
+                      type="button"
                     >
                       {isFullscreen ? (
                         <>
-                          <Minimize2 className="h-3 w-3" />
-                          Exit Fullscreen
+                          <Minimize2 className="h-4 w-4" />
+                          <span className="hidden xs:inline">Exit Fullscreen</span>
+                          <span className="inline xs:hidden">Exit</span>
                         </>
                       ) : (
                         <>
-                          <Maximize2 className="h-3 w-3" />
-                          Fullscreen
+                          <Maximize2 className="h-4 w-4" />
+                          <span className="hidden xs:inline">Fullscreen</span>
+                          <span className="inline xs:hidden">Full</span>
                         </>
                       )}
                     </button>
                   </div>
                 </div>
 
-                <div className={`bg-black ${isFullscreen ? 'h-[calc(100vh-80px)]' : ''
-                  }`} style={!isFullscreen ? { height: '70vh', width: '100%' } : {}}>
+                <div className={`bg-black flex-1 ${isFullscreen ? 'h-[calc(100dvh-56px)]' : ''}`}
+                  style={isFullscreen
+                    ? { height: 'calc(100dvh - 56px)', minHeight: 200 }
+                    : { height: '60vw', minHeight: 200, width: '100%' }
+                  }
+                >
                   <iframe
                     src="https://app.databuddy.cc/demo/OXmNQsViBT-FOS_wZCTHc"
-                    className="h-full w-full border-0"
+                    className="h-full w-full border-0 min-h-[200px] rounded-b-lg sm:rounded-b-xl"
                     title="Databuddy Analytics Demo Dashboard"
                     loading="lazy"
                     data-track="demo-iframe-interaction"
