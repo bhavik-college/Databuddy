@@ -1,6 +1,6 @@
 "use client";
 
-import { DotsThreeIcon, Eye, MouseMiddleClick, PencilSimple, Trash } from "@phosphor-icons/react";
+import { DotsThreeIcon, EyeIcon, MouseMiddleClickIcon, PencilSimpleIcon, TrashIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -33,11 +33,11 @@ export function GoalCard({
   const getStepIcon = (type: string) => {
     switch (type) {
       case "PAGE_VIEW":
-        return <Eye className="text-muted-foreground" size={16} />;
+        return <EyeIcon className="text-muted-foreground" size={16} />;
       case "EVENT":
-        return <MouseMiddleClick className="text-muted-foreground" size={16} />;
+        return <MouseMiddleClickIcon className="text-muted-foreground" size={16} />;
       default:
-        return <Eye className="text-muted-foreground" size={16} />;
+        return <EyeIcon className="text-muted-foreground" size={16} />;
     }
   };
 
@@ -51,7 +51,6 @@ export function GoalCard({
     <Card className="group transition-shadow hover:shadow-md">
       <CardContent className="p-6">
         <div className="mb-4 flex items-start justify-between">
-          {/* Left side - Goal info */}
           <div className="min-w-0 flex-1">
             <div className="mb-3 flex items-center gap-2">
               <h3 className="truncate font-semibold text-foreground text-lg">{goal.name}</h3>
@@ -62,14 +61,12 @@ export function GoalCard({
               )}
             </div>
 
-            {/* Goal target */}
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
               {getStepIcon(goal.type)}
               <span className="truncate">{goal.target || "No target"}</span>
             </div>
           </div>
 
-          {/* Actions */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -82,24 +79,22 @@ export function GoalCard({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={onEdit}>
-                <PencilSimple className="mr-2" size={16} />
+                <PencilSimpleIcon className="mr-2" size={16} />
                 Edit
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
                 onClick={onDelete}
               >
-                <Trash className="mr-2" size={16} />
+                <TrashIcon className="mr-2" size={16} />
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
-        {/* Conversion Bar */}
         <div className="mb-4">
           <div className="relative h-3 w-full bg-muted overflow-hidden">
-            {/* Striped overlay for conversion */}
             <div
               className="absolute left-0 top-0 h-full"
               style={{
@@ -110,21 +105,17 @@ export function GoalCard({
                 pointerEvents: 'none',
               }}
             />
-            {/* Main bar */}
             <div
               className="absolute left-0 top-0 h-full bg-primary"
               style={{ width: `${conversionRate}%` }}
             />
-            {/* Conversion label */}
             <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-foreground">
               {isLoading ? <span className="inline-block h-3 w-8 animate-pulse rounded bg-muted" /> : `${conversionRate.toFixed(1)}%`}
             </div>
           </div>
         </div>
 
-        {/* Stats section */}
         <div className="grid grid-cols-3 gap-4 border-t pt-4">
-          {/* Conversion Rate */}
           <div>
             <div className="mb-1 text-muted-foreground text-xs">Conversion</div>
             <div className="font-semibold text-foreground text-xl">
@@ -136,7 +127,6 @@ export function GoalCard({
             </div>
           </div>
 
-          {/* Total Users */}
           <div>
             <div className="mb-1 text-muted-foreground text-xs">Users</div>
             <div className="font-medium text-foreground text-lg">
@@ -148,7 +138,6 @@ export function GoalCard({
             </div>
           </div>
 
-          {/* Completions */}
           <div>
             <div className="mb-1 text-muted-foreground text-xs">Completions</div>
             <div className="font-medium text-foreground text-lg">
