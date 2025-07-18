@@ -13,6 +13,7 @@ import {
   Zap,
   TrendingUp,
   X,
+  ShieldAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -21,6 +22,7 @@ const navLinks = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/events", label: "Events", icon: Activity },
+  { href: "/blocked-traffic", label: "Blocked Traffic", icon: ShieldAlert },
   { href: "/events/realtime", label: "Real-Time Events", icon: TrendingUp },
   { href: "/users", label: "Users", icon: Users },
   { href: "/websites", label: "Websites", icon: Globe },

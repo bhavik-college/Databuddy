@@ -130,27 +130,27 @@ export const auth = betterAuth({
             });
         }
     },
-    session: {
-        expiresIn: 60 * 60 * 24 * 30, // 30 days
-        updateAge: 60 * 60 * 24, // 1 day
-        freshAge: 0, // Disabled
-        cookieCache: {
-            enabled: process.env.ENABLE_NEXT_COOKIES !== 'false',
-            maxAge: 5 * 60 // 5 minutes
-        }
-    },
-    secondaryStorage: {
-        get: async (key) => {
-            const value = await getRedisCache()?.get(key);
-            return value ? value : null;
-        },
-        set: async (key, value, ttl = 60 * 60 * 24) => {
-            await getRedisCache()?.setex(key, ttl, value);
-        },
-        delete: async (key) => {
-            await getRedisCache()?.del(key);
-        },
-    },
+    // session: {
+    //     expiresIn: 60 * 60 * 24 * 30, // 30 days
+    //     updateAge: 60 * 60 * 24, // 1 day
+    //     freshAge: 0, // Disabled
+    //     cookieCache: {
+    //         enabled: true,
+    //         maxAge: 5 * 60 // 5 minutes
+    //     }
+    // },
+    // secondaryStorage: {
+    //     get: async (key) => {
+    //         const value = await getRedisCache()?.get(key);
+    //         return value ? value : null;
+    //     },
+    //     set: async (key, value, ttl = 60 * 60 * 24) => {
+    //         await getRedisCache()?.setex(key, ttl, value);
+    //     },
+    //     delete: async (key) => {
+    //         await getRedisCache()?.del(key);
+    //     },
+    // },
     plugins: [
         emailOTP({
             async sendVerificationOTP({ email, otp, type }) {
