@@ -131,13 +131,12 @@ export const auth = betterAuth({
         }
     },
     session: {
-        expiresIn: 60 * 60 * 24 * 30, // 30 days
-        updateAge: 60 * 60 * 24, // 1 day
-        freshAge: 0, // Disabled
         cookieCache: {
-            enabled: process.env.ENABLE_NEXT_COOKIES !== 'false',
-            maxAge: 5 * 60 // 5 minutes
-        }
+            enabled: true,
+            maxAge: 60 * 60 * 24 * 30, // 30 days
+        },
+        expiresIn: 60 * 60 * 24 * 30, // 30 days
+        updateAge: 60 * 60 * 24 * 3, // 1 day (every 1 day the session expiration is updated)
     },
     secondaryStorage: {
         get: async (key) => {

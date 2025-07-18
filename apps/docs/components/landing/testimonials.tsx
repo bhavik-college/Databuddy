@@ -34,6 +34,14 @@ const testimonials = [
 		avatar: "bekacru.jpg",
 	},
 	{
+		name: "John Yeo",
+		profession: "Co-Founder, Autumn",
+		description: "Actually game changing going from Framer analytics to @trydatabuddy. We're such happy customers.",
+		link: "https://x.com/johnyeo_/status/1945061131342532846",
+		social: <XIcon />,
+		avatar: "https://pbs.twimg.com/profile_images/1935046528114016256/ZDKw5J0F_400x400.jpg",
+	},
+	{
 		name: "Ahmet Kilinic",
 		link: "https://x.com/bruvimtired/status/1938972393357062401",
 		social: <XIcon />,
