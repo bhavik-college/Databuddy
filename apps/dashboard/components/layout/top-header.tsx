@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
-import type { Session } from "@databuddy/auth";
 
 const HelpDialog = dynamic(() => import("./help-dialog").then((mod) => mod.HelpDialog), {
   ssr: false,
@@ -17,10 +16,9 @@ const HelpDialog = dynamic(() => import("./help-dialog").then((mod) => mod.HelpD
 
 interface TopHeaderProps {
   setMobileOpen: () => void;
-  session: Session;
 }
 
-export function TopHeader({ setMobileOpen, session }: TopHeaderProps) {
+export function TopHeader({ setMobileOpen }: TopHeaderProps) {
   const [helpOpen, setHelpOpen] = useState(false);
 
   return (
@@ -59,7 +57,7 @@ export function TopHeader({ setMobileOpen, session }: TopHeaderProps) {
           <NotificationsPopover />
 
           {/* User Menu */}
-          <UserMenu session={session} />
+          <UserMenu />
         </div>
       </div>
 

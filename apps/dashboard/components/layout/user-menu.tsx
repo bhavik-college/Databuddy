@@ -15,11 +15,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Session } from "@databuddy/auth";
 
-export function UserMenu({ session: propSession }: { session?: Session }) {
-  const { data: sessionFromHook, isPending: isSessionPending } = useSession();
-  const session = propSession ?? sessionFromHook;
+export function UserMenu() {
+  const { data: session, isPending: isSessionPending } = useSession();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
 

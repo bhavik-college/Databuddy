@@ -16,7 +16,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOrganizations } from "@/hooks/use-organizations";
 import { cn } from "@/lib/utils";
-import type { Session } from "@databuddy/auth";
 
 const getOrganizationInitials = (name: string) => {
   return name
@@ -27,7 +26,7 @@ const getOrganizationInitials = (name: string) => {
     .slice(0, 2);
 };
 
-export function OrganizationSelector({ session }: { session: Session }) {
+export function OrganizationSelector() {
   const {
     organizations,
     activeOrganization,
