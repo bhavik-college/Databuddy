@@ -1,6 +1,6 @@
-import { initTRPC, TRPCError, type inferAsyncReturnType } from '@trpc/server';
+import { initTRPC, TRPCError } from '@trpc/server';
 import { db } from '@databuddy/db';
-import { auth } from '@databuddy/auth';
+import { auth, type User } from '@databuddy/auth';
 import superjson from 'superjson';
 
 export const createTRPCContext = async (opts: { headers: Headers }) => {
@@ -12,12 +12,12 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     db,
     auth,
     session: session?.session,
-    user: session?.user,
+    user: session?.user as User | undefined,
     ...opts,
   };
 };
 
-export type Context = inferAsyncReturnType<typeof createTRPCContext>;
+export type Context = Awaited<ReturnType<typeof createTRPCContext>>;
 
 export const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,

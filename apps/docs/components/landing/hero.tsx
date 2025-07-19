@@ -71,8 +71,6 @@ export default function Hero() {
 										handleFullscreen();
 									}
 								}}
-								tabIndex={0}
-								role="button"
 								aria-label="View demo dashboard fullscreen"
 							>
 								<iframe

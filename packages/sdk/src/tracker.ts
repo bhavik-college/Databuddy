@@ -3,10 +3,10 @@
  * Provides type-safe tracking functions
  */
 
-import type { 
-  DatabuddyTracker, 
-  EventName, 
-  PropertiesForEvent, 
+import type {
+  DatabuddyTracker,
+  EventName,
+  PropertiesForEvent,
   TrackFunction
 } from './types';
 
@@ -14,8 +14,8 @@ import type {
  * Check if the Databuddy tracker is available
  */
 export function isTrackerAvailable(): boolean {
-  return typeof window !== 'undefined' && 
-         (!!window.databuddy || !!window.db);
+  return typeof window !== 'undefined' &&
+    (!!window.databuddy || !!window.db);
 }
 
 /**
@@ -39,7 +39,7 @@ export const track: TrackFunction = async <T extends EventName>(
 
   // Try window.db first (shorthand), then window.databuddy
   const tracker = window.db?.track || window.databuddy?.track;
-  
+
   if (!tracker) {
     return;
   }
@@ -58,7 +58,7 @@ export function clear(): void {
   }
 
   const tracker = window.db?.clear || window.databuddy?.clear;
-  
+
   if (!tracker) {
     return;
   }
@@ -78,7 +78,7 @@ export function flush(): void {
   }
 
   const tracker = window.db?.flush || window.databuddy?.flush;
-  
+
   if (!tracker) {
     return;
   }

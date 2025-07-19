@@ -11,7 +11,7 @@
     "dependencies": {
         "@databuddy/db": "*",
         "@databuddy/email": "*",
-        "better-auth": "1.3.0-beta.8",
+        "better-auth": "v1.3.0-beta.11",
         "resend": "^4.2.0"
     }
 }

@@ -9,8 +9,6 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { ac, owner, admin, member, viewer } from "./permissions";
 import { logger } from "@databuddy/shared";
 import { VerificationEmail, OtpEmail, MagicLinkEmail, InvitationEmail, ResetPasswordEmail } from "@databuddy/email";
-import { chCommand } from "@databuddy/db";
-import { TABLE_NAMES } from "@databuddy/db";
 
 function isProduction() {
     return process.env.NODE_ENV === 'production';
@@ -223,5 +221,7 @@ export const auth = betterAuth({
     ]
 })
 
-export type User = (typeof auth)["$Infer"]["Session"]["user"];
+export type User = (typeof auth)["$Infer"]["Session"]["user"] & {
+    role?: string;
+};
 export type Session = (typeof auth)["$Infer"]["Session"];
