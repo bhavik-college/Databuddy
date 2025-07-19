@@ -111,6 +111,7 @@ export function useOrganizations() {
         organizationId?: string;
         data: UpdateOrganizationData;
       }) => {
+        if (!organizationId) throw new Error("Organization ID is required");
         const { data: result, error } = await authClient.organization.update({
           organizationId,
           data: {
