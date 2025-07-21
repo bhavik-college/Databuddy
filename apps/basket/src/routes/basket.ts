@@ -22,7 +22,6 @@ import crypto from "node:crypto";
 import { logger } from "../lib/logger";
 
 import { Autumn as autumn } from "autumn-js";
-import { analyticsEventSchema, errorEventSchema, webVitalsEventSchema } from "../utils/event-schema";
 
 async function getDailySalt(): Promise<string> {
 	const saltKey = `salt:${Math.floor(Date.now() / (24 * 60 * 60 * 1000))}`;
@@ -520,40 +519,16 @@ const app = new Elysia()
 			const eventType = body.type || "track";
 
 			if (eventType === "track") {
-				const parseResult = analyticsEventSchema.safeParse(body);
-				if (!parseResult.success) {
-					return {
-						status: "error",
-						message: "Invalid event data",
-						issues: parseResult.error.issues,
-					};
-				}
 				insertTrackEvent(body, clientId, userAgent, ip);
 				return { status: "success", type: "track" };
 			}
 
 			if (eventType === "error") {
-				const parseResult = errorEventSchema.safeParse(body);
-				if (!parseResult.success) {
-					return {
-						status: "error",
-						message: "Invalid error event data",
-						issues: parseResult.error.issues,
-					};
-				}
 				insertError(body, clientId);
 				return { status: "success", type: "error" };
 			}
 
 			if (eventType === "web_vitals") {
-				const parseResult = webVitalsEventSchema.safeParse(body);
-				if (!parseResult.success) {
-					return {
-						status: "error",
-						message: "Invalid web_vitals event data",
-						issues: parseResult.error.issues,
-					};
-				}
 				insertWebVitals(body, clientId);
 				return { status: "success", type: "web_vitals" };
 			}
@@ -599,15 +574,6 @@ const app = new Elysia()
 
 				try {
 					if (eventType === "track") {
-						const parseResult = analyticsEventSchema.safeParse(event);
-						if (!parseResult.success) {
-							return {
-								status: "error",
-								message: "Invalid event data",
-								issues: parseResult.error.issues,
-								eventId: event.eventId,
-							};
-						}
 						await insertTrackEvent(event, clientId, userAgent, ip);
 						return {
 							status: "success",
@@ -616,15 +582,6 @@ const app = new Elysia()
 						};
 					}
 					if (eventType === "error") {
-						const parseResult = errorEventSchema.safeParse(event);
-						if (!parseResult.success) {
-							return {
-								status: "error",
-								message: "Invalid error event data",
-								issues: parseResult.error.issues,
-								eventId: event.payload?.eventId,
-							};
-						}
 						await insertError(event, clientId);
 						return {
 							status: "success",
@@ -633,15 +590,6 @@ const app = new Elysia()
 						};
 					}
 					if (eventType === "web_vitals") {
-						const parseResult = webVitalsEventSchema.safeParse(event);
-						if (!parseResult.success) {
-							return {
-								status: "error",
-								message: "Invalid web_vitals event data",
-								issues: parseResult.error.issues,
-								eventId: event.payload?.eventId,
-							};
-						}
 						await insertWebVitals(event, clientId);
 						return {
 							status: "success",
