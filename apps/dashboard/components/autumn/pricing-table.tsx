@@ -494,9 +494,39 @@ export const PricingCard = ({
     }
     : product.items[0].display;
 
+  // Determine support level based on plan id
+  let supportLevel: { display: { primary_text: string } } | null = null;
+  switch (product.id) {
+    case 'free':
+      supportLevel = { display: { primary_text: 'Community Support' } };
+      break;
+    case 'hobby':
+      supportLevel = { display: { primary_text: 'Email Support' } };
+      break;
+    case 'pro':
+      supportLevel = { display: { primary_text: 'Priority Email Support' } };
+      break;
+    case 'scale':
+    case 'buddy':
+      supportLevel = { display: { primary_text: 'Priority Email + Slack Support' } };
+      break;
+    default:
+      supportLevel = null;
+  }
+
+  // Add extra features for higher plans
+  const extraFeatures: { display: { primary_text: string } }[] =
+    ['scale', 'buddy'].includes(product.id)
+      ? [
+        { display: { primary_text: 'White Glove Onboarding' } },
+        { display: { primary_text: 'Beta/Early Access' } },
+      ]
+      : [];
+
+  // Add support feature as the last item if supportLevel exists
   const featureItems = product.properties?.is_free
-    ? product.items
-    : product.items.slice(1);
+    ? (supportLevel ? [...product.items, ...extraFeatures, supportLevel] : [...product.items, ...extraFeatures])
+    : (supportLevel ? [...product.items.slice(1), ...extraFeatures, supportLevel] : [...product.items.slice(1), ...extraFeatures]);
 
   return (
     <div
