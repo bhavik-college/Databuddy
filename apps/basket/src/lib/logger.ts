@@ -1,8 +1,7 @@
 import { Logtail } from "@logtail/edge";
-// import pino from "pino";
 
-// Create a logger instance with Better Stack
-export const logger = new Logtail("cEe8CU2VwLfsESg52QLAwPvp", {
+const token = process.env.LOGTAIL_SOURCE_TOKEN as string;
+export const logger = new Logtail(token, {
     endpoint: 'https://s1222612.eu-nbg-2.betterstackdata.com',
     // Add additional Better Stack configuration
     batchSize: 10, // Send logs in batches of 10
