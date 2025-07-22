@@ -91,30 +91,6 @@ cp apps/api/.env.example apps/api/.env
 bun run dev
 ```
 
-### Environment Variables
-
-#### Dashboard (`dashboard`)
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8787
-```
-
-#### Landing Page (`landing`)
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8787
-```
-
-#### Admin Panel (`admin`)
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8787
-```
-
-#### API (`api`)
-```env
-DATABASE_URL=postgresql://user:password@localhost:5432/databuddy
-REDIS_URL=redis://localhost:6379
-JWT_SECRET=your_jwt_secret
-```
-
 ## 💻 Development
 
 ### Available Scripts

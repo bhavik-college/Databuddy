@@ -3,9 +3,8 @@ import { Logtail } from "@logtail/edge";
 const token = process.env.LOGTAIL_SOURCE_TOKEN as string;
 export const logger = new Logtail(token, {
     endpoint: 'https://s1222612.eu-nbg-2.betterstackdata.com',
-    // Add additional Better Stack configuration
-    batchSize: 10, // Send logs in batches of 10
-    batchInterval: 1000, // Or when 1 second passes
+    batchSize: 10,
+    batchInterval: 1000,
 });
 
 // Log levels to ensure we only log important events
