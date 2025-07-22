@@ -84,6 +84,7 @@ interface ProcessedData {
   geographic: {
     countries: GeographicEntry[];
     regions: GeographicEntry[];
+    cities: GeographicEntry[];
     timezones: GeographicEntry[];
     languages: GeographicEntry[];
   };
@@ -167,7 +168,7 @@ export function WebsiteAudienceTab({
     () => [
       {
         id: "geographic-data",
-        parameters: ["country", "region", "timezone", "language"],
+        parameters: ["country", "region", "city", "timezone", "language"],
         limit: 100,
       },
       {
@@ -227,7 +228,7 @@ export function WebsiteAudienceTab({
   const processedData = useMemo((): ProcessedData => {
     if (!batchResults?.length) {
       return {
-        geographic: { countries: [], regions: [], timezones: [], languages: [] },
+        geographic: { countries: [], regions: [], cities: [], timezones: [], languages: [] },
         device: {
           device_type: [],
           browser_name: [],
@@ -247,6 +248,7 @@ export function WebsiteAudienceTab({
       geographic: {
         countries: normalizeData(geographicResult?.data?.country || []),
         regions: normalizeData(geographicResult?.data?.region || []),
+        cities: normalizeData(geographicResult?.data?.city || []),
         timezones: normalizeData(geographicResult?.data?.timezone || []),
         languages: normalizeData(geographicResult?.data?.language || []),
       },
@@ -644,6 +646,46 @@ export function WebsiteAudienceTab({
     []
   );
 
+  // City specific columns with icon
+  const cityColumns = useMemo(
+    (): ColumnDef<GeographicEntry>[] => [
+      {
+        id: "name",
+        accessorKey: "name",
+        header: "City",
+        cell: (info: CellContext<GeographicEntry, any>) => {
+          const name = info.getValue() as string;
+          return (
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-primary" />
+              <span className="font-medium">{name}</span>
+            </div>
+          );
+        },
+      },
+      {
+        id: "visitors",
+        accessorKey: "visitors",
+        header: "Visitors",
+      },
+      {
+        id: "pageviews",
+        accessorKey: "pageviews",
+        header: "Pageviews",
+      },
+      {
+        id: "percentage",
+        accessorKey: "percentage",
+        header: "Share",
+        cell: (info: CellContext<GeographicEntry, any>) => {
+          const percentage = info.getValue() as number;
+          return <PercentageBadge percentage={percentage} />;
+        },
+      },
+    ],
+    []
+  );
+
   // Prepare tabs for enhanced geographic data with unique keys
   const geographicTabs = useMemo(
     () => [
@@ -683,16 +725,27 @@ export function WebsiteAudienceTab({
         })),
         columns: languageColumns,
       },
+      {
+        id: "cities",
+        label: "Cities",
+        data: processedData.geographic.cities.map((item, index) => ({
+          ...item,
+          _uniqueKey: `city-${item.name}-${index}`,
+        })),
+        columns: cityColumns,
+      },
     ],
     [
       processedData.geographic.countries,
       processedData.geographic.regions,
       processedData.geographic.timezones,
       processedData.geographic.languages,
+      processedData.geographic.cities,
       countryColumns,
       geographicColumns,
       timezoneColumns,
       languageColumns,
+      cityColumns,
     ]
   );
 

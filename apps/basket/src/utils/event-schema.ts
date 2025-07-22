@@ -35,7 +35,7 @@ const MAX_FUTURE_MS = 60 * 60 * 1000; // 1 hour
 const MIN_TIMESTAMP = 946684800000; // year 2000
 
 export const analyticsEventSchema = z.object({
-    eventId: z.string().max(128),
+    eventId: z.string().max(512),
     name: z.string().min(1).max(128),
     anonymousId: z.string().nullable().optional(),
     sessionId: z.string().nullable().optional(),
