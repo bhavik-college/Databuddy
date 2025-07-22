@@ -1,4 +1,5 @@
-import { Mail, MessageCircle, Github, Twitter, Home } from 'lucide-react';
+import { FaGithub, FaXTwitter, FaDiscord } from "react-icons/fa6";
+import { IoMdMail } from "react-icons/io";
 import { LogoContent } from './logo';
 
 export function Footer() {
@@ -36,28 +37,29 @@ export function Footer() {
                         <ul className="space-y-2 text-sm">
                             <li>
                                 <a href="mailto:support@databuddy.cc" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
-                                    <Mail className="h-4 w-4" />
+                                    <IoMdMail className="h-4 w-4" />
                                     support@databuddy.cc
                                 </a>
                             </li>
                             <li>
-                                <a href="https://discord.gg/JTk7a38tCZ" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
-                                    <MessageCircle className="h-4 w-4" />
+                                <a href="https://discord.gg/JTk7a38tCZ" target="_blank" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+                                    <FaDiscord className="h-4 w-4" />
                                     Discord
                                 </a>
                             </li>
+                            <li>
+                                <a href="https://github.com/databuddy-analytics" target="_blank" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+                                    <FaGithub className="h-4 w-4" />
+                                    GitHub
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://x.com/trydatabuddy" target="_blank" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+                                    <FaXTwitter className="h-4 w-4" />
+                                    X (Twitter)
+                                </a>
+                            </li>
                         </ul>
-                        <div className="flex gap-2 pt-2">
-                            <a href="https://github.com/databuddy-analytics" className="p-2 rounded bg-muted hover:bg-muted/80" aria-label="GitHub">
-                                <Github className="h-4 w-4" />
-                            </a>
-                            <a href="https://x.com/trydatabuddy" className="p-2 rounded bg-muted hover:bg-muted/80" aria-label="Twitter">
-                                <Twitter className="h-4 w-4" />
-                            </a>
-                            <a href="https://app.databuddy.cc" className="p-2 rounded bg-muted hover:bg-muted/80" aria-label="Dashboard">
-                                <Home className="h-4 w-4" />
-                            </a>
-                        </div>
                     </div>
                 </div>
 
