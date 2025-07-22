@@ -4,9 +4,6 @@
     "private": true,
     "main": "./src/index.ts",
     "types": "./src/index.ts",
-    "scripts": {
-        "dev": "turbo run dev --filter=rpc"
-    },
     "dependencies": {
         "@databuddy/auth": "workspace:*",
         "@databuddy/db": "workspace:*",

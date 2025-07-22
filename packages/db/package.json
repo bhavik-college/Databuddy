@@ -26,6 +26,7 @@
         "db:push": "drizzle-kit push",
         "db:studio": "drizzle-kit studio",
         "db:migrate": "drizzle-kit generate && tsx src/migrate.ts",
-        "db:deploy": "tsx src/migrate.ts"
+        "db:deploy": "tsx src/migrate.ts",
+        "clickhouse:init": "tsx src/clickhouse/setup.ts"
     }
 }

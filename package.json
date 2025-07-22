@@ -7,7 +7,15 @@
     "start": "turbo run start",
     "lint": "turbo run",
     "check-types": "turbo run check-types",
-    "generate-db": "turbo run generate --filter=@databuddy/db"
+    "generate-db": "turbo run generate --filter=@databuddy/db",
+    "db:studio": "cd packages/db && bun run db:studio",
+    "clickhouse:init": "cd packages/db && bun run clickhouse:init",
+    "db:generate": "cd packages/db && bun run db:generate",
+    "db:push": "cd packages/db && bun run db:push",
+    "db:migrate": "cd packages/db && bun run db:migrate",
+    "db:deploy": "cd packages/db && bun run db:deploy",
+    "email:dev": "cd packages/email && bun run dev",
+    "sdk:build": "cd packages/sdk && bun run build"
   },
   "devDependencies": {
     "@biomejs/biome": "2.1.2",

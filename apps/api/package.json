@@ -1,5 +1,5 @@
 {
-  "name": "api2",
+  "name": "@databuddy/api",
   "module": "index.ts",
   "type": "module",
   "private": true,
