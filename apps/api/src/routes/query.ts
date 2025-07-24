@@ -243,10 +243,11 @@ async function executeDynamicQuery(request: any, queryParams: any) {
                     timeUnit: getTimeUnit(request.granularity),
                     filters: request.filters || [],
                     limit: request.limit || 100,
-                    offset: request.page ? (request.page - 1) * (request.limit || 100) : 0
+                    offset: request.page ? (request.page - 1) * (request.limit || 100) : 0,
+                    timezone: queryParams.timezone
                 };
 
-                const data = await executeQuery(queryRequest, websiteDomain);
+                const data = await executeQuery(queryRequest, websiteDomain, queryParams.timezone);
 
                 return {
                     parameter,

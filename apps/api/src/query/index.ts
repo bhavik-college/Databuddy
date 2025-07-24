@@ -20,7 +20,7 @@ const QuerySchema = z.object({
     offset: z.number().min(0).optional()
 });
 
-export const executeQuery = async (request: QueryRequest, websiteDomain?: string | null) => {
+export const executeQuery = async (request: QueryRequest, websiteDomain?: string | null, timezone?: string) => {
     const validated = QuerySchema.parse(request);
 
     const config = QueryBuilders[validated.type];
@@ -28,11 +28,11 @@ export const executeQuery = async (request: QueryRequest, websiteDomain?: string
         throw new Error(`Unknown query type: ${validated.type}`);
     }
 
-    const builder = new SimpleQueryBuilder(config, validated, websiteDomain);
+    const builder = new SimpleQueryBuilder(config, { ...validated, timezone: timezone ?? validated.timezone }, websiteDomain);
     return await builder.execute();
 };
 
-export const compileQuery = (request: QueryRequest, websiteDomain?: string | null) => {
+export const compileQuery = (request: QueryRequest, websiteDomain?: string | null, timezone?: string) => {
     const validated = QuerySchema.parse(request);
 
     const config = QueryBuilders[validated.type];
@@ -40,7 +40,7 @@ export const compileQuery = (request: QueryRequest, websiteDomain?: string | nul
         throw new Error(`Unknown query type: ${validated.type}`);
     }
 
-    const builder = new SimpleQueryBuilder(config, validated, websiteDomain);
+    const builder = new SimpleQueryBuilder(config, { ...validated, timezone: timezone ?? validated.timezone }, websiteDomain);
     return builder.compile();
 };
 

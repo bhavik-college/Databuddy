@@ -49,7 +49,8 @@ export interface SimpleQueryConfig {
         filters?: Filter[],
         granularity?: TimeUnit,
         limit?: number,
-        offset?: number
+        offset?: number,
+        timezone?: string
     ) => string | { sql: string; params: Record<string, unknown> };
     appendEndOfDayToTo?: boolean; // If true (default), append ' 23:59:59' to 'to' value. If false, use 'to' as-is.
 }
@@ -65,6 +66,7 @@ export interface QueryRequest {
     orderBy?: string;
     limit?: number;
     offset?: number;
+    timezone?: string;
 }
 
 export interface CompiledQuery {

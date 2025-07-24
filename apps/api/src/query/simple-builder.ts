@@ -65,7 +65,8 @@ export class SimpleQueryBuilder {
                 this.request.filters,
                 this.request.timeUnit,
                 this.request.limit,
-                this.request.offset
+                this.request.offset,
+                this.request.timezone
             );
 
             if (typeof result === 'string') {

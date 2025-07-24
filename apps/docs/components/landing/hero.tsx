@@ -77,7 +77,6 @@ export default function Hero() {
 										handleFullscreen();
 									}
 								}}
-								aria-label="View demo dashboard fullscreen"
 							>
 								<iframe
 									ref={iframeRef}
