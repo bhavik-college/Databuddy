@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
-import { customSession, multiSession, twoFactor, emailOTP, magicLink, organization } from "better-auth/plugins";
-import { db, eq, user, websites, account, inArray } from "@databuddy/db";
+import { customSession, twoFactor, emailOTP, magicLink, organization } from "better-auth/plugins";
+import { db, eq, user, websites, inArray } from "@databuddy/db";
 import { Resend } from "resend";
 import { getRedisCache } from "@databuddy/redis";
 

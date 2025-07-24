@@ -678,30 +678,41 @@ export const team = pgTable(
 	],
 );
 
+export const apiKeyType = pgEnum("api_key_type", ["user", "sdk", "automation"]);
+export const apiScope = pgEnum("api_scope", [
+	"read:data",
+	"write:data",
+	"read:experiments",
+	"track:events",
+	"admin:apikeys",
+]);
+
 export const apikey = pgTable(
 	"apikey",
 	{
 		id: text().primaryKey().notNull(),
-		name: text(),
-		start: text(),
-		prefix: text(),
+		name: text().notNull(),
+		prefix: text().notNull(),
+		start: text().notNull(),
 		key: text().notNull(),
-		userId: text("user_id").notNull(),
+		userId: text("user_id"),
+		organizationId: text("organization_id"),
+		type: apiKeyType("type").notNull().default("user"),
+		scopes: apiScope("scopes").array().notNull().default([]),
+		enabled: boolean("enabled").notNull().default(true),
+		rateLimitEnabled: boolean("rate_limit_enabled").notNull().default(true),
+		rateLimitTimeWindow: integer("rate_limit_time_window"),
+		rateLimitMax: integer("rate_limit_max"),
+		requestCount: integer("request_count").notNull().default(0),
+		remaining: integer("remaining"),
+		lastRequest: timestamp("last_request", { mode: "string" }),
+		lastRefillAt: timestamp("last_refill_at", { mode: "string" }),
 		refillInterval: integer("refill_interval"),
 		refillAmount: integer("refill_amount"),
-		lastRefillAt: timestamp("last_refill_at", { mode: "string" }),
-		enabled: boolean().default(true),
-		rateLimitEnabled: boolean("rate_limit_enabled").default(true),
-		rateLimitTimeWindow: integer("rate_limit_time_window").default(86400000),
-		rateLimitMax: integer("rate_limit_max").default(10),
-		requestCount: integer("request_count"),
-		remaining: integer(),
-		lastRequest: timestamp("last_request", { mode: "string" }),
 		expiresAt: timestamp("expires_at", { mode: "string" }),
-		createdAt: timestamp("created_at", { mode: "string" }).notNull(),
-		updatedAt: timestamp("updated_at", { mode: "string" }).notNull(),
-		permissions: text(),
-		metadata: text(),
+		metadata: jsonb("metadata").default({}),
+		createdAt: timestamp("created_at", { mode: "string" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+		updatedAt: timestamp("updated_at", { mode: "string" }).notNull().default(sql`CURRENT_TIMESTAMP`),
 	},
 	(table) => [
 		foreignKey({
@@ -709,9 +720,26 @@ export const apikey = pgTable(
 			foreignColumns: [user.id],
 			name: "apikey_user_id_user_id_fk",
 		}).onDelete("cascade"),
+		foreignKey({
+			columns: [table.organizationId],
+			foreignColumns: [organization.id],
+			name: "apikey_organization_id_organization_id_fk",
+		}).onDelete("cascade"),
+		index("apikey_user_id_idx").using(
+			"btree",
+			table.userId.asc().nullsLast().op("text_ops"),
+		),
+		index("apikey_organization_id_idx").using(
+			"btree",
+			table.organizationId.asc().nullsLast().op("text_ops"),
+		),
+		index("apikey_prefix_idx").using(
+			"btree",
+			table.prefix.asc().nullsLast().op("text_ops"),
+		),
+		index("apikey_enabled_idx").using("btree", table.enabled.asc().nullsLast().op("boolean_ops")),
 	],
 );
-
 export const organization = pgTable(
 	"organization",
 	{
@@ -724,3 +752,4 @@ export const organization = pgTable(
 	},
 	(table) => [unique("organization_slug_unique").on(table.slug)],
 );
+

@@ -20,9 +20,6 @@ export default function PricingTable({
   const [isAnnual, setIsAnnual] = useState(false);
   const { products, isLoading, error, refetch } = usePricingTable({ productDetails });
 
-  const [hobbyPro, setHobbyPro] = useState<'hobby' | 'pro'>('pro');
-  const [scaleBuddy, setScaleBuddy] = useState<'scale' | 'buddy'>('buddy');
-
   const summary =
     "All plans include unlimited team members, full analytics, and priority support.";
 
@@ -92,15 +89,6 @@ export default function PricingTable({
     return true;
   };
 
-  const freePlan = products?.find(p => p.id === 'free' && intervalFilter(p));
-  const hobbyPlan = products?.find(p => p.id === 'hobby' && intervalFilter(p));
-  const proPlan = products?.find(p => p.id === 'pro' && intervalFilter(p));
-  const scalePlan = products?.find(p => p.id === 'scale' && intervalFilter(p));
-  const buddyPlan = products?.find(p => p.id === 'buddy' && intervalFilter(p));
-
-  const showHobbyProToggle = !!hobbyPlan && !!proPlan;
-  const showScaleBuddyToggle = !!scalePlan && !!buddyPlan;
-
   return (
     <section className={cn("root")}
       aria-labelledby="pricing-table-title"
@@ -148,232 +136,26 @@ export default function PricingTable({
           setIsAnnualToggle={setIsAnnual}
           multiInterval={multiInterval}
         >
-          {freePlan && (
-            <div className="mb-6 pt-[46px]">
+          {products
+            .filter((p) => p.id !== 'free' && intervalFilter(p))
+            .map((plan) => (
               <PricingCard
-                key={freePlan.id}
-                productId={freePlan.id}
+                key={plan.id}
+                productId={plan.id}
                 buttonProps={{
                   disabled:
-                    freePlan.scenario === "active" ||
-                    freePlan.scenario === "scheduled",
+                    plan.scenario === "active" ||
+                    plan.scenario === "scheduled",
                   onClick: async () => {
                     await attach({
-                      productId: freePlan.id,
+                      productId: plan.id,
                       dialog: AttachDialog,
                     });
                   },
-                  "aria-label": freePlan.display?.recommend_text ? `Select recommended plan: ${freePlan.display?.name}` : `Select plan: ${freePlan.display?.name}`
+                  "aria-label": plan.display?.recommend_text ? `Select recommended plan: ${plan.display?.name}` : `Select plan: ${plan.display?.name}`
                 }}
               />
-            </div>
-          )}
-
-          {(hobbyPlan || proPlan) && (
-            <div className="mb-6">
-              {showHobbyProToggle && (
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <button
-                    type="button"
-                    className={cn(
-                      "px-4 py-1 rounded-full border text-sm font-medium transition",
-                      hobbyPro === 'hobby' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-foreground'
-                    )}
-                    onClick={() => setHobbyPro('hobby')}
-                    aria-pressed={hobbyPro === 'hobby'}
-                  >
-                    Hobby
-                  </button>
-                  <button
-                    type="button"
-                    className={cn(
-                      "px-4 py-1 rounded-full border text-sm font-medium transition",
-                      hobbyPro === 'pro' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-foreground'
-                    )}
-                    onClick={() => setHobbyPro('pro')}
-                    aria-pressed={hobbyPro === 'pro'}
-                  >
-                    Pro
-                  </button>
-                </div>
-              )}
-              {(!showHobbyProToggle && hobbyPlan) && (
-                <PricingCard
-                  key={hobbyPlan.id}
-                  productId={hobbyPlan.id}
-                  buttonProps={{
-                    disabled:
-                      hobbyPlan.scenario === "active" ||
-                      hobbyPlan.scenario === "scheduled",
-                    onClick: async () => {
-                      await attach({
-                        productId: hobbyPlan.id,
-                        dialog: AttachDialog,
-                      });
-                    },
-                    "aria-label": hobbyPlan.display?.recommend_text ? `Select recommended plan: ${hobbyPlan.display?.name}` : `Select plan: ${hobbyPlan.display?.name}`
-                  }}
-                />
-              )}
-              {(!showHobbyProToggle && proPlan) && (
-                <PricingCard
-                  key={proPlan.id}
-                  productId={proPlan.id}
-                  buttonProps={{
-                    disabled:
-                      proPlan.scenario === "active" ||
-                      proPlan.scenario === "scheduled",
-                    onClick: async () => {
-                      await attach({
-                        productId: proPlan.id,
-                        dialog: AttachDialog,
-                      });
-                    },
-                    "aria-label": proPlan.display?.recommend_text ? `Select recommended plan: ${proPlan.display?.name}` : `Select plan: ${proPlan.display?.name}`
-                  }}
-                />
-              )}
-              {showHobbyProToggle && hobbyPro === 'hobby' && hobbyPlan && (
-                <PricingCard
-                  key={hobbyPlan.id}
-                  productId={hobbyPlan.id}
-                  buttonProps={{
-                    disabled:
-                      hobbyPlan.scenario === "active" ||
-                      hobbyPlan.scenario === "scheduled",
-                    onClick: async () => {
-                      await attach({
-                        productId: hobbyPlan.id,
-                        dialog: AttachDialog,
-                      });
-                    },
-                    "aria-label": hobbyPlan.display?.recommend_text ? `Select recommended plan: ${hobbyPlan.display?.name}` : `Select plan: ${hobbyPlan.display?.name}`
-                  }}
-                />
-              )}
-              {showHobbyProToggle && hobbyPro === 'pro' && proPlan && (
-                <PricingCard
-                  key={proPlan.id}
-                  productId={proPlan.id}
-                  buttonProps={{
-                    disabled:
-                      proPlan.scenario === "active" ||
-                      proPlan.scenario === "scheduled",
-                    onClick: async () => {
-                      await attach({
-                        productId: proPlan.id,
-                        dialog: AttachDialog,
-                      });
-                    },
-                    "aria-label": proPlan.display?.recommend_text ? `Select recommended plan: ${proPlan.display?.name}` : `Select plan: ${proPlan.display?.name}`
-                  }}
-                />
-              )}
-            </div>
-          )}
-
-          {(scalePlan || buddyPlan) && (
-            <div>
-              {showScaleBuddyToggle && (
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <button
-                    type="button"
-                    className={cn(
-                      "px-4 py-1 rounded-full border text-sm font-medium transition",
-                      scaleBuddy === 'scale' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-foreground'
-                    )}
-                    onClick={() => setScaleBuddy('scale')}
-                    aria-pressed={scaleBuddy === 'scale'}
-                  >
-                    Scale
-                  </button>
-                  <button
-                    type="button"
-                    className={cn(
-                      "px-4 py-1 rounded-full border text-sm font-medium transition",
-                      scaleBuddy === 'buddy' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-foreground'
-                    )}
-                    onClick={() => setScaleBuddy('buddy')}
-                    aria-pressed={scaleBuddy === 'buddy'}
-                  >
-                    Buddy
-                  </button>
-                </div>
-              )}
-              {(!showScaleBuddyToggle && scalePlan) && (
-                <PricingCard
-                  key={scalePlan.id}
-                  productId={scalePlan.id}
-                  buttonProps={{
-                    disabled:
-                      scalePlan.scenario === "active" ||
-                      scalePlan.scenario === "scheduled",
-                    onClick: async () => {
-                      await attach({
-                        productId: scalePlan.id,
-                        dialog: AttachDialog,
-                      });
-                    },
-                    "aria-label": scalePlan.display?.recommend_text ? `Select recommended plan: ${scalePlan.display?.name}` : `Select plan: ${scalePlan.display?.name}`
-                  }}
-                />
-              )}
-              {(!showScaleBuddyToggle && buddyPlan) && (
-                <PricingCard
-                  key={buddyPlan.id}
-                  productId={buddyPlan.id}
-                  buttonProps={{
-                    disabled:
-                      buddyPlan.scenario === "active" ||
-                      buddyPlan.scenario === "scheduled",
-                    onClick: async () => {
-                      await attach({
-                        productId: buddyPlan.id,
-                        dialog: AttachDialog,
-                      });
-                    },
-                    "aria-label": buddyPlan.display?.recommend_text ? `Select recommended plan: ${buddyPlan.display?.name}` : `Select plan: ${buddyPlan.display?.name}`
-                  }}
-                />
-              )}
-              {showScaleBuddyToggle && scaleBuddy === 'scale' && scalePlan && (
-                <PricingCard
-                  key={scalePlan.id}
-                  productId={scalePlan.id}
-                  buttonProps={{
-                    disabled:
-                      scalePlan.scenario === "active" ||
-                      scalePlan.scenario === "scheduled",
-                    onClick: async () => {
-                      await attach({
-                        productId: scalePlan.id,
-                        dialog: AttachDialog,
-                      });
-                    },
-                    "aria-label": scalePlan.display?.recommend_text ? `Select recommended plan: ${scalePlan.display?.name}` : `Select plan: ${scalePlan.display?.name}`
-                  }}
-                />
-              )}
-              {showScaleBuddyToggle && scaleBuddy === 'buddy' && buddyPlan && (
-                <PricingCard
-                  key={buddyPlan.id}
-                  productId={buddyPlan.id}
-                  buttonProps={{
-                    disabled:
-                      buddyPlan.scenario === "active" ||
-                      buddyPlan.scenario === "scheduled",
-                    onClick: async () => {
-                      await attach({
-                        productId: buddyPlan.id,
-                        dialog: AttachDialog,
-                      });
-                    },
-                    "aria-label": buddyPlan.display?.recommend_text ? `Select recommended plan: ${buddyPlan.display?.name}` : `Select plan: ${buddyPlan.display?.name}`
-                  }}
-                />
-              )}
-            </div>
-          )}
+            ))}
         </PricingTableContainer>
       )}
     </section>
@@ -494,7 +276,6 @@ export const PricingCard = ({
     }
     : product.items[0].display;
 
-  // Determine support level based on plan id
   let supportLevel: { display: { primary_text: string } } | null = null;
   switch (product.id) {
     case 'free':
@@ -514,7 +295,6 @@ export const PricingCard = ({
       supportLevel = null;
   }
 
-  // Add extra features for higher plans
   const extraFeatures: { display: { primary_text: string } }[] =
     ['scale', 'buddy'].includes(product.id)
       ? [
@@ -523,7 +303,6 @@ export const PricingCard = ({
       ]
       : [];
 
-  // Add support feature as the last item if supportLevel exists
   const featureItems = product.properties?.is_free
     ? (supportLevel ? [...product.items, ...extraFeatures, supportLevel] : [...product.items, ...extraFeatures])
     : (supportLevel ? [...product.items.slice(1), ...extraFeatures, supportLevel] : [...product.items.slice(1), ...extraFeatures]);
@@ -599,7 +378,6 @@ export const PricingCard = ({
   );
 };
 
-// Pricing Feature List
 export const PricingFeatureList = ({
   items,
   showIcon = true,
@@ -663,7 +441,6 @@ export const PricingFeatureList = ({
   );
 };
 
-// Pricing Card Button
 export interface PricingCardButtonProps extends React.ComponentProps<"button"> {
   recommended?: boolean;
   buttonUrl?: string;
@@ -716,8 +493,7 @@ export const PricingCardButton = React.forwardRef<
   );
 });
 PricingCardButton.displayName = "PricingCardButton";
-
-// Annual Switch
+  
 export const AnnualSwitch = ({
   isAnnualToggle,
   setIsAnnualToggle,
