@@ -25,6 +25,7 @@ import type { FullTabProps } from "../utils/types";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import { ErrorBoundary } from "@/components/error-boundary";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -582,6 +583,18 @@ export function WebsiteAudienceTab({
     []
   );
 
+  // Feature detection for Intl.DisplayNames
+  const canUseDisplayNames = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      // Try to construct and use .of
+      const dn = new Intl.DisplayNames([navigator.language || "en"], { type: "language" });
+      return typeof dn.of === "function" && !!dn.of("en");
+    } catch {
+      return false;
+    }
+  }, []);
+
   const displayNames = useMemo(
     () =>
       typeof window !== "undefined"
@@ -600,7 +613,12 @@ export function WebsiteAudienceTab({
           const entry = info.row.original;
           const language = entry.name;
           const code = (entry as any).code;
-          const readableName = displayNames?.of(language) || language;
+          let readableName = language;
+          try {
+            readableName = displayNames?.of(language) || language;
+          } catch {
+            readableName = language;
+          }
           return (
             <div className="flex items-center gap-2">
               <Languages className="h-4 w-4 text-primary" />
@@ -688,7 +706,6 @@ export function WebsiteAudienceTab({
     []
   );
 
-  // Prepare tabs for enhanced geographic data with unique keys
   const geographicTabs = useMemo(
     () => [
       {
@@ -718,15 +735,21 @@ export function WebsiteAudienceTab({
         })),
         columns: cityColumns,
       },
-      {
-        id: "languages",
-        label: "Languages",
-        data: processedData.geographic.languages.map((item, index) => ({
-          ...item,
-          _uniqueKey: `language-${item.name}-${index}`,
-        })),
-        columns: languageColumns,
-      },
+      ...(
+        canUseDisplayNames
+          ? [
+            {
+              id: "languages",
+              label: "Languages",
+              data: processedData.geographic.languages.map((item, index) => ({
+                ...item,
+                _uniqueKey: `language-${item.name}-${index}`,
+              })),
+              columns: languageColumns,
+            },
+          ]
+          : []
+      ),
       {
         id: "timezones",
         label: "Timezones",
@@ -748,6 +771,7 @@ export function WebsiteAudienceTab({
       cityColumns,
       languageColumns,
       timezoneColumns,
+      canUseDisplayNames,
     ]
   );
 
@@ -831,14 +855,16 @@ export function WebsiteAudienceTab({
 
       {/* Enhanced Geographic Data */}
       <div className="grid grid-cols-1 gap-4">
-        <DataTable
-          description="Visitors by location, timezone, and language (limit: 100 per category)"
-          initialPageSize={8}
-          isLoading={isLoading}
-          minHeight={400}
-          tabs={geographicTabs}
-          title="Geographic Distribution"
-        />
+        <ErrorBoundary>
+          <DataTable
+            description="Visitors by location, timezone, and language (limit: 100 per category)"
+            initialPageSize={8}
+            isLoading={isLoading}
+            minHeight={400}
+            tabs={geographicTabs}
+            title="Geographic Distribution"
+          />
+        </ErrorBoundary>
       </div>
 
       {/* Screen Resolutions */}
