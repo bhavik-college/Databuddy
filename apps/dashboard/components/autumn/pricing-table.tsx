@@ -206,7 +206,7 @@ export const PricingTableContainer = ({
   }
 
   if (products.length === 0) {
-    return <></>;
+    return null;
   }
 
   const hasRecommended = products?.some((p) => p.display?.recommend_text);
@@ -266,7 +266,7 @@ export const PricingCard = ({
     throw new Error(`Product with id ${productId} not found`);
   }
 
-  const { name, display: productDisplay, items } = product;
+  const { name, display: productDisplay } = product;
 
   const { buttonText } = getPricingTableContent(product);
   const isRecommended = !!productDisplay?.recommend_text;
@@ -315,7 +315,6 @@ export const PricingCard = ({
         "lg:-translate-y-6 lg:shadow-lg dark:shadow-zinc-800/80 lg:h-[calc(100%+48px)] bg-secondary/40 border-primary animate-recommended-glow",
         className
       )}
-      aria-label={isRecommended ? "Recommended plan" : undefined}
     >
       {isRecommended && (
         <RecommendedBadge recommended={productDisplay?.recommend_text ?? ""} />
@@ -506,7 +505,7 @@ export const AnnualSwitch = ({
       <span className="text-sm font-medium text-foreground" id="billing-interval-label">
         Choose billing interval
       </span>
-      <div className="flex items-center space-x-2" aria-labelledby="billing-interval-label">
+      <div className="flex items-center space-x-2">
         <span className="text-sm text-muted-foreground">Monthly</span>
         <Switch
           id="annual-billing"
