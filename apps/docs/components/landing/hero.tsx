@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, MonitorIcon, ArrowsOutSimpleIcon, InfoIcon } from "@phosphor-icons/react";
+import { ArrowRight, Maximize2 } from "lucide-react";
 import { useState, useRef } from "react";
 
 export default function Hero() {
@@ -66,51 +66,35 @@ export default function Hero() {
 					{/* Demo Section */}
 					<div className="w-full max-w-[90vw] mx-auto">
 						<div className="relative">
-              <div className="absolute top-3 left-3 z-20 flex items-center gap-2 bg-primary/90 text-primary-foreground rounded px-3 py-1 text-xs font-semibold shadow-lg">
-                <MonitorIcon className="h-4" weight="duotone" />
-                Demo
-              </div>
-
-							<div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 rounded blur-xl opacity-30" />
-							<button
-								type="button"
-								className="relative bg-background/80 backdrop-blur-sm border border-border rounded p-2 shadow-2xl group cursor-pointer w-full text-left"
+							<div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 rounded-xl blur-xl opacity-30" />
+							<div
+								className="relative bg-background/80 backdrop-blur-sm border border-border rounded-lg p-2 shadow-2xl group cursor-pointer"
 								onMouseEnter={() => setIsHovered(true)}
 								onMouseLeave={() => setIsHovered(false)}
 								onClick={handleFullscreen}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter' || e.key === ' ') {
+										handleFullscreen();
+									}
+								}}
 								aria-label="View demo dashboard fullscreen"
-								style={{ padding: 0 }}
 							>
 								<iframe
 									ref={iframeRef}
 									src="https://app.databuddy.cc/demo/OXmNQsViBT-FOS_wZCTHc"
-									className="w-full h-[500px] sm:h-[600px] lg:h-[700px] rounded border-0 pointer-events-none"
+									className="w-full h-[500px] sm:h-[600px] lg:h-[700px] rounded border-0"
 									title="Databuddy Demo Dashboard"
 									loading="lazy"
 									allowFullScreen
 								/>
 
-								<div
-									className={`absolute inset-2 bg-background/60 dark:bg-background/70 rounded flex items-center justify-center transition-opacity duration-300 z-10 ${isHovered ? 'opacity-100' : 'opacity-80'}`}
-									style={{ pointerEvents: 'none' }}
-								>
-									<div className="flex flex-col items-center gap-2">
-										<div className="bg-card/90 backdrop-blur-sm rounded px-4 py-2 flex items-center gap-2 text-base font-semibold shadow-lg border border-border">
-											<ArrowsOutSimpleIcon className="h-6 text-foreground" />
-											<span className="text-foreground">Click to view fullscreen</span>
-										</div>
-										<div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-											<InfoIcon className="h-3" weight="duotone" />
-											Live interactive demo
-										</div>
+								{/* Fullscreen Button & Overlay */}
+								<div className={`absolute inset-2 bg-background/20 dark:bg-background/40 rounded transition-opacity duration-300 flex items-center justify-center ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+									<div className="bg-card/90 backdrop-blur-sm rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-medium shadow-lg border border-border hover:bg-card transition-colors">
+										<Maximize2 className="h-4 w-4 text-foreground" />
+										<span className="text-foreground">Click to view fullscreen</span>
 									</div>
 								</div>
-							</button>
-						</div>
-						<div className="flex justify-center mt-2">
-							<div className="inline-flex items-center gap-2 bg-muted/70 rounded px-3 py-1 text-xs text-muted-foreground">
-								<MonitorIcon className="h-3" weight="duotone" />
-								This is a live demo. Click above to interact or go fullscreen.
 							</div>
 						</div>
 					</div>
@@ -148,18 +132,31 @@ export default function Hero() {
 
 			{/* Trust indicators */}
 			<div className="relative z-10 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-				<div className="container py-8">
+				<div className="container mx-auto px-4 py-8">
 					<div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6">
 						<div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 w-full md:w-auto">
 							<span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">Trusted by developers at</span>
 							<div className="flex flex-wrap items-center gap-2 sm:gap-4 text-muted-foreground">
 								<a href="https://rivo.gg" className="text-xs sm:text-sm hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">Rivo.gg</a>
 								<a href="https://better-auth.com" className="text-xs sm:text-sm hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">Better-auth</a>
-								<a href="https://opencut.app" className="text-xs sm:text-sm hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">OpenCut</a>
 								<a href="https://www.confinity.com" className="text-xs sm:text-sm hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">Confinity</a>
 								<a href="https://useautumn.com" className="cursor-pointer text-xs sm:text-sm hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">Autumn</a>
-								<span className="text-xs sm:text-sm text-muted-foreground">+495 more</span>
+								<span className="text-xs sm:text-sm text-muted-foreground">+496 more</span>
 							</div>
+						</div>
+						<div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs text-muted-foreground">
+							<span className="flex items-center gap-2 whitespace-nowrap">
+								<div className="w-1.5 h-1.5 bg-primary rounded-full" />
+								Free 30-day trial
+							</span>
+							<span className="flex items-center gap-2 whitespace-nowrap">
+								<div className="w-1.5 h-1.5 bg-primary rounded-full" />
+								No credit card required
+							</span>
+							<span className="flex items-center gap-2 whitespace-nowrap">
+								<div className="w-1.5 h-1.5 bg-primary rounded-full" />
+								Setup in 5 minutes
+							</span>
 						</div>
 					</div>
 				</div>
