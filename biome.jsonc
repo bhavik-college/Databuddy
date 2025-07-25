@@ -3,7 +3,7 @@
   "extends": ["ultracite"],
   "javascript": {
     "formatter": {
-      "indentStyle": "space",
+      "indentStyle": "tab",
       "indentWidth": 2
     }
   }

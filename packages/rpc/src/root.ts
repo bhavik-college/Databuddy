@@ -6,11 +6,11 @@ import { websitesRouter } from './routers/websites';
 import { createTRPCRouter } from './trpc';
 
 export const appRouter = createTRPCRouter({
-  websites: websitesRouter,
-  miniCharts: miniChartsRouter,
-  funnels: funnelsRouter,
-  preferences: preferencesRouter,
-  goals: goalsRouter,
+	websites: websitesRouter,
+	miniCharts: miniChartsRouter,
+	funnels: funnelsRouter,
+	preferences: preferencesRouter,
+	goals: goalsRouter,
 });
 
 export type AppRouter = typeof appRouter;
