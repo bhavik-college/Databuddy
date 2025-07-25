@@ -137,11 +137,17 @@ const buildFilterConditions = (
   paramPrefix: string,
   params: Record<string, unknown>
 ): string => {
-  if (!filters || filters.length === 0) return '';
+  if (!filters || filters.length === 0) {
+    return '';
+  }
   const filterConditions = filters
     .map((filter, i) => {
-      if (!ALLOWED_FIELDS.has(filter.field)) return '';
-      if (!ALLOWED_OPERATORS.has(filter.operator)) return '';
+      if (!ALLOWED_FIELDS.has(filter.field)) {
+        return '';
+      }
+      if (!ALLOWED_OPERATORS.has(filter.operator)) {
+        return '';
+      }
       const field = filter.field;
       const value = Array.isArray(filter.value) ? filter.value : [filter.value];
       const key = `${paramPrefix}_${i}`;
@@ -312,7 +318,7 @@ export const funnelsRouter = createTRPCRouter({
         };
 
         return categorized;
-      } catch (error: any) {
+      } catch (error) {
         logger.error('Failed to fetch autocomplete data', error.message, {
           websiteId: website.id,
         });
@@ -355,7 +361,7 @@ export const funnelsRouter = createTRPCRouter({
           .orderBy(desc(funnelDefinitions.createdAt));
 
         return funnels;
-      } catch (error: any) {
+      } catch (error) {
         logger.error('Failed to fetch funnels', error.message, {
           websiteId: website.id,
         });
@@ -396,8 +402,10 @@ export const funnelsRouter = createTRPCRouter({
         }
 
         return funnel[0];
-      } catch (error: any) {
-        if (error instanceof TRPCError) throw error;
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
 
         logger.error('Failed to fetch funnel', error.message, {
           funnelId: input.id,
@@ -442,7 +450,7 @@ export const funnelsRouter = createTRPCRouter({
         });
 
         return newFunnel;
-      } catch (error: any) {
+      } catch (error) {
         logger.error('Failed to create funnel', error.message, {
           websiteId: website.id,
           userId: ctx.user.id,
@@ -495,7 +503,7 @@ export const funnelsRouter = createTRPCRouter({
           .returning();
 
         return updatedFunnel;
-      } catch (error: any) {
+      } catch (error) {
         logger.error('Failed to update funnel', error.message, {
           funnelId: input.id,
         });
@@ -545,7 +553,7 @@ export const funnelsRouter = createTRPCRouter({
           );
 
         return { success: true };
-      } catch (error: any) {
+      } catch (error) {
         logger.error('Failed to delete funnel', error.message, {
           funnelId: input.id,
         });
@@ -592,7 +600,7 @@ export const funnelsRouter = createTRPCRouter({
           type: string;
           target: string;
           name: string;
-          conditions?: any;
+          conditions?: Record<string, unknown>;
         }>;
         const filters =
           (funnelData.filters as Array<{
@@ -603,7 +611,7 @@ export const funnelsRouter = createTRPCRouter({
         const params: Record<string, unknown> = {
           websiteId: website.id,
           startDate,
-          endDate: endDate + ' 23:59:59',
+          endDate: `${endDate} 23:59:59`,
         };
         const filterClause = buildFilterConditions(filters, 'f', params);
         const stepQueries = steps.map((step, index) => {
@@ -748,8 +756,10 @@ export const funnelsRouter = createTRPCRouter({
         };
 
         return overallAnalytics;
-      } catch (error: any) {
-        if (error instanceof TRPCError) throw error;
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
 
         logger.error('Failed to fetch funnel analytics', error.message, {
           funnelId: input.funnelId,
@@ -798,7 +808,7 @@ export const funnelsRouter = createTRPCRouter({
           type: string;
           target: string;
           name: string;
-          conditions?: any;
+          conditions?: Record<string, unknown>;
         }>;
         const filters =
           (funnelData.filters as Array<{
@@ -815,7 +825,7 @@ export const funnelsRouter = createTRPCRouter({
         const params: Record<string, unknown> = {
           websiteId: website.id,
           startDate,
-          endDate: endDate + ' 23:59:59',
+          endDate: `${endDate} 23:59:59`,
         };
         const filterClause = buildFilterConditions(filters, 'f', params);
         const stepQueries = steps.map((step, index) => {
@@ -915,14 +925,22 @@ export const funnelsRouter = createTRPCRouter({
           }
         }
 
-        const referrerAnalytics = [];
+        const referrerAnalytics: {
+          referrer: string;
+          referrer_parsed: ReturnType<typeof parseReferrer>;
+          total_users: number;
+          completed_users: number;
+          conversion_rate: number;
+        }[] = [];
         for (const [groupKey, group] of referrerGroups) {
           const stepCounts = new Map<number, Set<string>>();
           for (const sessionId of group.sessionIds) {
             const events = sessionEvents
               .get(sessionId)
               ?.sort((a, b) => a.first_occurrence - b.first_occurrence);
-            if (!events) continue;
+            if (!events) {
+              continue;
+            }
             let currentStep = 1;
             for (const event of events) {
               if (event.step_number === currentStep) {
@@ -935,7 +953,9 @@ export const funnelsRouter = createTRPCRouter({
             }
           }
           const total_users = stepCounts.get(1)?.size || 0;
-          if (total_users === 0) continue;
+          if (total_users === 0) {
+            continue;
+          }
           const completed_users = stepCounts.get(steps.length)?.size || 0;
           const conversion_rate =
             total_users > 0
@@ -1003,8 +1023,10 @@ export const funnelsRouter = createTRPCRouter({
         return {
           referrer_analytics,
         };
-      } catch (error: any) {
-        if (error instanceof TRPCError) throw error;
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
 
         logger.error(
           'Failed to fetch funnel analytics by referrer',

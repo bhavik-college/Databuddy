@@ -1,5 +1,8 @@
 import { relations } from 'drizzle-orm/relations';
 import {
+  abExperiments,
+  abGoals,
+  abVariants,
   account,
   apikey,
   funnelDefinitions,
@@ -25,6 +28,7 @@ export const userRelations = relations(user, ({ many }) => ({
   websites: many(websites),
   funnelDefinitions: many(funnelDefinitions),
   apikeys: many(apikey),
+  abExperiments: many(abExperiments),
 }));
 
 export const organizationRelations = relations(organization, ({ many }) => ({
@@ -100,6 +104,7 @@ export const websitesRelations = relations(websites, ({ one, many }) => ({
     relationName: 'websites_organizationId_organization_id',
   }),
   funnelDefinitions: many(funnelDefinitions),
+  abExperiments: many(abExperiments),
 }));
 
 export const funnelGoalsRelations = relations(funnelGoals, ({ one }) => ({
@@ -135,5 +140,35 @@ export const apikeyRelations = relations(apikey, ({ one }) => ({
   user: one(user, {
     fields: [apikey.userId],
     references: [user.id],
+  }),
+}));
+
+export const abExperimentsRelations = relations(
+  abExperiments,
+  ({ one, many }) => ({
+    website: one(websites, {
+      fields: [abExperiments.websiteId],
+      references: [websites.id],
+    }),
+    user: one(user, {
+      fields: [abExperiments.createdBy],
+      references: [user.id],
+    }),
+    variants: many(abVariants),
+    goals: many(abGoals),
+  })
+);
+
+export const abVariantsRelations = relations(abVariants, ({ one }) => ({
+  experiment: one(abExperiments, {
+    fields: [abVariants.experimentId],
+    references: [abExperiments.id],
+  }),
+}));
+
+export const abGoalsRelations = relations(abGoals, ({ one }) => ({
+  experiment: one(abExperiments, {
+    fields: [abGoals.experimentId],
+    references: [abExperiments.id],
   }),
 }));

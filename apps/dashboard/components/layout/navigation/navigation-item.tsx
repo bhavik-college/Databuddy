@@ -1,7 +1,5 @@
 import { ArrowSquareOut } from '@phosphor-icons/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import type { NavigationItem as NavigationItemType } from './types';
 
@@ -10,7 +8,6 @@ interface NavigationItemProps extends Omit<NavigationItemType, 'icon'> {
   isActive: boolean;
   isRootLevel: boolean;
   isExternal?: boolean;
-  isHighlighted?: boolean;
   currentWebsiteId?: string | null;
 }
 
@@ -22,12 +19,9 @@ export function NavigationItem({
   isActive,
   isRootLevel,
   isExternal,
-  isHighlighted,
   production,
   currentWebsiteId,
 }: NavigationItemProps) {
-  const router = useRouter();
-
   let fullPath: string;
   if (isRootLevel) {
     fullPath = href;
@@ -42,12 +36,6 @@ export function NavigationItem({
   if (production === false && process.env.NODE_ENV === 'production') {
     return null;
   }
-
-  useEffect(() => {
-    if (!isExternal) {
-      router.prefetch(fullPath);
-    }
-  }, [fullPath, isExternal, router]);
 
   const linkProps = isExternal
     ? { href, target: '_blank', rel: 'noopener noreferrer' }

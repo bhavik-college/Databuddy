@@ -82,11 +82,11 @@ interface ScreenResolutionEntry {
 }
 
 interface DeviceData {
-  device_type: any[];
-  browser_name: any[];
-  os_name: any[];
+  device_type: string[];
+  browser_name: string[];
+  os_name: string[];
   screen_resolution: ScreenResolutionEntry[];
-  connection_type: any[];
+  connection_type: string[];
 }
 
 interface ProcessedData {
@@ -111,29 +111,38 @@ const formatNumber = (value: number | null | undefined): string => {
 
 const getConnectionIcon = (connection: string): React.ReactNode => {
   const connectionLower = connection.toLowerCase();
-  if (!connection || connection === 'Unknown')
+  if (!connection || connection === 'Unknown') {
     return <HelpCircle className="h-4 w-4 text-muted-foreground" />;
-  if (connectionLower.includes('wifi'))
+  }
+  if (connectionLower.includes('wifi')) {
     return <Wifi className="h-4 w-4 text-green-500" />;
-  if (connectionLower.includes('4g'))
+  }
+  if (connectionLower.includes('4g')) {
     return <Smartphone className="h-4 w-4 text-blue-500" />;
-  if (connectionLower.includes('5g'))
+  }
+  if (connectionLower.includes('5g')) {
     return <Smartphone className="h-4 w-4 text-purple-500" />;
-  if (connectionLower.includes('3g'))
+  }
+  if (connectionLower.includes('3g')) {
     return <Smartphone className="h-4 w-4 text-yellow-500" />;
-  if (connectionLower.includes('2g'))
+  }
+  if (connectionLower.includes('2g')) {
     return <Smartphone className="h-4 w-4 text-orange-500" />;
-  if (connectionLower.includes('ethernet'))
+  }
+  if (connectionLower.includes('ethernet')) {
     return <Laptop className="h-4 w-4 text-blue-400" />;
-  if (connectionLower.includes('cellular'))
+  }
+  if (connectionLower.includes('cellular')) {
     return <Smartphone className="h-4 w-4 text-blue-500" />;
-  if (connectionLower.includes('offline'))
+  }
+  if (connectionLower.includes('offline')) {
     return <WifiOff className="h-4 w-4 text-red-500" />;
+  }
   return <Globe className="h-4 w-4 text-primary" />;
 };
 
-const normalizeData = (data: any[]): GeographicEntry[] =>
-  data?.map((item: any) => ({
+const normalizeData = (data: string[]): GeographicEntry[] =>
+  data?.map((item) => ({
     name: item.country_name || item.name || 'Unknown',
     visitors: item.visitors || 0,
     pageviews: item.pageviews || 0,
@@ -249,7 +258,9 @@ export function WebsiteAudienceTab({
 
   const processedBrowserData = useMemo((): BrowserEntry[] => {
     const rawData = processedData.browsers;
-    if (!rawData?.length) return [];
+    if (!rawData?.length) {
+      return [];
+    }
 
     if (rawData.length > 0 && rawData[0].versions) {
       return rawData
@@ -336,7 +347,7 @@ export function WebsiteAudienceTab({
     if (!connectionData?.length) return [];
 
     const totalVisitors = connectionData.reduce(
-      (sum: number, item: any) => sum + item.visitors,
+      (sum: number, item: string) => sum + item.visitors,
       0
     );
 
