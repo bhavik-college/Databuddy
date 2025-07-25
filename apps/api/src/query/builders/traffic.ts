@@ -1,8 +1,9 @@
 import type { SimpleQueryConfig } from "../types";
+import { Analytics } from "../../types/tables";
 
-export const TrafficBuilders: Record<string, SimpleQueryConfig> = {
+export const TrafficBuilders: Record<string, SimpleQueryConfig<typeof Analytics.events>> = {
     top_referrers: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'CASE ' +
             'WHEN domain(referrer) LIKE \'%.google.com%\' OR domain(referrer) LIKE \'google.com%\' THEN \'https://google.com\' ' +
@@ -33,7 +34,7 @@ export const TrafficBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     utm_sources: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'utm_source as name',
             'COUNT(*) as pageviews',
@@ -50,7 +51,7 @@ export const TrafficBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     utm_mediums: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'utm_medium as name',
             'COUNT(*) as pageviews',
@@ -67,7 +68,7 @@ export const TrafficBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     utm_campaigns: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'utm_campaign as name',
             'COUNT(*) as pageviews',
@@ -84,7 +85,7 @@ export const TrafficBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     traffic_sources: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'CASE ' +
             'WHEN referrer = \'\' OR referrer IS NULL THEN \'direct\' ' +

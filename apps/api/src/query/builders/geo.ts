@@ -1,8 +1,9 @@
 import type { SimpleQueryConfig } from "../types";
+import { Analytics } from "../../types/tables";
 
-export const GeoBuilders: Record<string, SimpleQueryConfig> = {
+export const GeoBuilders: Record<string, SimpleQueryConfig<typeof Analytics.events>> = {
     country: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'country as name',
             'COUNT(*) as pageviews',
@@ -20,7 +21,7 @@ export const GeoBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     region: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'region as name',
             'COUNT(*) as pageviews',
@@ -37,7 +38,7 @@ export const GeoBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     timezone: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'timezone as name',
             'COUNT(*) as pageviews',
@@ -54,7 +55,7 @@ export const GeoBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     language: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'language as name',
             'COUNT(*) as pageviews',
@@ -71,7 +72,7 @@ export const GeoBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     city: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'city as name',
             'COUNT(*) as pageviews',

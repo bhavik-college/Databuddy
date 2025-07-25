@@ -1,8 +1,9 @@
 import type { SimpleQueryConfig } from "../types";
+import { Analytics } from "../../types/tables";
 
-export const ErrorsBuilders: Record<string, SimpleQueryConfig> = {
+export const ErrorsBuilders: Record<string, SimpleQueryConfig<typeof Analytics.errors>> = {
     recent_errors: {
-        table: 'analytics.errors',
+        table: Analytics.errors,
         fields: [
             'message as error_message',
             'stack as error_stack',
@@ -23,7 +24,7 @@ export const ErrorsBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     error_types: {
-        table: 'analytics.errors',
+        table: Analytics.errors,
         fields: [
             'message as name',
             'COUNT(*) as count',
@@ -40,7 +41,7 @@ export const ErrorsBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     error_trends: {
-        table: 'analytics.errors',
+        table: Analytics.errors,
         fields: [
             'toDate(timestamp) as date',
             'COUNT(*) as errors',
@@ -54,7 +55,7 @@ export const ErrorsBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     errors_by_page: {
-        table: 'analytics.errors',
+        table: Analytics.errors,
         fields: [
             'path as name',
             'COUNT(*) as errors',
@@ -70,7 +71,7 @@ export const ErrorsBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     error_frequency: {
-        table: 'analytics.errors',
+        table: Analytics.errors,
         fields: [
             'toDate(timestamp) as date',
             'COUNT(*) as count'

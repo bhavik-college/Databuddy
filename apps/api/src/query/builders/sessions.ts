@@ -1,8 +1,9 @@
 import type { SimpleQueryConfig } from "../types";
+import { Analytics } from "../../types/tables";
 
-export const SessionsBuilders: Record<string, SimpleQueryConfig> = {
+export const SessionsBuilders: Record<string, SimpleQueryConfig<typeof Analytics.events>> = {
   session_metrics: {
-    table: 'analytics.events',
+    table: Analytics.events,
     fields: [
       'COUNT(DISTINCT session_id) as total_sessions',
       'AVG(CASE WHEN time_on_page > 0 THEN time_on_page / 1000 ELSE NULL END) as avg_session_duration',
@@ -16,7 +17,7 @@ export const SessionsBuilders: Record<string, SimpleQueryConfig> = {
   },
 
   session_duration_distribution: {
-    table: 'analytics.events',
+    table: Analytics.events,
     fields: [
       'CASE ' +
       'WHEN time_on_page < 30 THEN \'0-30s\' ' +
@@ -38,7 +39,7 @@ export const SessionsBuilders: Record<string, SimpleQueryConfig> = {
   },
 
   sessions_by_device: {
-    table: 'analytics.events',
+    table: Analytics.events,
     fields: [
       'device_type as name',
       'COUNT(DISTINCT session_id) as sessions',
@@ -54,7 +55,7 @@ export const SessionsBuilders: Record<string, SimpleQueryConfig> = {
   },
 
   sessions_by_browser: {
-    table: 'analytics.events',
+    table: Analytics.events,
     fields: [
       'browser_name as name',
       'COUNT(DISTINCT session_id) as sessions',
@@ -71,7 +72,7 @@ export const SessionsBuilders: Record<string, SimpleQueryConfig> = {
   },
 
   sessions_time_series: {
-    table: 'analytics.events',
+    table: Analytics.events,
     fields: [
       'toDate(time) as date',
       'COUNT(DISTINCT session_id) as sessions',
@@ -87,7 +88,7 @@ export const SessionsBuilders: Record<string, SimpleQueryConfig> = {
   },
 
   session_flow: {
-    table: 'analytics.events',
+    table: Analytics.events,
     fields: [
       'path as name',
       'COUNT(DISTINCT session_id) as sessions',
@@ -185,7 +186,7 @@ export const SessionsBuilders: Record<string, SimpleQueryConfig> = {
   },
 
   session_events: {
-    table: 'analytics.events',
+    table: Analytics.events,
     fields: [
       'session_id',
       'event_id',

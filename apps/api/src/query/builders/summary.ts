@@ -1,6 +1,7 @@
 import type { SimpleQueryConfig, Filter, TimeUnit } from "../types";
+import { Analytics } from "../../types/tables";
 
-export const SummaryBuilders: Record<string, SimpleQueryConfig> = {
+export const SummaryBuilders: Record<string, SimpleQueryConfig<typeof Analytics.events>> = {
   summary_metrics: {
     customSql: (websiteId: string, startDate: string, endDate: string) => {
       return {
@@ -70,7 +71,7 @@ export const SummaryBuilders: Record<string, SimpleQueryConfig> = {
   },
 
   today_metrics: {
-    table: 'analytics.events',
+    table: Analytics.events,
     fields: [
       'COUNT(*) as pageviews',
       'COUNT(DISTINCT anonymous_id) as visitors',

@@ -1,6 +1,7 @@
 import type { SimpleQueryConfig } from "../types";
+import { Analytics } from "../../types/tables";
 
-export const ProfilesBuilders: Record<string, SimpleQueryConfig> = {
+export const ProfilesBuilders: Record<string, SimpleQueryConfig<typeof Analytics.events>> = {
   profile_list: {
     customSql: (websiteId: string, startDate: string, endDate: string, filters?: any[], granularity?: any, limit?: number, offset?: number) => ({
       sql: `
@@ -113,7 +114,7 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig> = {
   },
 
   profile_metrics: {
-    table: 'analytics.events',
+    table: Analytics.events,
     fields: [
       'COUNT(DISTINCT anonymous_id) as total_visitors',
       'COUNT(DISTINCT session_id) as total_sessions',
@@ -127,7 +128,7 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig> = {
   },
 
   profile_duration_distribution: {
-    table: 'analytics.events',
+    table: Analytics.events,
     fields: [
       'CASE ' +
       'WHEN time_on_page < 30 THEN \'0-30s\' ' +
@@ -149,7 +150,7 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig> = {
   },
 
   profiles_by_device: {
-    table: 'analytics.events',
+    table: Analytics.events,
     fields: [
       'device_type as name',
       'COUNT(DISTINCT anonymous_id) as visitors',
@@ -165,7 +166,7 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig> = {
   },
 
   profiles_by_browser: {
-    table: 'analytics.events',
+    table: Analytics.events,
     fields: [
       'browser_name as name',
       'COUNT(DISTINCT anonymous_id) as visitors',
@@ -182,7 +183,7 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig> = {
   },
 
   profiles_time_series: {
-    table: 'analytics.events',
+    table: Analytics.events,
     fields: [
       'toDate(time) as date',
       'COUNT(DISTINCT anonymous_id) as visitors',

@@ -1,8 +1,9 @@
 import type { SimpleQueryConfig } from "../types";
+import { Analytics } from "../../types/tables";
 
-export const PerformanceBuilders: Record<string, SimpleQueryConfig> = {
+export const PerformanceBuilders: Record<string, SimpleQueryConfig<typeof Analytics.events>> = {
     performance_metrics: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'AVG(CASE WHEN load_time > 0 THEN load_time ELSE NULL END) as avg_load_time',
             'AVG(CASE WHEN dom_ready_time > 0 THEN dom_ready_time ELSE NULL END) as avg_dom_ready_time',
@@ -20,7 +21,7 @@ export const PerformanceBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     slow_pages: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'path(path) as name',
             'COUNT(DISTINCT anonymous_id) as visitors',
@@ -43,7 +44,7 @@ export const PerformanceBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     performance_by_device: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'device_type as name',
             'COUNT(DISTINCT anonymous_id) as visitors',
@@ -66,7 +67,7 @@ export const PerformanceBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     performance_by_browser: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'CONCAT(browser_name, \' \', browser_version) as name',
             'COUNT(DISTINCT anonymous_id) as visitors',
@@ -95,7 +96,7 @@ export const PerformanceBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     performance_by_country: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'country as name',
             'COUNT(DISTINCT anonymous_id) as visitors',
@@ -119,7 +120,7 @@ export const PerformanceBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     performance_by_os: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'os_name as name',
             'COUNT(DISTINCT anonymous_id) as visitors',
@@ -142,7 +143,7 @@ export const PerformanceBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     performance_by_region: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'CONCAT(region, \', \', country) as name',
             'COUNT(DISTINCT anonymous_id) as visitors',
@@ -165,7 +166,7 @@ export const PerformanceBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     performance_time_series: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'toDate(time) as date',
             'AVG(CASE WHEN load_time > 0 THEN load_time ELSE NULL END) as avg_load_time',

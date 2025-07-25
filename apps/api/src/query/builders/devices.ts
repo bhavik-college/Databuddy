@@ -1,8 +1,9 @@
 import type { SimpleQueryConfig } from "../types";
+import { Analytics } from "../../types/tables";
 
-export const DevicesBuilders: Record<string, SimpleQueryConfig> = {
+export const DevicesBuilders: Record<string, SimpleQueryConfig<typeof Analytics.events>> = {
     browser_name: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'browser_name as name',
             'COUNT(*) as pageviews',
@@ -19,7 +20,7 @@ export const DevicesBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     os_name: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'os_name as name',
             'COUNT(*) as pageviews',
@@ -36,7 +37,7 @@ export const DevicesBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     screen_resolution: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'screen_resolution as name',
             'COUNT(*) as pageviews',
@@ -52,7 +53,7 @@ export const DevicesBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     connection_type: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'connection_type as name',
             'COUNT(*) as pageviews',
@@ -68,7 +69,7 @@ export const DevicesBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     browsers_grouped: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'CONCAT(browser_name, \' \', browser_version) as name',
             'browser_name',
@@ -92,7 +93,7 @@ export const DevicesBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     device_types: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'screen_resolution as name',
             'COUNT(*) as pageviews',
@@ -110,7 +111,7 @@ export const DevicesBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     browsers: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'browser_name as name',
             'COUNT(*) as pageviews',
@@ -127,7 +128,7 @@ export const DevicesBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     browser_versions: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'CONCAT(browser_name, \' \', browser_version) as name',
             'COUNT(*) as pageviews',
@@ -143,7 +144,7 @@ export const DevicesBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     operating_systems: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'os_name as name',
             'COUNT(*) as pageviews',
@@ -160,7 +161,7 @@ export const DevicesBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     os_versions: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'CONCAT(os_name, \' \', os_version) as name',
             'COUNT(*) as pageviews',
@@ -176,7 +177,7 @@ export const DevicesBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     screen_resolutions: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'screen_resolution as name',
             'COUNT(*) as pageviews',

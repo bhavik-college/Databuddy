@@ -1,8 +1,9 @@
 import type { SimpleQueryConfig } from "../types";
+import { Analytics } from "../../types/tables";
 
-export const PagesBuilders: Record<string, SimpleQueryConfig> = {
+export const PagesBuilders: Record<string, SimpleQueryConfig<typeof Analytics.events>> = {
     top_pages: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'path(path) as name',
             'COUNT(*) as pageviews',
@@ -19,7 +20,7 @@ export const PagesBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     entry_pages: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'entry_page as name',
             'COUNT(*) as pageviews',
@@ -79,7 +80,7 @@ export const PagesBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     exit_pages: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'path as name',
             'COUNT(DISTINCT session_id) as pageviews',
@@ -149,7 +150,7 @@ export const PagesBuilders: Record<string, SimpleQueryConfig> = {
     },
 
     page_performance: {
-        table: 'analytics.events',
+        table: Analytics.events,
         fields: [
             'path(path) as name',
             'COUNT(*) as pageviews',
