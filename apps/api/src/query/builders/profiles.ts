@@ -1,21 +1,21 @@
-import type { SimpleQueryConfig } from "../types";
-import { Analytics } from "../../types/tables";
+import { Analytics } from '../../types/tables';
+import type { SimpleQueryConfig } from '../types';
 
 export const ProfilesBuilders: Record<
-	string,
-	SimpleQueryConfig<typeof Analytics.events>
+  string,
+  SimpleQueryConfig<typeof Analytics.events>
 > = {
-	profile_list: {
-		customSql: (
-			websiteId: string,
-			startDate: string,
-			endDate: string,
-			filters?: any[],
-			granularity?: any,
-			limit?: number,
-			offset?: number,
-		) => ({
-			sql: `
+  profile_list: {
+    customSql: (
+      websiteId: string,
+      startDate: string,
+      endDate: string,
+      filters?: any[],
+      granularity?: any,
+      limit?: number,
+      offset?: number
+    ) => ({
+      sql: `
     WITH visitor_profiles AS (
       SELECT
         anonymous_id as visitor_id,
@@ -111,127 +111,127 @@ export const ProfilesBuilders: Record<
     LEFT JOIN visitor_sessions vs ON vp.visitor_id = vs.visitor_id
     ORDER BY vp.last_visit DESC, vs.session_start DESC
   `,
-			params: {
-				websiteId,
-				startDate,
-				endDate: `${endDate} 23:59:59`,
-				limit: limit || 25,
-				offset: offset || 0,
-			},
-		}),
-		timeField: "time",
-		allowedFilters: [
-			"path",
-			"referrer",
-			"device_type",
-			"browser_name",
-			"country",
-		],
-		customizable: true,
-	},
+      params: {
+        websiteId,
+        startDate,
+        endDate: `${endDate} 23:59:59`,
+        limit: limit || 25,
+        offset: offset || 0,
+      },
+    }),
+    timeField: 'time',
+    allowedFilters: [
+      'path',
+      'referrer',
+      'device_type',
+      'browser_name',
+      'country',
+    ],
+    customizable: true,
+  },
 
-	profile_metrics: {
-		table: Analytics.events,
-		fields: [
-			"COUNT(DISTINCT anonymous_id) as total_visitors",
-			"COUNT(DISTINCT session_id) as total_sessions",
-			"AVG(CASE WHEN time_on_page > 0 THEN time_on_page / 1000 ELSE NULL END) as avg_session_duration",
-			"COUNT(*) as total_events",
-		],
-		where: ["event_name = 'screen_view'"],
-		timeField: "time",
-		allowedFilters: [
-			"path",
-			"referrer",
-			"device_type",
-			"browser_name",
-			"country",
-		],
-		customizable: true,
-	},
+  profile_metrics: {
+    table: Analytics.events,
+    fields: [
+      'COUNT(DISTINCT anonymous_id) as total_visitors',
+      'COUNT(DISTINCT session_id) as total_sessions',
+      'AVG(CASE WHEN time_on_page > 0 THEN time_on_page / 1000 ELSE NULL END) as avg_session_duration',
+      'COUNT(*) as total_events',
+    ],
+    where: ["event_name = 'screen_view'"],
+    timeField: 'time',
+    allowedFilters: [
+      'path',
+      'referrer',
+      'device_type',
+      'browser_name',
+      'country',
+    ],
+    customizable: true,
+  },
 
-	profile_duration_distribution: {
-		table: Analytics.events,
-		fields: [
-			"CASE " +
-				"WHEN time_on_page < 30 THEN '0-30s' " +
-				"WHEN time_on_page < 60 THEN '30s-1m' " +
-				"WHEN time_on_page < 300 THEN '1m-5m' " +
-				"WHEN time_on_page < 900 THEN '5m-15m' " +
-				"WHEN time_on_page < 3600 THEN '15m-1h' " +
-				"ELSE '1h+' " +
-				"END as duration_range",
-			"COUNT(DISTINCT anonymous_id) as visitors",
-			"COUNT(DISTINCT session_id) as sessions",
-		],
-		where: ["event_name = 'screen_view'", "time_on_page > 0"],
-		groupBy: ["duration_range"],
-		orderBy: "visitors DESC",
-		timeField: "time",
-		allowedFilters: ["path", "referrer", "device_type"],
-		customizable: true,
-	},
+  profile_duration_distribution: {
+    table: Analytics.events,
+    fields: [
+      'CASE ' +
+        "WHEN time_on_page < 30 THEN '0-30s' " +
+        "WHEN time_on_page < 60 THEN '30s-1m' " +
+        "WHEN time_on_page < 300 THEN '1m-5m' " +
+        "WHEN time_on_page < 900 THEN '5m-15m' " +
+        "WHEN time_on_page < 3600 THEN '15m-1h' " +
+        "ELSE '1h+' " +
+        'END as duration_range',
+      'COUNT(DISTINCT anonymous_id) as visitors',
+      'COUNT(DISTINCT session_id) as sessions',
+    ],
+    where: ["event_name = 'screen_view'", 'time_on_page > 0'],
+    groupBy: ['duration_range'],
+    orderBy: 'visitors DESC',
+    timeField: 'time',
+    allowedFilters: ['path', 'referrer', 'device_type'],
+    customizable: true,
+  },
 
-	profiles_by_device: {
-		table: Analytics.events,
-		fields: [
-			"device_type as name",
-			"COUNT(DISTINCT anonymous_id) as visitors",
-			"COUNT(DISTINCT session_id) as sessions",
-			"ROUND(AVG(CASE WHEN time_on_page > 0 THEN time_on_page / 1000 ELSE NULL END), 2) as avg_session_duration",
-		],
-		where: ["event_name = 'screen_view'", "device_type != ''"],
-		groupBy: ["device_type"],
-		orderBy: "visitors DESC",
-		timeField: "time",
-		allowedFilters: ["device_type", "path", "referrer"],
-		customizable: true,
-	},
+  profiles_by_device: {
+    table: Analytics.events,
+    fields: [
+      'device_type as name',
+      'COUNT(DISTINCT anonymous_id) as visitors',
+      'COUNT(DISTINCT session_id) as sessions',
+      'ROUND(AVG(CASE WHEN time_on_page > 0 THEN time_on_page / 1000 ELSE NULL END), 2) as avg_session_duration',
+    ],
+    where: ["event_name = 'screen_view'", "device_type != ''"],
+    groupBy: ['device_type'],
+    orderBy: 'visitors DESC',
+    timeField: 'time',
+    allowedFilters: ['device_type', 'path', 'referrer'],
+    customizable: true,
+  },
 
-	profiles_by_browser: {
-		table: Analytics.events,
-		fields: [
-			"browser_name as name",
-			"COUNT(DISTINCT anonymous_id) as visitors",
-			"COUNT(DISTINCT session_id) as sessions",
-			"ROUND(AVG(CASE WHEN time_on_page > 0 THEN time_on_page / 1000 ELSE NULL END), 2) as avg_session_duration",
-		],
-		where: ["event_name = 'screen_view'", "browser_name != ''"],
-		groupBy: ["browser_name"],
-		orderBy: "visitors DESC",
-		limit: 100,
-		timeField: "time",
-		allowedFilters: ["browser_name", "path", "device_type"],
-		customizable: true,
-	},
+  profiles_by_browser: {
+    table: Analytics.events,
+    fields: [
+      'browser_name as name',
+      'COUNT(DISTINCT anonymous_id) as visitors',
+      'COUNT(DISTINCT session_id) as sessions',
+      'ROUND(AVG(CASE WHEN time_on_page > 0 THEN time_on_page / 1000 ELSE NULL END), 2) as avg_session_duration',
+    ],
+    where: ["event_name = 'screen_view'", "browser_name != ''"],
+    groupBy: ['browser_name'],
+    orderBy: 'visitors DESC',
+    limit: 100,
+    timeField: 'time',
+    allowedFilters: ['browser_name', 'path', 'device_type'],
+    customizable: true,
+  },
 
-	profiles_time_series: {
-		table: Analytics.events,
-		fields: [
-			"toDate(time) as date",
-			"COUNT(DISTINCT anonymous_id) as visitors",
-			"COUNT(DISTINCT session_id) as sessions",
-			"ROUND(AVG(CASE WHEN time_on_page > 0 THEN time_on_page / 1000 ELSE NULL END), 2) as avg_session_duration",
-		],
-		where: ["event_name = 'screen_view'"],
-		groupBy: ["toDate(time)"],
-		orderBy: "date ASC",
-		timeField: "time",
-		allowedFilters: ["path", "referrer", "device_type"],
-		customizable: true,
-	},
+  profiles_time_series: {
+    table: Analytics.events,
+    fields: [
+      'toDate(time) as date',
+      'COUNT(DISTINCT anonymous_id) as visitors',
+      'COUNT(DISTINCT session_id) as sessions',
+      'ROUND(AVG(CASE WHEN time_on_page > 0 THEN time_on_page / 1000 ELSE NULL END), 2) as avg_session_duration',
+    ],
+    where: ["event_name = 'screen_view'"],
+    groupBy: ['toDate(time)'],
+    orderBy: 'date ASC',
+    timeField: 'time',
+    allowedFilters: ['path', 'referrer', 'device_type'],
+    customizable: true,
+  },
 
-	returning_visitors: {
-		customSql: (
-			websiteId: string,
-			startDate: string,
-			endDate: string,
-			filters?: any[],
-			granularity?: any,
-			limit?: number,
-			offset?: number,
-		) => ({
-			sql: `
+  returning_visitors: {
+    customSql: (
+      websiteId: string,
+      startDate: string,
+      endDate: string,
+      filters?: any[],
+      granularity?: any,
+      limit?: number,
+      offset?: number
+    ) => ({
+      sql: `
       SELECT
         anonymous_id as visitor_id,
         COUNT(DISTINCT session_id) as session_count,
@@ -249,16 +249,16 @@ export const ProfilesBuilders: Record<
       ORDER BY session_count DESC
       LIMIT {limit:Int32} OFFSET {offset:Int32}
     `,
-			params: {
-				websiteId,
-				startDate,
-				endDate: `${endDate} 23:59:59`,
-				limit: limit || 100,
-				offset: offset || 0,
-			},
-		}),
-		timeField: "time",
-		allowedFilters: ["path", "referrer", "device_type"],
-		customizable: true,
-	},
+      params: {
+        websiteId,
+        startDate,
+        endDate: `${endDate} 23:59:59`,
+        limit: limit || 100,
+        offset: offset || 0,
+      },
+    }),
+    timeField: 'time',
+    allowedFilters: ['path', 'referrer', 'device_type'],
+    customizable: true,
+  },
 };

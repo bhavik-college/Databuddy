@@ -1,14 +1,14 @@
-import type { SimpleQueryConfig, Filter, TimeUnit } from "../types";
-import { Analytics } from "../../types/tables";
+import { Analytics } from '../../types/tables';
+import type { Filter, SimpleQueryConfig, TimeUnit } from '../types';
 
 export const SummaryBuilders: Record<
-	string,
-	SimpleQueryConfig<typeof Analytics.events>
+  string,
+  SimpleQueryConfig<typeof Analytics.events>
 > = {
-	summary_metrics: {
-		customSql: (websiteId: string, startDate: string, endDate: string) => {
-			return {
-				sql: `
+  summary_metrics: {
+    customSql: (websiteId: string, startDate: string, endDate: string) => {
+      return {
+        sql: `
             WITH session_metrics AS (
               SELECT
                 session_id,
@@ -61,55 +61,55 @@ export const SummaryBuilders: Record<
             FROM session_metrics
             LEFT JOIN session_durations as sd ON session_metrics.session_id = sd.session_id
         `,
-				params: {
-					websiteId,
-					startDate,
-					endDate,
-				},
-			};
-		},
-		timeField: "time",
-		allowedFilters: [
-			"path",
-			"referrer",
-			"device_type",
-			"browser_name",
-			"country",
-		],
-		customizable: true,
-	},
+        params: {
+          websiteId,
+          startDate,
+          endDate,
+        },
+      };
+    },
+    timeField: 'time',
+    allowedFilters: [
+      'path',
+      'referrer',
+      'device_type',
+      'browser_name',
+      'country',
+    ],
+    customizable: true,
+  },
 
-	today_metrics: {
-		table: Analytics.events,
-		fields: [
-			"COUNT(*) as pageviews",
-			"COUNT(DISTINCT anonymous_id) as visitors",
-			"COUNT(DISTINCT session_id) as sessions",
-			"ROUND(AVG(CASE WHEN is_bounce = 1 THEN 100 ELSE 0 END), 2) as bounce_rate",
-		],
-		where: ["event_name = 'screen_view'", "toDate(time) = today()"],
-		timeField: "time",
-		allowedFilters: ["path", "referrer", "device_type"],
-		customizable: true,
-	},
+  today_metrics: {
+    table: Analytics.events,
+    fields: [
+      'COUNT(*) as pageviews',
+      'COUNT(DISTINCT anonymous_id) as visitors',
+      'COUNT(DISTINCT session_id) as sessions',
+      'ROUND(AVG(CASE WHEN is_bounce = 1 THEN 100 ELSE 0 END), 2) as bounce_rate',
+    ],
+    where: ["event_name = 'screen_view'", 'toDate(time) = today()'],
+    timeField: 'time',
+    allowedFilters: ['path', 'referrer', 'device_type'],
+    customizable: true,
+  },
 
-	events_by_date: {
-		customSql: (
-			websiteId: string,
-			startDate: string,
-			endDate: string,
-			filters?: Filter[],
-			granularity?: TimeUnit,
-			limit?: number,
-			offset?: number,
-			timezone?: string,
-		) => {
-			const tz = timezone || "UTC";
-			const isHourly = granularity === "hour" || granularity === "hourly";
+  events_by_date: {
+    customSql: (
+      websiteId: string,
+      startDate: string,
+      endDate: string,
+      filters?: Filter[],
+      granularity?: TimeUnit,
+      limit?: number,
+      offset?: number,
+      timezone?: string
+    ) => {
+      const tz = timezone || 'UTC';
+      const isHourly = granularity === 'hour' || granularity === 'hourly';
 
-			if (isHourly) {
-				return {
-					sql: `
+      if (isHourly) {
+        return {
+          sql: `
                 WITH hour_range AS (
                   SELECT arrayJoin(arrayMap(
                     h -> toDateTime(concat({startDate:String}, ' 00:00:00')) + (h * 3600),
@@ -171,17 +171,17 @@ export const SummaryBuilders: Record<
                 LEFT JOIN hourly_event_metrics hem ON hr.datetime = hem.event_hour
                 ORDER BY hr.datetime ASC
             `,
-					params: {
-						websiteId,
-						startDate,
-						endDate,
-						timezone: tz,
-					},
-				};
-			}
+          params: {
+            websiteId,
+            startDate,
+            endDate,
+            timezone: tz,
+          },
+        };
+      }
 
-			return {
-				sql: `
+      return {
+        sql: `
                 WITH date_range AS (
                   SELECT arrayJoin(arrayMap(
                     d -> toDate({startDate:String}) + d,
@@ -243,30 +243,30 @@ export const SummaryBuilders: Record<
                 LEFT JOIN daily_event_metrics dem ON dr.date = dem.event_date
                 ORDER BY dr.date ASC
             `,
-				params: {
-					websiteId,
-					startDate,
-					endDate,
-					timezone: tz,
-				},
-			};
-		},
-		timeField: "time",
-		allowedFilters: ["path", "referrer", "device_type"],
-		customizable: true,
-	},
+        params: {
+          websiteId,
+          startDate,
+          endDate,
+          timezone: tz,
+        },
+      };
+    },
+    timeField: 'time',
+    allowedFilters: ['path', 'referrer', 'device_type'],
+    customizable: true,
+  },
 
-	active_stats: {
-		customSql: (websiteId: string, startDate?: string, endDate?: string) => {
-			let timeCondition = "";
-			if (startDate && endDate) {
-				timeCondition =
-					"time >= parseDateTimeBestEffort({startDate:String}) AND time <= parseDateTimeBestEffort({endDate:String})";
-			} else {
-				timeCondition = "time >= now() - INTERVAL 5 MINUTE";
-			}
-			return {
-				sql: `
+  active_stats: {
+    customSql: (websiteId: string, startDate?: string, endDate?: string) => {
+      let timeCondition = '';
+      if (startDate && endDate) {
+        timeCondition =
+          'time >= parseDateTimeBestEffort({startDate:String}) AND time <= parseDateTimeBestEffort({endDate:String})';
+      } else {
+        timeCondition = 'time >= now() - INTERVAL 5 MINUTE';
+      }
+      return {
+        sql: `
           SELECT
             COUNT(DISTINCT anonymous_id) as active_users,
             COUNT(DISTINCT session_id) as active_sessions
@@ -275,15 +275,15 @@ export const SummaryBuilders: Record<
             AND client_id = {websiteId:String}
             AND ${timeCondition}
         `,
-				params: {
-					websiteId,
-					...(startDate && endDate ? { startDate, endDate } : {}),
-				},
-			};
-		},
-		timeField: "time",
-		allowedFilters: ["path", "referrer"],
-		customizable: true,
-		appendEndOfDayToTo: false,
-	},
+        params: {
+          websiteId,
+          ...(startDate && endDate ? { startDate, endDate } : {}),
+        },
+      };
+    },
+    timeField: 'time',
+    allowedFilters: ['path', 'referrer'],
+    customizable: true,
+    appendEndOfDayToTo: false,
+  },
 };
