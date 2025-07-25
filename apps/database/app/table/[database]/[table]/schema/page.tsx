@@ -157,12 +157,12 @@ const TRANSFORMATION_MAP: Record<
   },
 };
 
-export default function TableSchemaPage({
+export default async function TableSchemaPage({
   params,
 }: {
-  params: { database: string; table: string };
+  params: Promise<{ database: string; table: string }>;
 }) {
-  const { database, table } = params;
+  const { database, table } = await params;
   const [columns, setColumns] = useState<ColumnInfo[]>([]);
   const [tableInfo, setTableInfo] = useState<TableInfo | null>(null);
   const [loading, setLoading] = useState(false);
