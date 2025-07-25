@@ -148,7 +148,7 @@ async function validateRequest(body: any, query: any, request: Request) {
 	};
 }
 
-async function insertError(errorData: any, clientId: string): Promise<void> {
+async function insertError(errorData: any, clientId: string, userAgent: string, ip: string): Promise<void> {
 	const eventId = sanitizeString(
 		errorData.payload.eventId,
 		VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
@@ -158,7 +158,16 @@ async function insertError(errorData: any, clientId: string): Promise<void> {
 	}
 
 	const payload = errorData.payload;
-	const now = new Date().getTime();
+	const now = Date.now();
+
+	const { anonymizedIP, country, region } = await getGeo(ip);
+	const {
+		browserName,
+		browserVersion,
+		osName,
+		osVersion,
+		deviceType
+	} = parseUserAgent(userAgent);
 
 	const errorEvent: ErrorEvent = {
 		id: randomUUID(),
@@ -186,6 +195,15 @@ async function insertError(errorData: any, clientId: string): Promise<void> {
 			payload.errorType,
 			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
 		),
+		// Enriched fields
+		ip: anonymizedIP || "",
+		country: country || "",
+		region: region || "",
+		browser_name: browserName || "",
+		browser_version: browserVersion || "",
+		os_name: osName || "",
+		os_version: osVersion || "",
+		device_type: deviceType || "",
 		created_at: now,
 	};
 
@@ -207,6 +225,8 @@ async function insertError(errorData: any, clientId: string): Promise<void> {
 async function insertWebVitals(
 	vitalsData: any,
 	clientId: string,
+	userAgent: string,
+	ip: string,
 ): Promise<void> {
 	const eventId = sanitizeString(
 		vitalsData.payload.eventId,
@@ -218,7 +238,16 @@ async function insertWebVitals(
 	}
 
 	const payload = vitalsData.payload;
-	const now = new Date().getTime();
+	const now = Date.now();
+
+	const { country, region } = await getGeo(ip);
+	const {
+		browserName,
+		browserVersion,
+		osName,
+		osVersion,
+		deviceType,
+	} = parseUserAgent(userAgent);
 
 	const webVitalsEvent: WebVitalsEvent = {
 		id: randomUUID(),
@@ -236,6 +265,14 @@ async function insertWebVitals(
 		cls: validatePerformanceMetric(payload.cls),
 		fid: validatePerformanceMetric(payload.fid),
 		inp: validatePerformanceMetric(payload.inp),
+		// Enriched fields
+		country: country || "",
+		region: region || "",
+		browser_name: browserName || "",
+		browser_version: browserVersion || "",
+		os_name: osName || "",
+		os_version: osVersion || "",
+		device_type: deviceType || "",
 		created_at: now,
 	};
 
@@ -278,7 +315,7 @@ async function insertTrackEvent(
 		deviceBrand,
 		deviceModel,
 	} = parseUserAgent(userAgent);
-	const now = new Date().getTime();
+	const now = Date.now();
 
 	const trackEvent: AnalyticsEvent = {
 		id: randomUUID(),
@@ -429,7 +466,7 @@ async function logBlockedTraffic(
 		const { browserName, browserVersion, osName, osVersion, deviceType } =
 			parseUserAgent(userAgent);
 
-		const now = new Date().getTime();
+		const now = Date.now();
 
 		const blockedEvent: BlockedTraffic = {
 			id: randomUUID(),
@@ -554,7 +591,7 @@ const app = new Elysia()
 					);
 					return { status: "error", message: "Invalid event schema", errors: parseResult.error.issues };
 				}
-				insertError(body, clientId);
+				insertError(body, clientId, userAgent, ip);
 				return { status: "success", type: "error" };
 			}
 
@@ -573,7 +610,7 @@ const app = new Elysia()
 					);
 					return { status: "error", message: "Invalid event schema", errors: parseResult.error.issues };
 				}
-				insertWebVitals(body, clientId);
+				insertWebVitals(body, clientId, userAgent, ip);
 				return { status: "success", type: "web_vitals" };
 			}
 
@@ -675,7 +712,7 @@ const app = new Elysia()
 						};
 					}
 					try {
-						await insertError(event, clientId);
+						await insertError(event, clientId, userAgent, ip);
 						return {
 							status: "success",
 							type: "error",
@@ -712,7 +749,7 @@ const app = new Elysia()
 						};
 					}
 					try {
-						await insertWebVitals(event, clientId);
+						await insertWebVitals(event, clientId, userAgent, ip);
 						return {
 							status: "success",
 							type: "web_vitals",
