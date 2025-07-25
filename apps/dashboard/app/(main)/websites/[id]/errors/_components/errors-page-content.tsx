@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { ArrowClockwiseIcon, BugIcon } from "@phosphor-icons/react";
-import { use, useCallback, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-import { AnimatedLoading } from "@/components/analytics/animated-loading";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import type { DateRange, DynamicQueryFilter } from "@databuddy/shared";
-import { useEnhancedErrorData } from "@/hooks/use-dynamic-query";
-import { WebsitePageHeader } from "../../_components/website-page-header";
-import { ErrorDataTable } from "./error-data-table";
+import type { DateRange, DynamicQueryFilter } from '@databuddy/shared';
+import { ArrowClockwiseIcon, BugIcon } from '@phosphor-icons/react';
+import { use, useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { AnimatedLoading } from '@/components/analytics/animated-loading';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { useEnhancedErrorData } from '@/hooks/use-dynamic-query';
+import { WebsitePageHeader } from '../../_components/website-page-header';
+import { ErrorDataTable } from './error-data-table';
 // Import our separated components
-import { ErrorSummaryStats } from "./error-summary-stats";
-import { ErrorTrendsChart } from "./error-trends-chart";
-import { TopErrorCard } from "./top-error-card";
-import type { ErrorSummary } from "./types";
-import { normalizeData, safeFormatDate } from "./utils";
+import { ErrorSummaryStats } from './error-summary-stats';
+import { ErrorTrendsChart } from './error-trends-chart';
+import { TopErrorCard } from './top-error-card';
+import type { ErrorSummary } from './types';
+import { normalizeData, safeFormatDate } from './utils';
 
 interface ErrorsPageContentProps {
   params: Promise<{ id: string }>;
@@ -27,9 +27,11 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
 
   // Default to last 7 days
   const dateRange: DateRange = {
-    start_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-    end_date: new Date().toISOString().split("T")[0],
-    granularity: "daily",
+    start_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0],
+    end_date: new Date().toISOString().split('T')[0],
+    granularity: 'daily',
   };
 
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -41,16 +43,22 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
   // Add a new filter
   const addFilter = (field: string, value: string | number) => {
     // Prevent adding duplicate filters
-    if (activeFilters.some((f) => f.field === field && f.value === value)) return;
+    if (activeFilters.some((f) => f.field === field && f.value === value))
+      return;
 
-    const newFilter: DynamicQueryFilter = { field, operator: "eq", value };
+    const newFilter: DynamicQueryFilter = { field, operator: 'eq', value };
     setActiveFilters((prev) => [...prev, newFilter]);
   };
 
   // Remove a filter
   const removeFilter = (filterToRemove: DynamicQueryFilter) => {
     setActiveFilters((prev) =>
-      prev.filter((f) => !(f.field === filterToRemove.field && f.value === filterToRemove.value))
+      prev.filter(
+        (f) =>
+          !(
+            f.field === filterToRemove.field && f.value === filterToRemove.value
+          )
+      )
     );
   };
 
@@ -68,7 +76,7 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
   } = useEnhancedErrorData(websiteId, dateRange, {
     filters: activeFilters,
     // Ensure the query re-runs when filters change
-    queryKey: ["enhancedErrorData", websiteId, dateRange, activeFilters],
+    queryKey: ['enhancedErrorData', websiteId, dateRange, activeFilters],
   });
 
   // Handle refresh
@@ -76,10 +84,10 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
     setIsRefreshing(true);
     try {
       await refetch();
-      toast.success("Error data refreshed");
+      toast.success('Error data refreshed');
     } catch (error) {
-      console.error("Failed to refresh data:", error);
-      toast.error("Failed to refresh error data.");
+      console.error('Failed to refresh data:', error);
+      toast.error('Failed to refresh error data.');
     } finally {
       setIsRefreshing(false);
     }
@@ -105,7 +113,11 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
 
       const dataObject = result.data;
 
-      if (!dataObject || typeof dataObject !== "object" || Array.isArray(dataObject)) {
+      if (
+        !dataObject ||
+        typeof dataObject !== 'object' ||
+        Array.isArray(dataObject)
+      ) {
         return [];
       }
 
@@ -119,11 +131,11 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
     };
 
     const data = {
-      recent_errors: extractData("recent_errors"),
-      error_types: extractData("error_types"),
-      errors_by_page: extractData("errors_by_page"),
-      error_trends: extractData("error_trends"),
-      error_frequency: extractData("error_frequency"),
+      recent_errors: extractData('recent_errors'),
+      error_types: extractData('error_types'),
+      errors_by_page: extractData('errors_by_page'),
+      error_trends: extractData('error_trends'),
+      error_frequency: extractData('error_frequency'),
     };
 
     return data;
@@ -156,7 +168,8 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
     const affectedSessions = recentErrors.length; // Use recent errors count as session count
 
     // Calculate error rate based on recent errors vs total errors
-    const errorRate = totalErrors > 0 ? (affectedSessions / totalErrors) * 100 : 0;
+    const errorRate =
+      totalErrors > 0 ? (affectedSessions / totalErrors) * 100 : 0;
 
     return {
       totalErrors,
@@ -182,13 +195,11 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
     if (!processedData.error_trends?.length) return [];
 
     return processedData.error_trends.map((point: any) => ({
-      date: safeFormatDate(point.date, "MMM d"),
-      "Total Errors": point.errors || 0,
-      "Affected Users": point.users || 0,
+      date: safeFormatDate(point.date, 'MMM d'),
+      'Total Errors': point.errors || 0,
+      'Affected Users': point.users || 0,
     }));
   }, [processedData.error_trends]);
-
-
 
   // Handle loading progress animation
   useEffect(() => {
@@ -209,7 +220,8 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
       const updateProgress = () => {
         if (currentIndex < intervals.length) {
           const { target, duration } = intervals[currentIndex];
-          const startProgress = currentIndex === 0 ? 0 : intervals[currentIndex - 1]?.target || 0;
+          const startProgress =
+            currentIndex === 0 ? 0 : intervals[currentIndex - 1]?.target || 0;
           const progressDiff = target - startProgress;
           const startTime = Date.now();
 
@@ -252,12 +264,19 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
           <CardContent className="pt-6">
             <div className="flex flex-col items-center space-y-3 text-center">
               <div className="rounded-full border border-destructive/20 bg-destructive/10 p-3">
-                <BugIcon className="h-6 w-6 text-destructive" size={16} weight="duotone" />
+                <BugIcon
+                  className="h-6 w-6 text-destructive"
+                  size={16}
+                  weight="duotone"
+                />
               </div>
               <div>
-                <h4 className="font-semibold text-destructive">Error loading error data</h4>
+                <h4 className="font-semibold text-destructive">
+                  Error loading error data
+                </h4>
                 <p className="mt-1 text-destructive/80 text-sm">
-                  There was an issue loading your error analytics. Please try refreshing the page.
+                  There was an issue loading your error analytics. Please try
+                  refreshing the page.
                 </p>
               </div>
               <Button
@@ -266,7 +285,11 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
                 size="sm"
                 variant="outline"
               >
-                <ArrowClockwiseIcon className="h-4 w-4" size={16} weight="fill" />
+                <ArrowClockwiseIcon
+                  className="h-4 w-4"
+                  size={16}
+                  weight="fill"
+                />
                 Retry
               </Button>
             </div>
@@ -279,12 +302,18 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
   return (
     <div className="mx-auto max-w-[1600px] space-y-6 p-3 sm:p-4 lg:p-6">
       <WebsitePageHeader
-        title="Error Analytics"
         description="Monitor and analyze application errors to improve user experience"
-        icon={<BugIcon className="h-6 w-6 text-primary" size={16} weight="duotone" />}
-        websiteId={websiteId}
+        icon={
+          <BugIcon
+            className="h-6 w-6 text-primary"
+            size={16}
+            weight="duotone"
+          />
+        }
         isRefreshing={isRefreshing}
         onRefresh={handleRefresh}
+        title="Error Analytics"
+        websiteId={websiteId}
       />
 
       {isLoading ? (
@@ -300,7 +329,10 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
 
             {/* Right Column: KPIs and Top Error */}
             <div className="space-y-4">
-              <ErrorSummaryStats errorSummary={errorSummary} isLoading={isLoading} />
+              <ErrorSummaryStats
+                errorSummary={errorSummary}
+                isLoading={isLoading}
+              />
               <TopErrorCard topError={topError} />
             </div>
           </div>

@@ -291,9 +291,10 @@ export type EventName = keyof EventTypeMap;
 /**
  * Properties for a specific event type
  */
-export type PropertiesForEvent<T extends EventName> = T extends keyof EventTypeMap
-  ? EventTypeMap[T] & EventProperties
-  : EventProperties;
+export type PropertiesForEvent<T extends EventName> =
+  T extends keyof EventTypeMap
+    ? EventTypeMap[T] & EventProperties
+    : EventProperties;
 
 /**
  * Databuddy tracker instance interface
@@ -373,7 +374,4 @@ export type ScreenViewFunction = (
   properties?: EventProperties
 ) => void;
 
-export type SetGlobalPropertiesFunction = (
-  properties: EventProperties
-) => void;
-
+export type SetGlobalPropertiesFunction = (properties: EventProperties) => void;

@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { authClient } from "@databuddy/auth/client";
-import { AlertCircle, ChevronLeft, Loader2 } from "lucide-react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { authClient } from '@databuddy/auth/client';
+import { AlertCircle, ChevronLeft, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 export default function VerificationNeededPage() {
   const searchParams = useSearchParams();
-  const email = searchParams.get("email") || "";
+  const email = searchParams.get('email') || '';
   const [isLoading, setIsLoading] = useState(false);
 
   const sendVerificationEmail = async () => {
@@ -18,21 +18,23 @@ export default function VerificationNeededPage() {
     try {
       await authClient.sendVerificationEmail({
         email,
-        callbackURL: "/home",
+        callbackURL: '/home',
         fetchOptions: {
           onSuccess: () => {
-            toast.success("Verification email sent!");
+            toast.success('Verification email sent!');
             setIsLoading(false);
           },
           onError: () => {
             setIsLoading(false);
-            toast.error("Failed to send verification email. Please try again later.");
+            toast.error(
+              'Failed to send verification email. Please try again later.'
+            );
           },
         },
       });
     } catch (error) {
       setIsLoading(false);
-      toast.error("Failed to send verification email. Please try again later.");
+      toast.error('Failed to send verification email. Please try again later.');
     }
   };
 
@@ -46,16 +48,19 @@ export default function VerificationNeededPage() {
             <AlertCircle className="h-8 w-8 text-white" />
           </div>
         </div>
-        <h1 className="font-bold text-2xl text-foreground">Verify your email</h1>
+        <h1 className="font-bold text-2xl text-foreground">
+          Verify your email
+        </h1>
         <p className="mt-2 text-muted-foreground">
-          Verification needed for <strong className="font-medium text-amber-600">{email}</strong>
+          Verification needed for{' '}
+          <strong className="font-medium text-amber-600">{email}</strong>
         </p>
       </div>
       <div className="space-y-5 py-4">
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800">
           <p className="text-sm">
-            Your email <strong>{email}</strong> needs to be verified before you can sign in. Please
-            check your inbox for the verification link.
+            Your email <strong>{email}</strong> needs to be verified before you
+            can sign in. Please check your inbox for the verification link.
           </p>
         </div>
         <Button
@@ -69,7 +74,7 @@ export default function VerificationNeededPage() {
               Sending...
             </>
           ) : (
-            "Resend verification email"
+            'Resend verification email'
           )}
         </Button>
         <Link href="/login">

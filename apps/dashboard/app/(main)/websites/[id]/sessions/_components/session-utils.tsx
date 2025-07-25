@@ -5,26 +5,26 @@ import {
   MousePointerClickIcon,
   SparklesIcon,
   ZapIcon,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   getBrowserIcon,
   getDeviceTypeIcon,
   getOSIcon,
-} from "../../_components/utils/technology-helpers";
+} from '../../_components/utils/technology-helpers';
 
 export const getDefaultDateRange = () => {
   const today = new Date();
   const thirtyDaysAgo = new Date(today);
   thirtyDaysAgo.setDate(today.getDate() - 30);
   return {
-    start_date: thirtyDaysAgo.toISOString().split("T")[0],
-    end_date: today.toISOString().split("T")[0],
-    granularity: "daily" as "hourly" | "daily",
+    start_date: thirtyDaysAgo.toISOString().split('T')[0],
+    end_date: today.toISOString().split('T')[0],
+    granularity: 'daily' as 'hourly' | 'daily',
   };
 };
 
 export const getDeviceIcon = (device: string) => {
-  return getDeviceTypeIcon(device, "md");
+  return getDeviceTypeIcon(device, 'md');
 };
 
 export const getBrowserIconComponent = (browser: string) => {
@@ -34,7 +34,7 @@ export const getBrowserIconComponent = (browser: string) => {
       alt={browser}
       className="h-4 w-4 object-contain"
       onError={(e) => {
-        (e.target as HTMLImageElement).style.display = "none";
+        (e.target as HTMLImageElement).style.display = 'none';
       }}
       src={iconPath}
     />
@@ -48,7 +48,7 @@ export const getOSIconComponent = (os: string) => {
       alt={os}
       className="h-4 w-4 object-contain"
       onError={(e) => {
-        (e.target as HTMLImageElement).style.display = "none";
+        (e.target as HTMLImageElement).style.display = 'none';
       }}
       src={iconPath}
     />
@@ -56,7 +56,7 @@ export const getOSIconComponent = (os: string) => {
 };
 
 export const getCountryFlag = (country: string) => {
-  if (!country || country === "Unknown" || country === "") {
+  if (!country || country === 'Unknown' || country === '') {
     return <GlobeIcon className="h-4 w-4 text-muted-foreground" />;
   }
 
@@ -79,65 +79,65 @@ export const getEventIconAndColor = (
   if (hasError) {
     return {
       icon: <AlertTriangleIcon className="h-4 w-4" />,
-      color: "text-destructive",
-      bgColor: "bg-destructive/10",
-      borderColor: "border-destructive/20",
-      badgeColor: "bg-destructive/10 text-destructive border-destructive/20",
+      color: 'text-destructive',
+      bgColor: 'bg-destructive/10',
+      borderColor: 'border-destructive/20',
+      badgeColor: 'bg-destructive/10 text-destructive border-destructive/20',
     };
   }
 
   if (hasProperties) {
     return {
       icon: <SparklesIcon className="h-4 w-4" />,
-      color: "text-accent-foreground",
-      bgColor: "bg-accent/20",
-      borderColor: "border-accent",
-      badgeColor: "bg-accent text-accent-foreground border-accent",
+      color: 'text-accent-foreground',
+      bgColor: 'bg-accent/20',
+      borderColor: 'border-accent',
+      badgeColor: 'bg-accent text-accent-foreground border-accent',
     };
   }
 
   switch (eventName) {
-    case "screen_view":
-    case "page_view":
+    case 'screen_view':
+    case 'page_view':
       return {
         icon: <FileTextIcon className="h-4 w-4" />,
-        color: "text-primary",
-        bgColor: "bg-primary/10",
-        borderColor: "border-primary/20",
-        badgeColor: "bg-primary/10 text-primary border-primary/20",
+        color: 'text-primary',
+        bgColor: 'bg-primary/10',
+        borderColor: 'border-primary/20',
+        badgeColor: 'bg-primary/10 text-primary border-primary/20',
       };
-    case "click":
-    case "player-page-tab":
+    case 'click':
+    case 'player-page-tab':
       return {
         icon: <MousePointerClickIcon className="h-4 w-4" />,
-        color: "text-secondary-foreground",
-        bgColor: "bg-secondary/50",
-        borderColor: "border-secondary",
-        badgeColor: "bg-secondary text-secondary-foreground border-secondary",
+        color: 'text-secondary-foreground',
+        bgColor: 'bg-secondary/50',
+        borderColor: 'border-secondary',
+        badgeColor: 'bg-secondary text-secondary-foreground border-secondary',
       };
     default:
       return {
         icon: <ZapIcon className="h-4 w-4" />,
-        color: "text-muted-foreground",
-        bgColor: "bg-muted/30",
-        borderColor: "border-muted",
-        badgeColor: "bg-muted text-muted-foreground border-muted",
+        color: 'text-muted-foreground',
+        bgColor: 'bg-muted/30',
+        borderColor: 'border-muted',
+        badgeColor: 'bg-muted text-muted-foreground border-muted',
       };
   }
 };
 
 export const cleanUrl = (url: string) => {
-  if (!url) return "";
+  if (!url) return '';
   try {
     const urlObj = new URL(url);
     let path = urlObj.pathname;
-    if (path.length > 1 && path.endsWith("/")) {
+    if (path.length > 1 && path.endsWith('/')) {
       path = path.slice(0, -1);
     }
     return path + urlObj.search;
   } catch {
-    let cleanPath = url.startsWith("/") ? url : `/${url}`;
-    if (cleanPath.length > 1 && cleanPath.endsWith("/")) {
+    let cleanPath = url.startsWith('/') ? url : `/${url}`;
+    if (cleanPath.length > 1 && cleanPath.endsWith('/')) {
       cleanPath = cleanPath.slice(0, -1);
     }
     return cleanPath;
@@ -145,10 +145,10 @@ export const cleanUrl = (url: string) => {
 };
 
 export const getDisplayPath = (path: string) => {
-  if (!path || path === "/") return "/";
+  if (!path || path === '/') return '/';
   const cleanPath = cleanUrl(path);
   if (cleanPath.length > 40) {
-    const parts = cleanPath.split("/").filter(Boolean);
+    const parts = cleanPath.split('/').filter(Boolean);
     if (parts.length > 2) {
       return `/${parts[0]}/.../${parts[parts.length - 1]}`;
     }
@@ -157,9 +157,9 @@ export const getDisplayPath = (path: string) => {
 };
 
 export const formatPropertyValue = (value: any): string => {
-  if (value === null || value === undefined) return "null";
-  if (typeof value === "boolean") return value.toString();
-  if (typeof value === "number") return value.toString();
-  if (typeof value === "string") return value;
+  if (value === null || value === undefined) return 'null';
+  if (typeof value === 'boolean') return value.toString();
+  if (typeof value === 'number') return value.toString();
+  if (typeof value === 'string') return value;
   return JSON.stringify(value);
 };

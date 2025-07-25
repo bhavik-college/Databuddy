@@ -1,7 +1,14 @@
-import { createAuthClient } from "better-auth/react"
-import { customSessionClient, twoFactorClient, emailOTPClient, magicLinkClient, multiSessionClient, organizationClient } from "better-auth/client/plugins";
-import type { auth } from "../auth";
-import { ac, owner, admin, member } from "../permissions";
+import {
+  customSessionClient,
+  emailOTPClient,
+  magicLinkClient,
+  multiSessionClient,
+  organizationClient,
+  twoFactorClient,
+} from 'better-auth/client/plugins';
+import { createAuthClient } from 'better-auth/react';
+import type { auth } from '../auth';
+import { ac, admin, member, owner } from '../permissions';
 
 // Define a type for the auth client configuration
 export type AuthClientConfig = {
@@ -11,7 +18,7 @@ export type AuthClientConfig = {
 
 const defaultConfig: AuthClientConfig = {
   baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL as string,
-  debug: process.env.NODE_ENV !== "production",
+  debug: process.env.NODE_ENV !== 'production',
 };
 
 export const authClient = createAuthClient({
@@ -28,7 +35,7 @@ export const authClient = createAuthClient({
         owner,
         admin,
         member,
-      }
+      },
     }),
   ],
 });

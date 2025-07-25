@@ -1,9 +1,15 @@
-"use client";
+'use client';
 
-import { ClockIcon, CrownIcon, TrashIcon, UserIcon, UsersIcon } from "@phosphor-icons/react";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { useState } from "react";
+import {
+  ClockIcon,
+  CrownIcon,
+  TrashIcon,
+  UserIcon,
+  UsersIcon,
+} from '@phosphor-icons/react';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,17 +19,17 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/alert-dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 dayjs.extend(relativeTime);
 
@@ -32,10 +38,18 @@ interface MemberToRemove {
   name: string;
 }
 
-function RoleSelector({ member, onUpdateRole, isUpdatingMember, organizationId }: any) {
-  if (member.role === "owner") {
+function RoleSelector({
+  member,
+  onUpdateRole,
+  isUpdatingMember,
+  organizationId,
+}: any) {
+  if (member.role === 'owner') {
     return (
-      <Badge className="border-amber-200 bg-amber-100 px-2 py-1 text-amber-800" variant="default">
+      <Badge
+        className="border-amber-200 bg-amber-100 px-2 py-1 text-amber-800"
+        variant="default"
+      >
         Owner
       </Badge>
     );
@@ -68,7 +82,9 @@ export function MemberList({
   isUpdatingMember,
   organizationId,
 }: any) {
-  const [memberToRemove, setMemberToRemove] = useState<MemberToRemove | null>(null);
+  const [memberToRemove, setMemberToRemove] = useState<MemberToRemove | null>(
+    null
+  );
 
   const handleRemove = async () => {
     if (!memberToRemove) return;
@@ -97,7 +113,10 @@ export function MemberList({
             >
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12 border border-border/50">
-                  <AvatarImage alt={member.user.name} src={member.user.image || undefined} />
+                  <AvatarImage
+                    alt={member.user.name}
+                    src={member.user.image || undefined}
+                  />
                   <AvatarFallback className="bg-accent font-medium text-sm">
                     {member.user.name.charAt(0).toUpperCase()}
                   </AvatarFallback>
@@ -105,11 +124,13 @@ export function MemberList({
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="font-medium">{member.user.name}</p>
-                    {member.role === "owner" && (
+                    {member.role === 'owner' && (
                       <CrownIcon className="h-4 w-4 text-amber-500" size={16} />
                     )}
                   </div>
-                  <p className="text-muted-foreground text-sm">{member.user.email}</p>
+                  <p className="text-muted-foreground text-sm">
+                    {member.user.email}
+                  </p>
                   <p className="mt-1 flex items-center gap-1 text-muted-foreground text-xs">
                     <ClockIcon className="h-3 w-3" size={16} />
                     Joined {dayjs(member.createdAt).fromNow()}
@@ -123,11 +144,16 @@ export function MemberList({
                   onUpdateRole={onUpdateRole}
                   organizationId={organizationId}
                 />
-                {member.role !== "owner" && (
+                {member.role !== 'owner' && (
                   <Button
                     className="rounded hover:border-destructive/20 hover:bg-destructive/10 hover:text-destructive"
                     disabled={isRemovingMember}
-                    onClick={() => setMemberToRemove({ id: member.id, name: member.user.name })}
+                    onClick={() =>
+                      setMemberToRemove({
+                        id: member.id,
+                        name: member.user.name,
+                      })
+                    }
                     size="sm"
                     variant="outline"
                   >
@@ -157,8 +183,8 @@ export function MemberList({
           <AlertDialogHeader>
             <AlertDialogTitle>Remove {memberToRemove?.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently remove the member from the
-              organization.
+              This action cannot be undone. This will permanently remove the
+              member from the organization.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

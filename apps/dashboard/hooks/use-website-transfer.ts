@@ -1,19 +1,24 @@
-"use client";
+'use client';
 
-import { trpc } from "@/lib/trpc";
+import { trpc } from '@/lib/trpc';
 
 export function useWebsiteTransfer(organizationId: string) {
   // Fetch personal websites (no organizationId)
-  const { data: personalWebsites, isLoading: isLoadingPersonal } = trpc.websites.list.useQuery({
-    organizationId: undefined,
-  });
+  const { data: personalWebsites, isLoading: isLoadingPersonal } =
+    trpc.websites.list.useQuery({
+      organizationId: undefined,
+    });
 
   // Fetch organization websites
-  const { data: organizationWebsites, isLoading: isLoadingOrg } = trpc.websites.list.useQuery({
-    organizationId,
-  }, {
-    enabled: !!organizationId,
-  });
+  const { data: organizationWebsites, isLoading: isLoadingOrg } =
+    trpc.websites.list.useQuery(
+      {
+        organizationId,
+      },
+      {
+        enabled: !!organizationId,
+      }
+    );
 
   const utils = trpc.useUtils();
 

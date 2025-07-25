@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   AlertCircle,
@@ -10,18 +10,24 @@ import {
   Star,
   ThumbsUp,
   Zap,
-} from "lucide-react";
-import { useState } from "react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+} from 'lucide-react';
+import { useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function UiComponentsPage() {
   const [switchValue, setSwitchValue] = useState(false);
@@ -31,8 +37,12 @@ export default function UiComponentsPage() {
   return (
     <div className="container mx-auto max-w-6xl p-6">
       <div className="mb-6">
-        <h1 className="mb-2 font-bold text-2xl text-foreground">UI Components Testing</h1>
-        <p className="text-muted-foreground">Test and preview UI components and layouts</p>
+        <h1 className="mb-2 font-bold text-2xl text-foreground">
+          UI Components Testing
+        </h1>
+        <p className="text-muted-foreground">
+          Test and preview UI components and layouts
+        </p>
       </div>
 
       <Tabs className="space-y-6" defaultValue="buttons">
@@ -50,7 +60,9 @@ export default function UiComponentsPage() {
                 <Zap className="h-5 w-5" />
                 Button Variants
               </CardTitle>
-              <CardDescription>Different button styles and states</CardDescription>
+              <CardDescription>
+                Different button styles and states
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
@@ -74,7 +86,9 @@ export default function UiComponentsPage() {
               </div>
 
               <div>
-                <h4 className="mb-3 font-medium text-sm">Destructive Buttons</h4>
+                <h4 className="mb-3 font-medium text-sm">
+                  Destructive Buttons
+                </h4>
                 <div className="flex flex-wrap gap-3">
                   <Button variant="destructive">Delete</Button>
                   <Button size="sm" variant="destructive">
@@ -124,7 +138,11 @@ export default function UiComponentsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email-input">Email Input</Label>
-                  <Input id="email-input" placeholder="email@example.com" type="email" />
+                  <Input
+                    id="email-input"
+                    placeholder="email@example.com"
+                    type="email"
+                  />
                 </div>
               </div>
 
@@ -136,7 +154,10 @@ export default function UiComponentsPage() {
                       Receive email notifications for updates
                     </p>
                   </div>
-                  <Switch checked={switchValue} onCheckedChange={setSwitchValue} />
+                  <Switch
+                    checked={switchValue}
+                    onCheckedChange={setSwitchValue}
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -182,7 +203,9 @@ export default function UiComponentsPage() {
                 <AlertCircle className="h-5 w-5" />
                 Feedback Components
               </CardTitle>
-              <CardDescription>Alerts, badges, and status indicators</CardDescription>
+              <CardDescription>
+                Alerts, badges, and status indicators
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
@@ -192,7 +215,9 @@ export default function UiComponentsPage() {
                   <Badge variant="secondary">Secondary</Badge>
                   <Badge variant="outline">Outline</Badge>
                   <Badge variant="destructive">Error</Badge>
-                  <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Success</Badge>
+                  <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+                    Success
+                  </Badge>
                   <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
                     Warning
                   </Badge>
@@ -213,7 +238,9 @@ export default function UiComponentsPage() {
                 <Alert className="border-green-200 bg-green-50 text-green-800">
                   <CheckCircle className="h-4 w-4" />
                   <AlertTitle>Success</AlertTitle>
-                  <AlertDescription>Your changes have been saved successfully.</AlertDescription>
+                  <AlertDescription>
+                    Your changes have been saved successfully.
+                  </AlertDescription>
                 </Alert>
 
                 <Alert className="border-yellow-200 bg-yellow-50 text-yellow-800">
@@ -227,7 +254,9 @@ export default function UiComponentsPage() {
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>Something went wrong. Please try again.</AlertDescription>
+                  <AlertDescription>
+                    Something went wrong. Please try again.
+                  </AlertDescription>
                 </Alert>
               </div>
             </CardContent>
@@ -275,9 +304,15 @@ export default function UiComponentsPage() {
                 <h1 className="font-bold text-3xl">Heading 1</h1>
                 <h2 className="font-semibold text-2xl">Heading 2</h2>
                 <h3 className="font-medium text-xl">Heading 3</h3>
-                <p className="text-base">Regular text paragraph with normal styling.</p>
-                <p className="text-muted-foreground text-sm">Small muted text for descriptions.</p>
-                <code className="rounded bg-muted px-2 py-1 font-mono text-sm">Inline code</code>
+                <p className="text-base">
+                  Regular text paragraph with normal styling.
+                </p>
+                <p className="text-muted-foreground text-sm">
+                  Small muted text for descriptions.
+                </p>
+                <code className="rounded bg-muted px-2 py-1 font-mono text-sm">
+                  Inline code
+                </code>
               </CardContent>
             </Card>
           </div>

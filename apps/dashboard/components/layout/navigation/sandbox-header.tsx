@@ -1,6 +1,6 @@
-import { CaretLeftIcon, TestTubeIcon } from "@phosphor-icons/react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { CaretLeftIcon, TestTubeIcon } from '@phosphor-icons/react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export function SandboxHeader() {
   return (
@@ -25,10 +25,16 @@ export function SandboxHeader() {
 
       <div className="rounded-lg border border-border/50 bg-accent/30 px-2 py-2">
         <h2 className="flex items-center truncate font-semibold text-base">
-          <TestTubeIcon className="mr-2 h-5 w-5 text-primary/70" size={64} weight="duotone" />
+          <TestTubeIcon
+            className="mr-2 h-5 w-5 text-primary/70"
+            size={64}
+            weight="duotone"
+          />
           Sandbox
         </h2>
-        <div className="mt-1 truncate pl-6 text-muted-foreground text-xs">Test & Experiment</div>
+        <div className="mt-1 truncate pl-6 text-muted-foreground text-xs">
+          Test & Experiment
+        </div>
       </div>
     </div>
   );

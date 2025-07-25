@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { ArrowClockwise, Warning } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowClockwise, Warning } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface ErrorDisplayProps {
   error?: Error | null;
@@ -21,7 +21,8 @@ export function ErrorDisplay({ error, onRetry }: ErrorDisplayProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground text-sm">
-            An error occurred while fetching your organization data. Please try again.
+            An error occurred while fetching your organization data. Please try
+            again.
           </p>
           {error && (
             <pre className="max-h-[150px] overflow-auto rounded bg-muted p-3 font-mono text-xs">

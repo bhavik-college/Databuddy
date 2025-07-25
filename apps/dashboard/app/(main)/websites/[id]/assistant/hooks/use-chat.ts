@@ -1,28 +1,28 @@
-import { useCallback, useEffect, useRef } from "react";
-import { getChatDB } from "../lib/chat-db";
-import type { Message } from "../types/message";
 import { useAtom } from 'jotai';
+import { useCallback, useEffect, useRef } from 'react';
 import {
-  modelAtom,
-  websiteIdAtom,
-  websiteDataAtom,
   dateRangeAtom,
-  messagesAtom,
   inputValueAtom,
   isLoadingAtom,
   isRateLimitedAtom,
+  messagesAtom,
+  modelAtom,
   scrollAreaRefAtom,
+  websiteDataAtom,
+  websiteIdAtom,
 } from '@/stores/jotai/assistantAtoms';
+import { getChatDB } from '../lib/chat-db';
+import type { Message } from '../types/message';
 
 // StreamingUpdate interface to match API
 interface StreamingUpdate {
-  type: "thinking" | "progress" | "complete" | "error";
+  type: 'thinking' | 'progress' | 'complete' | 'error';
   content: string;
   data?: {
     hasVisualization?: boolean;
     chartType?: string;
     data?: any[];
-    responseType?: "chart" | "text" | "metric";
+    responseType?: 'chart' | 'text' | 'metric';
     metricValue?: string | number;
     metricLabel?: string;
   };
@@ -31,15 +31,15 @@ interface StreamingUpdate {
 
 function generateWelcomeMessage(websiteName?: string): string {
   const examples = [
-    "Show me page views over the last 7 days",
-    "How many visitors did I have yesterday?",
-    "What are my top traffic sources?",
+    'Show me page views over the last 7 days',
+    'How many visitors did I have yesterday?',
+    'What are my top traffic sources?',
     "What's my current bounce rate?",
-    "How is my mobile vs desktop traffic?",
-    "Show me traffic by country",
+    'How is my mobile vs desktop traffic?',
+    'Show me traffic by country',
   ];
 
-  return `Hello! I'm Nova, your AI analytics partner for ${websiteName || "your website"}. I can help you understand your data with charts, single metrics, or detailed answers. Try asking me questions like:\n\n${examples.map((prompt: string) => `• "${prompt}"`).join("\n")}\n\nI'll automatically choose the best way to present your data - whether it's a chart, a single number, or a detailed explanation.`;
+  return `Hello! I'm Nova, your AI analytics partner for ${websiteName || 'your website'}. I can help you understand your data with charts, single metrics, or detailed answers. Try asking me questions like:\n\n${examples.map((prompt: string) => `• "${prompt}"`).join('\n')}\n\nI'll automatically choose the best way to present your data - whether it's a chart, a single number, or a detailed explanation.`;
 }
 
 export function useChat() {
@@ -68,8 +68,8 @@ export function useChat() {
           if (existingMessages.length === 0) {
             // No existing chat, create welcome message
             const welcomeMessage: Message = {
-              id: "1",
-              type: "assistant",
+              id: '1',
+              type: 'assistant',
               content: generateWelcomeMessage(websiteData?.name || ''),
               timestamp: new Date(),
             };
@@ -83,16 +83,19 @@ export function useChat() {
           }
 
           // Update chat metadata
-          await chatDB.createOrUpdateChat(websiteId || '', websiteData?.name || '');
+          await chatDB.createOrUpdateChat(
+            websiteId || '',
+            websiteData?.name || ''
+          );
         }
       } catch (error) {
-        console.error("Failed to initialize chat from IndexedDB:", error);
+        console.error('Failed to initialize chat from IndexedDB:', error);
 
         // Fallback to welcome message in memory only
         if (isMounted) {
           const welcomeMessage: Message = {
-            id: "1",
-            type: "assistant",
+            id: '1',
+            type: 'assistant',
             content: generateWelcomeMessage(websiteData?.name || ''),
             timestamp: new Date(),
           };
@@ -112,7 +115,7 @@ export function useChat() {
     setTimeout(() => {
       if (scrollAreaRef?.current) {
         const scrollContainer = scrollAreaRef.current.querySelector(
-          "[data-radix-scroll-area-viewport]"
+          '[data-radix-scroll-area-viewport]'
         );
         if (scrollContainer) {
           scrollContainer.scrollTop = scrollContainer.scrollHeight;
@@ -144,7 +147,7 @@ export function useChat() {
 
       const userMessage: Message = {
         id: Date.now().toString(),
-        type: "user",
+        type: 'user',
         content: messageContent,
         timestamp: new Date(),
       };
@@ -153,18 +156,18 @@ export function useChat() {
       try {
         await chatDB.saveMessage(userMessage, websiteId || '');
       } catch (error) {
-        console.error("Failed to save user message to IndexedDB:", error);
+        console.error('Failed to save user message to IndexedDB:', error);
       }
 
       setMessages((prev) => [...prev, userMessage]);
-      setInputValue("");
+      setInputValue('');
       setIsLoading(true);
 
       const assistantId = (Date.now() + 1).toString();
       const assistantMessage: Message = {
         id: assistantId,
-        type: "assistant",
-        content: "",
+        type: 'assistant',
+        content: '',
         timestamp: new Date(),
         hasVisualization: false,
         thinkingSteps: [],
@@ -174,34 +177,37 @@ export function useChat() {
 
       try {
         // Stream the AI response using the new single endpoint
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/assistant/stream`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Website-Id": websiteId || '',
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            message: messageContent,
-            website_id: websiteId || '',
-            model: model,
-            context: { previousMessages: messages },
-          }),
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/assistant/stream`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Website-Id': websiteId || '',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              message: messageContent,
+              website_id: websiteId || '',
+              model,
+              context: { previousMessages: messages },
+            }),
+          }
+        );
 
         if (!response.ok) {
           // Handle rate limit specifically
           if (response.status === 429) {
             const errorData = await response.json();
-            if (errorData.code === "RATE_LIMIT_EXCEEDED") {
+            if (errorData.code === 'RATE_LIMIT_EXCEEDED') {
               setMessages((prev) =>
                 prev.map((msg) =>
                   msg.id === assistantId
                     ? {
-                      ...msg,
-                      content:
-                        "⏱️ You've reached the rate limit. Please wait 60 seconds before sending another message.",
-                    }
+                        ...msg,
+                        content:
+                          "⏱️ You've reached the rate limit. Please wait 60 seconds before sending another message.",
+                      }
                     : msg
                 )
               );
@@ -221,12 +227,12 @@ export function useChat() {
               return;
             }
           }
-          throw new Error("Failed to start stream");
+          throw new Error('Failed to start stream');
         }
 
         const reader = response.body?.getReader();
         if (!reader) {
-          throw new Error("No response stream available");
+          throw new Error('No response stream available');
         }
 
         try {
@@ -235,46 +241,49 @@ export function useChat() {
             if (done) break;
 
             const chunk = new TextDecoder().decode(value);
-            const lines = chunk.split("\n");
+            const lines = chunk.split('\n');
 
             for (const line of lines) {
-              if (line.startsWith("data: ")) {
+              if (line.startsWith('data: ')) {
                 try {
                   const update: StreamingUpdate = JSON.parse(line.slice(6));
 
-                  if (update.type === "thinking") {
+                  if (update.type === 'thinking') {
                     setMessages((prev) =>
                       prev.map((msg) =>
                         msg.id === assistantId
                           ? {
-                            ...msg,
-                            thinkingSteps: [...(msg.thinkingSteps || []), update.content],
-                          }
+                              ...msg,
+                              thinkingSteps: [
+                                ...(msg.thinkingSteps || []),
+                                update.content,
+                              ],
+                            }
                           : msg
                       )
                     );
-                  } else if (update.type === "progress") {
+                  } else if (update.type === 'progress') {
                     setMessages((prev) =>
                       prev.map((msg) =>
                         msg.id === assistantId
                           ? {
-                            ...msg,
-                            content: update.content,
-                            hasVisualization: update.data?.hasVisualization,
-                            chartType: update.data?.chartType as any,
-                            data: update.data?.data,
-                            responseType: update.data?.responseType,
-                            metricValue: update.data?.metricValue,
-                            metricLabel: update.data?.metricLabel,
-                          }
+                              ...msg,
+                              content: update.content,
+                              hasVisualization: update.data?.hasVisualization,
+                              chartType: update.data?.chartType as any,
+                              data: update.data?.data,
+                              responseType: update.data?.responseType,
+                              metricValue: update.data?.metricValue,
+                              metricLabel: update.data?.metricLabel,
+                            }
                           : msg
                       )
                     );
                     scrollToBottom();
-                  } else if (update.type === "complete") {
+                  } else if (update.type === 'complete') {
                     const completedMessage = {
                       id: assistantId,
-                      type: "assistant" as const,
+                      type: 'assistant' as const,
                       content: update.content,
                       timestamp: new Date(),
                       hasVisualization: update.data?.hasVisualization,
@@ -288,32 +297,40 @@ export function useChat() {
 
                     // Save completed assistant message to IndexedDB
                     try {
-                      await chatDB.saveMessage(completedMessage, websiteId || '');
+                      await chatDB.saveMessage(
+                        completedMessage,
+                        websiteId || ''
+                      );
                     } catch (error) {
-                      console.error("Failed to save assistant message to IndexedDB:", error);
+                      console.error(
+                        'Failed to save assistant message to IndexedDB:',
+                        error
+                      );
                     }
 
                     setMessages((prev) =>
-                      prev.map((msg) => (msg.id === assistantId ? completedMessage : msg))
+                      prev.map((msg) =>
+                        msg.id === assistantId ? completedMessage : msg
+                      )
                     );
                     scrollToBottom();
                     break;
-                  } else if (update.type === "error") {
+                  } else if (update.type === 'error') {
                     setMessages((prev) =>
                       prev.map((msg) =>
                         msg.id === assistantId
                           ? {
-                            ...msg,
-                            content: update.content,
-                            debugInfo: update.debugInfo,
-                          }
+                              ...msg,
+                              content: update.content,
+                              debugInfo: update.debugInfo,
+                            }
                           : msg
                       )
                     );
                     break;
                   }
                 } catch (parseError) {
-                  console.warn("Failed to parse SSE data:", line);
+                  console.warn('Failed to parse SSE data:', line);
                 }
               }
             }
@@ -322,15 +339,15 @@ export function useChat() {
           reader.releaseLock();
         }
       } catch (error) {
-        console.error("Failed to get AI response:", error);
+        console.error('Failed to get AI response:', error);
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === assistantId
               ? {
-                ...msg,
-                content:
-                  "I apologize, but I'm having trouble processing your request right now. Please try again in a moment.",
-              }
+                  ...msg,
+                  content:
+                    "I apologize, but I'm having trouble processing your request right now. Please try again in a moment.",
+                }
               : msg
           )
         );
@@ -352,7 +369,7 @@ export function useChat() {
 
   const handleKeyPress = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === "Enter" && !e.shiftKey) {
+      if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         sendMessage();
       }
@@ -367,8 +384,8 @@ export function useChat() {
 
       // Create new welcome message
       const welcomeMessage: Message = {
-        id: "1",
-        type: "assistant",
+        id: '1',
+        type: 'assistant',
         content: generateWelcomeMessage(websiteData?.name || ''),
         timestamp: new Date(),
       };
@@ -379,19 +396,19 @@ export function useChat() {
       // Update state
       setMessages([welcomeMessage]);
     } catch (error) {
-      console.error("Failed to reset chat in IndexedDB:", error);
+      console.error('Failed to reset chat in IndexedDB:', error);
 
       // Fallback to memory-only reset
       const welcomeMessage: Message = {
-        id: "1",
-        type: "assistant",
+        id: '1',
+        type: 'assistant',
         content: generateWelcomeMessage(websiteData?.name || ''),
         timestamp: new Date(),
       };
       setMessages([welcomeMessage]);
     }
 
-    setInputValue("");
+    setInputValue('');
     setIsRateLimited(false);
     setIsLoading(false);
 
@@ -399,7 +416,15 @@ export function useChat() {
     if (rateLimitTimeoutRef.current) {
       clearTimeout(rateLimitTimeoutRef.current);
     }
-  }, [websiteData?.name, websiteId, chatDB, setMessages, setInputValue, setIsRateLimited, setIsLoading]);
+  }, [
+    websiteData?.name,
+    websiteId,
+    chatDB,
+    setMessages,
+    setInputValue,
+    setIsRateLimited,
+    setIsLoading,
+  ]);
 
   return {
     messages,

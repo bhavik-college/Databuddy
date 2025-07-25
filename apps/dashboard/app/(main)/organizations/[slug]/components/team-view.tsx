@@ -1,16 +1,32 @@
-"use client";
+'use client';
 
-import { CrownIcon, EnvelopeIcon, PlusIcon, UsersIcon } from "@phosphor-icons/react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useOrganizationInvitations, useOrganizationMembers } from "@/hooks/use-organizations";
-import { InvitationList } from "./invitation-list";
-import { InviteMemberDialog } from "./invite-member-dialog";
+import {
+  CrownIcon,
+  EnvelopeIcon,
+  PlusIcon,
+  UsersIcon,
+} from '@phosphor-icons/react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  useOrganizationInvitations,
+  useOrganizationMembers,
+} from '@/hooks/use-organizations';
+import { InvitationList } from './invitation-list';
+import { InviteMemberDialog } from './invite-member-dialog';
 // Import sub-components that will be created next
-import { MemberList } from "./member-list";
+import { MemberList } from './member-list';
 
-const StatCard = ({ icon: Icon, label, value }: { icon: any; label: string; value: number }) => (
+const StatCard = ({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: any;
+  label: string;
+  value: number;
+}) => (
   <div className="rounded border border-border/50 bg-muted/30 p-4">
     <div className="flex items-center gap-3">
       <div className="rounded border border-primary/20 bg-primary/10 p-2">
@@ -75,15 +91,28 @@ export function TeamView({ organization }: { organization: any }) {
     );
   }
 
-  const activeInvitations = invitations?.filter((inv) => inv.status === "pending") || [];
+  const activeInvitations =
+    invitations?.filter((inv) => inv.status === 'pending') || [];
   const totalMembers = (members?.length || 0) + activeInvitations.length;
 
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <StatCard icon={UsersIcon} label="Active Members" value={members?.length || 0} />
-        <StatCard icon={EnvelopeIcon} label="Pending Invites" value={activeInvitations.length} />
-        <StatCard icon={CrownIcon} label="Total Team Size" value={totalMembers} />
+        <StatCard
+          icon={UsersIcon}
+          label="Active Members"
+          value={members?.length || 0}
+        />
+        <StatCard
+          icon={EnvelopeIcon}
+          label="Pending Invites"
+          value={activeInvitations.length}
+        />
+        <StatCard
+          icon={CrownIcon}
+          label="Total Team Size"
+          value={totalMembers}
+        />
       </div>
 
       <div className="flex justify-end">

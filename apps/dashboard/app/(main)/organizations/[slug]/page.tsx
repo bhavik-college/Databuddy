@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   BuildingsIcon,
@@ -7,26 +7,33 @@ import {
   CheckIcon,
   GearIcon,
   UsersIcon,
-} from "@phosphor-icons/react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useQueryState } from "nuqs";
-import { Suspense } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useOrganizations } from "@/hooks/use-organizations";
-import { getOrganizationInitials } from "@/lib/utils";
-import { OrganizationPageSkeleton } from "./components/organization-page-skeleton";
-import { OverviewTab } from "./components/overview-tab";
-import { SettingsTab } from "./components/settings-tab";
-import { TeamsTab } from "./components/teams-tab";
+} from '@phosphor-icons/react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useQueryState } from 'nuqs';
+import { Suspense } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useOrganizations } from '@/hooks/use-organizations';
+import { getOrganizationInitials } from '@/lib/utils';
+import { OrganizationPageSkeleton } from './components/organization-page-skeleton';
+import { OverviewTab } from './components/overview-tab';
+import { SettingsTab } from './components/settings-tab';
+import { TeamsTab } from './components/teams-tab';
 
-function SetActiveButton({ onSetActive, isSettingActive, isCurrentlyActive }: any) {
+function SetActiveButton({
+  onSetActive,
+  isSettingActive,
+  isCurrentlyActive,
+}: any) {
   if (isCurrentlyActive) {
     return (
-      <Badge className="border-primary/20 bg-primary/10 text-primary" variant="secondary">
+      <Badge
+        className="border-primary/20 bg-primary/10 text-primary"
+        variant="secondary"
+      >
         <CheckIcon className="mr-1 h-3 w-3" size={16} />
         Active Workspace
       </Badge>
@@ -34,7 +41,12 @@ function SetActiveButton({ onSetActive, isSettingActive, isCurrentlyActive }: an
   }
 
   return (
-    <Button className="rounded" disabled={isSettingActive} onClick={onSetActive} size="sm">
+    <Button
+      className="rounded"
+      disabled={isSettingActive}
+      onClick={onSetActive}
+      size="sm"
+    >
       {isSettingActive ? (
         <>
           <div className="mr-2 h-3 w-3 animate-spin rounded-full border border-primary-foreground/30 border-t-primary-foreground" />
@@ -50,13 +62,21 @@ function SetActiveButton({ onSetActive, isSettingActive, isCurrentlyActive }: an
   );
 }
 
-function PageHeader({ organization, isCurrentlyActive, onSetActive, isSettingActive }: any) {
+function PageHeader({
+  organization,
+  isCurrentlyActive,
+  onSetActive,
+  isSettingActive,
+}: any) {
   return (
     <div className="rounded border border-border/50 bg-muted/30 p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16 border border-border/50">
-            <AvatarImage alt={organization.name} src={organization.logo || undefined} />
+            <AvatarImage
+              alt={organization.name}
+              src={organization.logo || undefined}
+            />
             <AvatarFallback className="bg-accent font-medium text-lg">
               {getOrganizationInitials(organization.name)}
             </AvatarFallback>
@@ -66,7 +86,8 @@ function PageHeader({ organization, isCurrentlyActive, onSetActive, isSettingAct
               <h1 className="font-bold text-2xl">{organization.name}</h1>
             </div>
             <p className="text-muted-foreground text-sm">
-              {organization.slug} • Created {new Date(organization.createdAt).toLocaleDateString()}
+              {organization.slug} • Created{' '}
+              {new Date(organization.createdAt).toLocaleDateString()}
             </p>
           </div>
         </div>
@@ -85,11 +106,16 @@ function OrganizationNotFound() {
     <div className="py-12 text-center">
       <div className="mx-auto max-w-md rounded border border-border/50 bg-muted/30 p-6">
         <div className="mx-auto mb-4 w-fit rounded-full border border-destructive/20 bg-destructive/10 p-4">
-          <BuildingsIcon className="h-8 w-8 text-destructive" size={32} weight="duotone" />
+          <BuildingsIcon
+            className="h-8 w-8 text-destructive"
+            size={32}
+            weight="duotone"
+          />
         </div>
         <h3 className="mb-2 font-semibold text-lg">Organization Not Found</h3>
         <p className="mb-6 text-muted-foreground text-sm">
-          The organization you're looking for doesn't exist or you don't have access to it.
+          The organization you're looking for doesn't exist or you don't have
+          access to it.
         </p>
         <Button asChild className="rounded">
           <Link href="/organizations">
@@ -107,11 +133,18 @@ function ErrorDisplay({ onRetry, error }: any) {
     <div className="py-12 text-center">
       <div className="mx-auto max-w-md rounded border border-border/50 bg-muted/30 p-6">
         <div className="mx-auto mb-4 w-fit rounded-full border border-destructive/20 bg-destructive/10 p-4">
-          <BuildingsIcon className="h-8 w-8 text-destructive" size={32} weight="duotone" />
+          <BuildingsIcon
+            className="h-8 w-8 text-destructive"
+            size={32}
+            weight="duotone"
+          />
         </div>
-        <h3 className="mb-2 font-semibold text-destructive text-lg">Failed to load organization</h3>
+        <h3 className="mb-2 font-semibold text-destructive text-lg">
+          Failed to load organization
+        </h3>
         <p className="mb-6 text-muted-foreground text-sm">
-          {error?.message || "An error occurred while fetching organization data."}
+          {error?.message ||
+            'An error occurred while fetching organization data.'}
         </p>
         <Button className="rounded" onClick={onRetry}>
           <CaretLeftIcon className="mr-2 h-4 w-4" size={16} />
@@ -125,7 +158,9 @@ function ErrorDisplay({ onRetry, error }: any) {
 export default function OrganizationPage() {
   const params = useParams();
   const slug = params.slug as string;
-  const [activeTab, setActiveTab] = useQueryState("tab", { defaultValue: "overview" });
+  const [activeTab, setActiveTab] = useQueryState('tab', {
+    defaultValue: 'overview',
+  });
 
   const {
     organizations,
@@ -144,7 +179,10 @@ export default function OrganizationPage() {
   if (hasError) {
     return (
       <div className="container mx-auto max-w-6xl px-4 py-6">
-        <ErrorDisplay error={organizationsError} onRetry={() => window.location.reload()} />
+        <ErrorDisplay
+          error={organizationsError}
+          onRetry={() => window.location.reload()}
+        />
       </div>
     );
   }
@@ -191,7 +229,11 @@ export default function OrganizationPage() {
         organization={organization}
       />
 
-      <Tabs className="space-y-4" onValueChange={setActiveTab} value={activeTab}>
+      <Tabs
+        className="space-y-4"
+        onValueChange={setActiveTab}
+        value={activeTab}
+      >
         <div className="relative border-b">
           <TabsList className="h-10 w-full justify-start overflow-x-auto bg-transparent p-0">
             <TabsTrigger
@@ -200,7 +242,7 @@ export default function OrganizationPage() {
             >
               <ChartBarIcon className="mr-1 h-3 w-3" size={16} />
               <span className="hidden sm:inline">Overview</span>
-              {activeTab === "overview" && (
+              {activeTab === 'overview' && (
                 <div className="absolute bottom-0 left-0 h-[2px] w-full rounded bg-primary" />
               )}
             </TabsTrigger>
@@ -210,7 +252,7 @@ export default function OrganizationPage() {
             >
               <UsersIcon className="mr-1 h-3 w-3" size={16} />
               <span className="hidden sm:inline">Teams</span>
-              {activeTab === "teams" && (
+              {activeTab === 'teams' && (
                 <div className="absolute bottom-0 left-0 h-[2px] w-full rounded bg-primary" />
               )}
             </TabsTrigger>
@@ -220,26 +262,35 @@ export default function OrganizationPage() {
             >
               <GearIcon className="mr-1 h-3 w-3" size={16} />
               <span className="hidden sm:inline">Settings</span>
-              {activeTab === "settings" && (
+              {activeTab === 'settings' && (
                 <div className="absolute bottom-0 left-0 h-[2px] w-full rounded bg-primary" />
               )}
             </TabsTrigger>
           </TabsList>
         </div>
 
-        <TabsContent className="animate-fadeIn transition-all duration-200" value="overview">
+        <TabsContent
+          className="animate-fadeIn transition-all duration-200"
+          value="overview"
+        >
           <Suspense fallback={<OrganizationPageSkeleton />}>
             <OverviewTab organization={organization} />
           </Suspense>
         </TabsContent>
 
-        <TabsContent className="animate-fadeIn transition-all duration-200" value="teams">
+        <TabsContent
+          className="animate-fadeIn transition-all duration-200"
+          value="teams"
+        >
           <Suspense fallback={<OrganizationPageSkeleton />}>
             <TeamsTab organization={organization} />
           </Suspense>
         </TabsContent>
 
-        <TabsContent className="animate-fadeIn transition-all duration-200" value="settings">
+        <TabsContent
+          className="animate-fadeIn transition-all duration-200"
+          value="settings"
+        >
           <Suspense fallback={<OrganizationPageSkeleton />}>
             <SettingsTab organization={organization} />
           </Suspense>

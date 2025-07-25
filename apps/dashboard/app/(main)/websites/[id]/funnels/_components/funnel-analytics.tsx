@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ArrowClockwiseIcon,
@@ -7,10 +7,10 @@ import {
   TargetIcon,
   TrendDownIcon,
   UsersIcon,
-} from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
-import { FunnelFlow } from "./funnel-flow";
-import type { FunnelAnalyticsData } from "@/types/funnels";
+} from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
+import type { FunnelAnalyticsData } from '@/types/funnels';
+import { FunnelFlow } from './funnel-flow';
 
 interface FunnelAnalyticsProps {
   isLoading: boolean;
@@ -60,7 +60,10 @@ export function FunnelAnalytics({
           </div>
           <div className="space-y-2">
             {[...Array(3)].map((_, i) => (
-              <div className="animate-pulse space-y-1" key={`funnel-step-skeleton-${i + 1}`}>
+              <div
+                className="animate-pulse space-y-1"
+                key={`funnel-step-skeleton-${i + 1}`}
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="h-5 w-5 rounded-full bg-muted" />
@@ -82,13 +85,26 @@ export function FunnelAnalytics({
       <div className="py-4">
         <div className="flex items-center justify-between rounded border bg-destructive/5 p-3">
           <div className="flex items-center gap-2">
-            <TrendDownIcon className="h-4 w-4 text-destructive" size={14} weight="duotone" />
+            <TrendDownIcon
+              className="h-4 w-4 text-destructive"
+              size={14}
+              weight="duotone"
+            />
             <div>
-              <div className="text-sm font-medium text-destructive">Error loading analytics</div>
-              <div className="text-xs text-muted-foreground">{error.message}</div>
+              <div className="font-medium text-destructive text-sm">
+                Error loading analytics
+              </div>
+              <div className="text-muted-foreground text-xs">
+                {error.message}
+              </div>
             </div>
           </div>
-          <Button className="h-7 gap-1 rounded" onClick={onRetry} size="sm" variant="outline">
+          <Button
+            className="h-7 gap-1 rounded"
+            onClick={onRetry}
+            size="sm"
+            variant="outline"
+          >
             <ArrowClockwiseIcon className="h-3 w-3" size={12} weight="fill" />
             Retry
           </Button>
@@ -106,41 +122,47 @@ export function FunnelAnalytics({
       {/* Summary Stats */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <ChartBarIcon className="h-4 w-4 text-primary" size={14} weight="duotone" />
-          <h3 className="text-sm font-semibold text-foreground">Performance</h3>
+          <ChartBarIcon
+            className="h-4 w-4 text-primary"
+            size={14}
+            weight="duotone"
+          />
+          <h3 className="font-semibold text-foreground text-sm">Performance</h3>
         </div>
         <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
           <div className="rounded border bg-card p-3">
             <div className="mb-1 flex items-center gap-2">
               <UsersIcon className="text-muted-foreground" size={12} />
-              <span className="text-xs text-muted-foreground">Users</span>
+              <span className="text-muted-foreground text-xs">Users</span>
             </div>
-            <div className="text-sm font-semibold">{data.total_users_entered.toLocaleString()}</div>
+            <div className="font-semibold text-sm">
+              {data.total_users_entered.toLocaleString()}
+            </div>
           </div>
           <div className="rounded border bg-card p-3">
             <div className="mb-1 flex items-center gap-2">
               <TargetIcon className="text-muted-foreground" size={12} />
-              <span className="text-xs text-muted-foreground">Conversion</span>
+              <span className="text-muted-foreground text-xs">Conversion</span>
             </div>
-            <div className="text-sm font-semibold text-primary">
+            <div className="font-semibold text-primary text-sm">
               {data.overall_conversion_rate.toFixed(1)}%
             </div>
           </div>
           <div className="rounded border bg-card p-3">
             <div className="mb-1 flex items-center gap-2">
               <ClockIcon className="text-muted-foreground" size={12} />
-              <span className="text-xs text-muted-foreground">Avg Time</span>
+              <span className="text-muted-foreground text-xs">Avg Time</span>
             </div>
-            <div className="text-sm font-semibold">
+            <div className="font-semibold text-sm">
               {formatCompletionTime(data.avg_completion_time)}
             </div>
           </div>
           <div className="rounded border bg-card p-3">
             <div className="mb-1 flex items-center gap-2">
               <TrendDownIcon className="text-muted-foreground" size={12} />
-              <span className="text-xs text-muted-foreground">Drop-off</span>
+              <span className="text-muted-foreground text-xs">Drop-off</span>
             </div>
-            <div className="text-sm font-semibold text-destructive">
+            <div className="font-semibold text-destructive text-sm">
               {data.biggest_dropoff_rate.toFixed(1)}%
             </div>
           </div>

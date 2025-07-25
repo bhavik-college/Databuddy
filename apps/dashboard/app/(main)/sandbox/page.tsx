@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 export default function SandboxPage() {
   return (
@@ -16,23 +16,36 @@ export default function SandboxPage() {
           <p className="mb-4 text-muted-foreground">
             Track mentions of your brand or keywords across Reddit
           </p>
-          <a className="text-primary hover:underline" href="/sandbox/reddit-mentions">
+          <a
+            className="text-primary hover:underline"
+            href="/sandbox/reddit-mentions"
+          >
             View Test →
           </a>
         </div>
 
         <div className="rounded-lg border p-6 transition-shadow hover:shadow-md">
           <h3 className="mb-2 font-semibold text-lg">API Testing</h3>
-          <p className="mb-4 text-muted-foreground">Test API endpoints and data structures</p>
-          <a className="text-primary hover:underline" href="/sandbox/api-testing">
+          <p className="mb-4 text-muted-foreground">
+            Test API endpoints and data structures
+          </p>
+          <a
+            className="text-primary hover:underline"
+            href="/sandbox/api-testing"
+          >
             View Test →
           </a>
         </div>
 
         <div className="rounded-lg border p-6 transition-shadow hover:shadow-md">
           <h3 className="mb-2 font-semibold text-lg">UI Components</h3>
-          <p className="mb-4 text-muted-foreground">Test new UI components and layouts</p>
-          <a className="text-primary hover:underline" href="/sandbox/ui-components">
+          <p className="mb-4 text-muted-foreground">
+            Test new UI components and layouts
+          </p>
+          <a
+            className="text-primary hover:underline"
+            href="/sandbox/ui-components"
+          >
             View Test →
           </a>
         </div>

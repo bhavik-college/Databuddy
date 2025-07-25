@@ -1,37 +1,48 @@
-"use client";
+'use client';
 
 import {
   loginWithEmail,
   loginWithGithub,
   loginWithGoogle,
   registerWithEmail,
-} from "@databuddy/auth/client";
-import { Github, Loader2, Mail } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+} from '@databuddy/auth/client';
+import { Github, Loader2, Mail } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 export type AuthFormProps = {
-  view: "signIn" | "signUp" | "forgotPassword" | "resetPassword" | "verifyEmail" | "verifyPassword";
+  view:
+    | 'signIn'
+    | 'signUp'
+    | 'forgotPassword'
+    | 'resetPassword'
+    | 'verifyEmail'
+    | 'verifyPassword';
   redirectTo?: string;
   callbackURL?: string;
   className?: string;
 };
 
-export function AuthForm({ view, redirectTo, callbackURL, className }: AuthFormProps) {
+export function AuthForm({
+  view,
+  redirectTo,
+  callbackURL,
+  className,
+}: AuthFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    code: "",
-    name: "",
+    email: '',
+    password: '',
+    confirmPassword: '',
+    code: '',
+    name: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,48 +55,53 @@ export function AuthForm({ view, redirectTo, callbackURL, className }: AuthFormP
     setIsLoading(true);
 
     try {
-      if (view === "signIn") {
+      if (view === 'signIn') {
         const result = await loginWithEmail(formData.email, formData.password, {
           redirectUrl: redirectTo,
           router,
           onError: (error) => {
-            toast.error("Invalid credentials");
+            toast.error('Invalid credentials');
           },
         });
 
         if (!result.error) {
-          toast.success("Logged in successfully");
+          toast.success('Logged in successfully');
         }
-      } else if (view === "signUp") {
+      } else if (view === 'signUp') {
         if (formData.password !== formData.confirmPassword) {
-          toast.error("Passwords do not match");
+          toast.error('Passwords do not match');
           return;
         }
 
-        const result = await registerWithEmail(formData.email, formData.password, formData.name, {
-          redirectUrl: redirectTo,
-          router,
-          onError: (error) => {
-            toast.error("Failed to create account");
-          },
-        });
+        const result = await registerWithEmail(
+          formData.email,
+          formData.password,
+          formData.name,
+          {
+            redirectUrl: redirectTo,
+            router,
+            onError: (error) => {
+              toast.error('Failed to create account');
+            },
+          }
+        );
 
         if (!result.error) {
-          toast.success("Account created successfully");
+          toast.success('Account created successfully');
         }
       }
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error('Something went wrong');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSocialSignIn = async (provider: "github" | "google") => {
+  const handleSocialSignIn = async (provider: 'github' | 'google') => {
     setIsLoading(true);
     try {
       const result =
-        provider === "github"
+        provider === 'github'
           ? await loginWithGithub({ redirectUrl: redirectTo, router })
           : await loginWithGoogle({ redirectUrl: redirectTo, router });
 
@@ -93,22 +109,22 @@ export function AuthForm({ view, redirectTo, callbackURL, className }: AuthFormP
         toast.error(`Failed to sign in with ${provider}`);
       }
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error('Something went wrong');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className={cn("space-y-4", className)}>
-      {(view === "signIn" || view === "signUp") && (
+    <div className={cn('space-y-4', className)}>
+      {(view === 'signIn' || view === 'signUp') && (
         <>
           <div className="grid grid-cols-2 gap-4">
             <Button
               aria-label="Sign in with Github"
               className="group relative cursor-pointer border-slate-600 bg-slate-700/50 text-slate-100 transition-colors duration-200 hover:bg-slate-700/80 hover:text-white"
               disabled={isLoading}
-              onClick={() => handleSocialSignIn("github")}
+              onClick={() => handleSocialSignIn('github')}
               variant="outline"
             >
               <Github className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
@@ -118,7 +134,7 @@ export function AuthForm({ view, redirectTo, callbackURL, className }: AuthFormP
               aria-label="Sign in with Google"
               className="group relative cursor-pointer border-slate-600 bg-slate-700/50 text-slate-100 transition-colors duration-200 hover:bg-slate-700/80 hover:text-white"
               disabled={isLoading}
-              onClick={() => handleSocialSignIn("google")}
+              onClick={() => handleSocialSignIn('google')}
               variant="outline"
             >
               <Mail className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
@@ -130,14 +146,16 @@ export function AuthForm({ view, redirectTo, callbackURL, className }: AuthFormP
               <Separator className="w-full" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-slate-800 px-2 text-slate-400">Or continue with email</span>
+              <span className="bg-slate-800 px-2 text-slate-400">
+                Or continue with email
+              </span>
             </div>
           </div>
         </>
       )}
 
       <form className="space-y-4" onSubmit={handleSubmit}>
-        {view === "signUp" && (
+        {view === 'signUp' && (
           <div className="space-y-2">
             <Label className="text-white" htmlFor="name">
               Full name
@@ -177,13 +195,15 @@ export function AuthForm({ view, redirectTo, callbackURL, className }: AuthFormP
           />
         </div>
 
-        {(view === "signIn" || view === "signUp" || view === "resetPassword") && (
+        {(view === 'signIn' ||
+          view === 'signUp' ||
+          view === 'resetPassword') && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label className="text-white" htmlFor="password">
                 Password
               </Label>
-              {view === "signIn" && (
+              {view === 'signIn' && (
                 <a
                   className="rounded text-sky-400 text-xs transition-colors duration-200 hover:text-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-400/20 focus:ring-offset-2 focus:ring-offset-slate-800"
                   href="/forgot-password"
@@ -194,7 +214,9 @@ export function AuthForm({ view, redirectTo, callbackURL, className }: AuthFormP
             </div>
             <Input
               aria-label="Password"
-              autoComplete={view === "signIn" ? "current-password" : "new-password"}
+              autoComplete={
+                view === 'signIn' ? 'current-password' : 'new-password'
+              }
               className="border-slate-600 bg-slate-700/50 text-white transition-colors duration-200 placeholder:text-slate-400 focus:border-sky-400 focus:ring-sky-400/10"
               disabled={isLoading}
               id="password"
@@ -207,7 +229,7 @@ export function AuthForm({ view, redirectTo, callbackURL, className }: AuthFormP
           </div>
         )}
 
-        {view === "signUp" && (
+        {view === 'signUp' && (
           <div className="space-y-2">
             <Label className="text-white" htmlFor="confirmPassword">
               Confirm password
@@ -227,7 +249,7 @@ export function AuthForm({ view, redirectTo, callbackURL, className }: AuthFormP
           </div>
         )}
 
-        {(view === "verifyEmail" || view === "verifyPassword") && (
+        {(view === 'verifyEmail' || view === 'verifyPassword') && (
           <div className="space-y-2">
             <Label className="text-white" htmlFor="code">
               Verification code
@@ -248,7 +270,13 @@ export function AuthForm({ view, redirectTo, callbackURL, className }: AuthFormP
         )}
 
         <Button
-          aria-label={isLoading ? "Processing..." : view === "signIn" ? "Sign in" : "Sign up"}
+          aria-label={
+            isLoading
+              ? 'Processing...'
+              : view === 'signIn'
+                ? 'Sign in'
+                : 'Sign up'
+          }
           className="w-full bg-sky-500 text-white transition-colors duration-200 hover:bg-sky-600 focus:ring-2 focus:ring-sky-400/20 focus:ring-offset-2 focus:ring-offset-slate-800"
           disabled={isLoading}
           type="submit"
@@ -258,10 +286,10 @@ export function AuthForm({ view, redirectTo, callbackURL, className }: AuthFormP
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Processing...
             </>
-          ) : view === "signIn" ? (
-            "Sign in"
+          ) : view === 'signIn' ? (
+            'Sign in'
           ) : (
-            "Sign up"
+            'Sign up'
           )}
         </Button>
       </form>

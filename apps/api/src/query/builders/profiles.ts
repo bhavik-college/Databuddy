@@ -1,9 +1,20 @@
-import type { SimpleQueryConfig } from "../types";
-import { Analytics } from "../../types/tables";
+import { Analytics } from '../../types/tables';
+import type { SimpleQueryConfig } from '../types';
 
-export const ProfilesBuilders: Record<string, SimpleQueryConfig<typeof Analytics.events>> = {
+export const ProfilesBuilders: Record<
+  string,
+  SimpleQueryConfig<typeof Analytics.events>
+> = {
   profile_list: {
-    customSql: (websiteId: string, startDate: string, endDate: string, filters?: any[], granularity?: any, limit?: number, offset?: number) => ({
+    customSql: (
+      websiteId: string,
+      startDate: string,
+      endDate: string,
+      filters?: any[],
+      granularity?: any,
+      limit?: number,
+      offset?: number
+    ) => ({
       sql: `
     WITH visitor_profiles AS (
       SELECT
@@ -106,11 +117,17 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig<typeof Analytics
         endDate: `${endDate} 23:59:59`,
         limit: limit || 25,
         offset: offset || 0,
-      }
+      },
     }),
     timeField: 'time',
-    allowedFilters: ['path', 'referrer', 'device_type', 'browser_name', 'country'],
-    customizable: true
+    allowedFilters: [
+      'path',
+      'referrer',
+      'device_type',
+      'browser_name',
+      'country',
+    ],
+    customizable: true,
   },
 
   profile_metrics: {
@@ -119,34 +136,40 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig<typeof Analytics
       'COUNT(DISTINCT anonymous_id) as total_visitors',
       'COUNT(DISTINCT session_id) as total_sessions',
       'AVG(CASE WHEN time_on_page > 0 THEN time_on_page / 1000 ELSE NULL END) as avg_session_duration',
-      'COUNT(*) as total_events'
+      'COUNT(*) as total_events',
     ],
-    where: ['event_name = \'screen_view\''],
+    where: ["event_name = 'screen_view'"],
     timeField: 'time',
-    allowedFilters: ['path', 'referrer', 'device_type', 'browser_name', 'country'],
-    customizable: true
+    allowedFilters: [
+      'path',
+      'referrer',
+      'device_type',
+      'browser_name',
+      'country',
+    ],
+    customizable: true,
   },
 
   profile_duration_distribution: {
     table: Analytics.events,
     fields: [
       'CASE ' +
-      'WHEN time_on_page < 30 THEN \'0-30s\' ' +
-      'WHEN time_on_page < 60 THEN \'30s-1m\' ' +
-      'WHEN time_on_page < 300 THEN \'1m-5m\' ' +
-      'WHEN time_on_page < 900 THEN \'5m-15m\' ' +
-      'WHEN time_on_page < 3600 THEN \'15m-1h\' ' +
-      'ELSE \'1h+\' ' +
-      'END as duration_range',
+        "WHEN time_on_page < 30 THEN '0-30s' " +
+        "WHEN time_on_page < 60 THEN '30s-1m' " +
+        "WHEN time_on_page < 300 THEN '1m-5m' " +
+        "WHEN time_on_page < 900 THEN '5m-15m' " +
+        "WHEN time_on_page < 3600 THEN '15m-1h' " +
+        "ELSE '1h+' " +
+        'END as duration_range',
       'COUNT(DISTINCT anonymous_id) as visitors',
-      'COUNT(DISTINCT session_id) as sessions'
+      'COUNT(DISTINCT session_id) as sessions',
     ],
-    where: ['event_name = \'screen_view\'', 'time_on_page > 0'],
+    where: ["event_name = 'screen_view'", 'time_on_page > 0'],
     groupBy: ['duration_range'],
     orderBy: 'visitors DESC',
     timeField: 'time',
     allowedFilters: ['path', 'referrer', 'device_type'],
-    customizable: true
+    customizable: true,
   },
 
   profiles_by_device: {
@@ -155,14 +178,14 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig<typeof Analytics
       'device_type as name',
       'COUNT(DISTINCT anonymous_id) as visitors',
       'COUNT(DISTINCT session_id) as sessions',
-      'ROUND(AVG(CASE WHEN time_on_page > 0 THEN time_on_page / 1000 ELSE NULL END), 2) as avg_session_duration'
+      'ROUND(AVG(CASE WHEN time_on_page > 0 THEN time_on_page / 1000 ELSE NULL END), 2) as avg_session_duration',
     ],
-    where: ['event_name = \'screen_view\'', 'device_type != \'\''],
+    where: ["event_name = 'screen_view'", "device_type != ''"],
     groupBy: ['device_type'],
     orderBy: 'visitors DESC',
     timeField: 'time',
     allowedFilters: ['device_type', 'path', 'referrer'],
-    customizable: true
+    customizable: true,
   },
 
   profiles_by_browser: {
@@ -171,15 +194,15 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig<typeof Analytics
       'browser_name as name',
       'COUNT(DISTINCT anonymous_id) as visitors',
       'COUNT(DISTINCT session_id) as sessions',
-      'ROUND(AVG(CASE WHEN time_on_page > 0 THEN time_on_page / 1000 ELSE NULL END), 2) as avg_session_duration'
+      'ROUND(AVG(CASE WHEN time_on_page > 0 THEN time_on_page / 1000 ELSE NULL END), 2) as avg_session_duration',
     ],
-    where: ['event_name = \'screen_view\'', 'browser_name != \'\''],
+    where: ["event_name = 'screen_view'", "browser_name != ''"],
     groupBy: ['browser_name'],
     orderBy: 'visitors DESC',
     limit: 100,
     timeField: 'time',
     allowedFilters: ['browser_name', 'path', 'device_type'],
-    customizable: true
+    customizable: true,
   },
 
   profiles_time_series: {
@@ -188,18 +211,26 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig<typeof Analytics
       'toDate(time) as date',
       'COUNT(DISTINCT anonymous_id) as visitors',
       'COUNT(DISTINCT session_id) as sessions',
-      'ROUND(AVG(CASE WHEN time_on_page > 0 THEN time_on_page / 1000 ELSE NULL END), 2) as avg_session_duration'
+      'ROUND(AVG(CASE WHEN time_on_page > 0 THEN time_on_page / 1000 ELSE NULL END), 2) as avg_session_duration',
     ],
-    where: ['event_name = \'screen_view\''],
+    where: ["event_name = 'screen_view'"],
     groupBy: ['toDate(time)'],
     orderBy: 'date ASC',
     timeField: 'time',
     allowedFilters: ['path', 'referrer', 'device_type'],
-    customizable: true
+    customizable: true,
   },
 
   returning_visitors: {
-    customSql: (websiteId: string, startDate: string, endDate: string, filters?: any[], granularity?: any, limit?: number, offset?: number) => ({
+    customSql: (
+      websiteId: string,
+      startDate: string,
+      endDate: string,
+      filters?: any[],
+      granularity?: any,
+      limit?: number,
+      offset?: number
+    ) => ({
       sql: `
       SELECT
         anonymous_id as visitor_id,
@@ -224,10 +255,10 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig<typeof Analytics
         endDate: `${endDate} 23:59:59`,
         limit: limit || 100,
         offset: offset || 0,
-      }
+      },
     }),
     timeField: 'time',
     allowedFilters: ['path', 'referrer', 'device_type'],
-    customizable: true
-  }
-}; 
+    customizable: true,
+  },
+};

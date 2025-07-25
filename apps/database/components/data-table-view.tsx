@@ -1,72 +1,119 @@
-'use client'
+'use client';
 
-import * as React from 'react'
 import {
   type ColumnDef,
   type ColumnFiltersState,
   type ColumnSizingState,
-  type SortingState,
-  type VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type SortingState,
   useReactTable,
-} from '@tanstack/react-table'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { SortAsc, SortDesc, ArrowUpDown, MoreHorizontal, Hash, Calendar, Type, Binary, Edit, Trash2, Eye, EyeOff, Columns } from 'lucide-react'
+  type VisibilityState,
+} from '@tanstack/react-table';
+import {
+  ArrowUpDown,
+  Binary,
+  Calendar,
+  Columns,
+  Edit,
+  Eye,
+  EyeOff,
+  Hash,
+  MoreHorizontal,
+  SortAsc,
+  SortDesc,
+  Trash2,
+  Type,
+} from 'lucide-react';
+import * as React from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-} from '@/components/ui/dropdown-menu'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { cn } from '@/lib/utils'
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 interface TableColumn {
-  name: string
-  type: string
+  name: string;
+  type: string;
 }
 
 interface DataTableViewProps {
-  data: Record<string, any>[]
-  columns: TableColumn[]
-  loading: boolean
-  onDeleteRow?: (row: Record<string, any>) => void
-  onEditRow?: (originalRow: Record<string, any>, updatedRow: Record<string, any>) => void
-  onHideRow?: (row: Record<string, any>) => void
+  data: Record<string, any>[];
+  columns: TableColumn[];
+  loading: boolean;
+  onDeleteRow?: (row: Record<string, any>) => void;
+  onEditRow?: (
+    originalRow: Record<string, any>,
+    updatedRow: Record<string, any>
+  ) => void;
+  onHideRow?: (row: Record<string, any>) => void;
 }
 
 const selectColumn: ColumnDef<any> = {
   id: 'select',
   header: ({ table }) => (
     <Checkbox
+      aria-label="Select all"
       checked={
         table.getIsAllPageRowsSelected() ||
         (table.getIsSomePageRowsSelected() && 'indeterminate')
       }
-      onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-      aria-label="Select all"
       className="mx-1"
+      onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
     />
   ),
   cell: ({ row }) => (
     <Checkbox
-      checked={row.getIsSelected()}
-      onCheckedChange={(value) => row.toggleSelected(!!value)}
       aria-label="Select row"
+      checked={row.getIsSelected()}
       className="mx-1"
+      onCheckedChange={(value) => row.toggleSelected(!!value)}
     />
   ),
   enableSorting: false,
@@ -75,80 +122,119 @@ const selectColumn: ColumnDef<any> = {
   size: 40,
   minSize: 40,
   maxSize: 40,
-}
+};
 
 const FieldIcon = ({
   label,
   children,
-}: { label: string | null; children: React.ReactNode }) => {
-  if (children === null) return null
+}: {
+  label: string | null;
+  children: React.ReactNode;
+}) => {
+  if (children === null) return null;
   return (
     <TooltipProvider delayDuration={20}>
       <Tooltip>
         <TooltipTrigger>
-          <div className="flex items-center justify-center w-4 h-4 hover:bg-sidebar-accent rounded-sm">
+          <div className="flex h-4 w-4 items-center justify-center rounded-sm hover:bg-sidebar-accent">
             {children}
           </div>
         </TooltipTrigger>
         <TooltipContent
+          className="border border-border bg-card text-card-foreground"
           side="bottom"
-          className="bg-card text-card-foreground border border-border"
         >
           <p>{label}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  )
-}
+  );
+};
 
-const ValueCell = ({ value, type, columnName }: { value: any; type: string; columnName: string }) => {
+const ValueCell = ({
+  value,
+  type,
+  columnName,
+}: {
+  value: any;
+  type: string;
+  columnName: string;
+}) => {
   const formatValue = (val: any, dataType: string, colName: string) => {
     if (val === null || val === undefined) {
-      return <span className="text-muted-foreground italic text-xs">null</span>
+      return <span className="text-muted-foreground text-xs italic">null</span>;
     }
-    
-    const stringValue = String(val)
-    
+
+    const stringValue = String(val);
+
     // Special handling for ID columns - make them very compact
-    if (colName.toLowerCase().includes('id') || colName.toLowerCase() === 'uuid') {
+    if (
+      colName.toLowerCase().includes('id') ||
+      colName.toLowerCase() === 'uuid'
+    ) {
       if (stringValue.length > 8) {
         return (
-          <span title={stringValue} className="cursor-help font-mono text-xs text-blue-600 block truncate">
+          <span
+            className="block cursor-help truncate font-mono text-blue-600 text-xs"
+            title={stringValue}
+          >
             {stringValue.substring(0, 8)}...
           </span>
-        )
+        );
       }
-      return <span className="font-mono text-xs text-blue-600">{stringValue}</span>
+      return (
+        <span className="font-mono text-blue-600 text-xs">{stringValue}</span>
+      );
     }
-    
+
     // Format different data types
     if (dataType.includes('DateTime')) {
-      const truncated = stringValue.length > 16 ? stringValue.substring(0, 16) + '...' : stringValue
-      return <span title={stringValue} className="font-mono text-xs text-blue-600 cursor-help">{truncated}</span>
+      const truncated =
+        stringValue.length > 16
+          ? stringValue.substring(0, 16) + '...'
+          : stringValue;
+      return (
+        <span
+          className="cursor-help font-mono text-blue-600 text-xs"
+          title={stringValue}
+        >
+          {truncated}
+        </span>
+      );
     }
     if (dataType.includes('Int') || dataType.includes('Float')) {
-      return <span className="font-mono text-xs text-green-600 text-right">{stringValue}</span>
+      return (
+        <span className="text-right font-mono text-green-600 text-xs">
+          {stringValue}
+        </span>
+      );
     }
     if (stringValue.length > 30) {
       return (
-        <span title={stringValue} className="cursor-help font-mono text-xs block truncate">
+        <span
+          className="block cursor-help truncate font-mono text-xs"
+          title={stringValue}
+        >
           {stringValue.substring(0, 30)}...
         </span>
-      )
+      );
     }
-    
-    return <span className="font-mono text-xs">{stringValue}</span>
-  }
 
-  return formatValue(value, type, columnName)
-}
+    return <span className="font-mono text-xs">{stringValue}</span>;
+  };
+
+  return formatValue(value, type, columnName);
+};
 
 const getTypeIcon = (type: string) => {
-  if (type.includes('DateTime')) return <Calendar className="size-3 text-blue-500" />
-  if (type.includes('Int') || type.includes('Float')) return <Hash className="size-3 text-green-500" />
-  if (type.includes('String')) return <Type className="size-3 text-purple-500" />
-  return <Binary className="size-3 text-gray-500" />
-}
+  if (type.includes('DateTime'))
+    return <Calendar className="size-3 text-blue-500" />;
+  if (type.includes('Int') || type.includes('Float'))
+    return <Hash className="size-3 text-green-500" />;
+  if (type.includes('String'))
+    return <Type className="size-3 text-purple-500" />;
+  return <Binary className="size-3 text-gray-500" />;
+};
 
 export function DataTableView({
   data,
@@ -156,53 +242,64 @@ export function DataTableView({
   loading,
   onDeleteRow,
   onEditRow,
-  onHideRow
+  onHideRow,
 }: DataTableViewProps) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
-  const [colSizing, setColSizing] = React.useState<ColumnSizingState>({})
-  const [hiddenRows, setHiddenRows] = React.useState<Set<string>>(new Set())
-  const [editingRow, setEditingRow] = React.useState<Record<string, any> | null>(null)
-  const [editFormData, setEditFormData] = React.useState<Record<string, any>>({})
-  const [confirmText, setConfirmText] = React.useState('')
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
+  const [colSizing, setColSizing] = React.useState<ColumnSizingState>({});
+  const [hiddenRows, setHiddenRows] = React.useState<Set<string>>(new Set());
+  const [editingRow, setEditingRow] = React.useState<Record<
+    string,
+    any
+  > | null>(null);
+  const [editFormData, setEditFormData] = React.useState<Record<string, any>>(
+    {}
+  );
+  const [confirmText, setConfirmText] = React.useState('');
 
   // Helper functions
   const handleEditRow = (row: Record<string, any>) => {
-    setEditingRow(row)
-    setEditFormData({ ...row })
-  }
+    setEditingRow(row);
+    setEditFormData({ ...row });
+  };
 
   const handleSaveEdit = () => {
     if (editingRow && onEditRow) {
-      onEditRow(editingRow, editFormData)
-      setEditingRow(null)
-      setEditFormData({})
+      onEditRow(editingRow, editFormData);
+      setEditingRow(null);
+      setEditFormData({});
     }
-  }
+  };
 
   const handleHideRow = (row: Record<string, any>) => {
-    const rowId = JSON.stringify(row)
-    setHiddenRows(prev => new Set([...prev, rowId]))
+    const rowId = JSON.stringify(row);
+    setHiddenRows((prev) => new Set([...prev, rowId]));
     if (onHideRow) {
-      onHideRow(row)
+      onHideRow(row);
     }
-  }
+  };
 
   const handleDeleteSelected = () => {
-    const selectedRows = table.getSelectedRowModel().rows
-    selectedRows.forEach(row => {
+    const selectedRows = table.getSelectedRowModel().rows;
+    selectedRows.forEach((row) => {
       if (onDeleteRow) {
-        onDeleteRow(row.original)
+        onDeleteRow(row.original);
       }
-    })
-    setRowSelection({})
-  }
+    });
+    setRowSelection({});
+  };
 
   const EditDialog = () => (
-    <Dialog open={!!editingRow} onOpenChange={(open) => !open && setEditingRow(null)}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+    <Dialog
+      onOpenChange={(open) => !open && setEditingRow(null)}
+      open={!!editingRow}
+    >
+      <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Row</DialogTitle>
           <DialogDescription>
@@ -211,81 +308,96 @@ export function DataTableView({
         </DialogHeader>
         <div className="grid gap-4 py-4">
           {columns.map((col) => (
-            <div key={col.name} className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor={col.name} className="text-right text-sm font-medium">
+            <div className="grid grid-cols-4 items-center gap-4" key={col.name}>
+              <label
+                className="text-right font-medium text-sm"
+                htmlFor={col.name}
+              >
                 {col.name}
               </label>
               <div className="col-span-3">
                 <Input
-                  id={col.name}
-                  value={editFormData[col.name] || ''}
-                  onChange={(e) => setEditFormData(prev => ({
-                    ...prev,
-                    [col.name]: e.target.value
-                  }))}
-                  placeholder={`Enter ${col.name}`}
                   className="w-full"
+                  id={col.name}
+                  onChange={(e) =>
+                    setEditFormData((prev) => ({
+                      ...prev,
+                      [col.name]: e.target.value,
+                    }))
+                  }
+                  placeholder={`Enter ${col.name}`}
+                  value={editFormData[col.name] || ''}
                 />
-                <p className="text-xs text-muted-foreground mt-1">Type: {col.type}</p>
+                <p className="mt-1 text-muted-foreground text-xs">
+                  Type: {col.type}
+                </p>
               </div>
             </div>
           ))}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setEditingRow(null)}>
+          <Button onClick={() => setEditingRow(null)} variant="outline">
             Cancel
           </Button>
-          <Button onClick={handleSaveEdit}>
-            Save Changes
-          </Button>
+          <Button onClick={handleSaveEdit}>Save Changes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 
   const tableColumns: ColumnDef<any>[] = React.useMemo(() => {
     const fields: ColumnDef<any>[] = columns.map((col) => {
-      
       return {
         accessorKey: col.name,
         header: ({ column }) => (
-          <div className="flex items-center gap-3 text-foreground min-w-0 pr-6 w-full">
+          <div className="flex w-full min-w-0 items-center gap-3 pr-6 text-foreground">
             <FieldIcon label={`Type: ${col.type}`}>
               {getTypeIcon(col.type)}
             </FieldIcon>
-            <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
               <Button
-                variant="ghost"
+                className="flex h-auto min-w-0 items-center justify-start gap-2 p-1 font-semibold text-xs hover:bg-transparent"
+                onClick={() =>
+                  column.toggleSorting(column.getIsSorted() === 'asc')
+                }
                 size="sm"
-                className="h-auto p-1 font-semibold hover:bg-transparent flex items-center gap-2 text-xs justify-start min-w-0"
-                onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                variant="ghost"
               >
-                <span className="truncate text-left font-medium">{col.name}</span>
+                <span className="truncate text-left font-medium">
+                  {col.name}
+                </span>
                 {column.getIsSorted() === 'asc' ? (
                   <SortAsc className="h-3 w-3 flex-shrink-0" />
                 ) : column.getIsSorted() === 'desc' ? (
                   <SortDesc className="h-3 w-3 flex-shrink-0" />
                 ) : (
-                  <ArrowUpDown className="h-3 w-3 opacity-50 flex-shrink-0" />
+                  <ArrowUpDown className="h-3 w-3 flex-shrink-0 opacity-50" />
                 )}
               </Button>
             </div>
-            <Badge variant="outline" className="text-xs flex-shrink-0 px-2 py-1">
-              {col.type.length > 6 ? col.type.substring(0, 6) + '...' : col.type}
+            <Badge
+              className="flex-shrink-0 px-2 py-1 text-xs"
+              variant="outline"
+            >
+              {col.type.length > 6
+                ? col.type.substring(0, 6) + '...'
+                : col.type}
             </Badge>
           </div>
         ),
         cell: ({ row }) => {
-          const value = row.getValue(col.name) as any
-          return <ValueCell value={value} type={col.type} columnName={col.name} />
+          const value = row.getValue(col.name) as any;
+          return (
+            <ValueCell columnName={col.name} type={col.type} value={value} />
+          );
         },
         enableResizing: true,
         size: 250,
         minSize: 80,
         maxSize: 450,
         filterFn: 'includesString',
-      }
-    })
+      };
+    });
 
     const actionColumn: ColumnDef<any> = {
       id: 'actions',
@@ -295,12 +407,12 @@ export function DataTableView({
       minSize: 60,
       maxSize: 60,
       cell: ({ row }) => {
-        const rowData = row.original
+        const rowData = row.original;
 
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-6 w-6 p-0">
+              <Button className="h-6 w-6 p-0" variant="ghost">
                 <span className="sr-only">Open menu</span>
                 <MoreHorizontal className="h-3 w-3" />
               </Button>
@@ -309,16 +421,16 @@ export function DataTableView({
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               {onEditRow && (
                 <DropdownMenuItem
-                  onClick={() => handleEditRow(rowData)}
                   className="flex items-center gap-2"
+                  onClick={() => handleEditRow(rowData)}
                 >
                   <Edit className="h-3 w-3" />
                   Edit row
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem
-                onClick={() => handleHideRow(rowData)}
                 className="flex items-center gap-2"
+                onClick={() => handleHideRow(rowData)}
               >
                 <EyeOff className="h-3 w-3" />
                 Hide row
@@ -327,8 +439,8 @@ export function DataTableView({
                 onClick={() => {
                   const text = Object.entries(rowData)
                     .map(([key, value]) => `${key}: ${value}`)
-                    .join('\n')
-                  navigator.clipboard.writeText(text)
+                    .join('\n');
+                  navigator.clipboard.writeText(text);
                 }}
               >
                 Copy row data
@@ -338,8 +450,8 @@ export function DataTableView({
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <DropdownMenuItem
+                      className="flex items-center gap-2 text-destructive focus:text-destructive"
                       onSelect={(e) => e.preventDefault()}
-                      className="text-destructive focus:text-destructive flex items-center gap-2"
                     >
                       <Trash2 className="h-3 w-3" />
                       Delete row
@@ -349,25 +461,29 @@ export function DataTableView({
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete Row</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to delete this row? This action cannot be undone.
-                        <br/><br/>
+                        Are you sure you want to delete this row? This action
+                        cannot be undone.
+                        <br />
+                        <br />
                         Please type <strong>DELETE</strong> to confirm.
                       </AlertDialogDescription>
                       <Input
-                        value={confirmText}
-                        onChange={(e) => setConfirmText(e.target.value)}
                         className="mt-2"
+                        onChange={(e) => setConfirmText(e.target.value)}
+                        value={confirmText}
                       />
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel onClick={() => setConfirmText('')}>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel onClick={() => setConfirmText('')}>
+                        Cancel
+                      </AlertDialogCancel>
                       <AlertDialogAction
-                        onClick={() => {
-                          if (onDeleteRow) onDeleteRow(rowData)
-                          setConfirmText('')
-                        }}
-                        disabled={confirmText !== 'DELETE'}
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        disabled={confirmText !== 'DELETE'}
+                        onClick={() => {
+                          if (onDeleteRow) onDeleteRow(rowData);
+                          setConfirmText('');
+                        }}
                       >
                         Delete Row
                       </AlertDialogAction>
@@ -377,21 +493,21 @@ export function DataTableView({
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-        )
+        );
       },
-    }
+    };
 
-    return [selectColumn, ...fields, actionColumn]
-  }, [columns, onDeleteRow, onEditRow, handleEditRow, handleHideRow])
+    return [selectColumn, ...fields, actionColumn];
+  }, [columns, onDeleteRow, onEditRow, handleEditRow, handleHideRow]);
 
   // Filter out hidden rows
   const filteredData = React.useMemo(() => {
-    if (!data) return []
-    return data.filter(row => {
-      const rowId = JSON.stringify(row)
-      return !hiddenRows.has(rowId)
-    })
-  }, [data, hiddenRows])
+    if (!data) return [];
+    return data.filter((row) => {
+      const rowId = JSON.stringify(row);
+      return !hiddenRows.has(rowId);
+    });
+  }, [data, hiddenRows]);
 
   const table = useReactTable({
     data: filteredData,
@@ -419,20 +535,20 @@ export function DataTableView({
       maxSize: 300,
     },
     columnResizeMode: 'onChange',
-  })
+  });
 
-  const rows = React.useMemo(() => table.getRowModel().rows, [table, data])
-  const selectedRowsCount = table.getSelectedRowModel().rows.length
+  const rows = React.useMemo(() => table.getRowModel().rows, [table, data]);
+  const selectedRowsCount = table.getSelectedRowModel().rows.length;
 
   // Table controls component
   const TableControls = () => (
-    <div className="flex items-center justify-between p-4 border-b bg-muted/30">
+    <div className="flex items-center justify-between border-b bg-muted/30 p-4">
       <div className="flex items-center gap-2">
         {/* Column visibility */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8">
-              <Columns className="h-4 w-4 mr-2" />
+            <Button className="h-8" size="sm" variant="outline">
+              <Columns className="mr-2 h-4 w-4" />
               Columns
             </Button>
           </DropdownMenuTrigger>
@@ -443,27 +559,29 @@ export function DataTableView({
               .map((column) => {
                 return (
                   <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
                     checked={column.getIsVisible()}
-                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                    className="capitalize"
+                    key={column.id}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
-                )
+                );
               })}
           </DropdownMenuContent>
         </DropdownMenu>
 
         {/* Show hidden rows count */}
         {hiddenRows.size > 0 && (
-          <Badge variant="secondary" className="h-8">
+          <Badge className="h-8" variant="secondary">
             {hiddenRows.size} hidden
             <Button
-              variant="ghost"
-              size="sm"
-              className="h-4 w-4 p-0 ml-2"
+              className="ml-2 h-4 w-4 p-0"
               onClick={() => setHiddenRows(new Set())}
+              size="sm"
+              variant="ghost"
             >
               <Eye className="h-3 w-3" />
             </Button>
@@ -475,13 +593,13 @@ export function DataTableView({
         {/* Bulk actions for selected rows */}
         {selectedRowsCount > 0 && (
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="h-8">
+            <Badge className="h-8" variant="secondary">
               {selectedRowsCount} selected
             </Badge>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm" className="h-8">
-                  <Trash2 className="h-3 w-3 mr-1" />
+                <Button className="h-8" size="sm" variant="destructive">
+                  <Trash2 className="mr-1 h-3 w-3" />
                   Delete Selected
                 </Button>
               </AlertDialogTrigger>
@@ -489,26 +607,29 @@ export function DataTableView({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete Selected Rows</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to delete {selectedRowsCount} selected rows? 
-                    This action cannot be undone.
-                    <br/><br/>
+                    Are you sure you want to delete {selectedRowsCount} selected
+                    rows? This action cannot be undone.
+                    <br />
+                    <br />
                     Please type <strong>DELETE</strong> to confirm.
                   </AlertDialogDescription>
                   <Input
-                    value={confirmText}
-                    onChange={(e) => setConfirmText(e.target.value)}
                     className="mt-2"
+                    onChange={(e) => setConfirmText(e.target.value)}
+                    value={confirmText}
                   />
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel onClick={() => setConfirmText('')}>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel onClick={() => setConfirmText('')}>
+                    Cancel
+                  </AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={() => {
-                      handleDeleteSelected()
-                      setConfirmText('')
-                    }}
-                    disabled={confirmText !== 'DELETE'}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={confirmText !== 'DELETE'}
+                    onClick={() => {
+                      handleDeleteSelected();
+                      setConfirmText('');
+                    }}
                   >
                     Delete Rows
                   </AlertDialogAction>
@@ -519,57 +640,63 @@ export function DataTableView({
         )}
       </div>
     </div>
-  )
+  );
 
   // Add column filters below headers
   const renderColumnFilters = () => (
-    <TableRow className="hover:bg-transparent border-b">
+    <TableRow className="border-b hover:bg-transparent">
       {table.getHeaderGroups()[0]?.headers.map((header) => (
-        <TableHead key={`filter-${header.id}`} style={{ width: header.getSize() }} className="p-1">
-          {header.column.getCanFilter() && header.id !== 'select' && header.id !== 'actions' ? (
+        <TableHead
+          className="p-1"
+          key={`filter-${header.id}`}
+          style={{ width: header.getSize() }}
+        >
+          {header.column.getCanFilter() &&
+          header.id !== 'select' &&
+          header.id !== 'actions' ? (
             <Input
-              placeholder={`Filter...`}
-              value={(header.column.getFilterValue() as string) ?? ''}
+              className="h-6 px-2 text-xs"
               onChange={(e) => header.column.setFilterValue(e.target.value)}
-              className="h-6 text-xs px-2"
+              placeholder={'Filter...'}
+              value={(header.column.getFilterValue() as string) ?? ''}
             />
           ) : null}
         </TableHead>
       ))}
     </TableRow>
-  )
+  );
 
   return (
-      <Table style={{ width: table.getTotalSize() }} className="table-fixed">
-        <TableHeader className="sticky top-0 bg-background border-b z-10">
+    <Table className="table-fixed" style={{ width: table.getTotalSize() }}>
+      <TableHeader className="sticky top-0 z-10 border-b bg-background">
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow
+            className="h-10 hover:[&>*]:border-border"
             key={headerGroup.id}
-            className="hover:[&>*]:border-border h-10"
           >
             {headerGroup.headers.map((header) => (
               <TableHead
+                className="relative border border-transparent p-2 text-xs hover:[&>.resizer]:bg-border"
                 key={header.id}
-                className="border border-transparent relative hover:[&>.resizer]:bg-border p-2 text-xs"
                 style={{ width: header.getSize() }}
               >
                 {header.isPlaceholder
                   ? null
                   : flexRender(
                       header.column.columnDef.header,
-                      header.getContext(),
+                      header.getContext()
                     )}
                 <div
-                  onMouseDown={header.getResizeHandler()}
-                  onTouchStart={header.getResizeHandler()}
                   className={cn(
-                    'resizer absolute right-0 top-0 h-full w-1 z-10 select-none touch-none transition-colors duration-150 ease-in-out',
+                    'resizer absolute top-0 right-0 z-10 h-full w-1 touch-none select-none transition-colors duration-150 ease-in-out',
                     header.column.getIsResizing()
                       ? 'bg-primary/50'
                       : header.column.getCanResize()
-                        ? 'hover:bg-border cursor-col-resize'
-                        : 'hidden',
+                        ? 'cursor-col-resize hover:bg-border'
+                        : 'hidden'
                   )}
+                  onMouseDown={header.getResizeHandler()}
+                  onTouchStart={header.getResizeHandler()}
                 />
               </TableHead>
             ))}
@@ -581,23 +708,20 @@ export function DataTableView({
         {rows.length ? (
           rows.map((row) => (
             <TableRow
-              key={row.id}
+              className="h-8 hover:[&>*]:border-border"
               data-state={row.getIsSelected() && 'selected'}
-              className="hover:[&>*]:border-border h-8"
+              key={row.id}
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell
+                  className="overflow-hidden border border-transparent p-2 text-xs"
                   key={cell.id}
-                  className="border border-transparent overflow-hidden p-2 text-xs"
                   style={{
                     width: cell.column.getSize(),
                   }}
                 >
                   <div className="truncate">
-                    {flexRender(
-                      cell.column.columnDef.cell,
-                      cell.getContext(),
-                    )}
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </div>
                 </TableCell>
               ))}
@@ -606,17 +730,15 @@ export function DataTableView({
         ) : (
           <TableRow>
             <TableCell
-              colSpan={tableColumns.length}
               className="h-24 text-center"
+              colSpan={tableColumns.length}
               style={{ width: `${table.getTotalSize()}px` }}
             >
-              {loading
-                ? 'Loading...'
-                : 'No results.'}
+              {loading ? 'Loading...' : 'No results.'}
             </TableCell>
           </TableRow>
         )}
       </TableBody>
     </Table>
-  )
-} 
+  );
+}

@@ -1,20 +1,25 @@
-"use client";
+'use client';
 
-import dynamic from "next/dynamic";
-import { useMemo } from "react";
+import dynamic from 'next/dynamic';
+import { useMemo } from 'react';
 import {
   createErrorTypeColumns,
   createPageColumn,
   errorColumns,
-} from "./error-table-columns";
-import type { ErrorTab } from "./types";
+} from './error-table-columns';
+import type { ErrorTab } from './types';
 
 // Dynamically import DataTable for better performance
 const DataTable = dynamic(
-  () => import("@/components/analytics/data-table").then((mod) => ({ default: mod.DataTable })),
+  () =>
+    import('@/components/analytics/data-table').then((mod) => ({
+      default: mod.DataTable,
+    })),
   {
     ssr: false,
-    loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted/20" />,
+    loading: () => (
+      <div className="h-96 animate-pulse rounded-lg bg-muted/20" />
+    ),
   }
 );
 
@@ -37,8 +42,8 @@ export const ErrorDataTable = ({
   const errorTabs = useMemo(
     (): ErrorTab[] => [
       {
-        id: "error_types",
-        label: "Error Types",
+        id: 'error_types',
+        label: 'Error Types',
         data: processedData.error_types.map((item: any, i: number) => ({
           ...item,
           _uniqueKey: `error-type-${i}`,
@@ -46,8 +51,8 @@ export const ErrorDataTable = ({
         columns: createErrorTypeColumns(),
       },
       {
-        id: "errors_by_page",
-        label: "By Page",
+        id: 'errors_by_page',
+        label: 'By Page',
         data: processedData.errors_by_page.map((item: any, i: number) => ({
           ...item,
           _uniqueKey: `page-${i}`,

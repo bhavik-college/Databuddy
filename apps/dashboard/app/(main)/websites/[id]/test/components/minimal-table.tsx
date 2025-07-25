@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   type ColumnDef,
@@ -11,7 +11,7 @@ import {
   type RowData,
   type SortingState,
   useReactTable,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 import {
   ArrowDown,
   ArrowUp,
@@ -23,12 +23,12 @@ import {
   DatabaseIcon,
   ListFilterIcon,
   Search,
-} from "lucide-react";
-import { Fragment, useCallback, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+} from 'lucide-react';
+import { Fragment, useCallback, useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -36,8 +36,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 
 interface TabConfig<TData> {
   id: string;
@@ -61,15 +61,21 @@ interface MinimalTableProps<TData extends RowData, TValue> {
   showSearch?: boolean;
   // Expandable rows functionality
   getSubRows?: (row: TData) => TData[] | undefined;
-  renderSubRow?: (subRow: TData, parentRow: TData, index: number) => React.ReactNode;
+  renderSubRow?: (
+    subRow: TData,
+    parentRow: TData,
+    index: number
+  ) => React.ReactNode;
   expandable?: boolean;
 }
 
 // Helper function to get percentage value from row data
 function getRowPercentage(row: any): number {
   // Try to find percentage in common property names
-  if (row.marketShare !== undefined) return Number.parseFloat(row.marketShare) || 0;
-  if (row.percentage !== undefined) return Number.parseFloat(row.percentage) || 0;
+  if (row.marketShare !== undefined)
+    return Number.parseFloat(row.marketShare) || 0;
+  if (row.percentage !== undefined)
+    return Number.parseFloat(row.percentage) || 0;
   if (row.percent !== undefined) return Number.parseFloat(row.percent) || 0;
   if (row.share !== undefined) return Number.parseFloat(row.share) || 0;
   return 0;
@@ -87,35 +93,35 @@ function getPercentageGradient(percentage: number): {
     return {
       background: `linear-gradient(90deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.25) ${percentage * 0.6}%, rgba(34, 197, 94, 0.2) ${percentage}%, rgba(34, 197, 94, 0.05) ${percentage + 3}%, transparent 100%)`,
       hoverBackground: `linear-gradient(90deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.35) ${percentage * 0.6}%, rgba(34, 197, 94, 0.3) ${percentage}%, rgba(34, 197, 94, 0.08) ${percentage + 3}%, transparent 100%)`,
-      borderColor: "rgba(34, 197, 94, 0.4)",
-      accentColor: "rgba(34, 197, 94, 0.8)",
-      glowColor: "rgba(34, 197, 94, 0.3)",
+      borderColor: 'rgba(34, 197, 94, 0.4)',
+      accentColor: 'rgba(34, 197, 94, 0.8)',
+      glowColor: 'rgba(34, 197, 94, 0.3)',
     };
   }
   if (percentage >= 25) {
     return {
       background: `linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.25) ${percentage * 0.6}%, rgba(59, 130, 246, 0.2) ${percentage}%, rgba(59, 130, 246, 0.05) ${percentage + 3}%, transparent 100%)`,
       hoverBackground: `linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.35) ${percentage * 0.6}%, rgba(59, 130, 246, 0.3) ${percentage}%, rgba(59, 130, 246, 0.08) ${percentage + 3}%, transparent 100%)`,
-      borderColor: "rgba(59, 130, 246, 0.4)",
-      accentColor: "rgba(59, 130, 246, 0.8)",
-      glowColor: "rgba(59, 130, 246, 0.3)",
+      borderColor: 'rgba(59, 130, 246, 0.4)',
+      accentColor: 'rgba(59, 130, 246, 0.8)',
+      glowColor: 'rgba(59, 130, 246, 0.3)',
     };
   }
   if (percentage >= 10) {
     return {
       background: `linear-gradient(90deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.25) ${percentage * 0.6}%, rgba(245, 158, 11, 0.2) ${percentage}%, rgba(245, 158, 11, 0.05) ${percentage + 3}%, transparent 100%)`,
       hoverBackground: `linear-gradient(90deg, rgba(245, 158, 11, 0.2) 0%, rgba(245, 158, 11, 0.35) ${percentage * 0.6}%, rgba(245, 158, 11, 0.3) ${percentage}%, rgba(245, 158, 11, 0.08) ${percentage + 3}%, transparent 100%)`,
-      borderColor: "rgba(245, 158, 11, 0.4)",
-      accentColor: "rgba(245, 158, 11, 0.8)",
-      glowColor: "rgba(245, 158, 11, 0.3)",
+      borderColor: 'rgba(245, 158, 11, 0.4)',
+      accentColor: 'rgba(245, 158, 11, 0.8)',
+      glowColor: 'rgba(245, 158, 11, 0.3)',
     };
   }
   return {
     background: `linear-gradient(90deg, rgba(107, 114, 128, 0.12) 0%, rgba(107, 114, 128, 0.2) ${percentage * 0.6}%, rgba(107, 114, 128, 0.15) ${percentage}%, rgba(107, 114, 128, 0.03) ${percentage + 3}%, transparent 100%)`,
     hoverBackground: `linear-gradient(90deg, rgba(107, 114, 128, 0.15) 0%, rgba(107, 114, 128, 0.28) ${percentage * 0.6}%, rgba(107, 114, 128, 0.22) ${percentage}%, rgba(107, 114, 128, 0.05) ${percentage + 3}%, transparent 100%)`,
-    borderColor: "rgba(107, 114, 128, 0.3)",
-    accentColor: "rgba(107, 114, 128, 0.7)",
-    glowColor: "rgba(107, 114, 128, 0.2)",
+    borderColor: 'rgba(107, 114, 128, 0.3)',
+    accentColor: 'rgba(107, 114, 128, 0.7)',
+    glowColor: 'rgba(107, 114, 128, 0.2)',
   };
 }
 
@@ -159,7 +165,7 @@ export function MinimalTable<TData extends RowData, TValue>({
   description,
   isLoading = false,
   initialPageSize,
-  emptyMessage = "No data available",
+  emptyMessage = 'No data available',
   className,
   onRowClick,
   minHeight = 200,
@@ -169,18 +175,21 @@ export function MinimalTable<TData extends RowData, TValue>({
   expandable = false,
 }: MinimalTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [globalFilter, setGlobalFilter] = useState('');
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: initialPageSize ?? 10,
   });
-  const [activeTab, setActiveTab] = useState(tabs?.[0]?.id || "");
+  const [activeTab, setActiveTab] = useState(tabs?.[0]?.id || '');
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   // Use tab data if tabs are provided, otherwise use direct data/columns
   const currentTabData = tabs?.find((tab) => tab.id === activeTab);
-  const tableData = useMemo(() => currentTabData?.data || data || [], [currentTabData?.data, data]);
+  const tableData = useMemo(
+    () => currentTabData?.data || data || [],
+    [currentTabData?.data, data]
+  );
   const tableColumns = useMemo(
     () => currentTabData?.columns || columns || [],
     [currentTabData?.columns, columns]
@@ -191,7 +200,7 @@ export function MinimalTable<TData extends RowData, TValue>({
     columns: tableColumns,
     state: {
       sorting,
-      globalFilter: showSearch ? globalFilter : "",
+      globalFilter: showSearch ? globalFilter : '',
       pagination,
     },
     onSortingChange: setSorting,
@@ -240,14 +249,14 @@ export function MinimalTable<TData extends RowData, TValue>({
     return (
       <Card
         className={cn(
-          "w-full overflow-hidden border-0 bg-card/50 shadow-sm backdrop-blur-sm",
+          'w-full overflow-hidden border-0 bg-card/50 shadow-sm backdrop-blur-sm',
           className
         )}
       >
         <CardHeader
           className={cn(
-            "space-y-0 px-4 pb-3",
-            showSearch ? "flex flex-row items-center justify-between" : ""
+            'space-y-0 px-4 pb-3',
+            showSearch ? 'flex flex-row items-center justify-between' : ''
           )}
         >
           <div className="space-y-2">
@@ -281,16 +290,20 @@ export function MinimalTable<TData extends RowData, TValue>({
   return (
     <Card
       className={cn(
-        "group w-full overflow-hidden border-0 bg-card/50 shadow-sm backdrop-blur-sm",
+        'group w-full overflow-hidden border-0 bg-card/50 shadow-sm backdrop-blur-sm',
         className
       )}
     >
       <CardHeader className="px-3 pb-2">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h3 className="truncate font-semibold text-foreground text-sm">{title}</h3>
+            <h3 className="truncate font-semibold text-foreground text-sm">
+              {title}
+            </h3>
             {description && (
-              <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs">{description}</p>
+              <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs">
+                {description}
+              </p>
             )}
           </div>
 
@@ -302,7 +315,7 @@ export function MinimalTable<TData extends RowData, TValue>({
                 className="h-7 w-36 border-0 bg-muted/30 pr-2 pl-7 text-xs focus:bg-background focus:ring-1 focus:ring-primary/20"
                 onChange={(event) => setGlobalFilter(event.target.value)}
                 placeholder="Filter data..."
-                value={globalFilter ?? ""}
+                value={globalFilter ?? ''}
               />
             </div>
           )}
@@ -326,12 +339,12 @@ export function MinimalTable<TData extends RowData, TValue>({
                   aria-controls={`tabpanel-${tab.id}`}
                   aria-selected={isActive}
                   className={cn(
-                    "flex items-center gap-1 rounded-md px-2.5 py-1.5 font-medium text-xs transition-all duration-200",
-                    "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1",
-                    "disabled:cursor-not-allowed disabled:opacity-60",
+                    'flex items-center gap-1 rounded-md px-2.5 py-1.5 font-medium text-xs transition-all duration-200',
+                    'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1',
+                    'disabled:cursor-not-allowed disabled:opacity-60',
                     isActive
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:bg-background/60 hover:text-foreground"
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:bg-background/60 hover:text-foreground'
                   )}
                   disabled={isTransitioning}
                   key={tab.id}
@@ -344,13 +357,13 @@ export function MinimalTable<TData extends RowData, TValue>({
                   {itemCount > 0 && (
                     <span
                       className={cn(
-                        "inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 font-semibold text-[10px]",
+                        'inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 font-semibold text-[10px]',
                         isActive
-                          ? "bg-primary/15 text-primary"
-                          : "bg-muted-foreground/20 text-muted-foreground/70"
+                          ? 'bg-primary/15 text-primary'
+                          : 'bg-muted-foreground/20 text-muted-foreground/70'
                       )}
                     >
-                      {itemCount > 99 ? "99+" : itemCount}
+                      {itemCount > 99 ? '99+' : itemCount}
                     </span>
                   )}
                 </button>
@@ -363,8 +376,8 @@ export function MinimalTable<TData extends RowData, TValue>({
       <CardContent className="overflow-hidden px-3 pb-2">
         <div
           className={cn(
-            "overflow-hidden transition-all duration-300",
-            isTransitioning && "scale-[0.98] transform opacity-50"
+            'overflow-hidden transition-all duration-300',
+            isTransitioning && 'scale-[0.98] transform opacity-50'
           )}
         >
           {table.getRowModel().rows.length ? (
@@ -386,26 +399,31 @@ export function MinimalTable<TData extends RowData, TValue>({
                         {headerGroup.headers.map((header) => (
                           <TableHead
                             aria-sort={
-                              header.column.getIsSorted() === "asc"
-                                ? "ascending"
-                                : header.column.getIsSorted() === "desc"
-                                  ? "descending"
+                              header.column.getIsSorted() === 'asc'
+                                ? 'ascending'
+                                : header.column.getIsSorted() === 'desc'
+                                  ? 'descending'
                                   : header.column.getCanSort()
-                                    ? "none"
+                                    ? 'none'
                                     : undefined
                             }
                             className={cn(
-                              "h-9 bg-muted/20 px-3 font-semibold text-muted-foreground text-xs backdrop-blur-sm",
+                              'h-9 bg-muted/20 px-3 font-semibold text-muted-foreground text-xs backdrop-blur-sm',
                               (header.column.columnDef.meta as any)?.className,
                               header.column.getCanSort()
-                                ? "group cursor-pointer select-none transition-all duration-200 hover:bg-muted/30 hover:text-foreground"
-                                : "select-none"
+                                ? 'group cursor-pointer select-none transition-all duration-200 hover:bg-muted/30 hover:text-foreground'
+                                : 'select-none'
                             )}
                             key={header.id}
                             onClick={header.column.getToggleSortingHandler()}
-                            role={header.column.getCanSort() ? "button" : undefined}
+                            role={
+                              header.column.getCanSort() ? 'button' : undefined
+                            }
                             style={{
-                              width: header.getSize() !== 150 ? header.getSize() : undefined,
+                              width:
+                                header.getSize() !== 150
+                                  ? header.getSize()
+                                  : undefined,
                             }}
                             tabIndex={header.column.getCanSort() ? 0 : -1}
                           >
@@ -413,17 +431,20 @@ export function MinimalTable<TData extends RowData, TValue>({
                               <span className="truncate">
                                 {header.isPlaceholder
                                   ? null
-                                  : flexRender(header.column.columnDef.header, header.getContext())}
+                                  : flexRender(
+                                      header.column.columnDef.header,
+                                      header.getContext()
+                                    )}
                               </span>
                               {header.column.getCanSort() && (
                                 <div className="flex h-3 w-3 flex-col items-center justify-center">
                                   {!header.column.getIsSorted() && (
                                     <ArrowUpDown className="h-3 w-3 text-muted-foreground/40 transition-colors group-hover:text-muted-foreground/70" />
                                   )}
-                                  {header.column.getIsSorted() === "asc" && (
+                                  {header.column.getIsSorted() === 'asc' && (
                                     <ArrowUp className="h-3 w-3 text-primary" />
                                   )}
-                                  {header.column.getIsSorted() === "desc" && (
+                                  {header.column.getIsSorted() === 'desc' && (
                                     <ArrowDown className="h-3 w-3 text-primary" />
                                   )}
                                 </div>
@@ -437,7 +458,9 @@ export function MinimalTable<TData extends RowData, TValue>({
                   <TableBody className="overflow-hidden">
                     {displayData.map((row, index) => {
                       const subRows =
-                        expandable && getSubRows ? getSubRows(row.original) : undefined;
+                        expandable && getSubRows
+                          ? getSubRows(row.original)
+                          : undefined;
                       const hasSubRows = subRows && subRows.length > 0;
                       const isExpanded = expandedRows.has(row.id);
                       const percentage = getRowPercentage(row.original);
@@ -449,18 +472,20 @@ export function MinimalTable<TData extends RowData, TValue>({
                             aria-expanded={hasSubRows ? isExpanded : undefined}
                             aria-label={
                               hasSubRows
-                                ? `${isExpanded ? "Collapse" : "Expand"} details for row ${index + 1}`
+                                ? `${isExpanded ? 'Collapse' : 'Expand'} details for row ${index + 1}`
                                 : onRowClick
                                   ? `View details for row ${index + 1}`
                                   : undefined
                             }
                             className={cn(
-                              "group relative h-11 border-border/20 transition-all duration-200",
-                              "focus-within:bg-muted/20 hover:bg-muted/20",
+                              'group relative h-11 border-border/20 transition-all duration-200',
+                              'focus-within:bg-muted/20 hover:bg-muted/20',
                               onRowClick &&
                                 !hasSubRows &&
-                                "cursor-pointer focus-within:bg-muted/30 hover:bg-muted/30 active:bg-muted/40",
-                              index % 2 === 0 ? "bg-background/50" : "bg-muted/10"
+                                'cursor-pointer focus-within:bg-muted/30 hover:bg-muted/30 active:bg-muted/40',
+                              index % 2 === 0
+                                ? 'bg-background/50'
+                                : 'bg-muted/10'
                             )}
                             onClick={() => {
                               if (hasSubRows) {
@@ -472,7 +497,7 @@ export function MinimalTable<TData extends RowData, TValue>({
                             onKeyDown={(e) => {
                               if (
                                 (onRowClick || hasSubRows) &&
-                                (e.key === "Enter" || e.key === " ")
+                                (e.key === 'Enter' || e.key === ' ')
                               ) {
                                 e.preventDefault();
                                 if (hasSubRows) {
@@ -485,7 +510,8 @@ export function MinimalTable<TData extends RowData, TValue>({
                             onMouseEnter={(e) => {
                               if (percentage > 0) {
                                 const target = e.currentTarget as HTMLElement;
-                                target.style.background = gradient.hoverBackground;
+                                target.style.background =
+                                  gradient.hoverBackground;
                               }
                             }}
                             onMouseLeave={(e) => {
@@ -494,24 +520,33 @@ export function MinimalTable<TData extends RowData, TValue>({
                                 target.style.background = gradient.background;
                               }
                             }}
-                            role={onRowClick || hasSubRows ? "button" : undefined}
+                            role={
+                              onRowClick || hasSubRows ? 'button' : undefined
+                            }
                             style={{
-                              background: percentage > 0 ? gradient.background : undefined,
-                              borderLeft: percentage > 0 ? "2px solid transparent" : undefined,
+                              background:
+                                percentage > 0
+                                  ? gradient.background
+                                  : undefined,
+                              borderLeft:
+                                percentage > 0
+                                  ? '2px solid transparent'
+                                  : undefined,
                               boxShadow:
                                 percentage > 0
                                   ? `inset 3px 0 0 ${gradient.borderColor}`
                                   : undefined,
                               animationDelay: `${index * 30}ms`,
-                              animationFillMode: "both",
+                              animationFillMode: 'both',
                             }}
                             tabIndex={onRowClick || hasSubRows ? 0 : -1}
                           >
                             {row.getVisibleCells().map((cell, cellIndex) => (
                               <TableCell
                                 className={cn(
-                                  "px-3 py-2.5 font-medium text-foreground/90 text-sm",
-                                  cellIndex === 0 && "font-semibold text-foreground",
+                                  'px-3 py-2.5 font-medium text-foreground/90 text-sm',
+                                  cellIndex === 0 &&
+                                    'font-semibold text-foreground',
                                   (cell.column.columnDef.meta as any)?.className
                                 )}
                                 key={cell.id}
@@ -526,7 +561,11 @@ export function MinimalTable<TData extends RowData, TValue>({
                                   {/* Expansion toggle - only on first cell and if row has sub-rows */}
                                   {cellIndex === 0 && hasSubRows && (
                                     <button
-                                      aria-label={isExpanded ? "Collapse row" : "Expand row"}
+                                      aria-label={
+                                        isExpanded
+                                          ? 'Collapse row'
+                                          : 'Expand row'
+                                      }
                                       className="flex-shrink-0 rounded p-0.5 transition-colors hover:bg-muted"
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -542,7 +581,10 @@ export function MinimalTable<TData extends RowData, TValue>({
                                     </button>
                                   )}
                                   <div className="flex-1 truncate">
-                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                    {flexRender(
+                                      cell.column.columnDef.cell,
+                                      cell.getContext()
+                                    )}
                                   </div>
                                 </div>
                               </TableCell>
@@ -558,8 +600,15 @@ export function MinimalTable<TData extends RowData, TValue>({
                                 key={`${row.id}-sub-${subIndex}`}
                               >
                                 {renderSubRow ? (
-                                  <TableCell className="p-0" colSpan={row.getVisibleCells().length}>
-                                    {renderSubRow(subRow, row.original, subIndex)}
+                                  <TableCell
+                                    className="p-0"
+                                    colSpan={row.getVisibleCells().length}
+                                  >
+                                    {renderSubRow(
+                                      subRow,
+                                      row.original,
+                                      subIndex
+                                    )}
                                   </TableCell>
                                 ) : (
                                   // Default sub-row rendering - show the same data but indented
@@ -568,8 +617,8 @@ export function MinimalTable<TData extends RowData, TValue>({
                                     .map((cell, cellIndex) => (
                                       <TableCell
                                         className={cn(
-                                          "py-2 text-muted-foreground text-sm",
-                                          cellIndex === 0 ? "pl-8" : "px-3"
+                                          'py-2 text-muted-foreground text-sm',
+                                          cellIndex === 0 ? 'pl-8' : 'px-3'
                                         )}
                                         key={`sub-${cell.id}`}
                                         style={{
@@ -582,10 +631,14 @@ export function MinimalTable<TData extends RowData, TValue>({
                                         <div className="truncate">
                                           {cellIndex === 0 ? (
                                             <span className="text-xs">
-                                              ↳ {(subRow as any)[cell.column.id] || ""}
+                                              ↳{' '}
+                                              {(subRow as any)[
+                                                cell.column.id
+                                              ] || ''}
                                             </span>
                                           ) : (
-                                            (subRow as any)[cell.column.id] || ""
+                                            (subRow as any)[cell.column.id] ||
+                                            ''
                                           )}
                                         </div>
                                       </TableCell>
@@ -611,17 +664,17 @@ export function MinimalTable<TData extends RowData, TValue>({
                 </div>
               </div>
               <h4 className="mb-1 font-medium text-foreground text-sm">
-                {globalFilter ? "No results found" : emptyMessage}
+                {globalFilter ? 'No results found' : emptyMessage}
               </h4>
               <p className="max-w-[200px] text-muted-foreground text-xs">
                 {globalFilter
-                  ? "Try adjusting your search terms or clearing filters"
-                  : "Data will appear here when available"}
+                  ? 'Try adjusting your search terms or clearing filters'
+                  : 'Data will appear here when available'}
               </p>
               {globalFilter && (
                 <button
                   className="mt-3 text-primary text-xs underline underline-offset-2 hover:text-primary/80"
-                  onClick={() => setGlobalFilter("")}
+                  onClick={() => setGlobalFilter('')}
                   type="button"
                 >
                   Clear search
@@ -632,17 +685,22 @@ export function MinimalTable<TData extends RowData, TValue>({
         </div>
 
         {/* Pagination */}
-        {(table.getFilteredRowModel().rows.length > table.getState().pagination.pageSize ||
+        {(table.getFilteredRowModel().rows.length >
+          table.getState().pagination.pageSize ||
           table.getPageCount() > 1) && (
           <div className="flex items-center justify-between border-border/30 border-t pt-3">
             <div className="flex items-center gap-2 text-muted-foreground text-xs">
               {(() => {
                 const pageIndex = table.getState().pagination.pageIndex;
                 const pageSize = table.getState().pagination.pageSize;
-                const filteredRowCount = table.getFilteredRowModel().rows.length;
+                const filteredRowCount =
+                  table.getFilteredRowModel().rows.length;
                 const totalRowCount = (data || []).length;
                 const firstVisibleRow = pageIndex * pageSize + 1;
-                const lastVisibleRow = Math.min(firstVisibleRow + pageSize - 1, filteredRowCount);
+                const lastVisibleRow = Math.min(
+                  firstVisibleRow + pageSize - 1,
+                  filteredRowCount
+                );
 
                 return (
                   <>
@@ -677,7 +735,9 @@ export function MinimalTable<TData extends RowData, TValue>({
                     {table.getState().pagination.pageIndex + 1}
                   </span>
                   <span className="text-muted-foreground/70 text-xs">/</span>
-                  <span className="text-muted-foreground text-xs">{table.getPageCount()}</span>
+                  <span className="text-muted-foreground text-xs">
+                    {table.getPageCount()}
+                  </span>
                 </div>
 
                 <Button

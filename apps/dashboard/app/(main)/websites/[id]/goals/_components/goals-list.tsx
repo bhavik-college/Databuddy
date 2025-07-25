@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import type { Goal } from "@/hooks/use-goals";
-import { EmptyState } from "./empty-state";
-import { GoalCard } from "./goal-card";
+import type { Goal } from '@/hooks/use-goals';
+import { EmptyState } from './empty-state';
+import { GoalCard } from './goal-card';
 
 interface GoalAnalytics {
   goalId: string;

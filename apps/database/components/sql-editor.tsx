@@ -1,126 +1,152 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
-import { Play, History, Save, Download, Copy, Clock, CheckCircle, XCircle } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import {
+  CheckCircle,
+  Clock,
+  Copy,
+  Download,
+  History,
+  Play,
+  Save,
+  XCircle,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 
 interface QueryHistory {
-  id: string
-  query: string
-  timestamp: Date
-  duration?: number
-  success: boolean
-  error?: string
+  id: string;
+  query: string;
+  timestamp: Date;
+  duration?: number;
+  success: boolean;
+  error?: string;
 }
 
 interface SqlEditorProps {
-  value: string
-  onChange: (value: string) => void
-  onExecute: () => void
-  loading?: boolean
-  className?: string
+  value: string;
+  onChange: (value: string) => void;
+  onExecute: () => void;
+  loading?: boolean;
+  className?: string;
 }
 
-export function SqlEditor({ value, onChange, onExecute, loading = false, className }: SqlEditorProps) {
-  const [queryHistory, setQueryHistory] = useState<QueryHistory[]>([])
-  const [showHistory, setShowHistory] = useState(false)
+export function SqlEditor({
+  value,
+  onChange,
+  onExecute,
+  loading = false,
+  className,
+}: SqlEditorProps) {
+  const [queryHistory, setQueryHistory] = useState<QueryHistory[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
 
   // Load query history from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('sql-query-history')
+    const saved = localStorage.getItem('sql-query-history');
     if (saved) {
       try {
         const parsed = JSON.parse(saved).map((item: any) => ({
           ...item,
-          timestamp: new Date(item.timestamp)
-        }))
-        setQueryHistory(parsed)
+          timestamp: new Date(item.timestamp),
+        }));
+        setQueryHistory(parsed);
       } catch (error) {
-        console.error('Failed to load query history:', error)
+        console.error('Failed to load query history:', error);
       }
     }
-  }, [])
+  }, []);
 
   // Save query history to localStorage
   const saveQueryHistory = (history: QueryHistory[]) => {
-    localStorage.setItem('sql-query-history', JSON.stringify(history))
-    setQueryHistory(history)
-  }
+    localStorage.setItem('sql-query-history', JSON.stringify(history));
+    setQueryHistory(history);
+  };
 
   // Add query to history
-  const addToHistory = (query: string, success: boolean, duration?: number, error?: string) => {
+  const addToHistory = (
+    query: string,
+    success: boolean,
+    duration?: number,
+    error?: string
+  ) => {
     const newEntry: QueryHistory = {
       id: Date.now().toString(),
       query: query.trim(),
       timestamp: new Date(),
       duration,
       success,
-      error
-    }
+      error,
+    };
 
-    const updatedHistory = [newEntry, ...queryHistory.slice(0, 49)] // Keep last 50 queries
-    saveQueryHistory(updatedHistory)
-  }
+    const updatedHistory = [newEntry, ...queryHistory.slice(0, 49)]; // Keep last 50 queries
+    saveQueryHistory(updatedHistory);
+  };
 
   // Load query from history
   const loadFromHistory = (query: string) => {
-    onChange(query)
-    setShowHistory(false)
-  }
+    onChange(query);
+    setShowHistory(false);
+  };
 
   // Clear history
   const clearHistory = () => {
-    saveQueryHistory([])
-  }
+    saveQueryHistory([]);
+  };
 
   // Copy query to clipboard
   const copyToClipboard = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(text)
+      await navigator.clipboard.writeText(text);
     } catch (error) {
-      console.error('Failed to copy to clipboard:', error)
+      console.error('Failed to copy to clipboard:', error);
     }
-  }
+  };
 
   // Save query as file
   const saveAsFile = () => {
-    const blob = new Blob([value], { type: 'text/sql' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `query-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.sql`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
+    const blob = new Blob([value], { type: 'text/sql' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `query-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.sql`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   // Common ClickHouse queries
   const commonQueries = [
     {
       name: 'Show all databases',
-      query: 'SHOW DATABASES'
+      query: 'SHOW DATABASES',
     },
     {
       name: 'Show tables in analytics',
-      query: 'SHOW TABLES FROM analytics'
+      query: 'SHOW TABLES FROM analytics',
     },
     {
       name: 'Describe events table',
-      query: 'DESCRIBE analytics.events'
+      query: 'DESCRIBE analytics.events',
     },
     {
       name: 'Recent events (last hour)',
       query: `SELECT * FROM analytics.events 
 WHERE time >= now() - INTERVAL 1 HOUR 
 ORDER BY time DESC 
-LIMIT 100`
+LIMIT 100`,
     },
     {
       name: 'Event count by hour',
@@ -130,7 +156,7 @@ LIMIT 100`
 FROM analytics.events 
 WHERE time >= now() - INTERVAL 24 HOUR
 GROUP BY hour 
-ORDER BY hour DESC`
+ORDER BY hour DESC`,
     },
     {
       name: 'Top pages by views',
@@ -143,16 +169,16 @@ WHERE event_name = 'page_view'
   AND time >= now() - INTERVAL 7 DAY
 GROUP BY path 
 ORDER BY views DESC 
-LIMIT 20`
-    }
-  ]
+LIMIT 20`,
+    },
+  ];
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      e.preventDefault()
-      onExecute()
+      e.preventDefault();
+      onExecute();
     }
-  }
+  };
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -167,27 +193,27 @@ LIMIT 20`
             </div>
             <div className="flex items-center gap-2">
               <Button
-                variant="outline"
-                size="sm"
                 onClick={() => setShowHistory(!showHistory)}
+                size="sm"
+                variant="outline"
               >
                 <History className="h-4 w-4" />
                 History
               </Button>
               <Button
-                variant="outline"
-                size="sm"
-                onClick={() => copyToClipboard(value)}
                 disabled={!value.trim()}
+                onClick={() => copyToClipboard(value)}
+                size="sm"
+                variant="outline"
               >
                 <Copy className="h-4 w-4" />
                 Copy
               </Button>
               <Button
-                variant="outline"
-                size="sm"
-                onClick={saveAsFile}
                 disabled={!value.trim()}
+                onClick={saveAsFile}
+                size="sm"
+                variant="outline"
               >
                 <Save className="h-4 w-4" />
                 Save
@@ -198,23 +224,23 @@ LIMIT 20`
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Textarea
-              placeholder="SELECT * FROM analytics.events LIMIT 10"
-              value={value}
+              className="min-h-32 resize-none font-mono text-sm"
               onChange={(e) => onChange(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="min-h-32 font-mono text-sm resize-none"
+              placeholder="SELECT * FROM analytics.events LIMIT 10"
               rows={8}
+              value={value}
             />
           </div>
-          
+
           <div className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
+            <div className="text-muted-foreground text-sm">
               {value.trim().length} characters
             </div>
-            <Button 
-              onClick={onExecute} 
-              disabled={loading || !value.trim()}
+            <Button
               className="min-w-24"
+              disabled={loading || !value.trim()}
+              onClick={onExecute}
             >
               {loading ? (
                 <>
@@ -242,14 +268,14 @@ LIMIT 20`
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {commonQueries.map((item, index) => (
               <Button
+                className="h-auto justify-start p-3 text-left"
                 key={index}
-                variant="outline"
-                className="h-auto p-3 text-left justify-start"
                 onClick={() => onChange(item.query)}
+                variant="outline"
               >
                 <div>
                   <div className="font-medium text-sm">{item.name}</div>
-                  <div className="text-xs text-muted-foreground mt-1 truncate">
+                  <div className="mt-1 truncate text-muted-foreground text-xs">
                     {item.query.split('\n')[0]}
                   </div>
                 </div>
@@ -266,10 +292,12 @@ LIMIT 20`
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-lg">Query History</CardTitle>
-                <CardDescription>Recent queries and their results</CardDescription>
+                <CardDescription>
+                  Recent queries and their results
+                </CardDescription>
               </div>
               {queryHistory.length > 0 && (
-                <Button variant="outline" size="sm" onClick={clearHistory}>
+                <Button onClick={clearHistory} size="sm" variant="outline">
                   Clear History
                 </Button>
               )}
@@ -277,8 +305,8 @@ LIMIT 20`
           </CardHeader>
           <CardContent>
             {queryHistory.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <History className="h-8 w-8 mx-auto mb-2" />
+              <div className="py-8 text-center text-muted-foreground">
+                <History className="mx-auto mb-2 h-8 w-8" />
                 <p>No query history yet</p>
               </div>
             ) : (
@@ -286,44 +314,44 @@ LIMIT 20`
                 <div className="space-y-2">
                   {queryHistory.map((item) => (
                     <div
+                      className="cursor-pointer rounded border p-3 transition-colors hover:bg-muted/50"
                       key={item.id}
-                      className="p-3 rounded border cursor-pointer hover:bg-muted/50 transition-colors"
                       onClick={() => loadFromHistory(item.query)}
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex items-center gap-2">
                             {item.success ? (
-                              <CheckCircle className="h-3 w-3 text-green-500 flex-shrink-0" />
+                              <CheckCircle className="h-3 w-3 flex-shrink-0 text-green-500" />
                             ) : (
-                              <XCircle className="h-3 w-3 text-red-500 flex-shrink-0" />
+                              <XCircle className="h-3 w-3 flex-shrink-0 text-red-500" />
                             )}
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <span className="flex items-center gap-1 text-muted-foreground text-xs">
                               <Clock className="h-3 w-3" />
                               {item.timestamp.toLocaleString()}
                             </span>
                             {item.duration && (
-                              <Badge variant="outline" className="text-xs">
+                              <Badge className="text-xs" variant="outline">
                                 {item.duration}ms
                               </Badge>
                             )}
                           </div>
-                          <code className="text-xs font-mono block truncate">
+                          <code className="block truncate font-mono text-xs">
                             {item.query}
                           </code>
                           {item.error && (
-                            <p className="text-xs text-red-500 mt-1 truncate">
+                            <p className="mt-1 truncate text-red-500 text-xs">
                               {item.error}
                             </p>
                           )}
                         </div>
                         <Button
-                          variant="ghost"
-                          size="sm"
                           onClick={(e) => {
-                            e.stopPropagation()
-                            copyToClipboard(item.query)
+                            e.stopPropagation();
+                            copyToClipboard(item.query);
                           }}
+                          size="sm"
+                          variant="ghost"
                         >
                           <Copy className="h-3 w-3" />
                         </Button>
@@ -337,5 +365,5 @@ LIMIT 20`
         </Card>
       )}
     </div>
-  )
-} 
+  );
+}

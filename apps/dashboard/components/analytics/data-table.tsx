@@ -1,3 +1,4 @@
+import { ArrowsOutSimpleIcon, XIcon } from '@phosphor-icons/react';
 import {
   type ColumnDef,
   flexRender,
@@ -6,8 +7,8 @@ import {
   getSortedRowModel,
   type SortingState,
   useReactTable,
-} from "@tanstack/react-table";
-import { AnimatePresence, motion } from "framer-motion";
+} from '@tanstack/react-table';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   ArrowDown,
   ArrowUp,
@@ -15,11 +16,17 @@ import {
   DatabaseIcon,
   Search,
   X,
-} from "lucide-react";
-import React, { Fragment, useCallback, useRef, useState, useEffect } from "react";
-import ReactDOM from "react-dom";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+} from 'lucide-react';
+import React, {
+  Fragment,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import ReactDOM from 'react-dom';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -27,9 +34,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { cn } from "@/lib/utils";
-import { ArrowsOutSimpleIcon, XIcon } from "@phosphor-icons/react";
+} from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 
 interface TabConfig<TData> {
   id: string;
@@ -52,14 +58,20 @@ interface DataTableProps<TData extends { name: string | number }, TValue> {
   minHeight?: string | number;
   showSearch?: boolean;
   getSubRows?: (row: TData) => TData[] | undefined;
-  renderSubRow?: (subRow: TData, parentRow: TData, index: number) => React.ReactNode;
+  renderSubRow?: (
+    subRow: TData,
+    parentRow: TData,
+    index: number
+  ) => React.ReactNode;
   expandable?: boolean;
   renderTooltipContent?: (row: TData) => React.ReactNode;
 }
 
 function getRowPercentage(row: any): number {
-  if (row.marketShare !== undefined) return Number.parseFloat(row.marketShare) || 0;
-  if (row.percentage !== undefined) return Number.parseFloat(row.percentage) || 0;
+  if (row.marketShare !== undefined)
+    return Number.parseFloat(row.marketShare) || 0;
+  if (row.percentage !== undefined)
+    return Number.parseFloat(row.percentage) || 0;
   if (row.percent !== undefined) return Number.parseFloat(row.percent) || 0;
   if (row.share !== undefined) return Number.parseFloat(row.share) || 0;
   return 0;
@@ -76,35 +88,35 @@ function getPercentageGradient(percentage: number): {
     return {
       background: `linear-gradient(90deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.15) ${percentage * 0.8}%, rgba(34, 197, 94, 0.12) ${percentage}%, rgba(34, 197, 94, 0.02) ${percentage + 5}%, transparent 100%)`,
       hoverBackground: `linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.22) ${percentage * 0.8}%, rgba(34, 197, 94, 0.18) ${percentage}%, rgba(34, 197, 94, 0.04) ${percentage + 5}%, transparent 100%)`,
-      borderColor: "rgba(34, 197, 94, 0.3)",
-      accentColor: "rgba(34, 197, 94, 0.8)",
-      glowColor: "rgba(34, 197, 94, 0.2)",
+      borderColor: 'rgba(34, 197, 94, 0.3)',
+      accentColor: 'rgba(34, 197, 94, 0.8)',
+      glowColor: 'rgba(34, 197, 94, 0.2)',
     };
   }
   if (percentage >= 25) {
     return {
       background: `linear-gradient(90deg, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.15) ${percentage * 0.8}%, rgba(59, 130, 246, 0.12) ${percentage}%, rgba(59, 130, 246, 0.02) ${percentage + 5}%, transparent 100%)`,
       hoverBackground: `linear-gradient(90deg, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0.22) ${percentage * 0.8}%, rgba(59, 130, 246, 0.18) ${percentage}%, rgba(59, 130, 246, 0.04) ${percentage + 5}%, transparent 100%)`,
-      borderColor: "rgba(59, 130, 246, 0.3)",
-      accentColor: "rgba(59, 130, 246, 0.8)",
-      glowColor: "rgba(59, 130, 246, 0.2)",
+      borderColor: 'rgba(59, 130, 246, 0.3)',
+      accentColor: 'rgba(59, 130, 246, 0.8)',
+      glowColor: 'rgba(59, 130, 246, 0.2)',
     };
   }
   if (percentage >= 10) {
     return {
       background: `linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.15) ${percentage * 0.8}%, rgba(245, 158, 11, 0.12) ${percentage}%, rgba(245, 158, 11, 0.02) ${percentage + 5}%, transparent 100%)`,
       hoverBackground: `linear-gradient(90deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.22) ${percentage * 0.8}%, rgba(245, 158, 11, 0.18) ${percentage}%, rgba(245, 158, 11, 0.04) ${percentage + 5}%, transparent 100%)`,
-      borderColor: "rgba(245, 158, 11, 0.3)",
-      accentColor: "rgba(245, 158, 11, 0.8)",
-      glowColor: "rgba(245, 158, 11, 0.2)",
+      borderColor: 'rgba(245, 158, 11, 0.3)',
+      accentColor: 'rgba(245, 158, 11, 0.8)',
+      glowColor: 'rgba(245, 158, 11, 0.2)',
     };
   }
   return {
     background: `linear-gradient(90deg, rgba(107, 114, 128, 0.06) 0%, rgba(107, 114, 128, 0.12) ${percentage * 0.8}%, rgba(107, 114, 128, 0.1) ${percentage}%, rgba(107, 114, 128, 0.02) ${percentage + 5}%, transparent 100%)`,
     hoverBackground: `linear-gradient(90deg, rgba(107, 114, 128, 0.1) 0%, rgba(107, 114, 128, 0.18) ${percentage * 0.8}%, rgba(107, 114, 128, 0.15) ${percentage}%, rgba(107, 114, 128, 0.03) ${percentage + 5}%, transparent 100%)`,
-    borderColor: "rgba(107, 114, 128, 0.2)",
-    accentColor: "rgba(107, 114, 128, 0.7)",
-    glowColor: "rgba(107, 114, 128, 0.15)",
+    borderColor: 'rgba(107, 114, 128, 0.2)',
+    accentColor: 'rgba(107, 114, 128, 0.7)',
+    glowColor: 'rgba(107, 114, 128, 0.15)',
   };
 }
 
@@ -163,7 +175,11 @@ function FullScreenTable<TData extends { name: string | number }, TValue>({
   initialPageSize?: number;
   expandable?: boolean;
   getSubRows?: (row: TData) => TData[] | undefined;
-  renderSubRow?: (subRow: TData, parentRow: TData, index: number) => React.ReactNode;
+  renderSubRow?: (
+    subRow: TData,
+    parentRow: TData,
+    index: number
+  ) => React.ReactNode;
   tabs?: TabConfig<TData>[];
   activeTab?: string;
   onTabChange?: (tabId: string) => void;
@@ -188,7 +204,11 @@ function FullScreenTable<TData extends { name: string | number }, TValue>({
     getSortedRowModel: getSortedRowModel(),
   });
   // Tooltip for truncated cell
-  const [tooltip, setTooltip] = useState<{ value: string; x: number; y: number } | null>(null);
+  const [tooltip, setTooltip] = useState<{
+    value: string;
+    x: number;
+    y: number;
+  } | null>(null);
   const handleCellMouseEnter = (e: React.MouseEvent, value: string) => {
     const target = e.currentTarget as HTMLElement;
     if (target.scrollWidth > target.clientWidth) {
@@ -198,7 +218,7 @@ function FullScreenTable<TData extends { name: string | number }, TValue>({
   };
   const handleCellMouseLeave = () => setTooltip(null);
   const toggleRowExpansion = (rowId: string) => {
-    setExpandedRow(prev => (prev === rowId ? null : rowId));
+    setExpandedRow((prev) => (prev === rowId ? null : rowId));
   };
 
   // Keyboard navigation for tabs
@@ -211,44 +231,48 @@ function FullScreenTable<TData extends { name: string | number }, TValue>({
 
   const handleTabKeyDown = (e: React.KeyboardEvent, idx: number) => {
     if (!tabs) return;
-    if (e.key === "ArrowRight") {
+    if (e.key === 'ArrowRight') {
       e.preventDefault();
       setTabFocusIndex((idx + 1) % tabs.length);
-    } else if (e.key === "ArrowLeft") {
+    } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
       setTabFocusIndex((idx - 1 + tabs.length) % tabs.length);
-    } else if (e.key === "Home") {
+    } else if (e.key === 'Home') {
       e.preventDefault();
       setTabFocusIndex(0);
-    } else if (e.key === "End") {
+    } else if (e.key === 'End') {
       e.preventDefault();
       setTabFocusIndex(tabs.length - 1);
-    } else if (e.key === "Enter" || e.key === " ") {
+    } else if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       if (onTabChange) onTabChange(tabs[idx].id);
     }
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-background relative">
+    <div className="relative flex h-full w-full flex-col bg-background">
       {/* CardHeader style header */}
-      <div className="flex items-start justify-between px-3 pt-3 pb-2 border-b bg-background">
+      <div className="flex items-start justify-between border-b bg-background px-3 pt-3 pb-2">
         <div className="min-w-0 flex-1">
           {title && (
-            <h3 className="truncate font-semibold text-foreground text-sm">{title}</h3>
+            <h3 className="truncate font-semibold text-foreground text-sm">
+              {title}
+            </h3>
           )}
           {description && (
-            <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs">{description}</p>
+            <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs">
+              {description}
+            </p>
           )}
         </div>
         <button
-          type="button"
           aria-label="Close full screen"
-          title="Close"
-          className="ml-2 flex items-center justify-center rounded bg-muted/30 p-2 text-muted-foreground hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition border"
+          className="ml-2 flex items-center justify-center rounded border bg-muted/30 p-2 text-muted-foreground transition hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
           onClick={onClose}
-          tabIndex={0}
           style={{ minWidth: 40, minHeight: 40 }}
+          tabIndex={0}
+          title="Close"
+          type="button"
         >
           <XIcon size={20} />
         </button>
@@ -266,22 +290,24 @@ function FullScreenTable<TData extends { name: string | number }, TValue>({
               const itemCount = tab?.data?.length || 0;
               return (
                 <button
-                  ref={el => { tabRefs.current[idx] = el; }}
                   aria-controls={`tabpanel-${tab.id}`}
+                  aria-current={isActive ? 'page' : undefined}
                   aria-selected={isActive}
-                  aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-1 rounded-md px-2.5 py-1.5 font-medium text-xs transition-all duration-200",
-                    "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1",
-                    "disabled:opacity-60",
+                    'flex items-center gap-1 rounded-md px-2.5 py-1.5 font-medium text-xs transition-all duration-200',
+                    'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1',
+                    'disabled:opacity-60',
                     isActive
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:bg-background/60 hover:text-foreground"
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:bg-background/60 hover:text-foreground'
                   )}
                   disabled={isTransitioning}
                   key={tab.id}
                   onClick={() => onTabChange?.(tab.id)}
-                  onKeyDown={e => handleTabKeyDown(e, idx)}
+                  onKeyDown={(e) => handleTabKeyDown(e, idx)}
+                  ref={(el) => {
+                    tabRefs.current[idx] = el;
+                  }}
                   role="tab"
                   tabIndex={isActive ? 0 : -1}
                   type="button"
@@ -290,13 +316,13 @@ function FullScreenTable<TData extends { name: string | number }, TValue>({
                   {itemCount > 0 && (
                     <span
                       className={cn(
-                        "inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 font-semibold text-[10px]",
+                        'inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 font-semibold text-[10px]',
                         isActive
-                          ? "bg-primary/15 text-primary"
-                          : "bg-muted-foreground/20 text-muted-foreground/70"
+                          ? 'bg-primary/15 text-primary'
+                          : 'bg-muted-foreground/20 text-muted-foreground/70'
                       )}
                     >
-                      {itemCount > 99 ? "99+" : itemCount}
+                      {itemCount > 99 ? '99+' : itemCount}
                     </span>
                   )}
                 </button>
@@ -312,17 +338,17 @@ function FullScreenTable<TData extends { name: string | number }, TValue>({
             <Input
               aria-label="Search table"
               className="h-7 w-full border-0 bg-muted/30 pr-2 pl-7 text-xs focus:bg-background focus:ring-1 focus:ring-primary/20"
-              onChange={event => setGlobalFilter(event.target.value)}
+              onChange={(event) => setGlobalFilter(event.target.value)}
               placeholder="Filter data..."
-              value={globalFilter ?? ""}
+              value={globalFilter ?? ''}
             />
             <Search className="-translate-y-1/2 absolute top-1/2 left-2 h-3 w-3 transform text-muted-foreground/50" />
             {globalFilter && (
               <button
-                type="button"
                 aria-label="Clear search"
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 hover:bg-muted/30 focus:outline-none"
-                onClick={() => setGlobalFilter("")}
+                className="-translate-y-1/2 absolute top-1/2 right-2 rounded p-1 hover:bg-muted/30 focus:outline-none"
+                onClick={() => setGlobalFilter('')}
+                type="button"
               >
                 <X className="h-3 w-3 text-muted-foreground/60" />
               </button>
@@ -334,36 +360,39 @@ function FullScreenTable<TData extends { name: string | number }, TValue>({
       <div className="flex-1 overflow-auto px-3 pb-3">
         <Table className="w-full table-fixed">
           <TableHeader>
-            {table.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id} className="sticky top-0 z-10 border-border/30 bg-muted/20">
-                {headerGroup.headers.map(header => (
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow
+                className="sticky top-0 z-10 border-border/30 bg-muted/20"
+                key={headerGroup.id}
+              >
+                {headerGroup.headers.map((header) => (
                   <TableHead
                     aria-sort={
-                      header.column.getIsSorted() === "asc"
-                        ? "ascending"
-                        : header.column.getIsSorted() === "desc"
-                          ? "descending"
+                      header.column.getIsSorted() === 'asc'
+                        ? 'ascending'
+                        : header.column.getIsSorted() === 'desc'
+                          ? 'descending'
                           : header.column.getCanSort()
-                            ? "none"
+                            ? 'none'
                             : undefined
                     }
                     className={cn(
-                      "h-11 bg-muted/20 px-2 font-semibold text-muted-foreground text-xs uppercase tracking-wide backdrop-blur-sm sm:px-4",
+                      'h-11 bg-muted/20 px-2 font-semibold text-muted-foreground text-xs uppercase tracking-wide backdrop-blur-sm sm:px-4',
                       (header.column.columnDef.meta as any)?.className,
                       header.column.getCanSort()
-                        ? "group cursor-pointer select-none transition-all duration-200 hover:bg-muted/30 hover:text-foreground"
-                        : "select-none"
+                        ? 'group cursor-pointer select-none transition-all duration-200 hover:bg-muted/30 hover:text-foreground'
+                        : 'select-none'
                     )}
                     key={header.id}
                     onClick={header.column.getToggleSortingHandler()}
-                    role={header.column.getCanSort() ? "button" : undefined}
+                    role={header.column.getCanSort() ? 'button' : undefined}
                     style={{
                       width:
                         header.getSize() !== 150
                           ? `${Math.min(header.getSize(), 300)}px`
                           : undefined,
-                      maxWidth: "300px",
-                      minWidth: "80px",
+                      maxWidth: '300px',
+                      minWidth: '80px',
                     }}
                     tabIndex={header.column.getCanSort() ? 0 : -1}
                   >
@@ -371,17 +400,20 @@ function FullScreenTable<TData extends { name: string | number }, TValue>({
                       <span className="truncate">
                         {header.isPlaceholder
                           ? null
-                          : flexRender(header.column.columnDef.header, header.getContext())}
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
                       </span>
                       {header.column.getCanSort() && (
                         <div className="flex h-3 w-3 flex-col items-center justify-center">
                           {!header.column.getIsSorted() && (
                             <ArrowUpDown className="h-3 w-3 text-muted-foreground/40 transition-colors group-hover:text-muted-foreground/70" />
                           )}
-                          {header.column.getIsSorted() === "asc" && (
+                          {header.column.getIsSorted() === 'asc' && (
                             <ArrowUp className="h-3 w-3 text-primary" />
                           )}
-                          {header.column.getIsSorted() === "desc" && (
+                          {header.column.getIsSorted() === 'desc' && (
                             <ArrowDown className="h-3 w-3 text-primary" />
                           )}
                         </div>
@@ -393,118 +425,138 @@ function FullScreenTable<TData extends { name: string | number }, TValue>({
             ))}
           </TableHeader>
           <TableBody className="overflow-hidden">
-            {table.getRowModel().rows.slice(0, initialPageSize).map((row, rowIndex) => {
-              const subRows = expandable && getSubRows ? getSubRows(row.original) : undefined;
-              const hasSubRows = subRows && subRows.length > 0;
-              const isExpanded = expandedRow === row.id;
-              return (
-                <Fragment key={row.id}>
-                  <TableRow
-                    className={cn(
-                      "relative h-12 border-border/20 transition-all duration-300 ease-in-out",
-                      hasSubRows ? "cursor-pointer" : "",
-                      rowIndex % 2 === 0 ? "bg-background/50" : "bg-muted/10"
-                    )}
-                    onClick={() => {
-                      if (hasSubRows) {
-                        toggleRowExpansion(row.id);
-                      }
-                    }}
-                  >
-                    {row.getVisibleCells().map((cell, cellIndex) => (
-                      <TableCell
-                        className={cn(
-                          "px-2 py-3 font-medium text-sm transition-colors duration-150 sm:px-4",
-                          cellIndex === 0 && "font-semibold text-foreground",
-                          (cell.column.columnDef.meta as any)?.className
-                        )}
-                        key={cell.id}
-                        style={{
-                          width:
-                            cell.column.getSize() !== 150
-                              ? `${Math.min(cell.column.getSize(), 300)}px`
-                              : undefined,
-                          maxWidth: "300px",
-                          minWidth: "80px",
-                        }}
-                      >
-                        <div className="flex items-center gap-2">
-                          {cellIndex === 0 && hasSubRows && (
-                            <button
-                              aria-label={isExpanded ? "Collapse row" : "Expand row"}
-                              className="flex-shrink-0 rounded p-0.5 transition-colors hover:bg-muted"
-                              onClick={e => {
-                                e.stopPropagation();
-                                toggleRowExpansion(row.id);
-                              }}
-                              type="button"
-                            >
-                              {isExpanded ? (
-                                <ArrowDown className="h-3.5 w-3.5 text-muted-foreground" />
-                              ) : (
-                                <ArrowUp className="h-3.5 w-3.5 text-muted-foreground" />
-                              )}
-                            </button>
+            {table
+              .getRowModel()
+              .rows.slice(0, initialPageSize)
+              .map((row, rowIndex) => {
+                const subRows =
+                  expandable && getSubRows
+                    ? getSubRows(row.original)
+                    : undefined;
+                const hasSubRows = subRows && subRows.length > 0;
+                const isExpanded = expandedRow === row.id;
+                return (
+                  <Fragment key={row.id}>
+                    <TableRow
+                      className={cn(
+                        'relative h-12 border-border/20 transition-all duration-300 ease-in-out',
+                        hasSubRows ? 'cursor-pointer' : '',
+                        rowIndex % 2 === 0 ? 'bg-background/50' : 'bg-muted/10'
+                      )}
+                      onClick={() => {
+                        if (hasSubRows) {
+                          toggleRowExpansion(row.id);
+                        }
+                      }}
+                    >
+                      {row.getVisibleCells().map((cell, cellIndex) => (
+                        <TableCell
+                          className={cn(
+                            'px-2 py-3 font-medium text-sm transition-colors duration-150 sm:px-4',
+                            cellIndex === 0 && 'font-semibold text-foreground',
+                            (cell.column.columnDef.meta as any)?.className
                           )}
-                          <div className="flex-1 overflow-hidden truncate">
-                            <div className="truncate">
-                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          key={cell.id}
+                          style={{
+                            width:
+                              cell.column.getSize() !== 150
+                                ? `${Math.min(cell.column.getSize(), 300)}px`
+                                : undefined,
+                            maxWidth: '300px',
+                            minWidth: '80px',
+                          }}
+                        >
+                          <div className="flex items-center gap-2">
+                            {cellIndex === 0 && hasSubRows && (
+                              <button
+                                aria-label={
+                                  isExpanded ? 'Collapse row' : 'Expand row'
+                                }
+                                className="flex-shrink-0 rounded p-0.5 transition-colors hover:bg-muted"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleRowExpansion(row.id);
+                                }}
+                                type="button"
+                              >
+                                {isExpanded ? (
+                                  <ArrowDown className="h-3.5 w-3.5 text-muted-foreground" />
+                                ) : (
+                                  <ArrowUp className="h-3.5 w-3.5 text-muted-foreground" />
+                                )}
+                              </button>
+                            )}
+                            <div className="flex-1 overflow-hidden truncate">
+                              <div className="truncate">
+                                {flexRender(
+                                  cell.column.columnDef.cell,
+                                  cell.getContext()
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                  {hasSubRows && isExpanded && subRows.map((subRow, subIndex) => (
-                    <TableRow
-                      className="border-border/10 bg-muted/5 transition-colors hover:bg-muted/10"
-                      key={`${row.id}-sub-${subIndex}`}
-                    >
-                      {renderSubRow ? (
-                        <TableCell className="p-0" colSpan={row.getVisibleCells().length}>
-                          {renderSubRow(subRow, row.original, subIndex)}
                         </TableCell>
-                      ) : (
-                        row.getVisibleCells().map((cell, cellIndex) => (
-                          <TableCell
-                            className={cn(
-                              "py-2 text-muted-foreground text-sm",
-                              cellIndex === 0 ? "pl-8" : "px-3"
-                            )}
-                            key={`sub-${cell.id}`}
-                            style={{
-                              width:
-                                cell.column.getSize() !== 150
-                                  ? `${Math.min(cell.column.getSize(), 300)}px`
-                                  : undefined,
-                              maxWidth: "300px",
-                              minWidth: "80px",
-                            }}
-                          >
-                            <div className="truncate">
-                              {cellIndex === 0 ? (
-                                <span className="text-xs">
-                                  ↳ {(subRow as any)[cell.column.id] || ""}
-                                </span>
-                              ) : (
-                                (subRow as any)[cell.column.id] || ""
-                              )}
-                            </div>
-                          </TableCell>
-                        ))
-                      )}
+                      ))}
                     </TableRow>
-                  ))}
-                </Fragment>
-              );
-            })}
+                    {hasSubRows &&
+                      isExpanded &&
+                      subRows.map((subRow, subIndex) => (
+                        <TableRow
+                          className="border-border/10 bg-muted/5 transition-colors hover:bg-muted/10"
+                          key={`${row.id}-sub-${subIndex}`}
+                        >
+                          {renderSubRow ? (
+                            <TableCell
+                              className="p-0"
+                              colSpan={row.getVisibleCells().length}
+                            >
+                              {renderSubRow(subRow, row.original, subIndex)}
+                            </TableCell>
+                          ) : (
+                            row.getVisibleCells().map((cell, cellIndex) => (
+                              <TableCell
+                                className={cn(
+                                  'py-2 text-muted-foreground text-sm',
+                                  cellIndex === 0 ? 'pl-8' : 'px-3'
+                                )}
+                                key={`sub-${cell.id}`}
+                                style={{
+                                  width:
+                                    cell.column.getSize() !== 150
+                                      ? `${Math.min(cell.column.getSize(), 300)}px`
+                                      : undefined,
+                                  maxWidth: '300px',
+                                  minWidth: '80px',
+                                }}
+                              >
+                                <div className="truncate">
+                                  {cellIndex === 0 ? (
+                                    <span className="text-xs">
+                                      ↳ {(subRow as any)[cell.column.id] || ''}
+                                    </span>
+                                  ) : (
+                                    (subRow as any)[cell.column.id] || ''
+                                  )}
+                                </div>
+                              </TableCell>
+                            ))
+                          )}
+                        </TableRow>
+                      ))}
+                  </Fragment>
+                );
+              })}
           </TableBody>
         </Table>
         {/* Tooltip for truncated cell */}
         {tooltip && (
           <div
-            className="fixed z-50 px-3 py-1 rounded bg-foreground text-background text-xs shadow-lg pointer-events-none"
-            style={{ left: tooltip.x, top: tooltip.y - 32, transform: "translateX(-50%)" }}
+            className="pointer-events-none fixed z-50 rounded bg-foreground px-3 py-1 text-background text-xs shadow-lg"
+            style={{
+              left: tooltip.x,
+              top: tooltip.y - 32,
+              transform: 'translateX(-50%)',
+            }}
           >
             {tooltip.value}
           </div>
@@ -522,7 +574,7 @@ export function DataTable<TData extends { name: string | number }, TValue>({
   description,
   isLoading = false,
   initialPageSize,
-  emptyMessage = "No data available",
+  emptyMessage = 'No data available',
   className,
   onRowClick,
   minHeight = 200,
@@ -533,8 +585,8 @@ export function DataTable<TData extends { name: string | number }, TValue>({
   renderTooltipContent,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState("");
-  const [activeTab, setActiveTab] = useState(tabs?.[0]?.id || "");
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [activeTab, setActiveTab] = useState(tabs?.[0]?.id || '');
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
@@ -560,8 +612,8 @@ export function DataTable<TData extends { name: string | number }, TValue>({
     );
     if (focusable?.length) focusable[0].focus();
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setFullScreen(false);
-      if (e.key === "Tab" && focusable && focusable.length) {
+      if (e.key === 'Escape') setFullScreen(false);
+      if (e.key === 'Tab' && focusable && focusable.length) {
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
         if (e.shiftKey && document.activeElement === first) {
@@ -573,9 +625,9 @@ export function DataTable<TData extends { name: string | number }, TValue>({
         }
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown);
       lastFocusedElement.current?.focus();
     };
   }, [fullScreen]);
@@ -604,7 +656,7 @@ export function DataTable<TData extends { name: string | number }, TValue>({
     },
     state: {
       sorting,
-      globalFilter: showSearch ? globalFilter : "",
+      globalFilter: showSearch ? globalFilter : '',
     },
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
@@ -617,18 +669,18 @@ export function DataTable<TData extends { name: string | number }, TValue>({
 
   const getFieldFromTabId = (tabId: string): string => {
     const mapping: Record<string, string> = {
-      errors_by_page: "path",
-      errors_by_browser: "browser_name",
-      errors_by_os: "os_name",
-      errors_by_country: "country",
-      errors_by_device: "device_type",
-      error_types: "error_message",
+      errors_by_page: 'path',
+      errors_by_browser: 'browser_name',
+      errors_by_os: 'os_name',
+      errors_by_country: 'country',
+      errors_by_device: 'device_type',
+      error_types: 'error_message',
     };
-    return mapping[tabId] || "name";
+    return mapping[tabId] || 'name';
   };
 
   const toggleRowExpansion = useCallback((rowId: string) => {
-    setExpandedRow(prev => (prev === rowId ? null : rowId));
+    setExpandedRow((prev) => (prev === rowId ? null : rowId));
   }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
@@ -668,7 +720,7 @@ export function DataTable<TData extends { name: string | number }, TValue>({
       setIsTransitioning(true);
       setTimeout(() => {
         setActiveTab(tabId);
-        setGlobalFilter("");
+        setGlobalFilter('');
         setExpandedRow(null);
         setIsTransitioning(false);
       }, 150);
@@ -680,7 +732,7 @@ export function DataTable<TData extends { name: string | number }, TValue>({
     return (
       <div
         className={cn(
-          "w-full overflow-hidden border bg-card/50 shadow-sm backdrop-blur-sm",
+          'w-full overflow-hidden border bg-card/50 shadow-sm backdrop-blur-sm',
           className
         )}
       >
@@ -688,7 +740,9 @@ export function DataTable<TData extends { name: string | number }, TValue>({
           <div className="flex flex-col items-start justify-between gap-3 sm:flex-row">
             <div className="min-w-0 flex-1">
               <Skeleton className="h-5 w-32 rounded-md" />
-              {description && <Skeleton className="mt-0.5 h-3 w-48 rounded-sm" />}
+              {description && (
+                <Skeleton className="mt-0.5 h-3 w-48 rounded-sm" />
+              )}
             </div>
             {showSearch && (
               <div className="flex-shrink-0">
@@ -717,34 +771,38 @@ export function DataTable<TData extends { name: string | number }, TValue>({
   // Extracted table content for DRYness
   const renderTableContent = () => (
     <>
-      <div className="px-2 pb-2 sm:px-3 pt-2">
+      <div className="px-2 pt-2 pb-2 sm:px-3">
         <div className="flex flex-col items-start justify-between gap-3 sm:flex-row">
           <div className="min-w-0 flex-1">
-            <h3 className="truncate font-semibold text-foreground text-sm">{title}</h3>
+            <h3 className="truncate font-semibold text-foreground text-sm">
+              {title}
+            </h3>
             {description && (
-              <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs">{description}</p>
+              <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs">
+                {description}
+              </p>
             )}
           </div>
           <div className="flex items-center gap-2">
             {showSearch && (
-              <div className="relative w-full flex-shrink-0 sm:w-auto border">
+              <div className="relative w-full flex-shrink-0 border sm:w-auto">
                 <Search className="-translate-y-1/2 absolute top-1/2 left-2 h-3 w-3 transform text-muted-foreground/50" />
                 <Input
                   aria-label={`Search ${title}`}
                   className="h-7 w-full border-0 bg-muted/30 pr-2 pl-7 text-xs focus:bg-background focus:ring-1 focus:ring-primary/20 sm:w-36"
                   onChange={(event) => setGlobalFilter(event.target.value)}
                   placeholder="Filter data..."
-                  value={globalFilter ?? ""}
+                  value={globalFilter ?? ''}
                 />
               </div>
             )}
             {!fullScreen && (
               <button
-                type="button"
                 aria-label="Full screen"
-                title="Full screen"
-                className="ml-2 flex items-center justify-center rounded bg-muted/30 p-2 text-muted-foreground hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition border"
+                className="ml-2 flex items-center justify-center rounded border bg-muted/30 p-2 text-muted-foreground transition hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
                 onClick={() => setFullScreen(true)}
+                title="Full screen"
+                type="button"
               >
                 <ArrowsOutSimpleIcon size={18} />
               </button>
@@ -769,12 +827,12 @@ export function DataTable<TData extends { name: string | number }, TValue>({
                       aria-controls={`tabpanel-${tab.id}`}
                       aria-selected={isActive}
                       className={cn(
-                        "flex items-center gap-1 rounded-md px-2.5 py-1.5 font-medium text-xs transition-all duration-200",
-                        "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1",
-                        "disabled:opacity-60",
+                        'flex items-center gap-1 rounded-md px-2.5 py-1.5 font-medium text-xs transition-all duration-200',
+                        'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1',
+                        'disabled:opacity-60',
                         isActive
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted-foreground hover:bg-background/60 hover:text-foreground"
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:bg-background/60 hover:text-foreground'
                       )}
                       disabled={isTransitioning}
                       key={tab.id}
@@ -787,13 +845,13 @@ export function DataTable<TData extends { name: string | number }, TValue>({
                       {itemCount > 0 && (
                         <span
                           className={cn(
-                            "inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 font-semibold text-[10px]",
+                            'inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 font-semibold text-[10px]',
                             isActive
-                              ? "bg-primary/15 text-primary"
-                              : "bg-muted-foreground/20 text-muted-foreground/70"
+                              ? 'bg-primary/15 text-primary'
+                              : 'bg-muted-foreground/20 text-muted-foreground/70'
                           )}
                         >
-                          {itemCount > 99 ? "99+" : itemCount}
+                          {itemCount > 99 ? '99+' : itemCount}
                         </span>
                       )}
                     </button>
@@ -808,8 +866,8 @@ export function DataTable<TData extends { name: string | number }, TValue>({
       <div className="overflow-hidden">
         <div
           className={cn(
-            "relative transition-all duration-300 ease-out",
-            isTransitioning && "scale-[0.98] opacity-40"
+            'relative transition-all duration-300 ease-out',
+            isTransitioning && 'scale-[0.98] opacity-40'
           )}
           onMouseLeave={handleMouseLeave}
           onMouseMove={handleMouseMove}
@@ -818,16 +876,16 @@ export function DataTable<TData extends { name: string | number }, TValue>({
           <AnimatePresence>
             {renderTooltipContent && tooltipState.visible && (
               <motion.div
-                ref={tooltipRef}
                 animate={{ opacity: 1, scale: 1 }}
                 className="pointer-events-none absolute z-30"
                 exit={{ opacity: 0, scale: 0.9 }}
                 initial={{ opacity: 0, scale: 0.9 }}
+                ref={tooltipRef}
                 style={{
                   top: 0,
                   left: 0,
                 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
               >
                 {tooltipState.content}
               </motion.div>
@@ -837,7 +895,9 @@ export function DataTable<TData extends { name: string | number }, TValue>({
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/50 backdrop-blur-[1px]">
               <div className="flex items-center gap-2 rounded-lg border border-border/50 bg-background/80 px-3 py-2 shadow-sm">
                 <div className="h-3 w-3 animate-pulse rounded-full bg-primary/60" />
-                <span className="font-medium text-muted-foreground text-xs">Loading...</span>
+                <span className="font-medium text-muted-foreground text-xs">
+                  Loading...
+                </span>
               </div>
             </div>
           )}
@@ -845,7 +905,7 @@ export function DataTable<TData extends { name: string | number }, TValue>({
           {table.getRowModel().rows.length ? (
             <div
               aria-labelledby={`tab-${activeTab}`}
-              className="relative overflow-auto border border-border/50 bg-background custom-scrollbar"
+              className="custom-scrollbar relative overflow-auto border border-border/50 bg-background"
               id={`tabpanel-${activeTab}`}
               role="tabpanel"
               style={{ height: minHeight }}
@@ -860,31 +920,33 @@ export function DataTable<TData extends { name: string | number }, TValue>({
                       {headerGroup.headers.map((header) => (
                         <TableHead
                           aria-sort={
-                            header.column.getIsSorted() === "asc"
-                              ? "ascending"
-                              : header.column.getIsSorted() === "desc"
-                                ? "descending"
+                            header.column.getIsSorted() === 'asc'
+                              ? 'ascending'
+                              : header.column.getIsSorted() === 'desc'
+                                ? 'descending'
                                 : header.column.getCanSort()
-                                  ? "none"
+                                  ? 'none'
                                   : undefined
                           }
                           className={cn(
-                            "h-10 bg-muted px-2 font-semibold text-muted-foreground text-xs uppercase tracking-wide",
+                            'h-10 bg-muted px-2 font-semibold text-muted-foreground text-xs uppercase tracking-wide',
                             (header.column.columnDef.meta as any)?.className,
                             header.column.getCanSort()
-                              ? "group cursor-pointer select-none transition-all duration-200 hover:bg-muted/30 hover:text-foreground"
-                              : "select-none"
+                              ? 'group cursor-pointer select-none transition-all duration-200 hover:bg-muted/30 hover:text-foreground'
+                              : 'select-none'
                           )}
                           key={header.id}
                           onClick={header.column.getToggleSortingHandler()}
-                          role={header.column.getCanSort() ? "button" : undefined}
+                          role={
+                            header.column.getCanSort() ? 'button' : undefined
+                          }
                           style={{
                             width:
                               header.getSize() !== 150
                                 ? `${Math.min(header.getSize(), 300)}px`
                                 : undefined,
-                            maxWidth: "300px",
-                            minWidth: "80px",
+                            maxWidth: '300px',
+                            minWidth: '80px',
                           }}
                           tabIndex={header.column.getCanSort() ? 0 : -1}
                         >
@@ -892,17 +954,20 @@ export function DataTable<TData extends { name: string | number }, TValue>({
                             <span className="truncate">
                               {header.isPlaceholder
                                 ? null
-                                : flexRender(header.column.columnDef.header, header.getContext())}
+                                : flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )}
                             </span>
                             {header.column.getCanSort() && (
                               <div className="flex h-3 w-3 flex-col items-center justify-center">
                                 {!header.column.getIsSorted() && (
                                   <ArrowUpDown className="h-3 w-3 text-muted-foreground/40 transition-colors group-hover:text-muted-foreground/70" />
                                 )}
-                                {header.column.getIsSorted() === "asc" && (
+                                {header.column.getIsSorted() === 'asc' && (
                                   <ArrowUp className="h-3 w-3 text-primary" />
                                 )}
-                                {header.column.getIsSorted() === "desc" && (
+                                {header.column.getIsSorted() === 'desc' && (
                                   <ArrowDown className="h-3 w-3 text-primary" />
                                 )}
                               </div>
@@ -915,7 +980,10 @@ export function DataTable<TData extends { name: string | number }, TValue>({
                 </TableHeader>
                 <TableBody className="overflow-hidden">
                   {displayData.map((row, rowIndex) => {
-                    const subRows = expandable && getSubRows ? getSubRows(row.original) : undefined;
+                    const subRows =
+                      expandable && getSubRows
+                        ? getSubRows(row.original)
+                        : undefined;
                     const hasSubRows = subRows && subRows.length > 0;
                     const isExpanded = expandedRow === row.id;
                     const percentage = getRowPercentage(row.original);
@@ -925,22 +993,31 @@ export function DataTable<TData extends { name: string | number }, TValue>({
                       <Fragment key={row.id}>
                         <TableRow
                           className={cn(
-                            "relative h-11 border-border/20 transition-all duration-300 ease-in-out pl-3",
-                            (onRowClick && !hasSubRows) || hasSubRows ? "cursor-pointer" : "",
+                            'relative h-11 border-border/20 pl-3 transition-all duration-300 ease-in-out',
+                            (onRowClick && !hasSubRows) || hasSubRows
+                              ? 'cursor-pointer'
+                              : '',
                             hoveredRow && hoveredRow !== row.id
-                              ? "opacity-40 grayscale-[80%]"
-                              : "opacity-100",
-                            !hoveredRow && (rowIndex % 2 === 0 ? "bg-background/50" : "bg-muted/10")
+                              ? 'opacity-40 grayscale-[80%]'
+                              : 'opacity-100',
+                            !hoveredRow &&
+                              (rowIndex % 2 === 0
+                                ? 'bg-background/50'
+                                : 'bg-muted/10')
                           )}
                           onClick={() => {
                             if (hasSubRows) {
                               toggleRowExpansion(row.id);
                             }
                           }}
-                          onMouseEnter={() => handleRowMouseEnter(row.original, row.id)}
+                          onMouseEnter={() =>
+                            handleRowMouseEnter(row.original, row.id)
+                          }
                           style={{
                             background:
-                              !hoveredRow && percentage > 0 ? gradient.background : undefined,
+                              !hoveredRow && percentage > 0
+                                ? gradient.background
+                                : undefined,
                             boxShadow:
                               !hoveredRow && percentage > 0
                                 ? `inset 3px 0 0 0 ${gradient.accentColor}`
@@ -950,8 +1027,9 @@ export function DataTable<TData extends { name: string | number }, TValue>({
                           {row.getVisibleCells().map((cell, cellIndex) => (
                             <TableCell
                               className={cn(
-                                "px-2 py-2 font-medium text-sm transition-colors duration-150",
-                                cellIndex === 0 && "font-semibold text-foreground",
+                                'px-2 py-2 font-medium text-sm transition-colors duration-150',
+                                cellIndex === 0 &&
+                                  'font-semibold text-foreground',
                                 (cell.column.columnDef.meta as any)?.className
                               )}
                               key={cell.id}
@@ -960,14 +1038,16 @@ export function DataTable<TData extends { name: string | number }, TValue>({
                                   cell.column.getSize() !== 150
                                     ? `${Math.min(cell.column.getSize(), 300)}px`
                                     : undefined,
-                                maxWidth: "300px",
-                                minWidth: "80px",
+                                maxWidth: '300px',
+                                minWidth: '80px',
                               }}
                             >
                               <div className="flex items-center gap-2">
                                 {cellIndex === 0 && hasSubRows && (
                                   <button
-                                    aria-label={isExpanded ? "Collapse row" : "Expand row"}
+                                    aria-label={
+                                      isExpanded ? 'Collapse row' : 'Expand row'
+                                    }
                                     className="flex-shrink-0 rounded p-0.5 transition-colors hover:bg-muted"
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -984,7 +1064,10 @@ export function DataTable<TData extends { name: string | number }, TValue>({
                                 )}
                                 <div className="flex-1 overflow-hidden truncate">
                                   <div className="truncate">
-                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                    {flexRender(
+                                      cell.column.columnDef.cell,
+                                      cell.getContext()
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -1000,15 +1083,18 @@ export function DataTable<TData extends { name: string | number }, TValue>({
                               key={`${row.id}-sub-${subIndex}`}
                             >
                               {renderSubRow ? (
-                                <TableCell className="p-0" colSpan={row.getVisibleCells().length}>
+                                <TableCell
+                                  className="p-0"
+                                  colSpan={row.getVisibleCells().length}
+                                >
                                   {renderSubRow(subRow, row.original, subIndex)}
                                 </TableCell>
                               ) : (
                                 row.getVisibleCells().map((cell, cellIndex) => (
                                   <TableCell
                                     className={cn(
-                                      "py-1 text-muted-foreground text-sm",
-                                      cellIndex === 0 ? "pl-8" : "px-2"
+                                      'py-1 text-muted-foreground text-sm',
+                                      cellIndex === 0 ? 'pl-8' : 'px-2'
                                     )}
                                     key={`sub-${cell.id}`}
                                     style={{
@@ -1016,17 +1102,19 @@ export function DataTable<TData extends { name: string | number }, TValue>({
                                         cell.column.getSize() !== 150
                                           ? `${Math.min(cell.column.getSize(), 300)}px`
                                           : undefined,
-                                      maxWidth: "300px",
-                                      minWidth: "80px",
+                                      maxWidth: '300px',
+                                      minWidth: '80px',
                                     }}
                                   >
                                     <div className="truncate">
                                       {cellIndex === 0 ? (
                                         <span className="text-xs">
-                                          ↳ {(subRow as any)[cell.column.id] || ""}
+                                          ↳{' '}
+                                          {(subRow as any)[cell.column.id] ||
+                                            ''}
                                         </span>
                                       ) : (
-                                        (subRow as any)[cell.column.id] || ""
+                                        (subRow as any)[cell.column.id] || ''
                                       )}
                                     </div>
                                   </TableCell>
@@ -1055,17 +1143,17 @@ export function DataTable<TData extends { name: string | number }, TValue>({
                 </div>
               </div>
               <h4 className="mb-2 font-medium text-base text-foreground">
-                {globalFilter ? "No results found" : emptyMessage}
+                {globalFilter ? 'No results found' : emptyMessage}
               </h4>
               <p className="mb-4 max-w-sm text-muted-foreground text-sm">
                 {globalFilter
                   ? `No data matches your search for "${globalFilter}". Try adjusting your search terms.`
-                  : "Data will appear here when available and ready to display."}
+                  : 'Data will appear here when available and ready to display.'}
               </p>
               {globalFilter && (
                 <button
                   className="inline-flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 font-medium text-primary text-sm transition-colors hover:bg-primary/15 hover:text-primary/80"
-                  onClick={() => setGlobalFilter("")}
+                  onClick={() => setGlobalFilter('')}
                   type="button"
                 >
                   <X className="h-4 w-4" />
@@ -1083,50 +1171,52 @@ export function DataTable<TData extends { name: string | number }, TValue>({
     <>
       <div
         className={cn(
-          "w-full overflow-hidden border bg-card/50 shadow-sm backdrop-blur-sm rounded",
+          'w-full overflow-hidden rounded border bg-card/50 shadow-sm backdrop-blur-sm',
           className
         )}
       >
         {renderTableContent()}
       </div>
-      {hasMounted && fullScreen && ReactDOM.createPortal(
-        <div
-          ref={modalRef}
-          tabIndex={-1}
-          className="fixed inset-0 z-[1000] flex items-center justify-center"
-        >
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-[3px] transition-opacity animate-fadein" />
-          {/* Modal */}
-          <div className="relative w-[92vw] h-[92vh] bg-background rounded-2xl shadow-2xl flex flex-col scale-100 animate-scalein overflow-hidden border border-border border-[1px]">
-            <FullScreenTable
-              data={tableData}
-              columns={tableColumns}
-              search={globalFilter}
-              onClose={() => setFullScreen(false)}
-              initialPageSize={50}
-              expandable={expandable}
-              getSubRows={getSubRows}
-              renderSubRow={renderSubRow}
-              tabs={tabs}
-              activeTab={activeTab}
-              onTabChange={handleTabChange}
-              title={title}
-              description={description}
-              isTransitioning={isTransitioning}
-              showSearch={showSearch}
-            />
-          </div>
-        </div>,
-        document.body
-      )}
+      {hasMounted &&
+        fullScreen &&
+        ReactDOM.createPortal(
+          <div
+            className="fixed inset-0 z-[1000] flex items-center justify-center"
+            ref={modalRef}
+            tabIndex={-1}
+          >
+            {/* Backdrop */}
+            <div className="absolute inset-0 animate-fadein bg-black/70 backdrop-blur-[3px] transition-opacity" />
+            {/* Modal */}
+            <div className="relative flex h-[92vh] w-[92vw] scale-100 animate-scalein flex-col overflow-hidden rounded-2xl border border-[1px] border-border bg-background shadow-2xl">
+              <FullScreenTable
+                activeTab={activeTab}
+                columns={tableColumns}
+                data={tableData}
+                description={description}
+                expandable={expandable}
+                getSubRows={getSubRows}
+                initialPageSize={50}
+                isTransitioning={isTransitioning}
+                onClose={() => setFullScreen(false)}
+                onTabChange={handleTabChange}
+                renderSubRow={renderSubRow}
+                search={globalFilter}
+                showSearch={showSearch}
+                tabs={tabs}
+                title={title}
+              />
+            </div>
+          </div>,
+          document.body
+        )}
     </>
   );
 }
 
 // Custom scrollbar styles
 // You can move this to a CSS/SCSS file if preferred
-<style jsx global>{`
+<style global jsx>{`
   .custom-scrollbar::-webkit-scrollbar {
     height: 8px;
     width: 8px;
@@ -1143,8 +1233,4 @@ export function DataTable<TData extends { name: string | number }, TValue>({
     scrollbar-width: thin;
     scrollbar-color: #e5e7eb transparent;
   }
-`}</style>
-
-
-
-
+`}</style>;

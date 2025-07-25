@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ArrowRightIcon,
@@ -10,21 +10,21 @@ import {
   GlobeIcon,
   LightningIcon,
   WarningCircleIcon,
-} from "@phosphor-icons/react";
-import Link from "next/link";
-import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useWebsites } from "@/hooks/use-websites";
-import { QuickSettingsModal } from "./_components/quick-settings-modal";
-import { RevenueOverviewTab } from "./_components/tabs/overview-tab";
-import { RevenueSettingsTab } from "./_components/tabs/settings-tab";
-import { useRevenueConfig } from "./hooks/use-revenue-config";
+} from '@phosphor-icons/react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useWebsites } from '@/hooks/use-websites';
+import { QuickSettingsModal } from './_components/quick-settings-modal';
+import { RevenueOverviewTab } from './_components/tabs/overview-tab';
+import { RevenueSettingsTab } from './_components/tabs/settings-tab';
+import { useRevenueConfig } from './hooks/use-revenue-config';
 
 export default function RevenuePage() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState('overview');
   const revenueConfig = useRevenueConfig();
   const { websites, isLoading: websitesLoading } = useWebsites();
 
@@ -57,9 +57,13 @@ export default function RevenuePage() {
           <div className="flex items-center gap-3">
             {revenueConfig.isSetupComplete ? (
               <div className="flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-2 dark:border-green-800 dark:bg-green-950/20">
-                <CheckCircleIcon className="h-4 w-4 text-green-500" size={16} weight="fill" />
+                <CheckCircleIcon
+                  className="h-4 w-4 text-green-500"
+                  size={16}
+                  weight="fill"
+                />
                 <span className="font-medium text-green-600 text-sm dark:text-green-400">
-                  {revenueConfig.isLiveMode ? "Live Mode" : "Test Mode"}
+                  {revenueConfig.isLiveMode ? 'Live Mode' : 'Test Mode'}
                 </span>
               </div>
             ) : (
@@ -107,12 +111,21 @@ export default function RevenuePage() {
                   Revenue Tracking Not Configured
                 </h3>
                 <p className="mb-4 text-orange-700 dark:text-orange-200">
-                  Set up your Stripe webhook to start tracking revenue across all your websites.
-                  This is a one-time setup that works for all your sites.
+                  Set up your Stripe webhook to start tracking revenue across
+                  all your websites. This is a one-time setup that works for all
+                  your sites.
                 </p>
                 <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button className="gap-2" onClick={() => setActiveTab("settings")} size="sm">
-                    <LightningIcon className="h-4 w-4" size={16} weight="duotone" />
+                  <Button
+                    className="gap-2"
+                    onClick={() => setActiveTab('settings')}
+                    size="sm"
+                  >
+                    <LightningIcon
+                      className="h-4 w-4"
+                      size={16}
+                      weight="duotone"
+                    />
                     Configure Stripe Integration
                   </Button>
                   <Button asChild size="sm" variant="outline">
@@ -132,16 +145,24 @@ export default function RevenuePage() {
       )}
 
       {/* Tabs */}
-      <Tabs className="space-y-4" onValueChange={setActiveTab} value={activeTab}>
+      <Tabs
+        className="space-y-4"
+        onValueChange={setActiveTab}
+        value={activeTab}
+      >
         <div className="border-b">
           <TabsList className="h-10 w-full justify-start overflow-x-auto bg-transparent p-0">
             <TabsTrigger
               className="relative h-10 whitespace-nowrap rounded-none px-4 text-xs transition-colors hover:bg-muted/50 sm:text-sm"
               value="overview"
             >
-              <ChartBarIcon className="mr-2 h-4 w-4" size={16} weight="duotone" />
+              <ChartBarIcon
+                className="mr-2 h-4 w-4"
+                size={16}
+                weight="duotone"
+              />
               Overview
-              {activeTab === "overview" && (
+              {activeTab === 'overview' && (
                 <div className="absolute bottom-0 left-0 h-[2px] w-full bg-primary" />
               )}
             </TabsTrigger>
@@ -149,12 +170,16 @@ export default function RevenuePage() {
               className="relative h-10 whitespace-nowrap rounded-none px-4 text-xs transition-colors hover:bg-muted/50 sm:text-sm"
               value="settings"
             >
-              <GearSixIcon className="mr-2 h-4 w-4" size={16} weight="duotone" />
+              <GearSixIcon
+                className="mr-2 h-4 w-4"
+                size={16}
+                weight="duotone"
+              />
               Settings
               {!revenueConfig.isSetupComplete && (
                 <div className="ml-1 h-2 w-2 animate-pulse rounded-full bg-orange-500" />
               )}
-              {activeTab === "settings" && (
+              {activeTab === 'settings' && (
                 <div className="absolute bottom-0 left-0 h-[2px] w-full bg-primary" />
               )}
             </TabsTrigger>
@@ -167,7 +192,7 @@ export default function RevenuePage() {
             <RevenueOverviewTab
               isLiveMode={revenueConfig.isLiveMode}
               isSetupComplete={revenueConfig.isSetupComplete}
-              onSetupClick={() => setActiveTab("settings")}
+              onSetupClick={() => setActiveTab('settings')}
               setupProgress={revenueConfig.setupProgress}
             />
           )}
@@ -176,9 +201,12 @@ export default function RevenuePage() {
           {revenueConfig.isSetupComplete && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="font-semibold text-lg">Individual Website Analytics</h2>
+                <h2 className="font-semibold text-lg">
+                  Individual Website Analytics
+                </h2>
                 <Badge className="text-xs" variant="secondary">
-                  {websites?.length || 0} website{(websites?.length || 0) !== 1 ? "s" : ""}
+                  {websites?.length || 0} website
+                  {(websites?.length || 0) !== 1 ? 's' : ''}
                 </Badge>
               </div>
 
@@ -200,7 +228,10 @@ export default function RevenuePage() {
               ) : websites && websites.length > 0 ? (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {websites.map((website: any) => (
-                    <Link href={`/websites/${website.id}/revenue`} key={website.id}>
+                    <Link
+                      href={`/websites/${website.id}/revenue`}
+                      key={website.id}
+                    >
                       <Card className="group cursor-pointer border-l-4 border-l-primary/20 transition-all duration-300 hover:border-l-primary hover:shadow-lg">
                         <CardHeader className="pb-3">
                           <div className="flex items-center justify-between">
@@ -232,7 +263,9 @@ export default function RevenuePage() {
                                 size={32}
                                 weight="duotone"
                               />
-                              <p className="font-medium text-sm">View Revenue Analytics</p>
+                              <p className="font-medium text-sm">
+                                View Revenue Analytics
+                              </p>
                               <p className="text-muted-foreground text-xs">
                                 Payments, trends & insights
                               </p>

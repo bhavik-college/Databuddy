@@ -1,6 +1,6 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
-import { MdSpaceDashboard } from "react-icons/md";
-import { FaGithub, FaXTwitter, FaDiscord } from "react-icons/fa6";
+import { FaDiscord, FaGithub, FaXTwitter } from 'react-icons/fa6';
+import { MdSpaceDashboard } from 'react-icons/md';
 import { LogoContent } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 
@@ -36,6 +36,6 @@ export const baseOptions: BaseLayoutProps = {
       url: 'https://x.com/trydatabuddy',
       external: true,
       icon: <FaXTwitter />,
-    }
+    },
   ],
 };

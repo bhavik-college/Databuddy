@@ -1,91 +1,97 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Play, Copy, Download, Clock } from 'lucide-react'
-import Link from 'next/link'
-import { DataTable } from '@/components/data-table'
+import { ArrowLeft, Clock, Copy, Download, Play } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { DataTable } from '@/components/data-table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 
 interface QueryResult {
-  data: Record<string, any>[]
-  meta: Array<{ name: string; type: string }>
-  rows: number
+  data: Record<string, any>[];
+  meta: Array<{ name: string; type: string }>;
+  rows: number;
   statistics?: {
-    elapsed: number
-    rows_read: number
-    bytes_read: number
-  }
+    elapsed: number;
+    rows_read: number;
+    bytes_read: number;
+  };
 }
 
 export default function SqlConsole() {
-  const [query, setQuery] = useState('')
-  const [result, setResult] = useState<QueryResult | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [executionTime, setExecutionTime] = useState<number | null>(null)
+  const [query, setQuery] = useState('');
+  const [result, setResult] = useState<QueryResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [executionTime, setExecutionTime] = useState<number | null>(null);
 
   const executeQuery = async () => {
-    if (!query.trim()) return
-    
-    setLoading(true)
-    setError(null)
-    const startTime = Date.now()
-    
+    if (!query.trim()) return;
+
+    setLoading(true);
+    setError(null);
+    const startTime = Date.now();
+
     try {
       const response = await fetch('/api/database/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query })
-      })
-      const data = await response.json()
-      const duration = Date.now() - startTime
-      setExecutionTime(duration)
-      
+        body: JSON.stringify({ query }),
+      });
+      const data = await response.json();
+      const duration = Date.now() - startTime;
+      setExecutionTime(duration);
+
       if (data.success) {
-        setResult(data.data)
+        setResult(data.data);
       } else {
-        setError(data.error)
+        setError(data.error);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to execute query')
+      setError(err instanceof Error ? err.message : 'Failed to execute query');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const copyQuery = async () => {
     try {
-      await navigator.clipboard.writeText(query)
+      await navigator.clipboard.writeText(query);
     } catch (error) {
-      console.error('Failed to copy query:', error)
+      console.error('Failed to copy query:', error);
     }
-  }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      e.preventDefault()
-      executeQuery()
+      e.preventDefault();
+      executeQuery();
     }
-  }
+  };
 
   const commonQueries = [
     {
       name: 'Show Databases',
-      query: 'SHOW DATABASES'
+      query: 'SHOW DATABASES',
     },
     {
       name: 'Show Tables',
-      query: 'SHOW TABLES FROM analytics'
+      query: 'SHOW TABLES FROM analytics',
     },
     {
       name: 'Recent Events',
       query: `SELECT * FROM analytics.events 
 WHERE time >= now() - INTERVAL 1 HOUR 
 ORDER BY time DESC 
-LIMIT 100`
+LIMIT 100`,
     },
     {
       name: 'Event Count by Hour',
@@ -95,9 +101,9 @@ LIMIT 100`
 FROM analytics.events 
 WHERE time >= now() - INTERVAL 24 HOUR
 GROUP BY hour 
-ORDER BY hour DESC`
-    }
-  ]
+ORDER BY hour DESC`,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -106,14 +112,16 @@ ORDER BY hour DESC`
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/">
-              <Button variant="ghost" size="sm">
+              <Button size="sm" variant="ghost">
                 <ArrowLeft className="h-4 w-4" />
                 Back
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold">SQL Console</h1>
-              <p className="text-muted-foreground">Execute ClickHouse queries</p>
+              <h1 className="font-bold text-3xl">SQL Console</h1>
+              <p className="text-muted-foreground">
+                Execute ClickHouse queries
+              </p>
             </div>
           </div>
         </div>
@@ -128,10 +136,10 @@ ORDER BY hour DESC`
               </div>
               <div className="flex items-center gap-2">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={copyQuery}
                   disabled={!query.trim()}
+                  onClick={copyQuery}
+                  size="sm"
+                  variant="outline"
                 >
                   <Copy className="h-4 w-4" />
                   Copy
@@ -141,16 +149,16 @@ ORDER BY hour DESC`
           </CardHeader>
           <CardContent className="space-y-4">
             <Textarea
-              placeholder="SELECT * FROM analytics.events LIMIT 10"
-              value={query}
+              className="min-h-32 font-mono text-sm"
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="min-h-32 font-mono text-sm"
+              placeholder="SELECT * FROM analytics.events LIMIT 10"
               rows={8}
+              value={query}
             />
-            
+
             <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
+              <div className="text-muted-foreground text-sm">
                 {query.trim().length} characters
                 {executionTime && (
                   <span className="ml-4 flex items-center gap-1">
@@ -159,10 +167,10 @@ ORDER BY hour DESC`
                   </span>
                 )}
               </div>
-              <Button 
-                onClick={executeQuery} 
-                disabled={loading || !query.trim()}
+              <Button
                 className="min-w-24"
+                disabled={loading || !query.trim()}
+                onClick={executeQuery}
               >
                 {loading ? (
                   <>
@@ -190,14 +198,14 @@ ORDER BY hour DESC`
             <div className="grid gap-2 sm:grid-cols-2">
               {commonQueries.map((item, index) => (
                 <Button
+                  className="h-auto justify-start p-3 text-left"
                   key={index}
-                  variant="outline"
-                  className="h-auto p-3 text-left justify-start"
                   onClick={() => setQuery(item.query)}
+                  variant="outline"
                 >
                   <div>
                     <div className="font-medium text-sm">{item.name}</div>
-                    <div className="text-xs text-muted-foreground mt-1 truncate">
+                    <div className="mt-1 truncate text-muted-foreground text-xs">
                       {item.query.split('\n')[0]}
                     </div>
                   </div>
@@ -211,19 +219,14 @@ ORDER BY hour DESC`
         {error && (
           <Card className="border-destructive">
             <CardContent className="pt-6">
-              <p className="text-destructive font-mono text-sm">{error}</p>
+              <p className="font-mono text-destructive text-sm">{error}</p>
             </CardContent>
           </Card>
         )}
 
         {/* Results */}
-        {result && (
-          <DataTable
-            result={result}
-            loading={loading}
-          />
-        )}
+        {result && <DataTable loading={loading} result={result} />}
       </div>
     </div>
-  )
-} 
+  );
+}

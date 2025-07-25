@@ -1,48 +1,48 @@
 // Shared Website types for consistency across the codebase
 
 export interface Website {
-	id: string;
-	name: string | null;
-	domain: string;
-	userId?: string | null;
-	projectId?: string | null;
-	status?: "ACTIVE" | "INACTIVE" | "PENDING" | "HEALTHY" | "UNHEALTHY";
-	createdAt: string;
-	updatedAt: string;
-	deletedAt?: string | null;
+  id: string;
+  name: string | null;
+  domain: string;
+  userId?: string | null;
+  projectId?: string | null;
+  status?: 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'HEALTHY' | 'UNHEALTHY';
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
 }
 
 export interface MiniChartDataPoint {
-	date: string;
-	value: number;
+  date: string;
+  value: number;
 }
 
 export interface CreateWebsiteData {
-	name: string;
-	domain: string;
-	subdomain?: string;
+  name: string;
+  domain: string;
+  subdomain?: string;
 }
 
 export interface UpdateWebsiteData {
-	name: string;
+  name: string;
 }
 
 // For components that need minimal website info
 export interface WebsiteBasic {
-	id: string;
-	name?: string | null;
-	domain: string;
+  id: string;
+  name?: string | null;
+  domain: string;
 }
 
 // API response types
 export interface WebsiteApiResponse {
-	success: boolean;
-	data?: Website;
-	error?: string;
+  success: boolean;
+  data?: Website;
+  error?: string;
 }
 
 export interface WebsitesApiResponse {
-	success: boolean;
-	data?: Website[];
-	error?: string;
+  success: boolean;
+  data?: Website[];
+  error?: string;
 }

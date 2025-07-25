@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { PlusIcon, TargetIcon } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { PlusIcon, TargetIcon } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 interface EmptyStateProps {
   onCreateFunnel: () => void;
@@ -15,24 +15,30 @@ export function EmptyState({ onCreateFunnel }: EmptyStateProps) {
       <CardContent className="flex flex-col items-center justify-center px-8 py-16">
         <div className="group relative mb-8">
           <div className="rounded-full border-2 border-primary/20 bg-primary/10 p-6 transition-transform duration-300 group-hover:scale-105">
-            <TargetIcon className="h-16 w-16 text-primary" size={16} weight="duotone" />
+            <TargetIcon
+              className="h-16 w-16 text-primary"
+              size={16}
+              weight="duotone"
+            />
           </div>
           <div className="-top-2 -right-2 absolute animate-pulse rounded-full border-2 border-primary/20 bg-background p-2 shadow-sm">
             <PlusIcon className="h-6 w-6 text-primary" size={16} />
           </div>
         </div>
         <div className="max-w-md space-y-4 text-center">
-          <h3 className="font-semibold text-2xl text-foreground">No funnels yet</h3>
+          <h3 className="font-semibold text-2xl text-foreground">
+            No funnels yet
+          </h3>
           <p className="text-muted-foreground leading-relaxed">
-            Create your first funnel to start tracking user conversion journeys and identify
-            optimization opportunities in your user flow.
+            Create your first funnel to start tracking user conversion journeys
+            and identify optimization opportunities in your user flow.
           </p>
           <div className="pt-2">
             <Button
               className={cn(
-                "gap-2 rounded-lg px-8 py-4 font-medium text-base",
-                "bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary",
-                "group relative overflow-hidden transition-all duration-300"
+                'gap-2 rounded-lg px-8 py-4 font-medium text-base',
+                'bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary',
+                'group relative overflow-hidden transition-all duration-300'
               )}
               onClick={onCreateFunnel}
               size="lg"

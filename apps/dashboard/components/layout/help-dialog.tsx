@@ -1,12 +1,16 @@
-import { BookOpenIcon, ChatCircleIcon, LaptopIcon } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
+import {
+  BookOpenIcon,
+  ChatCircleIcon,
+  LaptopIcon,
+} from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 
 interface HelpDialogProps {
   open: boolean;
@@ -19,10 +23,15 @@ export function HelpDialog({ open, onOpenChange }: HelpDialogProps) {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Help & Resources</DialogTitle>
-          <DialogDescription>Get assistance and learn more about Databuddy</DialogDescription>
+          <DialogDescription>
+            Get assistance and learn more about Databuddy
+          </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3 py-4">
-          <Button className="h-auto justify-start py-3 text-left" variant="outline">
+          <Button
+            className="h-auto justify-start py-3 text-left"
+            variant="outline"
+          >
             <div className="flex items-start gap-3">
               <BookOpenIcon
                 className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary"
@@ -37,7 +46,10 @@ export function HelpDialog({ open, onOpenChange }: HelpDialogProps) {
               </div>
             </div>
           </Button>
-          <Button className="h-auto justify-start py-3 text-left" variant="outline">
+          <Button
+            className="h-auto justify-start py-3 text-left"
+            variant="outline"
+          >
             <div className="flex items-start gap-3">
               <ChatCircleIcon
                 className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary"
@@ -52,7 +64,10 @@ export function HelpDialog({ open, onOpenChange }: HelpDialogProps) {
               </div>
             </div>
           </Button>
-          <Button className="h-auto justify-start py-3 text-left" variant="outline">
+          <Button
+            className="h-auto justify-start py-3 text-left"
+            variant="outline"
+          >
             <div className="flex items-start gap-3">
               <LaptopIcon
                 className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary"

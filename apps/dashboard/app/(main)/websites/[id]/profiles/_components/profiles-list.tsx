@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { Loader2Icon, UserRound } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { useProfilesData } from "@/hooks/use-dynamic-query";
+import { Loader2Icon, UserRound } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { useProfilesData } from '@/hooks/use-dynamic-query';
 
 // Type adapter for the new profile data structure
 type ProfileData = {
@@ -22,9 +22,10 @@ type ProfileData = {
   region: string;
   sessions: any[];
 };
-import { WebsitePageHeader } from "../../_components/website-page-header";
-import { ProfileRow } from "./profile-row";
-import { getDefaultDateRange } from "./profile-utils";
+
+import { WebsitePageHeader } from '../../_components/website-page-header';
+import { ProfileRow } from './profile-row';
+import { getDefaultDateRange } from './profile-utils';
 
 interface ProfilesListProps {
   websiteId: string;
@@ -32,7 +33,9 @@ interface ProfilesListProps {
 
 export function ProfilesList({ websiteId }: ProfilesListProps) {
   const [dateRange] = useState(() => getDefaultDateRange());
-  const [expandedProfileId, setExpandedProfileId] = useState<string | null>(null);
+  const [expandedProfileId, setExpandedProfileId] = useState<string | null>(
+    null
+  );
   const [page, setPage] = useState(1);
   const [allProfiles, setAllProfiles] = useState<ProfileData[]>([]);
   const [loadMoreRef, setLoadMoreRef] = useState<HTMLDivElement | null>(null);
@@ -40,11 +43,17 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [hasIntersected, setHasIntersected] = useState(false);
 
-  const { profiles, pagination, isLoading, isError, error } =
-    useProfilesData(websiteId, dateRange, 25, page);
+  const { profiles, pagination, isLoading, isError, error } = useProfilesData(
+    websiteId,
+    dateRange,
+    25,
+    page
+  );
 
   const toggleProfile = useCallback((profileId: string) => {
-    setExpandedProfileId(currentId => currentId === profileId ? null : profileId);
+    setExpandedProfileId((currentId) =>
+      currentId === profileId ? null : profileId
+    );
   }, []);
 
   const handleIntersection = useCallback(
@@ -52,7 +61,7 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
       const [entry] = entries;
       if (entry.isIntersecting && pagination.hasNext && !isLoading) {
         setHasIntersected(true);
-        setPage(prev => prev + 1);
+        setPage((prev) => prev + 1);
       }
     },
     [pagination.hasNext, isLoading]
@@ -63,7 +72,7 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
 
     const observer = new IntersectionObserver(handleIntersection, {
       threshold: 0.1,
-      rootMargin: "300px",
+      rootMargin: '300px',
     });
 
     observer.observe(loadMoreRef);
@@ -75,8 +84,8 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
 
   useEffect(() => {
     if (profiles?.length) {
-      setAllProfiles(prev => {
-        const existingProfiles = new Map(prev.map(p => [p.visitor_id, p]));
+      setAllProfiles((prev) => {
+        const existingProfiles = new Map(prev.map((p) => [p.visitor_id, p]));
         for (const profile of profiles) {
           if (!existingProfiles.has(profile.visitor_id)) {
             existingProfiles.set(profile.visitor_id, profile);
@@ -108,17 +117,20 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
     return (
       <div className="space-y-6">
         <WebsitePageHeader
-          title="Recent Profiles"
           description="Visitor profiles with session data and behavior patterns"
           icon={<UserRound className="h-6 w-6 text-primary" />}
-          websiteId={websiteId}
+          title="Recent Profiles"
           variant="minimal"
+          websiteId={websiteId}
         />
         <Card>
           <CardContent>
             <div className="space-y-3">
               {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <div className="h-16 animate-pulse rounded bg-muted/20" key={i} />
+                <div
+                  className="h-16 animate-pulse rounded bg-muted/20"
+                  key={i}
+                />
               ))}
             </div>
             <div className="flex items-center justify-center pt-4">
@@ -137,13 +149,13 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
     return (
       <div className="space-y-6">
         <WebsitePageHeader
-          title="Recent Profiles"
           description="Visitor profiles with session data and behavior patterns"
-          icon={<UserRound className="h-6 w-6 text-primary" />}
-          websiteId={websiteId}
-          variant="minimal"
+          errorMessage={error?.message || 'Failed to load profiles'}
           hasError={true}
-          errorMessage={error?.message || "Failed to load profiles"}
+          icon={<UserRound className="h-6 w-6 text-primary" />}
+          title="Recent Profiles"
+          variant="minimal"
+          websiteId={websiteId}
         />
       </div>
     );
@@ -153,11 +165,11 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
     return (
       <div className="space-y-6">
         <WebsitePageHeader
-          title="Recent Profiles"
           description="Visitor profiles with session data and behavior patterns"
           icon={<UserRound className="h-6 w-6 text-primary" />}
-          websiteId={websiteId}
+          title="Recent Profiles"
           variant="minimal"
+          websiteId={websiteId}
         />
         <Card>
           <CardContent>
@@ -177,12 +189,12 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
   return (
     <div className="space-y-6">
       <WebsitePageHeader
-        title="Recent Profiles"
         description="Visitor profiles with session data and behavior patterns"
         icon={<UserRound className="h-6 w-6 text-primary" />}
-        websiteId={websiteId}
-        variant="minimal"
         subtitle={`${allProfiles.length} loaded`}
+        title="Recent Profiles"
+        variant="minimal"
+        websiteId={websiteId}
       />
       <Card>
         <CardContent className="p-0">
@@ -209,7 +221,7 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
                 ) : showLoadMore ? (
                   <Button
                     className="w-full"
-                    onClick={() => setPage(prev => prev + 1)}
+                    onClick={() => setPage((prev) => prev + 1)}
                     variant="outline"
                   >
                     Load More Profiles
@@ -217,7 +229,9 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
                 ) : null}
               </div>
             ) : (
-              <div className="text-center text-muted-foreground text-sm">All profiles loaded</div>
+              <div className="text-center text-muted-foreground text-sm">
+                All profiles loaded
+              </div>
             )}
           </div>
         </CardContent>

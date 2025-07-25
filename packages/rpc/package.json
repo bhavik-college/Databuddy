@@ -1,19 +1,19 @@
 {
-    "name": "@databuddy/rpc",
-    "version": "0.1.0",
-    "private": true,
-    "main": "./src/index.ts",
-    "types": "./src/index.ts",
-    "dependencies": {
-        "@databuddy/auth": "workspace:*",
-        "@databuddy/db": "workspace:*",
-        "@databuddy/redis": "workspace:*",
-        "@trpc/react-query": "^11.4.3",
-        "autumn-js": "^0.0.111",
-        "superjson": "^2.2.2",
-        "zod": "^4.0.5"
-    },
-    "devDependencies": {
-        "typescript": "^5.4.5"
-    }
+  "name": "@databuddy/rpc",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@databuddy/auth": "workspace:*",
+    "@databuddy/db": "workspace:*",
+    "@databuddy/redis": "workspace:*",
+    "@trpc/react-query": "^11.4.3",
+    "autumn-js": "^0.0.111",
+    "superjson": "^2.2.2",
+    "zod": "^4.0.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
 }

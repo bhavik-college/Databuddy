@@ -1,18 +1,21 @@
-"use client";
+'use client';
 
-import { InfoIcon, ListIcon } from "@phosphor-icons/react";
-import dynamic from "next/dynamic";
-import { useState } from "react";
-import { NotificationsPopover } from "@/components/notifications/notifications-popover";
-import { Button } from "@/components/ui/button";
-import { Logo } from "./logo";
-import { ThemeToggle } from "./theme-toggle";
-import { UserMenu } from "./user-menu";
+import { InfoIcon, ListIcon } from '@phosphor-icons/react';
+import dynamic from 'next/dynamic';
+import { useState } from 'react';
+import { NotificationsPopover } from '@/components/notifications/notifications-popover';
+import { Button } from '@/components/ui/button';
+import { Logo } from './logo';
+import { ThemeToggle } from './theme-toggle';
+import { UserMenu } from './user-menu';
 
-const HelpDialog = dynamic(() => import("./help-dialog").then((mod) => mod.HelpDialog), {
-  ssr: false,
-  loading: () => null,
-});
+const HelpDialog = dynamic(
+  () => import('./help-dialog').then((mod) => mod.HelpDialog),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
 
 interface TopHeaderProps {
   setMobileOpen: () => void;
@@ -26,7 +29,12 @@ export function TopHeader({ setMobileOpen }: TopHeaderProps) {
       <div className="flex h-full items-center px-4 md:px-6">
         {/* Left side: Logo + Mobile menu */}
         <div className="flex items-center gap-4">
-          <Button className="md:hidden" onClick={setMobileOpen} size="icon" variant="ghost">
+          <Button
+            className="md:hidden"
+            onClick={setMobileOpen}
+            size="icon"
+            variant="ghost"
+          >
             <ListIcon className="h-5 w-5" size={32} weight="duotone" />
             <span className="sr-only">Toggle menu</span>
           </Button>

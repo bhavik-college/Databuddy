@@ -2,7 +2,6 @@ import type { ResponseJSON } from '@clickhouse/client';
 import { createClient } from '@clickhouse/client';
 import type { NodeClickHouseClientConfigOptions } from '@clickhouse/client/dist/config';
 
-
 export { createClient };
 
 /**
@@ -21,7 +20,7 @@ const logger = console;
 
 export const CLICKHOUSE_OPTIONS: NodeClickHouseClientConfigOptions = {
   max_open_connections: 30,
-  request_timeout: 30000,
+  request_timeout: 30_000,
   keep_alive: {
     enabled: true,
     idle_socket_ttl: 8000,
@@ -40,7 +39,7 @@ export const clickHouseOG = createClient({
 async function withRetry<T>(
   operation: () => Promise<T>,
   maxRetries = 3,
-  baseDelay = 500,
+  baseDelay = 500
 ): Promise<T> {
   let lastError: Error | undefined;
 
@@ -64,7 +63,7 @@ async function withRetry<T>(
           `Attempt ${attempt + 1}/${maxRetries} failed, retrying in ${delay}ms`,
           {
             error: error.message,
-          },
+          }
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
         continue;
@@ -76,7 +75,6 @@ async function withRetry<T>(
 
   throw lastError;
 }
-
 
 export const clickHouse = new Proxy(clickHouseOG, {
   get(target, property, receiver) {
@@ -103,14 +101,17 @@ export async function chQueryWithMeta<T extends Record<string, any>>(
   const response = {
     ...json,
     data: json.data.map((item) => {
-      return keys.reduce((acc, key) => {
-        const meta = json.meta?.find((m) => m.name === key);
-        acc[key] =
-          item[key] && meta?.type.includes('Int')
-            ? Number.parseFloat(item[key] as string)
-            : item[key];
-        return acc;
-      }, {} as Record<string, any>);
+      return keys.reduce(
+        (acc, key) => {
+          const meta = json.meta?.find((m) => m.name === key);
+          acc[key] =
+            item[key] && meta?.type.includes('Int')
+              ? Number.parseFloat(item[key] as string)
+              : item[key];
+          return acc;
+        },
+        {} as Record<string, any>
+      );
     }),
   };
 
@@ -124,7 +125,10 @@ export async function chQuery<T extends Record<string, any>>(
   return (await chQueryWithMeta<T>(query, params)).data;
 }
 
-export async function chCommand(query: string, params?: Record<string, unknown>): Promise<void> {
+export async function chCommand(
+  query: string,
+  params?: Record<string, unknown>
+): Promise<void> {
   await clickHouse.command({
     query,
     query_params: params,
@@ -134,7 +138,7 @@ export async function chCommand(query: string, params?: Record<string, unknown>)
 
 export function formatClickhouseDate(
   date: Date | string,
-  skipTime = false,
+  skipTime = false
 ): string {
   if (skipTime) {
     return new Date(date).toISOString().split('T')[0] ?? '';

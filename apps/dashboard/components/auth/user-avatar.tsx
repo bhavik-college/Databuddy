@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { User } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
+import { User } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 
 export interface UserAvatarProps {
   user?: {
@@ -15,18 +15,22 @@ export interface UserAvatarProps {
 
 export function UserAvatar({ user, className }: UserAvatarProps) {
   return (
-    <Avatar className={cn("h-8 w-8", className)}>
+    <Avatar className={cn('h-8 w-8', className)}>
       {user?.image ? (
-        <AvatarImage alt={user.name || "User avatar"} className="object-cover" src={user.image} />
+        <AvatarImage
+          alt={user.name || 'User avatar'}
+          className="object-cover"
+          src={user.image}
+        />
       ) : (
         <AvatarFallback className="bg-slate-700/50">
           {user?.name ? (
             <span className="font-medium text-slate-100 text-sm">
               {user.name
-                .split(" ")
+                .split(' ')
                 .map((n) => n[0])
                 .slice(0, 2)
-                .join("")
+                .join('')
                 .toUpperCase()}
             </span>
           ) : (

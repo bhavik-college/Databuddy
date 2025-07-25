@@ -1,9 +1,15 @@
-"use client";
+'use client';
 
-import { FloppyDiskIcon, GearIcon, TrashIcon, WarningIcon, GlobeIcon } from "@phosphor-icons/react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
+import {
+  FloppyDiskIcon,
+  GearIcon,
+  GlobeIcon,
+  TrashIcon,
+  WarningIcon,
+} from '@phosphor-icons/react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,17 +19,23 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { useOrganizations } from "@/hooks/use-organizations";
-import { trpc } from "@/lib/trpc";
-import { OrganizationLogoUploader } from "./organization-logo-uploader";
-import { TransferAssets } from "./transfer-assets";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useOrganizations } from '@/hooks/use-organizations';
+import { trpc } from '@/lib/trpc';
+import { OrganizationLogoUploader } from './organization-logo-uploader';
+import { TransferAssets } from './transfer-assets';
 
 interface SettingsTabProps {
   organization: any;
@@ -40,16 +52,17 @@ export function SettingsTab({ organization }: SettingsTabProps) {
   const { updateOrganization, deleteOrganization } = useOrganizations();
 
   // Fetch organization websites using tRPC
-  const { data: websites, isLoading: isLoadingWebsites } = trpc.websites.list.useQuery({
-    organizationId: organization.id,
-  });
+  const { data: websites, isLoading: isLoadingWebsites } =
+    trpc.websites.list.useQuery({
+      organizationId: organization.id,
+    });
 
   const cleanSlug = (value: string) => {
     return value
       .toLowerCase()
-      .replace(/[^a-z0-9-]/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
   };
 
   const handleSlugChange = (value: string) => {
@@ -58,7 +71,7 @@ export function SettingsTab({ organization }: SettingsTabProps) {
 
   const handleSave = () => {
     if (!(name.trim() && slug.trim())) {
-      toast.error("Name and slug are required");
+      toast.error('Name and slug are required');
       return;
     }
 
@@ -72,14 +85,14 @@ export function SettingsTab({ organization }: SettingsTabProps) {
         },
       });
 
-      toast.success("Organization updated successfully");
+      toast.success('Organization updated successfully');
 
       // If slug changed, redirect to new URL
       if (slug !== organization.slug) {
         router.push(`/organizations/${slug}`);
       }
     } catch (error) {
-      toast.error("Failed to update organization");
+      toast.error('Failed to update organization');
     } finally {
       setIsSaving(false);
     }
@@ -89,10 +102,10 @@ export function SettingsTab({ organization }: SettingsTabProps) {
     setIsDeleting(true);
     try {
       await deleteOrganization(organization.id);
-      toast.success("Organization deleted successfully");
-      router.push("/organizations");
+      toast.success('Organization deleted successfully');
+      router.push('/organizations');
     } catch (error) {
-      toast.error("Failed to delete organization");
+      toast.error('Failed to delete organization');
     } finally {
       setIsDeleting(false);
       setShowDeleteDialog(false);
@@ -141,13 +154,18 @@ export function SettingsTab({ organization }: SettingsTabProps) {
               value={slug}
             />
             <p className="text-muted-foreground text-xs">
-              This will be used in your organization URL: /organizations/{slug || "your-slug"}
+              This will be used in your organization URL: /organizations/
+              {slug || 'your-slug'}
             </p>
           </div>
 
           {/* Save Button */}
           <div className="flex justify-end pt-4">
-            <Button className="rounded-lg" disabled={!hasChanges || isSaving} onClick={handleSave}>
+            <Button
+              className="rounded-lg"
+              disabled={!hasChanges || isSaving}
+              onClick={handleSave}
+            >
               {isSaving ? (
                 <>
                   <div className="mr-2 h-3 w-3 animate-spin rounded-full border border-primary-foreground/30 border-t-primary-foreground" />
@@ -179,7 +197,10 @@ export function SettingsTab({ organization }: SettingsTabProps) {
           {isLoadingWebsites ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/50 p-3">
+                <div
+                  className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/50 p-3"
+                  key={i}
+                >
                   <Skeleton className="h-10 w-10 rounded-lg" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-32" />
@@ -192,16 +213,20 @@ export function SettingsTab({ organization }: SettingsTabProps) {
             <div className="space-y-3">
               {websites.map((website) => (
                 <div
-                  key={website.id}
                   className="flex items-center justify-between rounded-lg border border-border/50 bg-background/50 p-3"
+                  key={website.id}
                 >
                   <div className="flex items-center gap-3">
                     <div className="rounded bg-primary/10 p-2">
                       <GlobeIcon className="h-4 w-4 text-primary" size={16} />
                     </div>
                     <div>
-                      <p className="font-medium text-sm text-foreground">{website.name}</p>
-                      <p className="text-muted-foreground text-xs">{website.domain}</p>
+                      <p className="font-medium text-foreground text-sm">
+                        {website.name}
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        {website.domain}
+                      </p>
                     </div>
                   </div>
                   <Badge className="px-2 py-1 text-xs" variant="secondary">
@@ -217,8 +242,10 @@ export function SettingsTab({ organization }: SettingsTabProps) {
                 size={32}
                 weight="duotone"
               />
-              <p className="text-muted-foreground text-sm">No websites in this organization</p>
-              <p className="text-muted-foreground text-xs mt-1">
+              <p className="text-muted-foreground text-sm">
+                No websites in this organization
+              </p>
+              <p className="mt-1 text-muted-foreground text-xs">
                 Transfer websites from your personal account or create new ones
               </p>
             </div>
@@ -242,10 +269,13 @@ export function SettingsTab({ organization }: SettingsTabProps) {
 
           <div className="space-y-3">
             <div>
-              <h4 className="mb-2 font-medium text-foreground">Delete Organization</h4>
+              <h4 className="mb-2 font-medium text-foreground">
+                Delete Organization
+              </h4>
               <p className="text-muted-foreground text-sm">
-                Permanently delete this organization and all associated data. This action cannot be
-                undone. All team members will lose access and any shared resources will be removed.
+                Permanently delete this organization and all associated data.
+                This action cannot be undone. All team members will lose access
+                and any shared resources will be removed.
               </p>
             </div>
             <Button
@@ -269,7 +299,8 @@ export function SettingsTab({ organization }: SettingsTabProps) {
               Delete Organization
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete <strong>{organization.name}</strong>?
+              Are you sure you want to delete{' '}
+              <strong>{organization.name}</strong>?
               <br />
               <br />
               This action will:

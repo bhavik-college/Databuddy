@@ -1,27 +1,33 @@
-"use client";
+'use client';
 
-import { CaretDownIcon, CheckIcon, PlusIcon, UserIcon, UsersIcon } from "@phosphor-icons/react";
-import { useRouter } from "next/navigation";
-import * as React from "react";
-import { CreateOrganizationDialog } from "@/components/organizations/create-organization-dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import {
+  CaretDownIcon,
+  CheckIcon,
+  PlusIcon,
+  UserIcon,
+  UsersIcon,
+} from '@phosphor-icons/react';
+import { useRouter } from 'next/navigation';
+import * as React from 'react';
+import { CreateOrganizationDialog } from '@/components/organizations/create-organization-dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useOrganizations } from "@/hooks/use-organizations";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useOrganizations } from '@/hooks/use-organizations';
+import { cn } from '@/lib/utils';
 
 const getOrganizationInitials = (name: string) => {
   return name
-    .split(" ")
+    .split(' ')
     .map((n) => n[0])
-    .join("")
+    .join('')
     .toUpperCase()
     .slice(0, 2);
 };
@@ -54,7 +60,7 @@ export function OrganizationSelector() {
   }, []);
 
   const handleManageOrganizations = React.useCallback(() => {
-    router.push("/organizations");
+    router.push('/organizations');
     setIsOpen(false);
   }, [router]);
 
@@ -83,40 +89,44 @@ export function OrganizationSelector() {
           >
             <div
               className={cn(
-                "w-full rounded border border-border/50 bg-accent/30 px-2 py-2 transition-all duration-200",
-                "hover:border-border/70 hover:bg-accent/50",
-                isSettingActiveOrganization && "cursor-not-allowed opacity-70",
-                isOpen && "border-border/70 bg-accent/50"
+                'w-full rounded border border-border/50 bg-accent/30 px-2 py-2 transition-all duration-200',
+                'hover:border-border/70 hover:bg-accent/50',
+                isSettingActiveOrganization && 'cursor-not-allowed opacity-70',
+                isOpen && 'border-border/70 bg-accent/50'
               )}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8 border border-border/50">
                     <AvatarImage
-                      alt={activeOrganization?.name || "Personal"}
+                      alt={activeOrganization?.name || 'Personal'}
                       src={activeOrganization?.logo || undefined}
                     />
                     <AvatarFallback className="bg-muted font-medium text-xs">
                       {activeOrganization?.name ? (
                         getOrganizationInitials(activeOrganization.name)
                       ) : (
-                        <UserIcon className="h-4 w-4" size={32} weight="duotone" />
+                        <UserIcon
+                          className="h-4 w-4"
+                          size={32}
+                          weight="duotone"
+                        />
                       )}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex min-w-0 flex-col text-left">
                     <span className="max-w-[140px] truncate font-medium text-sm">
-                      {activeOrganization?.name || "Personal"}
+                      {activeOrganization?.name || 'Personal'}
                     </span>
                     <span className="max-w-[140px] truncate text-muted-foreground text-xs">
-                      {activeOrganization?.slug || "Your workspace"}
+                      {activeOrganization?.slug || 'Your workspace'}
                     </span>
                   </div>
                 </div>
                 <CaretDownIcon
                   className={cn(
-                    "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                    isOpen && "rotate-180"
+                    'h-4 w-4 text-muted-foreground transition-transform duration-200',
+                    isOpen && 'rotate-180'
                   )}
                   size={32}
                   weight="duotone"
@@ -129,9 +139,9 @@ export function OrganizationSelector() {
           {/* Personal Workspace */}
           <DropdownMenuItem
             className={cn(
-              "flex cursor-pointer items-center gap-3 rounded px-2 py-2 transition-colors",
-              "focus:bg-accent focus:text-accent-foreground",
-              !activeOrganization && "bg-accent text-accent-foreground"
+              'flex cursor-pointer items-center gap-3 rounded px-2 py-2 transition-colors',
+              'focus:bg-accent focus:text-accent-foreground',
+              !activeOrganization && 'bg-accent text-accent-foreground'
             )}
             onClick={() => handleSelectOrganization(null)}
           >
@@ -142,10 +152,16 @@ export function OrganizationSelector() {
             </Avatar>
             <div className="flex min-w-0 flex-1 flex-col">
               <span className="font-medium text-sm">Personal</span>
-              <span className="text-muted-foreground text-xs">Your workspace</span>
+              <span className="text-muted-foreground text-xs">
+                Your workspace
+              </span>
             </div>
             {!activeOrganization && (
-              <CheckIcon className="h-4 w-4 text-primary" size={32} weight="duotone" />
+              <CheckIcon
+                className="h-4 w-4 text-primary"
+                size={32}
+                weight="duotone"
+              />
             )}
           </DropdownMenuItem>
 
@@ -155,9 +171,10 @@ export function OrganizationSelector() {
               {organizations.map((org) => (
                 <DropdownMenuItem
                   className={cn(
-                    "flex cursor-pointer items-center gap-3 rounded px-2 py-2 transition-colors",
-                    "focus:bg-accent focus:text-accent-foreground",
-                    activeOrganization?.id === org.id && "bg-accent text-accent-foreground"
+                    'flex cursor-pointer items-center gap-3 rounded px-2 py-2 transition-colors',
+                    'focus:bg-accent focus:text-accent-foreground',
+                    activeOrganization?.id === org.id &&
+                      'bg-accent text-accent-foreground'
                   )}
                   key={org.id}
                   onClick={() => handleSelectOrganization(org.id)}
@@ -169,11 +186,19 @@ export function OrganizationSelector() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate font-medium text-sm">{org.name}</span>
-                    <span className="truncate text-muted-foreground text-xs">{org.slug}</span>
+                    <span className="truncate font-medium text-sm">
+                      {org.name}
+                    </span>
+                    <span className="truncate text-muted-foreground text-xs">
+                      {org.slug}
+                    </span>
                   </div>
                   {activeOrganization?.id === org.id && (
-                    <CheckIcon className="h-4 w-4 text-primary" size={32} weight="duotone" />
+                    <CheckIcon
+                      className="h-4 w-4 text-primary"
+                      size={32}
+                      weight="duotone"
+                    />
                   )}
                 </DropdownMenuItem>
               ))}
@@ -195,7 +220,11 @@ export function OrganizationSelector() {
             onClick={handleManageOrganizations}
           >
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted">
-              <UsersIcon className="h-4 w-4 text-muted-foreground" size={32} weight="duotone" />
+              <UsersIcon
+                className="h-4 w-4 text-muted-foreground"
+                size={32}
+                weight="duotone"
+              />
             </div>
             <span className="font-medium text-sm">Manage Organizations</span>
           </DropdownMenuItem>

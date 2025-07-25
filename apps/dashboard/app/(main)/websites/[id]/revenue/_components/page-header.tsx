@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ArrowClockwiseIcon,
@@ -6,10 +6,10 @@ import {
   CurrencyDollarIcon,
   PlusIcon,
   WarningCircleIcon,
-} from "@phosphor-icons/react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+} from '@phosphor-icons/react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface PageHeaderProps {
   websiteId: string;
@@ -53,7 +53,8 @@ export function PageHeader({
                   Revenue Analytics
                 </h1>
                 <p className="text-muted-foreground text-sm sm:text-base">
-                  Track revenue and transaction data for {websiteName || "this website"}
+                  Track revenue and transaction data for{' '}
+                  {websiteName || 'this website'}
                 </p>
               </div>
             </div>
@@ -67,7 +68,7 @@ export function PageHeader({
               variant="outline"
             >
               <ArrowClockwiseIcon
-                className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+                className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
                 size={16}
                 weight="fill"
               />
@@ -90,14 +91,25 @@ export function PageHeader({
                 />
               </div>
               <div>
-                <h4 className="font-semibold text-destructive">Error loading revenue data</h4>
+                <h4 className="font-semibold text-destructive">
+                  Error loading revenue data
+                </h4>
                 <p className="mt-1 text-destructive/80 text-sm">
                   {errorMessage ||
-                    "There was an issue loading your revenue data. Please try refreshing the page."}
+                    'There was an issue loading your revenue data. Please try refreshing the page.'}
                 </p>
               </div>
-              <Button className="gap-2 rounded-lg" onClick={onRefresh} size="sm" variant="outline">
-                <ArrowClockwiseIcon className="h-4 w-4" size={16} weight="fill" />
+              <Button
+                className="gap-2 rounded-lg"
+                onClick={onRefresh}
+                size="sm"
+                variant="outline"
+              >
+                <ArrowClockwiseIcon
+                  className="h-4 w-4"
+                  size={16}
+                  weight="fill"
+                />
                 Retry
               </Button>
             </div>

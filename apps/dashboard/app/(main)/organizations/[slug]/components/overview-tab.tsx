@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   BuildingsIcon,
@@ -7,16 +7,22 @@ import {
   ClockIcon,
   GlobeIcon,
   UsersIcon,
-} from "@phosphor-icons/react";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { useQueryState } from "nuqs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useOrganizationMembers } from "@/hooks/use-organizations";
+} from '@phosphor-icons/react';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { useQueryState } from 'nuqs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useOrganizationMembers } from '@/hooks/use-organizations';
 
 dayjs.extend(relativeTime);
 
@@ -25,11 +31,13 @@ interface OverviewTabProps {
 }
 
 export function OverviewTab({ organization }: OverviewTabProps) {
-  const { members, isLoading: isLoadingMembers } = useOrganizationMembers(organization.id);
-  const [, setActiveTab] = useQueryState("tab");
+  const { members, isLoading: isLoadingMembers } = useOrganizationMembers(
+    organization.id
+  );
+  const [, setActiveTab] = useQueryState('tab');
 
   const recentMembers = members?.slice(0, 5) || [];
-  const ownerMember = members?.find((member) => member.role === "owner");
+  const ownerMember = members?.find((member) => member.role === 'owner');
 
   return (
     <div className="space-y-8">
@@ -48,33 +56,50 @@ export function OverviewTab({ organization }: OverviewTabProps) {
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0">
-                <CalendarIcon className="h-4 w-4 text-muted-foreground" size={16} />
+                <CalendarIcon
+                  className="h-4 w-4 text-muted-foreground"
+                  size={16}
+                />
               </div>
               <div>
-                <p className="font-medium text-sm text-foreground">Created</p>
+                <p className="font-medium text-foreground text-sm">Created</p>
                 <p className="text-muted-foreground text-sm">
-                  {dayjs(organization.createdAt).format("MMMM D, YYYY")}
-                  <span className="ml-1">({dayjs(organization.createdAt).fromNow()})</span>
+                  {dayjs(organization.createdAt).format('MMMM D, YYYY')}
+                  <span className="ml-1">
+                    ({dayjs(organization.createdAt).fromNow()})
+                  </span>
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0">
-                <GlobeIcon className="h-4 w-4 text-muted-foreground" size={16} />
+                <GlobeIcon
+                  className="h-4 w-4 text-muted-foreground"
+                  size={16}
+                />
               </div>
               <div>
-                <p className="font-medium text-sm text-foreground">Organization Slug</p>
-                <p className="font-mono text-muted-foreground text-sm">{organization.slug}</p>
+                <p className="font-medium text-foreground text-sm">
+                  Organization Slug
+                </p>
+                <p className="font-mono text-muted-foreground text-sm">
+                  {organization.slug}
+                </p>
               </div>
             </div>
             {ownerMember && (
               <div className="flex items-center gap-3">
                 <div className="flex-shrink-0">
-                  <UsersIcon className="h-4 w-4 text-muted-foreground" size={16} />
+                  <UsersIcon
+                    className="h-4 w-4 text-muted-foreground"
+                    size={16}
+                  />
                 </div>
                 <div>
-                  <p className="font-medium text-sm text-foreground">Owner</p>
-                  <p className="text-muted-foreground text-sm">{ownerMember.user.name}</p>
+                  <p className="font-medium text-foreground text-sm">Owner</p>
+                  <p className="text-muted-foreground text-sm">
+                    {ownerMember.user.name}
+                  </p>
                 </div>
               </div>
             )}
@@ -93,7 +118,9 @@ export function OverviewTab({ organization }: OverviewTabProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground text-sm">Total Members</span>
+              <span className="text-muted-foreground text-sm">
+                Total Members
+              </span>
               {isLoadingMembers ? (
                 <Skeleton className="h-6 w-12 rounded" />
               ) : (
@@ -108,17 +135,19 @@ export function OverviewTab({ organization }: OverviewTabProps) {
                 <Skeleton className="h-6 w-12 rounded" />
               ) : (
                 <Badge className="px-2 py-1" variant="outline">
-                  {members?.filter((m) => m.role === "admin").length || 0}
+                  {members?.filter((m) => m.role === 'admin').length || 0}
                 </Badge>
               )}
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground text-sm">Regular Members</span>
+              <span className="text-muted-foreground text-sm">
+                Regular Members
+              </span>
               {isLoadingMembers ? (
                 <Skeleton className="h-6 w-12 rounded" />
               ) : (
                 <Badge className="px-2 py-1" variant="outline">
-                  {members?.filter((m) => m.role === "member").length || 0}
+                  {members?.filter((m) => m.role === 'member').length || 0}
                 </Badge>
               )}
             </div>
@@ -136,7 +165,7 @@ export function OverviewTab({ organization }: OverviewTabProps) {
             </CardTitle>
             <Button
               className="rounded-lg"
-              onClick={() => setActiveTab("teams")}
+              onClick={() => setActiveTab('teams')}
               size="sm"
               variant="outline"
             >
@@ -178,14 +207,21 @@ export function OverviewTab({ organization }: OverviewTabProps) {
                 >
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage alt={member.user.name} src={member.user.image || undefined} />
+                      <AvatarImage
+                        alt={member.user.name}
+                        src={member.user.image || undefined}
+                      />
                       <AvatarFallback className="bg-accent text-sm">
                         {member.user.name.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium text-sm text-foreground">{member.user.name}</p>
-                      <p className="text-muted-foreground text-xs">{member.user.email}</p>
+                      <p className="font-medium text-foreground text-sm">
+                        {member.user.name}
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        {member.user.email}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -207,7 +243,9 @@ export function OverviewTab({ organization }: OverviewTabProps) {
                 size={32}
                 weight="duotone"
               />
-              <p className="text-muted-foreground text-sm">No team members yet</p>
+              <p className="text-muted-foreground text-sm">
+                No team members yet
+              </p>
             </div>
           )}
         </CardContent>

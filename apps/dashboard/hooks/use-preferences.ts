@@ -1,8 +1,12 @@
-"use client";
+'use client';
 
-import { convertToTimezone, formatDate, getBrowserTimezone } from "@databuddy/shared";
-import { useCallback } from "react";
-import { trpc } from "@/lib/trpc";
+import {
+  convertToTimezone,
+  formatDate,
+  getBrowserTimezone,
+} from '@databuddy/shared';
+import { useCallback } from 'react';
+import { trpc } from '@/lib/trpc';
 
 interface UserPreferences {
   timezone: string;
@@ -11,9 +15,9 @@ interface UserPreferences {
 }
 
 const defaultPreferences: UserPreferences = {
-  timezone: "auto",
-  dateFormat: "MMM D, YYYY",
-  timeFormat: "h:mm a",
+  timezone: 'auto',
+  dateFormat: 'MMM D, YYYY',
+  timeFormat: 'h:mm a',
 };
 
 export function usePreferences() {
@@ -29,7 +33,9 @@ export function usePreferences() {
   // Get effective timezone (browser timezone if 'auto')
   const getEffectiveTimezone = useCallback(() => {
     if (!preferences) return getBrowserTimezone();
-    return preferences.timezone === "auto" ? getBrowserTimezone() : preferences.timezone;
+    return preferences.timezone === 'auto'
+      ? getBrowserTimezone()
+      : preferences.timezone;
   }, [preferences]);
 
   // Format a date according to user preferences
@@ -41,7 +47,7 @@ export function usePreferences() {
         customFormat?: string;
       }
     ) => {
-      if (!date) return "";
+      if (!date) return '';
       const timezone = getEffectiveTimezone();
       return formatDate(date, {
         timezone,

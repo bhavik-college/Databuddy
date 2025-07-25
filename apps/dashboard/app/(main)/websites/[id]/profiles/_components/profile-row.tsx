@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { format } from "date-fns";
+import { format } from 'date-fns';
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -9,10 +9,15 @@ import {
   EyeIcon,
   UserRound,
   Users,
-} from "lucide-react";
-import { FaviconImage } from "@/components/analytics/favicon-image";
-import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+} from 'lucide-react';
+import { FaviconImage } from '@/components/analytics/favicon-image';
+import { Badge } from '@/components/ui/badge';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+
 type ProfileData = {
   visitor_id: string;
   first_visit: string;
@@ -52,13 +57,14 @@ type ProfileData = {
     }>;
   }>;
 };
+
 import {
   formatDuration,
   getBrowserIconComponent,
   getCountryFlag,
   getDeviceIcon,
   getOSIconComponent,
-} from "./profile-utils";
+} from './profile-utils';
 
 interface ProfileRowProps {
   profile: ProfileData;
@@ -71,46 +77,64 @@ function getReferrerDisplayInfo(session: any) {
   // Check if we have parsed referrer info
   if (session.referrer_parsed) {
     return {
-      name: session.referrer_parsed.name || session.referrer_parsed.domain || "Unknown",
+      name:
+        session.referrer_parsed.name ||
+        session.referrer_parsed.domain ||
+        'Unknown',
       domain: session.referrer_parsed.domain,
       type: session.referrer_parsed.type,
     };
   }
 
   // Fallback to raw referrer
-  if (session.referrer && session.referrer !== "direct" && session.referrer !== "") {
+  if (
+    session.referrer &&
+    session.referrer !== 'direct' &&
+    session.referrer !== ''
+  ) {
     try {
       const url = new URL(
-        session.referrer.startsWith("http") ? session.referrer : `https://${session.referrer}`
+        session.referrer.startsWith('http')
+          ? session.referrer
+          : `https://${session.referrer}`
       );
       return {
-        name: url.hostname.replace("www.", ""),
+        name: url.hostname.replace('www.', ''),
         domain: url.hostname,
-        type: "referrer",
+        type: 'referrer',
       };
     } catch {
       return {
         name: session.referrer,
         domain: null,
-        type: "referrer",
+        type: 'referrer',
       };
     }
   }
 
   return {
-    name: "Direct",
+    name: 'Direct',
     domain: null,
-    type: "direct",
+    type: 'direct',
   };
 }
 
-export function ProfileRow({ profile, index, isExpanded, onToggle }: ProfileRowProps) {
+export function ProfileRow({
+  profile,
+  index,
+  isExpanded,
+  onToggle,
+}: ProfileRowProps) {
   const avgSessionDuration =
-    profile.total_sessions > 0 ? (profile.total_duration || 0) / profile.total_sessions : 0;
+    profile.total_sessions > 0
+      ? (profile.total_duration || 0) / profile.total_sessions
+      : 0;
 
   // Get the most recent session's referrer for the main profile display
   const latestSession = profile.sessions?.[0];
-  const profileReferrerInfo = latestSession ? getReferrerDisplayInfo(latestSession) : null;
+  const profileReferrerInfo = latestSession
+    ? getReferrerDisplayInfo(latestSession)
+    : null;
 
   return (
     <Collapsible onOpenChange={onToggle} open={isExpanded}>
@@ -143,7 +167,7 @@ export function ProfileRow({ profile, index, isExpanded, onToggle }: ProfileRowP
               <div className="flex items-center gap-2 text-muted-foreground text-sm">
                 <span>{profile.browser}</span>
                 <span className="text-muted-foreground/60">•</span>
-                <span>{profile.country || "Unknown"}</span>
+                <span>{profile.country || 'Unknown'}</span>
               </div>
             </div>
 
@@ -208,9 +232,9 @@ export function ProfileRow({ profile, index, isExpanded, onToggle }: ProfileRowP
               <div className="text-muted-foreground text-xs">Type</div>
               <Badge
                 className="px-2 py-1 font-semibold text-xs"
-                variant={profile.total_sessions > 1 ? "default" : "secondary"}
+                variant={profile.total_sessions > 1 ? 'default' : 'secondary'}
               >
-                {profile.total_sessions > 1 ? "Return" : "New"}
+                {profile.total_sessions > 1 ? 'Return' : 'New'}
               </Badge>
             </div>
           </div>
@@ -222,32 +246,41 @@ export function ProfileRow({ profile, index, isExpanded, onToggle }: ProfileRowP
           {/* Basic Profile Info */}
           <div className="grid grid-cols-2 gap-4 py-4 text-sm md:grid-cols-4">
             <div>
-              <div className="mb-1 text-muted-foreground text-xs">First Visit</div>
+              <div className="mb-1 text-muted-foreground text-xs">
+                First Visit
+              </div>
               <div className="font-medium">
                 {profile.first_visit
-                  ? format(new Date(profile.first_visit), "MMM d, yyyy")
-                  : "Unknown"}
+                  ? format(new Date(profile.first_visit), 'MMM d, yyyy')
+                  : 'Unknown'}
               </div>
             </div>
             <div>
-              <div className="mb-1 text-muted-foreground text-xs">Last Visit</div>
+              <div className="mb-1 text-muted-foreground text-xs">
+                Last Visit
+              </div>
               <div className="font-medium">
                 {profile.last_visit
-                  ? format(new Date(profile.last_visit), "MMM d, yyyy")
-                  : "Unknown"}
+                  ? format(new Date(profile.last_visit), 'MMM d, yyyy')
+                  : 'Unknown'}
               </div>
             </div>
             <div>
               <div className="mb-1 text-muted-foreground text-xs">Location</div>
               <div className="font-medium">
-                {profile.region && profile.region !== "Unknown" ? `${profile.region}, ` : ""}
-                {profile.country || "Unknown"}
+                {profile.region && profile.region !== 'Unknown'
+                  ? `${profile.region}, `
+                  : ''}
+                {profile.country || 'Unknown'}
               </div>
             </div>
             <div>
-              <div className="mb-1 text-muted-foreground text-xs">Total Time</div>
+              <div className="mb-1 text-muted-foreground text-xs">
+                Total Time
+              </div>
               <div className="font-medium">
-                {profile.total_duration_formatted || formatDuration(profile.total_duration || 0)}
+                {profile.total_duration_formatted ||
+                  formatDuration(profile.total_duration || 0)}
               </div>
             </div>
           </div>
@@ -269,17 +302,24 @@ export function ProfileRow({ profile, index, isExpanded, onToggle }: ProfileRowP
                         {sessionIndex + 1}
                       </div>
                       <div>
-                        <div className="font-medium text-sm">{session.session_name}</div>
+                        <div className="font-medium text-sm">
+                          {session.session_name}
+                        </div>
                         <div className="text-muted-foreground text-xs">
                           {session.first_visit
-                            ? format(new Date(session.first_visit), "MMM d, HH:mm")
-                            : "Unknown"}
+                            ? format(
+                                new Date(session.first_visit),
+                                'MMM d, HH:mm'
+                              )
+                            : 'Unknown'}
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 text-xs">
                       <div className="text-center">
-                        <div className="font-medium">{session.duration_formatted}</div>
+                        <div className="font-medium">
+                          {session.duration_formatted}
+                        </div>
                         <div className="text-muted-foreground">Duration</div>
                       </div>
                       <div className="text-center">

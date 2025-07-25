@@ -1,5 +1,5 @@
-import { BugIcon, UsersIcon, WarningCircleIcon } from "@phosphor-icons/react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BugIcon, UsersIcon, WarningCircleIcon } from '@phosphor-icons/react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface TopErrorCardProps {
   topError: {
@@ -16,7 +16,11 @@ export const TopErrorCard = ({ topError }: TopErrorCardProps) => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <BugIcon className="h-5 w-5 text-yellow-500" size={16} weight="duotone" />
+          <BugIcon
+            className="h-5 w-5 text-yellow-500"
+            size={16}
+            weight="duotone"
+          />
           Most Frequent Error
         </CardTitle>
       </CardHeader>

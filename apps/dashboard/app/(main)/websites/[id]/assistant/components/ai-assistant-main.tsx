@@ -1,15 +1,17 @@
-"use client";
+'use client';
 
-import React, { Suspense } from "react";
-import { cn } from "@/lib/utils";
 import { useAtom } from 'jotai';
+import React, { Suspense } from 'react';
+import { cn } from '@/lib/utils';
 import {
-  messagesAtom,
   currentMessageAtom,
+  messagesAtom,
 } from '@/stores/jotai/assistantAtoms';
-import ChatSection, { ChatSkeleton } from "./chat-section";
-import VisualizationSection, { VisualizationSkeleton } from "./visualization-section";
-import type { Message } from "../types/message";
+import type { Message } from '../types/message';
+import ChatSection, { ChatSkeleton } from './chat-section';
+import VisualizationSection, {
+  VisualizationSkeleton,
+} from './visualization-section';
 
 export default function AIAssistantMain() {
   const [messages] = useAtom(messagesAtom);
@@ -19,15 +21,21 @@ export default function AIAssistantMain() {
     .slice()
     .reverse()
     .find(
-      (m: Message) => m.data && m.chartType && m.type === "assistant" && m.responseType === "chart"
+      (m: Message) =>
+        m.data &&
+        m.chartType &&
+        m.type === 'assistant' &&
+        m.responseType === 'chart'
     );
 
   let currentQueryMessage: Message | undefined;
   if (latestVisualizationMessage) {
-    const vizMessageIndex = messages.findIndex((m) => m.id === latestVisualizationMessage.id);
+    const vizMessageIndex = messages.findIndex(
+      (m) => m.id === latestVisualizationMessage.id
+    );
     if (vizMessageIndex > -1) {
       for (let i = vizMessageIndex - 1; i >= 0; i--) {
-        if (messages[i].type === "user") {
+        if (messages[i].type === 'user') {
           currentQueryMessage = messages[i];
           break;
         }
@@ -43,7 +51,7 @@ export default function AIAssistantMain() {
   const shouldShowVisualization = !!(
     latestVisualizationMessage?.data &&
     latestVisualizationMessage?.chartType &&
-    latestVisualizationMessage?.responseType === "chart"
+    latestVisualizationMessage?.responseType === 'chart'
   );
 
   return (
@@ -52,8 +60,8 @@ export default function AIAssistantMain() {
         <div className="flex flex-1 flex-col gap-3 overflow-hidden lg:flex-row">
           <div
             className={cn(
-              "flex flex-col overflow-hidden",
-              shouldShowVisualization ? "lg:flex-[0.6]" : "flex-1"
+              'flex flex-col overflow-hidden',
+              shouldShowVisualization ? 'lg:flex-[0.6]' : 'flex-1'
             )}
           >
             <Suspense fallback={<ChatSkeleton />}>

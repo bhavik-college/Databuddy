@@ -1,9 +1,9 @@
-import { NavigationItem } from "./navigation-item";
-import type { NavigationSection as NavigationSectionType } from "./types";
+import { NavigationItem } from './navigation-item';
+import type { NavigationSection as NavigationSectionType } from './types';
 
 interface NavigationSectionProps {
   title: string;
-  items: NavigationSectionType["items"];
+  items: NavigationSectionType['items'];
   pathname: string;
   currentWebsiteId?: string | null;
 }
@@ -27,23 +27,28 @@ export function NavigationSection({
           if (item.rootLevel) {
             fullPath = item.href;
             isActive = pathname === item.href;
-          } else if (currentWebsiteId === "sandbox") {
+          } else if (currentWebsiteId === 'sandbox') {
             // Handle sandbox context
-            fullPath = item.href === "" ? "/sandbox" : `/sandbox${item.href}`;
-            isActive = item.href === "" ? pathname === "/sandbox" : pathname === fullPath;
-          } else if (pathname.startsWith("/demo")) {
+            fullPath = item.href === '' ? '/sandbox' : `/sandbox${item.href}`;
+            isActive =
+              item.href === ''
+                ? pathname === '/sandbox'
+                : pathname === fullPath;
+          } else if (pathname.startsWith('/demo')) {
             // Handle demo context
             fullPath =
-              item.href === ""
+              item.href === ''
                 ? `/demo/${currentWebsiteId}`
                 : `/demo/${currentWebsiteId}${item.href}`;
             isActive =
-              item.href === "" ? pathname === `/demo/${currentWebsiteId}` : pathname === fullPath;
+              item.href === ''
+                ? pathname === `/demo/${currentWebsiteId}`
+                : pathname === fullPath;
           } else {
             // Handle website context
             fullPath = `/websites/${currentWebsiteId}${item.href}`;
             isActive =
-              item.href === ""
+              item.href === ''
                 ? pathname === `/websites/${currentWebsiteId}`
                 : pathname === fullPath;
           }

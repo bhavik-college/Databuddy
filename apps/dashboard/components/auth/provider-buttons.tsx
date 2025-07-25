@@ -1,8 +1,13 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { AppleIcon, DiscordIcon, GitHubIcon, GoogleIcon } from "./provider-icons";
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import {
+  AppleIcon,
+  DiscordIcon,
+  GitHubIcon,
+  GoogleIcon,
+} from './provider-icons';
 
 const ProviderIcons = {
   apple: AppleIcon,
@@ -11,7 +16,8 @@ const ProviderIcons = {
   google: GoogleIcon,
 } as const;
 
-export interface ProviderButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ProviderButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   providerId: keyof typeof ProviderIcons;
   showIcon?: boolean;
   isLoading?: boolean;
@@ -30,7 +36,7 @@ export function ProviderButton({
   return (
     <Button
       className={cn(
-        "relative w-full bg-background hover:bg-muted/50 hover:text-foreground",
+        'relative w-full bg-background hover:bg-muted/50 hover:text-foreground',
         className
       )}
       disabled={isLoading}
@@ -47,33 +53,57 @@ export function ProviderButton({
   );
 }
 
-export function GoogleButton({ className, ...props }: Omit<ProviderButtonProps, "providerId">) {
+export function GoogleButton({
+  className,
+  ...props
+}: Omit<ProviderButtonProps, 'providerId'>) {
   return (
-    <ProviderButton className={cn("", className)} providerId="google" {...props}>
+    <ProviderButton
+      className={cn('', className)}
+      providerId="google"
+      {...props}
+    >
       Continue with Google
     </ProviderButton>
   );
 }
 
-export function GitHubButton({ className, ...props }: Omit<ProviderButtonProps, "providerId">) {
+export function GitHubButton({
+  className,
+  ...props
+}: Omit<ProviderButtonProps, 'providerId'>) {
   return (
-    <ProviderButton className={cn("", className)} providerId="github" {...props}>
+    <ProviderButton
+      className={cn('', className)}
+      providerId="github"
+      {...props}
+    >
       Continue with GitHub
     </ProviderButton>
   );
 }
 
-export function AppleButton({ className, ...props }: Omit<ProviderButtonProps, "providerId">) {
+export function AppleButton({
+  className,
+  ...props
+}: Omit<ProviderButtonProps, 'providerId'>) {
   return (
-    <ProviderButton className={cn("", className)} providerId="apple" {...props}>
+    <ProviderButton className={cn('', className)} providerId="apple" {...props}>
       Continue with Apple
     </ProviderButton>
   );
 }
 
-export function DiscordButton({ className, ...props }: Omit<ProviderButtonProps, "providerId">) {
+export function DiscordButton({
+  className,
+  ...props
+}: Omit<ProviderButtonProps, 'providerId'>) {
   return (
-    <ProviderButton className={cn("", className)} providerId="discord" {...props}>
+    <ProviderButton
+      className={cn('', className)}
+      providerId="discord"
+      {...props}
+    >
       Continue with Discord
     </ProviderButton>
   );

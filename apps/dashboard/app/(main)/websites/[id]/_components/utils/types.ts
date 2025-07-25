@@ -1,8 +1,8 @@
-import type { DateRange as BaseDateRange } from "@databuddy/shared";
+import type { DateRange as BaseDateRange } from '@databuddy/shared';
 
 // Extended date range with granularity
 export interface DateRange extends BaseDateRange {
-  granularity?: "daily" | "hourly";
+  granularity?: 'daily' | 'hourly';
 }
 
 // Base tab props shared across all tabs

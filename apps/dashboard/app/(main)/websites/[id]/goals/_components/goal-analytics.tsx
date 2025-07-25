@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { ArrowClockwise, Target, TrendUp, Users } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowClockwise, Target, TrendUp, Users } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface GoalAnalyticsProps {
   isLoading: boolean;
@@ -46,10 +46,17 @@ export function GoalAnalytics({
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-red-600">Failed to load goal analytics</p>
+              <p className="font-medium text-red-600">
+                Failed to load goal analytics
+              </p>
               <p className="mt-1 text-red-600/80 text-sm">{error.message}</p>
             </div>
-            <Button className="gap-2" onClick={onRetry} size="sm" variant="outline">
+            <Button
+              className="gap-2"
+              onClick={onRetry}
+              size="sm"
+              variant="outline"
+            >
               <ArrowClockwise size={16} weight="duotone" />
               Retry
             </Button>
@@ -63,7 +70,9 @@ export function GoalAnalytics({
     return (
       <Card className="rounded">
         <CardContent className="p-6">
-          <p className="text-center text-muted-foreground">No analytics data available</p>
+          <p className="text-center text-muted-foreground">
+            No analytics data available
+          </p>
         </CardContent>
       </Card>
     );
@@ -87,10 +96,16 @@ export function GoalAnalytics({
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/20">
-                <Users className="text-blue-600 dark:text-blue-400" size={20} weight="duotone" />
+                <Users
+                  className="text-blue-600 dark:text-blue-400"
+                  size={20}
+                  weight="duotone"
+                />
               </div>
               <div>
-                <p className="font-medium text-muted-foreground text-sm">Total Users</p>
+                <p className="font-medium text-muted-foreground text-sm">
+                  Total Users
+                </p>
                 <p className="font-bold text-2xl text-foreground">
                   {formatNumber(summaryStats.totalUsers)}
                 </p>
@@ -104,10 +119,16 @@ export function GoalAnalytics({
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/20">
-                <Target className="text-green-600 dark:text-green-400" size={20} weight="duotone" />
+                <Target
+                  className="text-green-600 dark:text-green-400"
+                  size={20}
+                  weight="duotone"
+                />
               </div>
               <div>
-                <p className="font-medium text-muted-foreground text-sm">Completions</p>
+                <p className="font-medium text-muted-foreground text-sm">
+                  Completions
+                </p>
                 <p className="font-bold text-2xl text-foreground">
                   {formatNumber(summaryStats.completions)}
                 </p>
@@ -128,7 +149,9 @@ export function GoalAnalytics({
                 />
               </div>
               <div>
-                <p className="font-medium text-muted-foreground text-sm">Conversion Rate</p>
+                <p className="font-medium text-muted-foreground text-sm">
+                  Conversion Rate
+                </p>
                 <p className="font-bold text-2xl text-foreground">
                   {formatPercentage(summaryStats.conversionRate)}
                 </p>
@@ -155,14 +178,18 @@ export function GoalAnalytics({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="mb-1 text-muted-foreground text-xs">Users who reached goal</p>
+                  <p className="mb-1 text-muted-foreground text-xs">
+                    Users who reached goal
+                  </p>
                   <p className="font-semibold text-lg">
-                    {formatNumber(summaryStats.completions)} /{" "}
+                    {formatNumber(summaryStats.completions)} /{' '}
                     {formatNumber(summaryStats.totalUsers)}
                   </p>
                 </div>
                 <div>
-                  <p className="mb-1 text-muted-foreground text-xs">Success rate</p>
+                  <p className="mb-1 text-muted-foreground text-xs">
+                    Success rate
+                  </p>
                   <p className="font-semibold text-green-600 text-lg">
                     {formatPercentage(summaryStats.conversionRate)}
                   </p>
@@ -173,7 +200,9 @@ export function GoalAnalytics({
             {data.data.avg_completion_time > 0 && (
               <div className="rounded-lg bg-muted/30 p-4">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-sm">Average Time to Complete</span>
+                  <span className="font-medium text-sm">
+                    Average Time to Complete
+                  </span>
                   <span className="font-semibold text-sm">
                     {data.data.avg_completion_time_formatted ||
                       `${Math.round(data.data.avg_completion_time)}s`}

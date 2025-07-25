@@ -1,3 +1,3 @@
 export * from './Databuddy';
-export * from './types';
 export * from './tracker';
+export * from './types';

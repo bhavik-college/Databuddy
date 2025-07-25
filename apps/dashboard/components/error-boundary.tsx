@@ -1,9 +1,15 @@
-"use client";
+'use client';
 
-import { AlertTriangle, RefreshCw } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -16,13 +22,13 @@ export function ErrorBoundary({ children, fallback }: ErrorBoundaryProps) {
 
   useEffect(() => {
     const errorHandler = (error: ErrorEvent) => {
-      console.error("Error caught by boundary:", error);
+      console.error('Error caught by boundary:', error);
       setError(error.error);
       setHasError(true);
     };
 
-    window.addEventListener("error", errorHandler);
-    return () => window.removeEventListener("error", errorHandler);
+    window.addEventListener('error', errorHandler);
+    return () => window.removeEventListener('error', errorHandler);
   }, []);
 
   if (hasError) {
@@ -40,8 +46,9 @@ export function ErrorBoundary({ children, fallback }: ErrorBoundaryProps) {
           <CardContent className="pt-6">
             <div className="space-y-4">
               <p className="text-muted-foreground text-sm">
-                We encountered an error while trying to display this content. This could be due to a
-                temporary issue or a problem with the data.
+                We encountered an error while trying to display this content.
+                This could be due to a temporary issue or a problem with the
+                data.
               </p>
               {error && (
                 <div className="max-h-[150px] overflow-auto rounded-md bg-muted p-3 font-mono text-xs">

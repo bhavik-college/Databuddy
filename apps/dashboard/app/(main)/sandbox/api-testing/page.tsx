@@ -1,20 +1,28 @@
-"use client";
+'use client';
 
-import { Check, Copy, Loader2, Send } from "lucide-react";
-import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Check, Copy, Loader2, Send } from 'lucide-react';
+import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function ApiTestingPage() {
-  const [endpoint, setEndpoint] = useState("/api/v1/analytics");
-  const [method, setMethod] = useState("GET");
-  const [headers, setHeaders] = useState('{\n  "Content-Type": "application/json"\n}');
-  const [body, setBody] = useState("");
-  const [response, setResponse] = useState("");
+  const [endpoint, setEndpoint] = useState('/api/v1/analytics');
+  const [method, setMethod] = useState('GET');
+  const [headers, setHeaders] = useState(
+    '{\n  "Content-Type": "application/json"\n}'
+  );
+  const [body, setBody] = useState('');
+  const [response, setResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -27,7 +35,7 @@ export default function ApiTestingPage() {
 
       // Mock response based on endpoint
       let mockResponse;
-      if (endpoint.includes("analytics")) {
+      if (endpoint.includes('analytics')) {
         mockResponse = {
           status: 200,
           data: {
@@ -36,9 +44,9 @@ export default function ApiTestingPage() {
             bounce_rate: 0.45,
             avg_session_duration: 180,
             top_pages: [
-              { path: "/", views: 456 },
-              { path: "/about", views: 234 },
-              { path: "/contact", views: 123 },
+              { path: '/', views: 456 },
+              { path: '/about', views: 234 },
+              { path: '/contact', views: 123 },
             ],
           },
           timestamp: new Date().toISOString(),
@@ -46,7 +54,7 @@ export default function ApiTestingPage() {
       } else {
         mockResponse = {
           status: 200,
-          message: "API test successful",
+          message: 'API test successful',
           endpoint,
           method,
           timestamp: new Date().toISOString(),
@@ -55,7 +63,13 @@ export default function ApiTestingPage() {
 
       setResponse(JSON.stringify(mockResponse, null, 2));
     } catch (error) {
-      setResponse(JSON.stringify({ error: "API test failed", message: String(error) }, null, 2));
+      setResponse(
+        JSON.stringify(
+          { error: 'API test failed', message: String(error) },
+          null,
+          2
+        )
+      );
     } finally {
       setIsLoading(false);
     }
@@ -71,14 +85,18 @@ export default function ApiTestingPage() {
     <div className="container mx-auto max-w-6xl p-6">
       <div className="mb-6">
         <h1 className="mb-2 font-bold text-2xl text-foreground">API Testing</h1>
-        <p className="text-muted-foreground">Test API endpoints and data structures</p>
+        <p className="text-muted-foreground">
+          Test API endpoints and data structures
+        </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Request Configuration</CardTitle>
-            <CardDescription>Configure your API request parameters</CardDescription>
+            <CardDescription>
+              Configure your API request parameters
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-3 gap-2">
@@ -118,7 +136,7 @@ export default function ApiTestingPage() {
               />
             </div>
 
-            {(method === "POST" || method === "PUT") && (
+            {(method === 'POST' || method === 'PUT') && (
               <div>
                 <Label htmlFor="body">Request Body (JSON)</Label>
                 <Textarea
@@ -142,7 +160,7 @@ export default function ApiTestingPage() {
               ) : (
                 <Send className="h-4 w-4" />
               )}
-              {isLoading ? "Testing..." : "Send Request"}
+              {isLoading ? 'Testing...' : 'Send Request'}
             </Button>
           </CardContent>
         </Card>
@@ -161,8 +179,12 @@ export default function ApiTestingPage() {
                   size="sm"
                   variant="ghost"
                 >
-                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                  {copied ? "Copied!" : "Copy"}
+                  {copied ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                  {copied ? 'Copied!' : 'Copy'}
                 </Button>
               )}
             </div>
@@ -174,7 +196,9 @@ export default function ApiTestingPage() {
                   <Badge className="text-green-600" variant="outline">
                     200 OK
                   </Badge>
-                  <span className="text-muted-foreground text-sm">Response received</span>
+                  <span className="text-muted-foreground text-sm">
+                    Response received
+                  </span>
                 </div>
                 <pre className="overflow-x-auto rounded-md bg-muted p-4 text-sm">
                   <code>{response}</code>
@@ -197,12 +221,32 @@ export default function ApiTestingPage() {
         <CardContent>
           <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
             {[
-              { name: "Analytics Overview", endpoint: "/api/v1/analytics", method: "GET" },
-              { name: "Website List", endpoint: "/api/v1/websites", method: "GET" },
-              { name: "User Profile", endpoint: "/api/v1/user/profile", method: "GET" },
-              { name: "Event Tracking", endpoint: "/api/v1/events", method: "POST" },
-              { name: "Settings Update", endpoint: "/api/v1/settings", method: "PUT" },
-              { name: "Health Check", endpoint: "/api/health", method: "GET" },
+              {
+                name: 'Analytics Overview',
+                endpoint: '/api/v1/analytics',
+                method: 'GET',
+              },
+              {
+                name: 'Website List',
+                endpoint: '/api/v1/websites',
+                method: 'GET',
+              },
+              {
+                name: 'User Profile',
+                endpoint: '/api/v1/user/profile',
+                method: 'GET',
+              },
+              {
+                name: 'Event Tracking',
+                endpoint: '/api/v1/events',
+                method: 'POST',
+              },
+              {
+                name: 'Settings Update',
+                endpoint: '/api/v1/settings',
+                method: 'PUT',
+              },
+              { name: 'Health Check', endpoint: '/api/health', method: 'GET' },
             ].map((test) => (
               <Button
                 className="justify-start"

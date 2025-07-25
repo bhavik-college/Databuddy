@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { CalendarIcon, CreditCardIcon } from "@phosphor-icons/react";
-import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { formatCurrency } from "@/lib/formatters";
+import { CalendarIcon, CreditCardIcon } from '@phosphor-icons/react';
+import { format } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { formatCurrency } from '@/lib/formatters';
 
 interface Transaction {
   id: string;
@@ -35,7 +35,10 @@ const TransactionSkeleton = () => (
   </div>
 );
 
-export function RecentTransactions({ data, isLoading }: RecentTransactionsProps) {
+export function RecentTransactions({
+  data,
+  isLoading,
+}: RecentTransactionsProps) {
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -54,7 +57,9 @@ export function RecentTransactions({ data, isLoading }: RecentTransactionsProps)
             <CreditCardIcon className="mx-auto h-16 w-16 text-muted-foreground/20" />
             <div className="absolute inset-0 rounded-full bg-gradient-to-t from-primary/10 to-transparent blur-xl" />
           </div>
-          <p className="mt-6 font-semibold text-foreground text-lg">No transactions yet</p>
+          <p className="mt-6 font-semibold text-foreground text-lg">
+            No transactions yet
+          </p>
           <p className="mx-auto mt-2 max-w-sm text-muted-foreground text-sm">
             Recent transactions will appear here as they are processed
           </p>
@@ -65,20 +70,20 @@ export function RecentTransactions({ data, isLoading }: RecentTransactionsProps)
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case "succeeded":
-        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 border-green-200 dark:border-green-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800";
-      case "failed":
-        return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400 border-red-200 dark:border-red-800";
+      case 'succeeded':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 border-green-200 dark:border-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800';
+      case 'failed':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400 border-red-200 dark:border-red-800';
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400 border-gray-200 dark:border-gray-800";
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400 border-gray-200 dark:border-gray-800';
     }
   };
 
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), "MMM dd, yyyy HH:mm");
+      return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
     } catch {
       return dateString;
     }
@@ -108,7 +113,8 @@ export function RecentTransactions({ data, isLoading }: RecentTransactionsProps)
                   className={`border font-medium text-xs ${getStatusColor(transaction.status)}`}
                   variant="outline"
                 >
-                  {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                  {transaction.status.charAt(0).toUpperCase() +
+                    transaction.status.slice(1)}
                 </Badge>
               </div>
               <div className="flex items-center gap-1.5 text-muted-foreground text-xs">

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import type React from "react";
-import { formatMetricNumber } from "@/lib/formatters";
+import type React from 'react';
+import { formatMetricNumber } from '@/lib/formatters';
 
 interface FormattedNumberProps {
   id?: string; // Optional unique ID
@@ -9,7 +9,11 @@ interface FormattedNumberProps {
   className?: string;
 }
 
-export const FormattedNumber: React.FC<FormattedNumberProps> = ({ id, value, className }) => {
+export const FormattedNumber: React.FC<FormattedNumberProps> = ({
+  id,
+  value,
+  className,
+}) => {
   return (
     <span className={className} id={id}>
       {formatMetricNumber(value)}

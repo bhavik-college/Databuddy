@@ -1,19 +1,22 @@
+import { auth } from '@databuddy/auth';
+import { ChevronLeft, Loader2 } from 'lucide-react';
+import { headers } from 'next/headers';
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
+import Iridescence from '@/components/bits/Iridiscence';
+import { Logo } from '@/components/layout/logo';
+import { Button } from '@/components/ui/button';
 
-import { ChevronLeft, Loader2 } from "lucide-react";
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { Suspense } from "react";
-import Iridescence from "@/components/bits/Iridiscence";
-import { Logo } from "@/components/layout/logo";
-import { Button } from "@/components/ui/button";
-import { auth } from "@databuddy/auth";
-import { headers } from "next/headers";
-
-export default async function AuthLayout({ children }: { children: React.ReactNode }) {
+export default async function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (session) {
-    redirect("/websites");
+    redirect('/websites');
   }
 
   return (
@@ -38,7 +41,8 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
             Databuddy
           </h1>
           <p className="max-w-md text-white/70">
-            Connect your data sources, build insights, and share them with your team.
+            Connect your data sources, build insights, and share them with your
+            team.
           </p>
         </div>
       </div>

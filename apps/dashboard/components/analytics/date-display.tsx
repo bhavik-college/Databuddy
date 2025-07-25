@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { usePreferences } from "@/hooks/use-preferences";
+import { usePreferences } from '@/hooks/use-preferences';
 
 interface DateDisplayProps {
   date: string | Date;
@@ -8,7 +8,11 @@ interface DateDisplayProps {
   customFormat?: string;
 }
 
-export function DateDisplay({ date, showTime, customFormat }: DateDisplayProps) {
+export function DateDisplay({
+  date,
+  showTime,
+  customFormat,
+}: DateDisplayProps) {
   const { formatDate, loading } = usePreferences();
 
   if (loading) {
@@ -27,7 +31,10 @@ interface RelativeDateDisplayProps {
   className?: string;
 }
 
-export function RelativeDateDisplay({ date, className }: RelativeDateDisplayProps) {
+export function RelativeDateDisplay({
+  date,
+  className,
+}: RelativeDateDisplayProps) {
   const { loading } = usePreferences();
 
   if (loading) {
@@ -46,7 +53,7 @@ export function RelativeDateDisplay({ date, className }: RelativeDateDisplayProp
     const minutes = Math.floor(diffInSeconds / 60);
     return (
       <span className={className}>
-        {minutes} minute{minutes !== 1 ? "s" : ""} ago
+        {minutes} minute{minutes !== 1 ? 's' : ''} ago
       </span>
     );
   }
@@ -55,7 +62,7 @@ export function RelativeDateDisplay({ date, className }: RelativeDateDisplayProp
     const hours = Math.floor(diffInSeconds / 3600);
     return (
       <span className={className}>
-        {hours} hour{hours !== 1 ? "s" : ""} ago
+        {hours} hour{hours !== 1 ? 's' : ''} ago
       </span>
     );
   }
@@ -64,7 +71,7 @@ export function RelativeDateDisplay({ date, className }: RelativeDateDisplayProp
     const days = Math.floor(diffInSeconds / 86_400);
     return (
       <span className={className}>
-        {days} day{days !== 1 ? "s" : ""} ago
+        {days} day{days !== 1 ? 's' : ''} ago
       </span>
     );
   }
@@ -73,7 +80,7 @@ export function RelativeDateDisplay({ date, className }: RelativeDateDisplayProp
     const months = Math.floor(diffInSeconds / 2_592_000);
     return (
       <span className={className}>
-        {months} month{months !== 1 ? "s" : ""} ago
+        {months} month{months !== 1 ? 's' : ''} ago
       </span>
     );
   }
@@ -81,7 +88,7 @@ export function RelativeDateDisplay({ date, className }: RelativeDateDisplayProp
   const years = Math.floor(diffInSeconds / 31_536_000);
   return (
     <span className={className}>
-      {years} year{years !== 1 ? "s" : ""} ago
+      {years} year{years !== 1 ? 's' : ''} ago
     </span>
   );
 }

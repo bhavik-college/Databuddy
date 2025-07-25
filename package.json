@@ -5,7 +5,8 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "start": "turbo run start",
-    "lint": "turbo run",
+    "lint": "npx ultracite@latest lint",
+    "format": "npx ultracite@latest format",
     "check-types": "turbo run check-types",
     "generate-db": "turbo run generate --filter=@databuddy/db",
     "db:studio": "cd packages/db && bun run db:studio",
@@ -19,9 +20,10 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.1.2",
+    "@types/bun": "latest",
     "turbo": "^2.5.2",
     "typescript": "^5.8.3",
-    "@types/bun": "latest"
+    "ultracite": "5.0.49"
   },
   "engines": {
     "node": ">=20"

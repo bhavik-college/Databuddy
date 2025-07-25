@@ -1,10 +1,14 @@
-"use client";
+'use client';
 
-import { CheckCircleIcon, KeyIcon, WarningCircleIcon } from "@phosphor-icons/react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import type { ConfigurationSummaryProps } from "../../utils/types";
+import {
+  CheckCircleIcon,
+  KeyIcon,
+  WarningCircleIcon,
+} from '@phosphor-icons/react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import type { ConfigurationSummaryProps } from '../../utils/types';
 
 export function ConfigurationSummary({
   webhookToken,
@@ -18,9 +22,17 @@ export function ConfigurationSummary({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           {isConfigured ? (
-            <CheckCircleIcon className="h-5 w-5 text-green-500" size={20} weight="fill" />
+            <CheckCircleIcon
+              className="h-5 w-5 text-green-500"
+              size={20}
+              weight="fill"
+            />
           ) : (
-            <WarningCircleIcon className="h-5 w-5 text-orange-500" size={20} weight="duotone" />
+            <WarningCircleIcon
+              className="h-5 w-5 text-orange-500"
+              size={20}
+              weight="duotone"
+            />
           )}
           Configuration Summary
         </CardTitle>
@@ -28,9 +40,11 @@ export function ConfigurationSummary({
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
           <div>
-            <Label className="text-muted-foreground text-xs">Webhook Token</Label>
+            <Label className="text-muted-foreground text-xs">
+              Webhook Token
+            </Label>
             <div className="flex items-center gap-2">
-              <p className="font-mono">{webhookToken || "Not configured"}</p>
+              <p className="font-mono">{webhookToken || 'Not configured'}</p>
               {webhookToken && (
                 <Badge className="text-xs" variant="outline">
                   Active
@@ -41,15 +55,20 @@ export function ConfigurationSummary({
           <div>
             <Label className="text-muted-foreground text-xs">Mode</Label>
             <div className="flex items-center gap-2">
-              <p>{isLiveMode ? "Production" : "Test"}</p>
-              <Badge className="text-xs" variant={isLiveMode ? "default" : "secondary"}>
-                {isLiveMode ? "Live" : "Test"}
+              <p>{isLiveMode ? 'Production' : 'Test'}</p>
+              <Badge
+                className="text-xs"
+                variant={isLiveMode ? 'default' : 'secondary'}
+              >
+                {isLiveMode ? 'Live' : 'Test'}
               </Badge>
             </div>
           </div>
           <div className="md:col-span-2">
             <Label className="text-muted-foreground text-xs">Webhook URL</Label>
-            <p className="break-all font-mono text-xs">{webhookUrl || "Not configured"}</p>
+            <p className="break-all font-mono text-xs">
+              {webhookUrl || 'Not configured'}
+            </p>
           </div>
         </div>
 

@@ -14,16 +14,34 @@ import {
   TargetIcon,
   TestTubeIcon,
   UsersIcon,
-} from "@phosphor-icons/react";
-import type { NavigationSection } from "./types";
+} from '@phosphor-icons/react';
+import type { NavigationSection } from './types';
 
 export const mainNavigation: NavigationSection[] = [
   {
-    title: "Main",
+    title: 'Main',
     items: [
-      { name: "Websites", icon: GlobeIcon, href: "/websites", rootLevel: true, highlight: true },
-      { name: "Billing", icon: CurrencyDollarIcon, href: "/billing", rootLevel: true, highlight: true },
-      { name: "Settings", icon: GearIcon, href: "/settings", rootLevel: true, highlight: true },
+      {
+        name: 'Websites',
+        icon: GlobeIcon,
+        href: '/websites',
+        rootLevel: true,
+        highlight: true,
+      },
+      {
+        name: 'Billing',
+        icon: CurrencyDollarIcon,
+        href: '/billing',
+        rootLevel: true,
+        highlight: true,
+      },
+      {
+        name: 'Settings',
+        icon: GearIcon,
+        href: '/settings',
+        rootLevel: true,
+        highlight: true,
+      },
     ],
   },
   // {
@@ -33,20 +51,20 @@ export const mainNavigation: NavigationSection[] = [
   //   ],
   // },
   {
-    title: "Resources",
+    title: 'Resources',
     items: [
       {
-        name: "Roadmap",
+        name: 'Roadmap',
         icon: MapPinIcon,
-        href: "https://trello.com/b/SOUXD4wE/databuddy",
+        href: 'https://trello.com/b/SOUXD4wE/databuddy',
         rootLevel: true,
         external: true,
         highlight: true,
       },
       {
-        name: "Feedback",
+        name: 'Feedback',
         icon: ChatCircleIcon,
-        href: "https://databuddy.featurebase.app/",
+        href: 'https://databuddy.featurebase.app/',
         rootLevel: true,
         external: true,
         highlight: true,
@@ -57,27 +75,35 @@ export const mainNavigation: NavigationSection[] = [
 
 export const websiteNavigation: NavigationSection[] = [
   {
-    title: "Web Analytics",
+    title: 'Web Analytics',
     items: [
-      { name: "Overview", icon: HouseIcon, href: "", highlight: true },
-      { name: "Sessions", icon: ClockIcon, href: "/sessions", highlight: true },
-      { name: "Errors", icon: BugIcon, href: "/errors", highlight: true },
-      { name: "Map", icon: MapPinIcon, href: "/map", highlight: true },
+      { name: 'Overview', icon: HouseIcon, href: '', highlight: true },
+      { name: 'Sessions', icon: ClockIcon, href: '/sessions', highlight: true },
+      { name: 'Errors', icon: BugIcon, href: '/errors', highlight: true },
+      { name: 'Map', icon: MapPinIcon, href: '/map', highlight: true },
     ],
   },
   {
-    title: "Product Analytics",
+    title: 'Product Analytics',
     items: [
-      { name: "Profiles", icon: UsersIcon, href: "/profiles", highlight: true },
-      { name: "Funnels", icon: FunnelIcon, href: "/funnels", highlight: true },
-      { name: "Goals", icon: TargetIcon, href: "/goals", highlight: true },
+      { name: 'Profiles', icon: UsersIcon, href: '/profiles', highlight: true },
+      { name: 'Funnels', icon: FunnelIcon, href: '/funnels', highlight: true },
+      { name: 'Goals', icon: TargetIcon, href: '/goals', highlight: true },
       // { name: "Journeys", icon: GitBranchIcon, href: "/journeys", highlight: true },
       // { name: "Revenue", icon: CurrencyDollarIcon, href: "/revenue", highlight: true, alpha: true },
     ],
   },
   {
-    title: "Engagement",
-    items: [{ name: "Assistant", icon: RobotIcon, href: "/assistant", highlight: true, alpha: true }],
+    title: 'Engagement',
+    items: [
+      {
+        name: 'Assistant',
+        icon: RobotIcon,
+        href: '/assistant',
+        highlight: true,
+        alpha: true,
+      },
+    ],
   },
   // {
   //   title: "Configuration",
@@ -87,22 +113,27 @@ export const websiteNavigation: NavigationSection[] = [
 
 export const demoNavigation: NavigationSection[] = [
   {
-    title: "Demo Analytics",
+    title: 'Demo Analytics',
     items: [
-      { name: "Overview", icon: HouseIcon, href: "", highlight: true },
-      { name: "Sessions", icon: ClockIcon, href: "/sessions", highlight: true },
-      { name: "Profiles", icon: UsersIcon, href: "/profiles", highlight: true },
-      { name: "Map", icon: MapPinIcon, href: "/map", highlight: true },
+      { name: 'Overview', icon: HouseIcon, href: '', highlight: true },
+      { name: 'Sessions', icon: ClockIcon, href: '/sessions', highlight: true },
+      { name: 'Profiles', icon: UsersIcon, href: '/profiles', highlight: true },
+      { name: 'Map', icon: MapPinIcon, href: '/map', highlight: true },
     ],
   },
 ];
 
 export const sandboxNavigation: NavigationSection[] = [
   {
-    title: "Test Pages",
+    title: 'Test Pages',
     items: [
-      { name: "Overview", icon: HouseIcon, href: "", highlight: true },
-      { name: "UI Components", icon: TestTubeIcon, href: "/ui-components", highlight: true },
+      { name: 'Overview', icon: HouseIcon, href: '', highlight: true },
+      {
+        name: 'UI Components',
+        icon: TestTubeIcon,
+        href: '/ui-components',
+        highlight: true,
+      },
     ],
   },
 ];

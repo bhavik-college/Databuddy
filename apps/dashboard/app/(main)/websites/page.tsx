@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ArrowClockwiseIcon,
@@ -7,22 +7,25 @@ import {
   PlusIcon,
   SparkleIcon,
   TrendUpIcon,
-} from "@phosphor-icons/react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { WebsiteDialog } from "@/components/website-dialog";
-import { useWebsites } from "@/hooks/use-websites";
-import { WebsiteCard } from "./_components/website-card";
-import { cn } from "@/lib/utils";
-import { trpc } from "@/lib/trpc";
+} from '@phosphor-icons/react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { WebsiteDialog } from '@/components/website-dialog';
+import { useWebsites } from '@/hooks/use-websites';
+import { trpc } from '@/lib/trpc';
+import { cn } from '@/lib/utils';
+import { WebsiteCard } from './_components/website-card';
 
 function WebsiteLoadingSkeleton() {
   return (
     <div className="grid select-none gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {[1, 2, 3, 4, 5, 6].map((num) => (
-        <Card className="animate-pulse overflow-hidden" key={`website-skeleton-${num}`}>
+        <Card
+          className="animate-pulse overflow-hidden"
+          key={`website-skeleton-${num}`}
+        >
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex-1 space-y-2">
@@ -74,15 +77,15 @@ function EnhancedEmptyState({ onAddWebsite }: { onAddWebsite: () => void }) {
 
       <h3 className="mb-4 font-bold text-2xl">No Websites Yet</h3>
       <p className="mb-8 max-w-md text-muted-foreground leading-relaxed">
-        Start tracking your website analytics by adding your first website. Get insights into
-        visitors, pageviews, and performance.
+        Start tracking your website analytics by adding your first website. Get
+        insights into visitors, pageviews, and performance.
       </p>
 
       <Button
         className={cn(
-          "gap-2 px-8 py-4 font-medium text-base",
-          "bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary",
-          "group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl"
+          'gap-2 px-8 py-4 font-medium text-base',
+          'bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary',
+          'group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl'
         )}
         data-button-type="primary-cta"
         data-section="empty-state"
@@ -91,9 +94,7 @@ function EnhancedEmptyState({ onAddWebsite }: { onAddWebsite: () => void }) {
         size="lg"
       >
         <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-700 group-hover:translate-x-[100%]" />
-        <PlusIcon
-          className="relative z-10 h-5 w-5 transition-transform duration-300 group-hover:rotate-90"
-        />
+        <PlusIcon className="relative z-10 h-5 w-5 transition-transform duration-300 group-hover:rotate-90" />
         <span className="relative z-10">Add First Website</span>
       </Button>
 
@@ -110,8 +111,8 @@ function EnhancedEmptyState({ onAddWebsite }: { onAddWebsite: () => void }) {
           <div className="text-left">
             <p className="mb-2 font-semibold text-sm">💡 Quick tip</p>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Add your tracking script to start collecting analytics data. You'll see beautiful
-              charts and insights within minutes.
+              Add your tracking script to start collecting analytics data.
+              You'll see beautiful charts and insights within minutes.
             </p>
           </div>
         </div>
@@ -133,7 +134,8 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
       </div>
       <h3 className="mb-4 font-bold text-2xl">Failed to Load Websites</h3>
       <p className="mb-8 max-w-md text-muted-foreground leading-relaxed">
-        There was an issue fetching your websites. Please check your connection and try again.
+        There was an issue fetching your websites. Please check your connection
+        and try again.
       </p>
       <Button
         data-section="error-state"
@@ -154,14 +156,15 @@ export default function WebsitesPage() {
 
   const websiteIds = websites.map((w) => w.id);
 
-  const { data: chartData, isLoading: isLoadingChart } = trpc.miniCharts.getMiniCharts.useQuery(
-    {
-      websiteIds,
-    },
-    {
-      enabled: !isLoading && websiteIds.length > 0,
-    }
-  );
+  const { data: chartData, isLoading: isLoadingChart } =
+    trpc.miniCharts.getMiniCharts.useQuery(
+      {
+        websiteIds,
+      },
+      {
+        enabled: !isLoading && websiteIds.length > 0,
+      }
+    );
 
   const handleRetry = () => {
     refetch();
@@ -172,7 +175,7 @@ export default function WebsitesPage() {
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex h-full flex-col">
       {/* Enhanced header */}
       <div className="border-b">
         <div className="flex flex-col justify-between gap-3 p-3 sm:flex-row sm:items-center sm:gap-0 sm:px-4 sm:py-4">
@@ -198,19 +201,21 @@ export default function WebsitesPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
-              size="icon"
-              onClick={() => refetch()}
-              disabled={isLoading}
               aria-label="Refresh websites"
+              disabled={isLoading}
+              onClick={() => refetch()}
+              size="icon"
+              variant="outline"
             >
-              <ArrowClockwiseIcon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <ArrowClockwiseIcon
+                className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
+              />
             </Button>
             <Button
               className={cn(
-                "w-full gap-2 px-6 py-3 font-medium sm:w-auto",
-                "bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary",
-                "group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl"
+                'w-full gap-2 px-6 py-3 font-medium sm:w-auto',
+                'bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary',
+                'group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl'
               )}
               data-button-type="primary"
               data-section="header"
@@ -219,9 +224,7 @@ export default function WebsitesPage() {
               size="default"
             >
               <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-700 group-hover:translate-x-[100%]" />
-              <PlusIcon
-                className="relative z-10 h-4 w-4 transition-transform duration-300 group-hover:rotate-90"
-              />
+              <PlusIcon className="relative z-10 h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
               <span className="relative z-10 truncate">New Website</span>
             </Button>
           </div>
@@ -241,8 +244,11 @@ export default function WebsitesPage() {
                 weight="duotone"
               />
               <span>
-                Tracking <span className="font-medium text-foreground">{websites.length}</span>{" "}
-                website{websites.length !== 1 ? "s" : ""}
+                Tracking{' '}
+                <span className="font-medium text-foreground">
+                  {websites.length}
+                </span>{' '}
+                website{websites.length !== 1 ? 's' : ''}
               </span>
             </div>
           </div>
@@ -260,14 +266,14 @@ export default function WebsitesPage() {
         )}
 
         {/* Show website grid */}
-        {!isLoading && !isError && websites && websites.length > 0 && (
+        {!(isLoading || isError) && websites && websites.length > 0 && (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {websites.map((website) => (
               <WebsiteCard
-                website={website}
-                key={website.id}
                 chartData={chartData?.[website.id] || []}
                 isLoadingChart={isLoadingChart}
+                key={website.id}
+                website={website}
               />
             ))}
           </div>
@@ -276,8 +282,8 @@ export default function WebsitesPage() {
 
       {/* Website Dialog */}
       <WebsiteDialog
-        onSave={handleWebsiteCreated}
         onOpenChange={setDialogOpen}
+        onSave={handleWebsiteCreated}
         open={dialogOpen}
       />
     </div>

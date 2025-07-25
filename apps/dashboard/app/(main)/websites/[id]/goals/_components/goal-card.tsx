@@ -1,15 +1,21 @@
-"use client";
+'use client';
 
-import { DotsThreeIcon, EyeIcon, MouseMiddleClickIcon, PencilSimpleIcon, TrashIcon } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  DotsThreeIcon,
+  EyeIcon,
+  MouseMiddleClickIcon,
+  PencilSimpleIcon,
+  TrashIcon,
+} from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import type { Goal } from "@/hooks/use-goals";
+} from '@/components/ui/dropdown-menu';
+import type { Goal } from '@/hooks/use-goals';
 
 interface GoalCardProps {
   goal: Goal;
@@ -32,10 +38,12 @@ export function GoalCard({
 }: GoalCardProps) {
   const getStepIcon = (type: string) => {
     switch (type) {
-      case "PAGE_VIEW":
+      case 'PAGE_VIEW':
         return <EyeIcon className="text-muted-foreground" size={16} />;
-      case "EVENT":
-        return <MouseMiddleClickIcon className="text-muted-foreground" size={16} />;
+      case 'EVENT':
+        return (
+          <MouseMiddleClickIcon className="text-muted-foreground" size={16} />
+        );
       default:
         return <EyeIcon className="text-muted-foreground" size={16} />;
     }
@@ -53,7 +61,9 @@ export function GoalCard({
         <div className="mb-4 flex items-start justify-between">
           <div className="min-w-0 flex-1">
             <div className="mb-3 flex items-center gap-2">
-              <h3 className="truncate font-semibold text-foreground text-lg">{goal.name}</h3>
+              <h3 className="truncate font-semibold text-foreground text-lg">
+                {goal.name}
+              </h3>
               {!goal.isActive && (
                 <span className="rounded bg-muted px-2 py-1 font-medium text-muted-foreground text-xs">
                   Paused
@@ -63,7 +73,7 @@ export function GoalCard({
 
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
               {getStepIcon(goal.type)}
-              <span className="truncate">{goal.target || "No target"}</span>
+              <span className="truncate">{goal.target || 'No target'}</span>
             </div>
           </div>
 
@@ -94,9 +104,9 @@ export function GoalCard({
         </div>
 
         <div className="mb-4">
-          <div className="relative h-3 w-full bg-muted overflow-hidden">
+          <div className="relative h-3 w-full overflow-hidden bg-muted">
             <div
-              className="absolute left-0 top-0 h-full"
+              className="absolute top-0 left-0 h-full"
               style={{
                 width: `${conversionRate}%`,
                 backgroundImage:
@@ -106,11 +116,15 @@ export function GoalCard({
               }}
             />
             <div
-              className="absolute left-0 top-0 h-full bg-primary"
+              className="absolute top-0 left-0 h-full bg-primary"
               style={{ width: `${conversionRate}%` }}
             />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-foreground">
-              {isLoading ? <span className="inline-block h-3 w-8 animate-pulse rounded bg-muted" /> : `${conversionRate.toFixed(1)}%`}
+            <div className="-translate-y-1/2 absolute top-1/2 right-2 font-semibold text-foreground text-xs">
+              {isLoading ? (
+                <span className="inline-block h-3 w-8 animate-pulse rounded bg-muted" />
+              ) : (
+                `${conversionRate.toFixed(1)}%`
+              )}
             </div>
           </div>
         </div>
@@ -139,7 +153,9 @@ export function GoalCard({
           </div>
 
           <div>
-            <div className="mb-1 text-muted-foreground text-xs">Completions</div>
+            <div className="mb-1 text-muted-foreground text-xs">
+              Completions
+            </div>
             <div className="font-medium text-foreground text-lg">
               {isLoading ? (
                 <div className="h-4 w-8 animate-pulse rounded bg-muted" />

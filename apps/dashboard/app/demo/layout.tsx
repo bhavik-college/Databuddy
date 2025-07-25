@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   BugIcon,
@@ -13,34 +13,69 @@ import {
   TargetIcon,
   UsersIcon,
   XIcon,
-} from "@phosphor-icons/react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
-import { Logo } from "@/components/layout/logo";
-import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { UserMenu } from "@/components/layout/user-menu";
-import { NotificationsPopover } from "@/components/notifications/notifications-popover";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+} from '@phosphor-icons/react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import { Logo } from '@/components/layout/logo';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
+import { UserMenu } from '@/components/layout/user-menu';
+import { NotificationsPopover } from '@/components/notifications/notifications-popover';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 const demoNavigation = [
   {
-    title: "Web Analytics",
+    title: 'Web Analytics',
     items: [
-      { name: "Overview", icon: HouseIcon, href: "/demo/OXmNQsViBT-FOS_wZCTHc", highlight: true },
-      { name: "Sessions", icon: ClockIcon, href: "/demo/OXmNQsViBT-FOS_wZCTHc/sessions", highlight: true },
-      { name: "Errors", icon: BugIcon, href: "/demo/OXmNQsViBT-FOS_wZCTHc/errors", highlight: true },
-      { name: "Map", icon: MapPinIcon, href: "/demo/OXmNQsViBT-FOS_wZCTHc/map", highlight: true },
+      {
+        name: 'Overview',
+        icon: HouseIcon,
+        href: '/demo/OXmNQsViBT-FOS_wZCTHc',
+        highlight: true,
+      },
+      {
+        name: 'Sessions',
+        icon: ClockIcon,
+        href: '/demo/OXmNQsViBT-FOS_wZCTHc/sessions',
+        highlight: true,
+      },
+      {
+        name: 'Errors',
+        icon: BugIcon,
+        href: '/demo/OXmNQsViBT-FOS_wZCTHc/errors',
+        highlight: true,
+      },
+      {
+        name: 'Map',
+        icon: MapPinIcon,
+        href: '/demo/OXmNQsViBT-FOS_wZCTHc/map',
+        highlight: true,
+      },
     ],
   },
   {
-    title: "Product Analytics",
+    title: 'Product Analytics',
     items: [
-      { name: "Profiles", icon: UsersIcon, href: "/demo/OXmNQsViBT-FOS_wZCTHc/profiles", highlight: true },
-      { name: "Funnels", icon: FunnelIcon, href: "/demo/OXmNQsViBT-FOS_wZCTHc/funnels", highlight: true },
-      { name: "Goals", icon: TargetIcon, href: "/demo/OXmNQsViBT-FOS_wZCTHc/goals", highlight: true },
+      {
+        name: 'Profiles',
+        icon: UsersIcon,
+        href: '/demo/OXmNQsViBT-FOS_wZCTHc/profiles',
+        highlight: true,
+      },
+      {
+        name: 'Funnels',
+        icon: FunnelIcon,
+        href: '/demo/OXmNQsViBT-FOS_wZCTHc/funnels',
+        highlight: true,
+      },
+      {
+        name: 'Goals',
+        icon: TargetIcon,
+        href: '/demo/OXmNQsViBT-FOS_wZCTHc/goals',
+        highlight: true,
+      },
     ],
   },
 ];
@@ -56,13 +91,13 @@ export function Sidebar() {
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isMobileOpen) {
+      if (e.key === 'Escape' && isMobileOpen) {
         closeSidebar();
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isMobileOpen, closeSidebar]);
 
   return (
@@ -94,7 +129,11 @@ export function Sidebar() {
             <ThemeToggle />
 
             {/* Help */}
-            <Button className="hidden h-8 w-8 md:flex" size="icon" variant="ghost">
+            <Button
+              className="hidden h-8 w-8 md:flex"
+              size="icon"
+              variant="ghost"
+            >
               <InfoIcon className="h-6 w-6" size={32} weight="duotone" />
               <span className="sr-only">Help</span>
             </Button>
@@ -110,15 +149,21 @@ export function Sidebar() {
 
       {/* Mobile backdrop */}
       {isMobileOpen && (
-        <div className="fixed inset-0 z-30 bg-black/20 md:hidden" onClick={closeSidebar} onKeyDown={closeSidebar} onKeyUp={closeSidebar} onKeyPress={closeSidebar} />
+        <div
+          className="fixed inset-0 z-30 bg-black/20 md:hidden"
+          onClick={closeSidebar}
+          onKeyDown={closeSidebar}
+          onKeyPress={closeSidebar}
+          onKeyUp={closeSidebar}
+        />
       )}
 
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 bg-background",
-          "border-r pt-16 transition-transform duration-200 ease-out md:translate-x-0",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full"
+          'fixed inset-y-0 left-0 z-40 w-64 bg-background',
+          'border-r pt-16 transition-transform duration-200 ease-out md:translate-x-0',
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         {/* Mobile close button */}
@@ -137,7 +182,11 @@ export function Sidebar() {
             {/* Demo Website Header */}
             <div className="flex items-center gap-3 rounded border bg-muted/50 p-3">
               <div className="rounded border border-primary/20 bg-primary/10 p-2">
-                <GlobeIcon className="h-5 w-5 text-primary" size={32} weight="duotone" />
+                <GlobeIcon
+                  className="h-5 w-5 text-primary"
+                  size={32}
+                  weight="duotone"
+                />
               </div>
               <div className="min-w-0 flex-1">
                 <h2 className="truncate font-semibold text-sm">Landing Page</h2>
@@ -165,16 +214,16 @@ export function Sidebar() {
                     return (
                       <Link
                         className={cn(
-                          "flex cursor-pointer items-center gap-3 rounded px-3 py-2 text-sm transition-all",
+                          'flex cursor-pointer items-center gap-3 rounded px-3 py-2 text-sm transition-all',
                           isActive
-                            ? "bg-primary/15 font-medium text-primary"
-                            : "text-foreground hover:bg-accent/70"
+                            ? 'bg-primary/15 font-medium text-primary'
+                            : 'text-foreground hover:bg-accent/70'
                         )}
                         href={item.href}
                         key={item.name}
                       >
                         <Icon
-                          className={cn("h-4 w-4", isActive && "text-primary")}
+                          className={cn('h-4 w-4', isActive && 'text-primary')}
                           size={32}
                           weight="duotone"
                         />
@@ -192,7 +241,11 @@ export function Sidebar() {
   );
 }
 
-export default function MainLayout({ children }: { children: React.ReactNode }) {
+export default function MainLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <div className="h-screen overflow-hidden bg-gradient-to-br from-background to-muted/20 text-foreground">
       <Sidebar />

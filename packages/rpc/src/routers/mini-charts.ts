@@ -1,40 +1,55 @@
-import { z } from "zod";
-import { and, chQuery, db, eq, inArray, isNull, member, or, websites } from "@databuddy/db";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import {
+  and,
+  chQuery,
+  db,
+  eq,
+  inArray,
+  isNull,
+  member,
+  or,
+  websites,
+} from '@databuddy/db';
+import { z } from 'zod';
+import { createTRPCRouter, protectedProcedure } from '../trpc';
 
-async function getAuthorizedWebsiteIds(userId: string, requestedIds: string[]): Promise<string[]> {
-    if (!userId || requestedIds.length === 0) {
-        return [];
-    }
+async function getAuthorizedWebsiteIds(
+  userId: string,
+  requestedIds: string[]
+): Promise<string[]> {
+  if (!userId || requestedIds.length === 0) {
+    return [];
+  }
 
-    const userOrgs = await db.query.member.findMany({
-        where: eq(member.userId, userId),
-        columns: { organizationId: true },
-    });
-    const orgIds = userOrgs.map((m) => m.organizationId);
+  const userOrgs = await db.query.member.findMany({
+    where: eq(member.userId, userId),
+    columns: { organizationId: true },
+  });
+  const orgIds = userOrgs.map((m) => m.organizationId);
 
-    const accessibleWebsites = await db.query.websites.findMany({
-        where: and(
-            inArray(websites.id, requestedIds),
-            or(
-                eq(websites.userId, userId),
-                orgIds.length > 0 ? inArray(websites.organizationId, orgIds) : isNull(websites.organizationId)
-            )
-        ),
-        columns: {
-            id: true,
-        },
-    });
+  const accessibleWebsites = await db.query.websites.findMany({
+    where: and(
+      inArray(websites.id, requestedIds),
+      or(
+        eq(websites.userId, userId),
+        orgIds.length > 0
+          ? inArray(websites.organizationId, orgIds)
+          : isNull(websites.organizationId)
+      )
+    ),
+    columns: {
+      id: true,
+    },
+  });
 
-    return accessibleWebsites.map((w) => w.id);
+  return accessibleWebsites.map((w) => w.id);
 }
 
 const getBatchedMiniChartData = async (websiteIds: string[]) => {
-    if (websiteIds.length === 0) {
-        return {};
-    }
+  if (websiteIds.length === 0) {
+    return {};
+  }
 
-    const query = `
+  const query = `
     WITH
       date_range AS (
         SELECT arrayJoin(arrayMap(d -> toDate(today()) - d, range(7))) AS date
@@ -65,41 +80,47 @@ const getBatchedMiniChartData = async (websiteIds: string[]) => {
       date ASC
   `;
 
-    interface MiniChartRow {
-        websiteId: string;
-        date: string;
-        value: number;
+  interface MiniChartRow {
+    websiteId: string;
+    date: string;
+    value: number;
+  }
+
+  const queryResult = await chQuery<MiniChartRow>(query, { websiteIds });
+
+  const result = websiteIds.reduce(
+    (acc, id) => {
+      acc[id] = [];
+      return acc;
+    },
+    {} as Record<string, { date: string; value: number }[]>
+  );
+
+  for (const row of queryResult) {
+    if (result[row.websiteId]) {
+      result[row.websiteId].push({
+        date: row.date,
+        value: row.value,
+      });
     }
+  }
 
-    const queryResult = await chQuery<MiniChartRow>(query, { websiteIds });
-
-    const result = websiteIds.reduce((acc, id) => {
-        acc[id] = [];
-        return acc;
-    }, {} as Record<string, { date: string, value: number }[]>);
-
-    for (const row of queryResult) {
-        if (result[row.websiteId]) {
-            result[row.websiteId].push({
-                date: row.date,
-                value: row.value,
-            });
-        }
-    }
-
-    return result;
+  return result;
 };
 
 export const miniChartsRouter = createTRPCRouter({
-    getMiniCharts: protectedProcedure
-        .input(
-            z.object({
-                websiteIds: z.array(z.string()),
-            })
-        )
-        .query(async ({ ctx, input }) => {
-            const authorizedIds = await getAuthorizedWebsiteIds(ctx.user.id, input.websiteIds);
-            const charts = await getBatchedMiniChartData(authorizedIds);
-            return charts;
-        }),
-}); 
+  getMiniCharts: protectedProcedure
+    .input(
+      z.object({
+        websiteIds: z.array(z.string()),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const authorizedIds = await getAuthorizedWebsiteIds(
+        ctx.user.id,
+        input.websiteIds
+      );
+      const charts = await getBatchedMiniChartData(authorizedIds);
+      return charts;
+    }),
+});

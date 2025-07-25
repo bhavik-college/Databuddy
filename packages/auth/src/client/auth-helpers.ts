@@ -1,6 +1,6 @@
-"use client"
+'use client';
 
-import { signIn, signOut, signUp, authClient } from './auth-client';
+import { authClient, signIn, signOut, signUp } from './auth-client';
 
 interface TwoFactorResponse {
   data?: {
@@ -17,9 +17,9 @@ interface TwoFactorResponse {
  * Helper function to sign in with email and password with simplified redirect handling
  */
 export async function loginWithEmail(
-  email: string, 
-  password: string, 
-  options?: { 
+  email: string,
+  password: string,
+  options?: {
     redirectUrl?: string;
     router?: any; // Next.js router
     onError?: (error: any) => void;
@@ -35,10 +35,10 @@ export async function loginWithEmail(
             options.router.push(options.redirectUrl);
             options.router.refresh();
           }
-        }
-      }
+        },
+      },
     });
-    
+
     return { success: !result?.error, data: result };
   } catch (error) {
     if (options?.onError) {
@@ -72,10 +72,10 @@ export async function registerWithEmail(
             options.router.push(options.redirectUrl);
             options.router.refresh();
           }
-        }
-      }
+        },
+      },
     });
-    
+
     return { success: !result?.error, data: result };
   } catch (error) {
     if (options?.onError) {
@@ -88,20 +88,18 @@ export async function registerWithEmail(
 /**
  * Helper function to sign out with simplified redirect handling
  */
-export async function logout(
-  options?: {
-    redirectUrl?: string;
-    router?: any; // Next.js router
-    onError?: (error: any) => void;
-  }
-) {
+export async function logout(options?: {
+  redirectUrl?: string;
+  router?: any; // Next.js router
+  onError?: (error: any) => void;
+}) {
   try {
     await signOut();
-    
+
     if (options?.router && options.redirectUrl) {
       options.router.push(options.redirectUrl);
     }
-    
+
     return { success: true };
   } catch (error) {
     if (options?.onError) {
@@ -114,24 +112,22 @@ export async function logout(
 /**
  * Helper function to sign in with Google with simplified redirect handling
  */
-export function loginWithGoogle(
-  options?: {
-    redirectUrl?: string;
-    router?: any; // Next.js router
-    onError?: (error: any) => void;
-  }
-) {
+export function loginWithGoogle(options?: {
+  redirectUrl?: string;
+  router?: any; // Next.js router
+  onError?: (error: any) => void;
+}) {
   try {
     return signIn.social({
-      provider: "google",
+      provider: 'google',
       fetchOptions: {
         onSuccess: () => {
           if (options?.router && options.redirectUrl) {
             options.router.push(options.redirectUrl);
             options.router.refresh();
           }
-        }
-      }
+        },
+      },
     });
   } catch (error) {
     if (options?.onError) {
@@ -144,24 +140,22 @@ export function loginWithGoogle(
 /**
  * Helper function to sign in with GitHub with simplified redirect handling
  */
-export function loginWithGithub(
-  options?: {
-    redirectUrl?: string;
-    router?: any; // Next.js router
-    onError?: (error: any) => void;
-  }
-) {
+export function loginWithGithub(options?: {
+  redirectUrl?: string;
+  router?: any; // Next.js router
+  onError?: (error: any) => void;
+}) {
   try {
     return signIn.social({
-      provider: "github",
+      provider: 'github',
       fetchOptions: {
         onSuccess: () => {
           if (options?.router && options.redirectUrl) {
             options.router.push(options.redirectUrl);
             options.router.refresh();
           }
-        }
-      }
+        },
+      },
     });
   } catch (error) {
     if (options?.onError) {
@@ -185,16 +179,16 @@ export async function enableTwoFactor(
     const result = await authClient.twoFactor.enable({
       password,
     });
-    
+
     if (result.data) {
       options?.onSuccess?.({
         ...result.data,
-        twoFactorEnabled: false // Will be true after verification
+        twoFactorEnabled: false, // Will be true after verification
       });
     } else if (result.error) {
       options?.onError?.(result.error);
     }
-    
+
     return { success: !!result.data, data: result };
   } catch (error) {
     options?.onError?.(error);
@@ -218,13 +212,13 @@ export async function verifyTwoFactorCode(
       code,
       trustDevice: options?.trustDevice,
     });
-    
+
     if (result.data) {
       options?.onSuccess?.();
     } else if (result.error) {
       options?.onError?.(result.error);
     }
-    
+
     return { success: !!result.data, data: result };
   } catch (error) {
     options?.onError?.(error);
@@ -246,13 +240,13 @@ export async function verifyBackupCode(
     const result = await authClient.twoFactor.verifyBackupCode({
       code,
     });
-    
+
     if (result.data) {
       options?.onSuccess?.();
     } else if (result.error) {
       options?.onError?.(result.error);
     }
-    
+
     return { success: !!result.data, data: result };
   } catch (error) {
     options?.onError?.(error);
@@ -263,21 +257,19 @@ export async function verifyBackupCode(
 /**
  * Helper function to send OTP
  */
-export async function sendOTP(
-  options?: {
-    onSuccess?: () => void;
-    onError?: (error: any) => void;
-  }
-) {
+export async function sendOTP(options?: {
+  onSuccess?: () => void;
+  onError?: (error: any) => void;
+}) {
   try {
     const result = await authClient.twoFactor.sendOtp();
-    
+
     if (result.data) {
       options?.onSuccess?.();
     } else if (result.error) {
       options?.onError?.(result.error);
     }
-    
+
     return { success: !!result.data, data: result };
   } catch (error) {
     options?.onError?.(error);
@@ -299,13 +291,13 @@ export async function verifyOTP(
     const result = await authClient.twoFactor.verifyOtp({
       code,
     });
-    
+
     if (result.data) {
       options?.onSuccess?.();
     } else if (result.error) {
       options?.onError?.(result.error);
     }
-    
+
     return { success: !!result.data, data: result };
   } catch (error) {
     options?.onError?.(error);
@@ -327,16 +319,16 @@ export async function generateBackupCodes(
     const result = await authClient.twoFactor.generateBackupCodes({
       password,
     });
-    
+
     if (result.data?.backupCodes) {
       options?.onSuccess?.(result.data.backupCodes);
     } else if (result.error) {
       options?.onError?.(result.error);
     }
-    
+
     return { success: !!result.data, data: result };
   } catch (error) {
     options?.onError?.(error);
     return { success: false, error };
   }
-} 
+}

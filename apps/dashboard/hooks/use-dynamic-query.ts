@@ -1,30 +1,35 @@
-import { type UseQueryOptions, type UseInfiniteQueryOptions, useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import { useCallback, useMemo } from "react";
-import { usePreferences } from "./use-preferences";
-import { formatDuration } from "../app/(main)/websites/[id]/profiles/_components/profile-utils";
-import { getCountryCode, getCountryName } from "@databuddy/shared";
 import type {
-  DateRange,
-  ProfileData,
-  DynamicQueryRequest,
-  DynamicQueryFilter,
-  DynamicQueryResponse,
   BatchQueryResponse,
-  RevenueSummaryData,
-  RevenueTrendData,
-  RecentTransactionData,
-  RecentRefundData,
-  RevenueBreakdownData,
-  JourneyTransition,
-  JourneyPath,
+  DateRange,
+  DynamicQueryFilter,
+  DynamicQueryRequest,
+  DynamicQueryResponse,
+  ExtractDataTypes,
   JourneyDropoff,
   JourneyEntryPoint,
-  QueryOptionsResponse,
+  JourneyPath,
+  JourneyTransition,
   ParameterDataMap,
-  ExtractDataTypes,
-} from "@databuddy/shared";
+  ProfileData,
+  QueryOptionsResponse,
+  RecentRefundData,
+  RecentTransactionData,
+  RevenueBreakdownData,
+  RevenueSummaryData,
+  RevenueTrendData,
+} from '@databuddy/shared';
+import { getCountryCode, getCountryName } from '@databuddy/shared';
+import {
+  type UseInfiniteQueryOptions,
+  type UseQueryOptions,
+  useInfiniteQuery,
+  useQuery,
+} from '@tanstack/react-query';
+import { useCallback, useMemo } from 'react';
+import { formatDuration } from '../app/(main)/websites/[id]/profiles/_components/profile-utils';
+import { usePreferences } from './use-preferences';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 // Base params builder - following use-analytics.ts pattern
 function buildParams(
@@ -38,19 +43,19 @@ function buildParams(
   });
 
   if (dateRange?.start_date) {
-    params.append("start_date", dateRange.start_date);
+    params.append('start_date', dateRange.start_date);
   }
 
   if (dateRange?.end_date) {
-    params.append("end_date", dateRange.end_date);
+    params.append('end_date', dateRange.end_date);
   }
 
   if (dateRange?.granularity) {
-    params.append("granularity", dateRange.granularity);
+    params.append('granularity', dateRange.granularity);
   }
 
   // Add cache busting
-  params.append("_t", Date.now().toString());
+  params.append('_t', Date.now().toString());
 
   return params;
 }
@@ -63,12 +68,12 @@ const defaultQueryOptions = {
   refetchOnMount: true, // Changed to true to show loading state on refresh
   refetchInterval: 10 * 60 * 1000, // Background refetch every 10 minutes
   retry: (failureCount: number, error: Error) => {
-    if (error instanceof DOMException && error.name === "AbortError") {
+    if (error instanceof DOMException && error.name === 'AbortError') {
       return false;
     }
     return failureCount < 2;
   },
-  networkMode: "online" as const,
+  networkMode: 'online' as const,
   refetchIntervalInBackground: false,
 };
 
@@ -83,14 +88,16 @@ function useUserTimezone(): string {
     try {
       return Intl.DateTimeFormat().resolvedOptions().timeZone;
     } catch {
-      return "UTC";
+      return 'UTC';
     }
   }, []);
 
   // Return user's preferred timezone or browser timezone if 'auto'
   if (!preferences) return browserTimezone;
 
-  return preferences.timezone === "auto" ? browserTimezone : preferences.timezone;
+  return preferences.timezone === 'auto'
+    ? browserTimezone
+    : preferences.timezone;
 }
 
 // Dynamic query specific fetcher - POST request (supports both single and batch)
@@ -101,53 +108,55 @@ async function fetchDynamicQuery(
   signal?: AbortSignal,
   userTimezone?: string
 ): Promise<DynamicQueryResponse | BatchQueryResponse> {
-  const timezone = userTimezone || "UTC";
+  const timezone = userTimezone || 'UTC';
   const params = buildParams(websiteId, dateRange, { timezone });
   const url = `${API_BASE_URL}/v1/query?${params}`;
 
   // Prepare the request body
   const requestBody = Array.isArray(queryData)
     ? queryData.map((query) => ({
-      ...query,
-      startDate: dateRange.start_date,
-      endDate: dateRange.end_date,
-      timeZone: timezone,
-      limit: query.limit || 100,
-      page: query.page || 1,
-      filters: query.filters || [],
-      granularity: query.granularity || dateRange.granularity || "daily",
-      groupBy: query.groupBy,
-    }))
+        ...query,
+        startDate: dateRange.start_date,
+        endDate: dateRange.end_date,
+        timeZone: timezone,
+        limit: query.limit || 100,
+        page: query.page || 1,
+        filters: query.filters || [],
+        granularity: query.granularity || dateRange.granularity || 'daily',
+        groupBy: query.groupBy,
+      }))
     : {
-      ...queryData,
-      startDate: dateRange.start_date,
-      endDate: dateRange.end_date,
-      timeZone: timezone,
-      limit: queryData.limit || 100,
-      page: queryData.page || 1,
-      filters: queryData.filters || [],
-      granularity: queryData.granularity || dateRange.granularity || "daily",
-      groupBy: queryData.groupBy,
-    };
+        ...queryData,
+        startDate: dateRange.start_date,
+        endDate: dateRange.end_date,
+        timeZone: timezone,
+        limit: queryData.limit || 100,
+        page: queryData.page || 1,
+        filters: queryData.filters || [],
+        granularity: queryData.granularity || dateRange.granularity || 'daily',
+        groupBy: queryData.groupBy,
+      };
 
   const response = await fetch(url, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
-    credentials: "include",
+    credentials: 'include',
     signal,
     body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch dynamic query data: ${response.statusText}`);
+    throw new Error(
+      `Failed to fetch dynamic query data: ${response.statusText}`
+    );
   }
 
   const data = await response.json();
 
   if (!data.success) {
-    throw new Error(data.error || "Failed to fetch dynamic query data");
+    throw new Error(data.error || 'Failed to fetch dynamic query data');
   }
 
   return data;
@@ -166,7 +175,13 @@ export function useDynamicQuery<T extends (keyof ParameterDataMap)[]>(
 
   const fetchData = useCallback(
     async ({ signal }: { signal?: AbortSignal }) => {
-      const result = await fetchDynamicQuery(websiteId, dateRange, queryData, signal, userTimezone);
+      const result = await fetchDynamicQuery(
+        websiteId,
+        dateRange,
+        queryData,
+        signal,
+        userTimezone
+      );
       // Ensure we return a single query response (not batch)
       return result as DynamicQueryResponse;
     },
@@ -174,11 +189,14 @@ export function useDynamicQuery<T extends (keyof ParameterDataMap)[]>(
   );
 
   const query = useQuery({
-    queryKey: ["dynamic-query", websiteId, dateRange, queryData, userTimezone],
+    queryKey: ['dynamic-query', websiteId, dateRange, queryData, userTimezone],
     queryFn: fetchData,
     ...defaultQueryOptions,
     ...options,
-    enabled: options?.enabled !== false && !!websiteId && queryData.parameters.length > 0,
+    enabled:
+      options?.enabled !== false &&
+      !!websiteId &&
+      queryData.parameters.length > 0,
   });
 
   // Process data into a more usable format
@@ -201,7 +219,10 @@ export function useDynamicQuery<T extends (keyof ParameterDataMap)[]>(
     return (
       query.data?.data
         .filter((result) => !result.success)
-        .map((result) => ({ parameter: result.parameter, error: result.error })) || []
+        .map((result) => ({
+          parameter: result.parameter,
+          error: result.error,
+        })) || []
     );
   }, [query.data]);
 
@@ -230,7 +251,13 @@ export function useBatchDynamicQuery(
 
   const fetchData = useCallback(
     async ({ signal }: { signal?: AbortSignal }) => {
-      const result = await fetchDynamicQuery(websiteId, dateRange, queries, signal, userTimezone);
+      const result = await fetchDynamicQuery(
+        websiteId,
+        dateRange,
+        queries,
+        signal,
+        userTimezone
+      );
       // Ensure we return a batch query response
       return result as BatchQueryResponse;
     },
@@ -239,7 +266,7 @@ export function useBatchDynamicQuery(
 
   const query = useQuery({
     queryKey: [
-      "batch-dynamic-query",
+      'batch-dynamic-query',
       websiteId,
       dateRange.start_date,
       dateRange.end_date,
@@ -284,8 +311,8 @@ export function useBatchDynamicQuery(
         }
       } else {
         processedResult.errors.push({
-          parameter: "query",
-          error: "No data array found in response",
+          parameter: 'query',
+          error: 'No data array found in response',
         });
       }
 
@@ -347,17 +374,22 @@ export function useBatchDynamicQuery(
       queryCount: queries.length,
       successfulQueries: processedResults.filter((r) => r.success).length,
       failedQueries: processedResults.filter((r) => !r.success).length,
-      totalParameters: processedResults.reduce((sum, r) => sum + Object.keys(r.data).length, 0),
+      totalParameters: processedResults.reduce(
+        (sum, r) => sum + Object.keys(r.data).length,
+        0
+      ),
     },
   };
 }
 
-export function useQueryOptions(options?: Partial<UseQueryOptions<QueryOptionsResponse>>) {
+export function useQueryOptions(
+  options?: Partial<UseQueryOptions<QueryOptionsResponse>>
+) {
   return useQuery({
-    queryKey: ["query-options"],
+    queryKey: ['query-options'],
     queryFn: async () => {
-      const res = await fetch("/api/query/types");
-      if (!res.ok) throw new Error("Failed to fetch query options");
+      const res = await fetch('/api/query/types');
+      if (!res.ok) throw new Error('Failed to fetch query options');
       return res.json();
     },
     staleTime: 60 * 60 * 1000, // 1 hour
@@ -377,8 +409,8 @@ export function useDeviceData(
     websiteId,
     dateRange,
     {
-      id: "device-data",
-      parameters: ["device_type", "browser_name", "os_name"],
+      id: 'device-data',
+      parameters: ['device_type', 'browser_name', 'os_name'],
     },
     options
   );
@@ -396,8 +428,8 @@ export function useGeographicData(
     websiteId,
     dateRange,
     {
-      id: "geographic-data",
-      parameters: ["country", "region", "city", "timezone", "language"],
+      id: 'geographic-data',
+      parameters: ['country', 'region', 'city', 'timezone', 'language'],
       limit: 100,
     },
     options
@@ -416,8 +448,8 @@ export function useUTMData(
     websiteId,
     dateRange,
     {
-      id: "utm-data",
-      parameters: ["utm_source", "utm_medium", "utm_campaign"],
+      id: 'utm-data',
+      parameters: ['utm_source', 'utm_medium', 'utm_campaign'],
     },
     options
   );
@@ -435,8 +467,8 @@ export function usePageAnalytics(
     websiteId,
     dateRange,
     {
-      id: "page-analytics",
-      parameters: ["top_pages", "exit_page"],
+      id: 'page-analytics',
+      parameters: ['top_pages', 'exit_page'],
     },
     options
   );
@@ -454,8 +486,8 @@ export function usePerformanceData(
     websiteId,
     dateRange,
     {
-      id: "performance-data",
-      parameters: ["slow_pages"],
+      id: 'performance-data',
+      parameters: ['slow_pages'],
     },
     options
   );
@@ -471,33 +503,33 @@ export function useEnhancedPerformanceData(
 ) {
   const queries: DynamicQueryRequest[] = [
     {
-      id: "pages",
-      parameters: ["slow_pages"],
+      id: 'pages',
+      parameters: ['slow_pages'],
       limit: 100,
     },
     {
-      id: "countries",
-      parameters: ["performance_by_country"],
+      id: 'countries',
+      parameters: ['performance_by_country'],
       limit: 100,
     },
     {
-      id: "devices",
-      parameters: ["performance_by_device"],
+      id: 'devices',
+      parameters: ['performance_by_device'],
       limit: 100,
     },
     {
-      id: "browsers",
-      parameters: ["performance_by_browser"],
+      id: 'browsers',
+      parameters: ['performance_by_browser'],
       limit: 100,
     },
     {
-      id: "operating_systems",
-      parameters: ["performance_by_os"],
+      id: 'operating_systems',
+      parameters: ['performance_by_os'],
       limit: 100,
     },
     {
-      id: "regions",
-      parameters: ["performance_by_region"],
+      id: 'regions',
+      parameters: ['performance_by_region'],
       limit: 100,
     },
   ];
@@ -517,8 +549,8 @@ export function useTrafficSources(
     websiteId,
     dateRange,
     {
-      id: "traffic-sources",
-      parameters: ["referrer", "utm_source", "utm_medium", "utm_campaign"],
+      id: 'traffic-sources',
+      parameters: ['referrer', 'utm_source', 'utm_medium', 'utm_campaign'],
     },
     options
   );
@@ -534,23 +566,23 @@ export function useEnhancedGeographicData(
 ) {
   const queries: DynamicQueryRequest[] = [
     {
-      id: "countries",
-      parameters: ["country"],
+      id: 'countries',
+      parameters: ['country'],
       limit: 100,
     },
     {
-      id: "regions",
-      parameters: ["region"],
+      id: 'regions',
+      parameters: ['region'],
       limit: 100,
     },
     {
-      id: "timezones",
-      parameters: ["timezone"],
+      id: 'timezones',
+      parameters: ['timezone'],
       limit: 100,
     },
     {
-      id: "languages",
-      parameters: ["language"],
+      id: 'languages',
+      parameters: ['language'],
       limit: 100,
     },
   ];
@@ -568,28 +600,28 @@ export function useComprehensiveAnalytics(
 ) {
   const queries: DynamicQueryRequest[] = [
     {
-      id: "device-analytics",
-      parameters: ["device_type", "browser_name", "os_name"],
+      id: 'device-analytics',
+      parameters: ['device_type', 'browser_name', 'os_name'],
       limit: 10,
     },
     {
-      id: "geographic-analytics",
-      parameters: ["country", "region", "city", "timezone", "language"],
+      id: 'geographic-analytics',
+      parameters: ['country', 'region', 'city', 'timezone', 'language'],
       limit: 100,
     },
     {
-      id: "utm-analytics",
-      parameters: ["utm_source", "utm_medium", "utm_campaign"],
+      id: 'utm-analytics',
+      parameters: ['utm_source', 'utm_medium', 'utm_campaign'],
       limit: 10,
     },
     {
-      id: "page-analytics",
-      parameters: ["top_pages", "exit_page"],
+      id: 'page-analytics',
+      parameters: ['top_pages', 'exit_page'],
       limit: 10,
     },
     {
-      id: "performance-analytics",
-      parameters: ["slow_pages"],
+      id: 'performance-analytics',
+      parameters: ['slow_pages'],
       limit: 10,
     },
   ];
@@ -607,13 +639,13 @@ export function useMapLocationData(
 ) {
   const queries: DynamicQueryRequest[] = [
     {
-      id: "map-countries",
-      parameters: ["country"],
+      id: 'map-countries',
+      parameters: ['country'],
       limit: 100,
     },
     {
-      id: "map-regions",
-      parameters: ["region"],
+      id: 'map-regions',
+      parameters: ['region'],
       limit: 100,
     },
   ];
@@ -624,7 +656,9 @@ export function useMapLocationData(
 export function useEnhancedErrorData(
   websiteId: string,
   dateRange: DateRange,
-  options?: Partial<UseQueryOptions<BatchQueryResponse>> & { filters?: DynamicQueryFilter[] }
+  options?: Partial<UseQueryOptions<BatchQueryResponse>> & {
+    filters?: DynamicQueryFilter[];
+  }
 ) {
   const filters = options?.filters || [];
 
@@ -632,11 +666,26 @@ export function useEnhancedErrorData(
     websiteId,
     dateRange,
     [
-      { id: "recent_errors", parameters: ["recent_errors"], limit: 100, filters },
-      { id: "error_types", parameters: ["error_types"], limit: 100, filters },
-      { id: "errors_by_page", parameters: ["errors_by_page"], limit: 25, filters },
-      { id: "error_trends", parameters: ["error_trends"], limit: 30, filters },
-      { id: "error_frequency", parameters: ["error_frequency"], limit: 30, filters },
+      {
+        id: 'recent_errors',
+        parameters: ['recent_errors'],
+        limit: 100,
+        filters,
+      },
+      { id: 'error_types', parameters: ['error_types'], limit: 100, filters },
+      {
+        id: 'errors_by_page',
+        parameters: ['errors_by_page'],
+        limit: 25,
+        filters,
+      },
+      { id: 'error_trends', parameters: ['error_trends'], limit: 30, filters },
+      {
+        id: 'error_frequency',
+        parameters: ['error_frequency'],
+        limit: 30,
+        filters,
+      },
     ],
     {
       ...options,
@@ -654,44 +703,52 @@ export function useJourneyAnalytics(
 ) {
   const queries: DynamicQueryRequest[] = [
     {
-      id: "user-journeys",
-      parameters: ["user_journeys"],
+      id: 'user-journeys',
+      parameters: ['user_journeys'],
       limit: 50,
     },
     {
-      id: "journey-paths",
-      parameters: ["journey_paths"],
+      id: 'journey-paths',
+      parameters: ['journey_paths'],
       limit: 25,
     },
     {
-      id: "journey-dropoffs",
-      parameters: ["journey_dropoffs"],
+      id: 'journey-dropoffs',
+      parameters: ['journey_dropoffs'],
       limit: 20,
     },
     {
-      id: "journey-entry-points",
-      parameters: ["journey_entry_points"],
+      id: 'journey-entry-points',
+      parameters: ['journey_entry_points'],
       limit: 20,
     },
   ];
 
-  const batchResult = useBatchDynamicQuery(websiteId, dateRange, queries, options);
+  const batchResult = useBatchDynamicQuery(
+    websiteId,
+    dateRange,
+    queries,
+    options
+  );
 
   // Convenient accessors with proper typing
   const journeyData = useMemo(
     () => ({
       transitions: batchResult.getDataForQuery(
-        "user-journeys",
-        "user_journeys"
+        'user-journeys',
+        'user_journeys'
       ) as JourneyTransition[],
-      paths: batchResult.getDataForQuery("journey-paths", "journey_paths") as JourneyPath[],
+      paths: batchResult.getDataForQuery(
+        'journey-paths',
+        'journey_paths'
+      ) as JourneyPath[],
       dropoffs: batchResult.getDataForQuery(
-        "journey-dropoffs",
-        "journey_dropoffs"
+        'journey-dropoffs',
+        'journey_dropoffs'
       ) as JourneyDropoff[],
       entryPoints: batchResult.getDataForQuery(
-        "journey-entry-points",
-        "journey_entry_points"
+        'journey-entry-points',
+        'journey_entry_points'
       ) as JourneyEntryPoint[],
     }),
     [batchResult]
@@ -701,20 +758,31 @@ export function useJourneyAnalytics(
   const summaryStats = useMemo(() => {
     const { transitions, dropoffs, paths } = journeyData;
 
-    const totalTransitions = transitions.reduce((sum, item) => sum + item.transitions, 0);
+    const totalTransitions = transitions.reduce(
+      (sum, item) => sum + item.transitions,
+      0
+    );
     const totalUsers = transitions.reduce((sum, item) => sum + item.users, 0);
     const avgStepInJourney =
       transitions.length > 0
-        ? transitions.reduce((sum, item) => sum + item.avg_step_in_journey, 0) / transitions.length
+        ? transitions.reduce((sum, item) => sum + item.avg_step_in_journey, 0) /
+          transitions.length
         : 0;
     const avgExitRate =
       dropoffs.length > 0
-        ? dropoffs.reduce((sum, item) => sum + item.exit_rate, 0) / dropoffs.length
+        ? dropoffs.reduce((sum, item) => sum + item.exit_rate, 0) /
+          dropoffs.length
         : 0;
 
     // Fallback stats from other queries when user_journeys query fails
-    const fallbackUsers = paths.reduce((sum, item) => sum + item.unique_users, 0);
-    const fallbackTransitions = paths.reduce((sum, item) => sum + item.frequency, 0);
+    const fallbackUsers = paths.reduce(
+      (sum, item) => sum + item.unique_users,
+      0
+    );
+    const fallbackTransitions = paths.reduce(
+      (sum, item) => sum + item.frequency,
+      0
+    );
 
     return {
       totalTransitions: totalTransitions || fallbackTransitions,
@@ -729,10 +797,19 @@ export function useJourneyAnalytics(
     journeyData,
     summaryStats,
     // Convenience methods
-    hasJourneyData: batchResult.hasDataForQuery("user-journeys", "user_journeys"),
-    hasPathData: batchResult.hasDataForQuery("journey-paths", "journey_paths"),
-    hasDropoffData: batchResult.hasDataForQuery("journey-dropoffs", "journey_dropoffs"),
-    hasEntryPointData: batchResult.hasDataForQuery("journey-entry-points", "journey_entry_points"),
+    hasJourneyData: batchResult.hasDataForQuery(
+      'user-journeys',
+      'user_journeys'
+    ),
+    hasPathData: batchResult.hasDataForQuery('journey-paths', 'journey_paths'),
+    hasDropoffData: batchResult.hasDataForQuery(
+      'journey-dropoffs',
+      'journey_dropoffs'
+    ),
+    hasEntryPointData: batchResult.hasDataForQuery(
+      'journey-entry-points',
+      'journey_entry_points'
+    ),
   };
 }
 
@@ -746,49 +823,54 @@ export function useRevenueAnalytics(
 ) {
   const queries: DynamicQueryRequest[] = [
     {
-      id: "revenue-summary",
-      parameters: ["revenue_summary"],
+      id: 'revenue-summary',
+      parameters: ['revenue_summary'],
       limit: 1,
     },
     {
-      id: "revenue-trends",
-      parameters: ["revenue_trends"],
+      id: 'revenue-trends',
+      parameters: ['revenue_trends'],
       limit: 100,
     },
     {
-      id: "recent-transactions",
-      parameters: ["recent_transactions"],
+      id: 'recent-transactions',
+      parameters: ['recent_transactions'],
       limit: 50,
     },
     {
-      id: "recent-refunds",
-      parameters: ["recent_refunds"],
+      id: 'recent-refunds',
+      parameters: ['recent_refunds'],
       limit: 50,
     },
     {
-      id: "revenue-by-country",
-      parameters: ["revenue_by_country"],
+      id: 'revenue-by-country',
+      parameters: ['revenue_by_country'],
       limit: 20,
     },
     {
-      id: "revenue-by-currency",
-      parameters: ["revenue_by_currency"],
+      id: 'revenue-by-currency',
+      parameters: ['revenue_by_currency'],
       limit: 10,
     },
     {
-      id: "revenue-by-card-brand",
-      parameters: ["revenue_by_card_brand"],
+      id: 'revenue-by-card-brand',
+      parameters: ['revenue_by_card_brand'],
       limit: 10,
     },
   ];
 
-  const batchResult = useBatchDynamicQuery(websiteId, dateRange, queries, options);
+  const batchResult = useBatchDynamicQuery(
+    websiteId,
+    dateRange,
+    queries,
+    options
+  );
 
   // Convenient accessors with proper typing
   const revenueData = useMemo(() => {
     const summaryData = batchResult.getDataForQuery(
-      "revenue-summary",
-      "revenue_summary"
+      'revenue-summary',
+      'revenue_summary'
     ) as RevenueSummaryData[];
     const summary = summaryData?.[0] || {
       total_revenue: 0,
@@ -800,26 +882,29 @@ export function useRevenueAnalytics(
 
     return {
       summary,
-      trends: batchResult.getDataForQuery("revenue-trends", "revenue_trends") as RevenueTrendData[],
+      trends: batchResult.getDataForQuery(
+        'revenue-trends',
+        'revenue_trends'
+      ) as RevenueTrendData[],
       recentTransactions: batchResult.getDataForQuery(
-        "recent-transactions",
-        "recent_transactions"
+        'recent-transactions',
+        'recent_transactions'
       ) as RecentTransactionData[],
       recentRefunds: batchResult.getDataForQuery(
-        "recent-refunds",
-        "recent_refunds"
+        'recent-refunds',
+        'recent_refunds'
       ) as RecentRefundData[],
       byCountry: batchResult.getDataForQuery(
-        "revenue-by-country",
-        "revenue_by_country"
+        'revenue-by-country',
+        'revenue_by_country'
       ) as RevenueBreakdownData[],
       byCurrency: batchResult.getDataForQuery(
-        "revenue-by-currency",
-        "revenue_by_currency"
+        'revenue-by-currency',
+        'revenue_by_currency'
       ) as RevenueBreakdownData[],
       byCardBrand: batchResult.getDataForQuery(
-        "revenue-by-card-brand",
-        "revenue_by_card_brand"
+        'revenue-by-card-brand',
+        'revenue_by_card_brand'
       ) as RevenueBreakdownData[],
     };
   }, [batchResult]);
@@ -831,15 +916,16 @@ export function useRevenueAnalytics(
     // Calculate growth from trends if available
     const revenueGrowth =
       trends.length >= 2
-        ? (((trends[0]?.revenue || 0) - (trends[1]?.revenue || 0)) / (trends[1]?.revenue || 1)) *
-        100
+        ? (((trends[0]?.revenue || 0) - (trends[1]?.revenue || 0)) /
+            (trends[1]?.revenue || 1)) *
+          100
         : 0;
 
     const transactionGrowth =
       trends.length >= 2
         ? (((trends[0]?.transactions || 0) - (trends[1]?.transactions || 0)) /
-          (trends[1]?.transactions || 1)) *
-        100
+            (trends[1]?.transactions || 1)) *
+          100
         : 0;
 
     // Calculate refund rate
@@ -862,13 +948,34 @@ export function useRevenueAnalytics(
     revenueData,
     summaryStats,
     // Convenience methods
-    hasSummaryData: batchResult.hasDataForQuery("revenue-summary", "revenue_summary"),
-    hasTrendsData: batchResult.hasDataForQuery("revenue-trends", "revenue_trends"),
-    hasTransactionsData: batchResult.hasDataForQuery("recent-transactions", "recent_transactions"),
-    hasRefundsData: batchResult.hasDataForQuery("recent-refunds", "recent_refunds"),
-    hasCountryData: batchResult.hasDataForQuery("revenue-by-country", "revenue_by_country"),
-    hasCurrencyData: batchResult.hasDataForQuery("revenue-by-currency", "revenue_by_currency"),
-    hasCardBrandData: batchResult.hasDataForQuery("revenue-by-card-brand", "revenue_by_card_brand"),
+    hasSummaryData: batchResult.hasDataForQuery(
+      'revenue-summary',
+      'revenue_summary'
+    ),
+    hasTrendsData: batchResult.hasDataForQuery(
+      'revenue-trends',
+      'revenue_trends'
+    ),
+    hasTransactionsData: batchResult.hasDataForQuery(
+      'recent-transactions',
+      'recent_transactions'
+    ),
+    hasRefundsData: batchResult.hasDataForQuery(
+      'recent-refunds',
+      'recent_refunds'
+    ),
+    hasCountryData: batchResult.hasDataForQuery(
+      'revenue-by-country',
+      'revenue_by_country'
+    ),
+    hasCurrencyData: batchResult.hasDataForQuery(
+      'revenue-by-currency',
+      'revenue_by_currency'
+    ),
+    hasCardBrandData: batchResult.hasDataForQuery(
+      'revenue-by-card-brand',
+      'revenue_by_card_brand'
+    ),
   };
 }
 
@@ -882,14 +989,14 @@ export function useInfiniteSessionsData(
   options?: Partial<UseInfiniteQueryOptions<DynamicQueryResponse>>
 ) {
   return useInfiniteQuery({
-    queryKey: ["sessions-infinite", websiteId, dateRange, limit],
+    queryKey: ['sessions-infinite', websiteId, dateRange, limit],
     queryFn: async ({ pageParam = 1, signal }) => {
       const result = await fetchDynamicQuery(
         websiteId,
         dateRange,
         {
-          id: "sessions-list",
-          parameters: ["session_list"],
+          id: 'sessions-list',
+          parameters: ['session_list'],
           limit,
           page: pageParam as number,
         },
@@ -920,36 +1027,46 @@ export function useInfiniteSessionsData(
  * Transform sessions data from API2 format to frontend format
  */
 function transformSessionsData(sessions: any[]): any[] {
-  return sessions.map(session => {
+  return sessions.map((session) => {
     // Parse events from tuples to objects
     let events: any[] = [];
     if (session.events && Array.isArray(session.events)) {
-      events = session.events.map((eventTuple: any) => {
-        // Handle tuple format: [id, time, event_name, path, error_message, error_type, properties]
-        if (Array.isArray(eventTuple) && eventTuple.length >= 7) {
-          const [id, time, event_name, path, error_message, error_type, properties] = eventTuple;
+      events = session.events
+        .map((eventTuple: any) => {
+          // Handle tuple format: [id, time, event_name, path, error_message, error_type, properties]
+          if (Array.isArray(eventTuple) && eventTuple.length >= 7) {
+            const [
+              id,
+              time,
+              event_name,
+              path,
+              error_message,
+              error_type,
+              properties,
+            ] = eventTuple;
 
-          let propertiesObj: Record<string, any> = {};
-          if (properties) {
-            try {
-              propertiesObj = JSON.parse(properties);
-            } catch {
-              // If parsing fails, keep empty object
+            let propertiesObj: Record<string, any> = {};
+            if (properties) {
+              try {
+                propertiesObj = JSON.parse(properties);
+              } catch {
+                // If parsing fails, keep empty object
+              }
             }
-          }
 
-          return {
-            event_id: id,
-            time,
-            event_name,
-            path,
-            error_message,
-            error_type,
-            properties: propertiesObj
-          };
-        }
-        return null;
-      }).filter(Boolean);
+            return {
+              event_id: id,
+              time,
+              event_name,
+              path,
+              error_message,
+              error_type,
+              properties: propertiesObj,
+            };
+          }
+          return null;
+        })
+        .filter(Boolean);
     }
 
     // Calculate visitor session count - for now default to 1 since we don't have this data
@@ -957,7 +1074,9 @@ function transformSessionsData(sessions: any[]): any[] {
     const isReturningVisitor = false;
 
     // Generate session name
-    const sessionName = session.session_id ? `Session ${session.session_id.slice(-8)}` : 'Unknown Session';
+    const sessionName = session.session_id
+      ? `Session ${session.session_id.slice(-8)}`
+      : 'Unknown Session';
 
     // Format duration
     const durationFormatted = formatDuration(session.duration || 0);
@@ -968,7 +1087,8 @@ function transformSessionsData(sessions: any[]): any[] {
       try {
         const url = new URL(session.referrer);
         referrerParsed = {
-          type: url.hostname === window.location.hostname ? 'internal' : 'external',
+          type:
+            url.hostname === window.location.hostname ? 'internal' : 'external',
           name: url.hostname,
           domain: url.hostname,
         };
@@ -1032,8 +1152,8 @@ export function useSessionsData(
     websiteId,
     dateRange,
     {
-      id: "sessions-list",
-      parameters: ["session_list"],
+      id: 'sessions-list',
+      parameters: ['session_list'],
       limit,
       page,
     },
@@ -1086,14 +1206,14 @@ function transformProfilesData(profiles: any[]): ProfileData[] {
         total_sessions: profile.session_count,
         total_pageviews: profile.total_events,
         total_duration: 0,
-        total_duration_formatted: "0s",
+        total_duration_formatted: '0s',
         device: profile.device_type,
         browser: profile.browser_name,
         os: profile.os_name,
         country: getCountryCode(profile.country || ''),
         country_name: getCountryName(profile.country || ''),
         region: profile.region,
-        sessions: []
+        sessions: [],
       });
     }
 
@@ -1111,40 +1231,54 @@ function transformProfilesData(profiles: any[]): ProfileData[] {
         device: profile.session_device_type || profile.device_type,
         browser: profile.session_browser_name || profile.browser_name,
         os: profile.session_os_name || profile.os_name,
-        country: getCountryCode(profile.session_country || profile.country || ''),
-        country_name: getCountryName(profile.session_country || profile.country || ''),
+        country: getCountryCode(
+          profile.session_country || profile.country || ''
+        ),
+        country_name: getCountryName(
+          profile.session_country || profile.country || ''
+        ),
         region: profile.session_region || profile.region,
         referrer: profile.session_referrer || profile.referrer,
-        events: []
+        events: [],
       };
 
       // Parse events if available
       if (profile.events && Array.isArray(profile.events)) {
-        sessionData.events = profile.events.map((eventTuple: any) => {
-          if (Array.isArray(eventTuple) && eventTuple.length >= 7) {
-            const [id, time, event_name, path, error_message, error_type, properties] = eventTuple;
+        sessionData.events = profile.events
+          .map((eventTuple: any) => {
+            if (Array.isArray(eventTuple) && eventTuple.length >= 7) {
+              const [
+                id,
+                time,
+                event_name,
+                path,
+                error_message,
+                error_type,
+                properties,
+              ] = eventTuple;
 
-            let propertiesObj: Record<string, any> = {};
-            if (properties) {
-              try {
-                propertiesObj = JSON.parse(properties);
-              } catch {
-                // If parsing fails, keep empty object
+              let propertiesObj: Record<string, any> = {};
+              if (properties) {
+                try {
+                  propertiesObj = JSON.parse(properties);
+                } catch {
+                  // If parsing fails, keep empty object
+                }
               }
-            }
 
-            return {
-              event_id: id,
-              time,
-              event_name,
-              path,
-              error_message,
-              error_type,
-              properties: propertiesObj
-            };
-          }
-          return null;
-        }).filter(Boolean);
+              return {
+                event_id: id,
+                time,
+                event_name,
+                path,
+                error_message,
+                error_type,
+                properties: propertiesObj,
+              };
+            }
+            return null;
+          })
+          .filter(Boolean);
       }
 
       profilesByVisitor.get(profile.visitor_id).sessions.push(sessionData);
@@ -1152,11 +1286,12 @@ function transformProfilesData(profiles: any[]): ProfileData[] {
   }
 
   // Convert to array and sort sessions by start time
-  return Array.from(profilesByVisitor.values()).map(profile => ({
+  return Array.from(profilesByVisitor.values()).map((profile) => ({
     ...profile,
-    sessions: profile.sessions.sort((a: any, b: any) =>
-      new Date(b.first_visit).getTime() - new Date(a.first_visit).getTime()
-    )
+    sessions: profile.sessions.sort(
+      (a: any, b: any) =>
+        new Date(b.first_visit).getTime() - new Date(a.first_visit).getTime()
+    ),
   }));
 }
 
@@ -1174,8 +1309,8 @@ export function useProfilesData(
     websiteId,
     dateRange,
     {
-      id: "profiles-list",
-      parameters: ["profile_list"],
+      id: 'profiles-list',
+      parameters: ['profile_list'],
       limit,
       page,
     },
@@ -1211,8 +1346,6 @@ export function useProfilesData(
   };
 }
 
-
-
 /**
  * Hook for real-time active user stats. Polls every 5 seconds.
  */
@@ -1233,8 +1366,8 @@ export function useRealTimeStats(
     websiteId,
     dateRange,
     {
-      id: "realtime-active-stats",
-      parameters: ["active_stats"],
+      id: 'realtime-active-stats',
+      parameters: ['active_stats'],
     },
     {
       ...options,

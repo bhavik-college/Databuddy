@@ -1,14 +1,25 @@
-import dayjs from "dayjs";
-import type { LucideIcon } from "lucide-react";
-import { type ElementType, memo } from "react";
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import TrendArrow from "@/components/atomic/TrendArrow";
-import TrendPercentage from "@/components/atomic/TrendPercentage";
-import { Card } from "@/components/ui/card";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { formatMetricNumber } from "@/lib/formatters";
-import { cn } from "@/lib/utils";
+import dayjs from 'dayjs';
+import type { LucideIcon } from 'lucide-react';
+import { type ElementType, memo } from 'react';
+import {
+  Area,
+  AreaChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import TrendArrow from '@/components/atomic/TrendArrow';
+import TrendPercentage from '@/components/atomic/TrendPercentage';
+import { Card } from '@/components/ui/card';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { formatMetricNumber } from '@/lib/formatters';
+import { cn } from '@/lib/utils';
 
 interface MiniChartDataPoint {
   date: string;
@@ -33,7 +44,7 @@ interface StatCardProps {
   trendLabel?: string;
   isLoading?: boolean;
   className?: string;
-  variant?: "default" | "success" | "info" | "warning" | "danger";
+  variant?: 'default' | 'success' | 'info' | 'warning' | 'danger';
   invertTrend?: boolean;
   id?: string;
   chartData?: MiniChartDataPoint[];
@@ -41,98 +52,125 @@ interface StatCardProps {
   formatValue?: (value: number) => string;
 }
 
-const formatTrendValue = (value: string | number, formatter?: (v: number) => string) => {
-  if (typeof value === "number") {
+const formatTrendValue = (
+  value: string | number,
+  formatter?: (v: number) => string
+) => {
+  if (typeof value === 'number') {
     if (formatter) {
       return formatter(value);
     }
-    return Number.isInteger(value) ? formatMetricNumber(value) : value.toFixed(1);
+    return Number.isInteger(value)
+      ? formatMetricNumber(value)
+      : value.toFixed(1);
   }
   return value;
 };
 
-const MiniChart = memo(({ data, id }: { data: MiniChartDataPoint[]; id: string }) => {
-  const hasData = data && data.length > 0;
-  const hasVariation = hasData && data.some((d) => d.value !== data[0].value);
+const MiniChart = memo(
+  ({ data, id }: { data: MiniChartDataPoint[]; id: string }) => {
+    const hasData = data && data.length > 0;
+    const hasVariation = hasData && data.some((d) => d.value !== data[0].value);
 
-  if (!hasData) {
+    if (!hasData) {
+      return (
+        <div className="flex h-7 items-center justify-center">
+          <div className="text-muted-foreground text-xs">No data</div>
+        </div>
+      );
+    }
+
+    if (!hasVariation) {
+      return (
+        <div className="flex h-7 items-center">
+          <div className="h-0.5 w-full rounded-full bg-primary/20" />
+        </div>
+      );
+    }
+
     return (
-      <div className="flex h-7 items-center justify-center">
-        <div className="text-muted-foreground text-xs">No data</div>
+      <div className="chart-container group/chart">
+        <ResponsiveContainer height={28} width="100%">
+          <AreaChart
+            data={data}
+            margin={{ top: 2, right: 1, left: 1, bottom: 2 }}
+          >
+            <defs>
+              <linearGradient id={`gradient-${id}`} x1="0" x2="0" y1="0" y2="1">
+                <stop
+                  offset="0%"
+                  stopColor="var(--chart-color)"
+                  stopOpacity={0.8}
+                />
+                <stop
+                  offset="50%"
+                  stopColor="var(--chart-color)"
+                  stopOpacity={0.3}
+                />
+                <stop
+                  offset="100%"
+                  stopColor="var(--chart-color)"
+                  stopOpacity={0.05}
+                />
+              </linearGradient>
+              <filter id={`glow-${id}`}>
+                <feGaussianBlur result="coloredBlur" stdDeviation="2" />
+                <feMerge>
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            <XAxis dataKey="date" hide />
+            <YAxis domain={['dataMin - 10%', 'dataMax + 10%']} hide />
+            <Tooltip
+              content={({ active, payload, label }) =>
+                active &&
+                payload?.[0] &&
+                typeof payload[0].value === 'number' ? (
+                  <div className="rounded-lg border border-border/50 bg-background/95 p-3 text-xs shadow-xl backdrop-blur-sm">
+                    <p className="mb-1 font-medium text-foreground">
+                      {new Date(label).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: data.length > 30 ? 'numeric' : undefined,
+                      })}
+                    </p>
+                    <p className="font-semibold text-primary">
+                      {formatMetricNumber(payload[0].value)}
+                    </p>
+                  </div>
+                ) : null
+              }
+              cursor={{
+                stroke: 'var(--chart-color)',
+                strokeWidth: 1,
+                strokeOpacity: 0.3,
+              }}
+            />
+            <Area
+              activeDot={{
+                r: 3,
+                fill: 'var(--chart-color)',
+                stroke: 'var(--background)',
+                strokeWidth: 2,
+                filter: `url(#glow-${id})`,
+              }}
+              dataKey="value"
+              dot={false}
+              fill={`url(#gradient-${id})`}
+              stroke="var(--chart-color)"
+              strokeWidth={2}
+              type="monotone"
+            />
+          </AreaChart>
+        </ResponsiveContainer>
       </div>
     );
   }
+);
 
-  if (!hasVariation) {
-    return (
-      <div className="flex h-7 items-center">
-        <div className="h-0.5 w-full rounded-full bg-primary/20" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="chart-container group/chart">
-      <ResponsiveContainer height={28} width="100%">
-        <AreaChart data={data} margin={{ top: 2, right: 1, left: 1, bottom: 2 }}>
-          <defs>
-            <linearGradient id={`gradient-${id}`} x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="var(--chart-color)" stopOpacity={0.8} />
-              <stop offset="50%" stopColor="var(--chart-color)" stopOpacity={0.3} />
-              <stop offset="100%" stopColor="var(--chart-color)" stopOpacity={0.05} />
-            </linearGradient>
-            <filter id={`glow-${id}`}>
-              <feGaussianBlur result="coloredBlur" stdDeviation="2" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-          <XAxis dataKey="date" hide />
-          <YAxis domain={["dataMin - 10%", "dataMax + 10%"]} hide />
-          <Tooltip
-            content={({ active, payload, label }) =>
-              active && payload?.[0] && typeof payload[0].value === "number" ? (
-                <div className="rounded-lg border border-border/50 bg-background/95 p-3 text-xs shadow-xl backdrop-blur-sm">
-                  <p className="mb-1 font-medium text-foreground">
-                    {new Date(label).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: data.length > 30 ? "numeric" : undefined,
-                    })}
-                  </p>
-                  <p className="font-semibold text-primary">
-                    {formatMetricNumber(payload[0].value)}
-                  </p>
-                </div>
-              ) : null
-            }
-            cursor={{ stroke: "var(--chart-color)", strokeWidth: 1, strokeOpacity: 0.3 }}
-          />
-          <Area
-            activeDot={{
-              r: 3,
-              fill: "var(--chart-color)",
-              stroke: "var(--background)",
-              strokeWidth: 2,
-              filter: `url(#glow-${id})`,
-            }}
-
-            dataKey="value"
-            dot={false}
-            fill={`url(#gradient-${id})`}
-            stroke="var(--chart-color)"
-            strokeWidth={2}
-            type="monotone"
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  );
-});
-
-MiniChart.displayName = "MiniChart";
+MiniChart.displayName = 'MiniChart';
 
 export function StatCard({
   title,
@@ -144,7 +182,7 @@ export function StatCard({
   trendLabel,
   isLoading = false,
   className,
-  variant = "default",
+  variant = 'default',
   invertTrend = false,
   id,
   chartData,
@@ -153,25 +191,31 @@ export function StatCard({
 }: StatCardProps) {
   const getVariantClasses = () => {
     switch (variant) {
-      case "success":
-        return "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900";
-      case "info":
-        return "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900";
-      case "warning":
-        return "bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-900";
-      case "danger":
-        return "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900";
+      case 'success':
+        return 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900';
+      case 'info':
+        return 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900';
+      case 'warning':
+        return 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-900';
+      case 'danger':
+        return 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900';
       default:
-        return "";
+        return '';
     }
   };
 
-  const trendValue = typeof trend === "object" && trend !== null ? trend.change : trend;
+  const trendValue =
+    typeof trend === 'object' && trend !== null ? trend.change : trend;
 
   if (isLoading) {
     return (
       <Card
-        className={cn("group overflow-hidden pt-0", "border-border/50", "bg-card", className)}
+        className={cn(
+          'group overflow-hidden pt-0',
+          'border-border/50',
+          'bg-card',
+          className
+        )}
         id={id}
       >
         <div className="relative p-3 sm:p-4">
@@ -197,7 +241,7 @@ export function StatCard({
           </div>
         </div>
         {showChart && (
-          <div className="-mb-0.5 p-1 sm:-mb-1">
+          <div className="-mb-0.5 sm:-mb-1 p-1">
             <Skeleton className="h-7 w-full rounded-sm" />
           </div>
         )}
@@ -205,10 +249,12 @@ export function StatCard({
     );
   }
 
-  const isTimeValue = typeof value === "string" && /\d+(\.\d+)?(s|ms)$/.test(value);
+  const isTimeValue =
+    typeof value === 'string' && /\d+(\.\d+)?(s|ms)$/.test(value);
 
   const displayValue =
-    (typeof value === "string" && (value.endsWith("%") || isTimeValue)) || typeof value !== "number"
+    (typeof value === 'string' && (value.endsWith('%') || isTimeValue)) ||
+    typeof value !== 'number'
       ? value.toString()
       : formatMetricNumber(value);
 
@@ -217,9 +263,9 @@ export function StatCard({
   const cardContent = (
     <Card
       className={cn(
-        "group overflow-hidden pt-0",
-        "border-border/50 hover:border-primary/20",
-        "bg-card",
+        'group overflow-hidden pt-0',
+        'border-border/50 hover:border-primary/20',
+        'bg-card',
         getVariantClasses(),
         className
       )}
@@ -239,13 +285,13 @@ export function StatCard({
               </div>
               <div
                 className={cn(
-                  "font-bold text-foreground leading-tight group-hover:text-primary",
+                  'font-bold text-foreground leading-tight group-hover:text-primary',
                   isTimeValue
-                    ? "text-base sm:text-lg md:text-xl"
-                    : "text-lg sm:text-xl md:text-2xl",
-                  typeof value === "string" && value.length > 8
-                    ? "text-base sm:text-lg md:text-xl"
-                    : ""
+                    ? 'text-base sm:text-lg md:text-xl'
+                    : 'text-lg sm:text-xl md:text-2xl',
+                  typeof value === 'string' && value.length > 8
+                    ? 'text-base sm:text-lg md:text-xl'
+                    : ''
                 )}
               >
                 {displayValue}
@@ -270,15 +316,20 @@ export function StatCard({
                   />
                 </div>
               )}
-              {description && (trendValue === undefined || Number.isNaN(trendValue)) && (
-                <span className="font-medium text-muted-foreground">{description}</span>
-              )}
+              {description &&
+                (trendValue === undefined || Number.isNaN(trendValue)) && (
+                  <span className="font-medium text-muted-foreground">
+                    {description}
+                  </span>
+                )}
             </div>
-            {trendLabel && trendValue !== undefined && !Number.isNaN(trendValue) && (
-              <span className="hidden text-right font-medium text-muted-foreground md:block">
-                {trendLabel}
-              </span>
-            )}
+            {trendLabel &&
+              trendValue !== undefined &&
+              !Number.isNaN(trendValue) && (
+                <span className="hidden text-right font-medium text-muted-foreground md:block">
+                  {trendLabel}
+                </span>
+              )}
           </div>
 
           {hasValidChartData && (
@@ -291,7 +342,7 @@ export function StatCard({
     </Card>
   );
 
-  return typeof trend === "object" &&
+  return typeof trend === 'object' &&
     trend !== null &&
     trend.currentPeriod &&
     trend.previousPeriod ? (
@@ -307,8 +358,8 @@ export function StatCard({
             <div className="space-y-1">
               <p className="text-muted-foreground text-xs">Previous</p>
               <p className="text-muted-foreground/80 text-xs">
-                {dayjs(trend.previousPeriod.start).format("MMM D")} -{" "}
-                {dayjs(trend.previousPeriod.end).format("MMM D")}
+                {dayjs(trend.previousPeriod.start).format('MMM D')} -{' '}
+                {dayjs(trend.previousPeriod.end).format('MMM D')}
               </p>
               <p className="font-bold text-foreground text-lg">
                 {formatTrendValue(trend.previous, formatValue)}
@@ -317,8 +368,8 @@ export function StatCard({
             <div className="space-y-1">
               <p className="text-muted-foreground text-xs">Current</p>
               <p className="text-muted-foreground/80 text-xs">
-                {dayjs(trend.currentPeriod.start).format("MMM D")} -{" "}
-                {dayjs(trend.currentPeriod.end).format("MMM D")}
+                {dayjs(trend.currentPeriod.start).format('MMM D')} -{' '}
+                {dayjs(trend.currentPeriod.end).format('MMM D')}
               </p>
               <p className="font-bold text-foreground text-lg">
                 {formatTrendValue(trend.current, formatValue)}
@@ -329,7 +380,10 @@ export function StatCard({
             <div className="flex items-center justify-between">
               <div className="text-muted-foreground text-sm">Change</div>
               <div className="flex items-center font-bold text-base">
-                <TrendArrow invertColor={invertTrend} value={trend.change || 0} />
+                <TrendArrow
+                  invertColor={invertTrend}
+                  value={trend.change || 0}
+                />
                 <TrendPercentage
                   className="ml-1"
                   invertColor={invertTrend}

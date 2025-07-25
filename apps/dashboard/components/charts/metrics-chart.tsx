@@ -1,7 +1,5 @@
-import {
-  LineChart,
-} from "lucide-react";
-import { useMemo, useState, useCallback } from "react";
+import { LineChart } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   Area,
   AreaChart,
@@ -11,15 +9,30 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from "recharts";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { SkeletonChart } from "./skeleton-chart";
-import { METRIC_COLORS, METRICS, type ChartDataRow } from "./metrics-constants";
+} from 'recharts';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { type ChartDataRow, METRIC_COLORS, METRICS } from './metrics-constants';
+import { SkeletonChart } from './skeleton-chart';
 
-const CustomTooltip = ({ active, payload, label }: {
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: {
   active?: boolean;
-  payload?: Array<{ name: string; value: number; color: string; payload: ChartDataRow }>;
+  payload?: Array<{
+    name: string;
+    value: number;
+    color: string;
+    payload: ChartDataRow;
+  }>;
   label?: string;
 }) => {
   if (!(active && payload && payload.length)) return null;
@@ -33,7 +46,9 @@ const CustomTooltip = ({ active, payload, label }: {
       <div className="space-y-2.5">
         {payload.map((entry) => {
           const dataPoint = entry.payload;
-          const metric = METRICS.find((m) => m.label === entry.name || m.key === entry.name);
+          const metric = METRICS.find(
+            (m) => m.label === entry.name || m.key === entry.name
+          );
           if (!metric) return null;
 
           const Icon = metric.icon;
@@ -53,7 +68,9 @@ const CustomTooltip = ({ active, payload, label }: {
                 />
                 <div className="flex items-center gap-1.5">
                   <Icon className="h-3 w-3" />
-                  <span className="font-medium text-muted-foreground text-xs">{metric.label}</span>
+                  <span className="font-medium text-muted-foreground text-xs">
+                    {metric.label}
+                  </span>
                 </div>
               </div>
               <span className="font-bold text-foreground text-sm group-hover:text-primary">
@@ -94,9 +111,9 @@ export function MetricsChart({
   }, []);
 
   const yAxisConfig = {
-    yAxisId: "left",
+    yAxisId: 'left',
     axisLine: false,
-    tick: { fontSize: 11, fill: "var(--muted-foreground)", fontWeight: 500 },
+    tick: { fontSize: 11, fill: 'var(--muted-foreground)', fontWeight: 500 },
     tickFormatter: valueFormatter,
     tickLine: false,
     width: 45,
@@ -111,7 +128,7 @@ export function MetricsChart({
     return (
       <Card
         className={cn(
-          "w-full border-0 bg-gradient-to-br from-background to-muted/20 shadow-lg",
+          'w-full border-0 bg-gradient-to-br from-background to-muted/20 shadow-lg',
           className
         )}
       >
@@ -120,17 +137,25 @@ export function MetricsChart({
             <LineChart className="h-5 w-5 text-primary" />
             {title}
           </CardTitle>
-          {description && <CardDescription className="text-sm">{description}</CardDescription>}
+          {description && (
+            <CardDescription className="text-sm">{description}</CardDescription>
+          )}
         </CardHeader>
         <CardContent className="flex items-center justify-center p-8">
           <div className="py-12 text-center">
             <div className="relative">
-              <LineChart className="mx-auto h-16 w-16 text-muted-foreground/20" strokeWidth={1.5} />
+              <LineChart
+                className="mx-auto h-16 w-16 text-muted-foreground/20"
+                strokeWidth={1.5}
+              />
               <div className="absolute inset-0 rounded-full bg-gradient-to-t from-primary/10 to-transparent blur-xl" />
             </div>
-            <p className="mt-6 font-semibold text-foreground text-lg">No data available</p>
+            <p className="mt-6 font-semibold text-foreground text-lg">
+              No data available
+            </p>
             <p className="mx-auto mt-2 max-w-sm text-muted-foreground text-sm">
-              Your analytics data will appear here as visitors interact with your website
+              Your analytics data will appear here as visitors interact with
+              your website
             </p>
           </div>
         </CardContent>
@@ -138,32 +163,61 @@ export function MetricsChart({
     );
   }
 
-  const presentMetrics = METRICS.filter(metric =>
-    chartData.some(item => metric.key in item && item[metric.key] !== undefined)
+  const presentMetrics = METRICS.filter((metric) =>
+    chartData.some(
+      (item) => metric.key in item && item[metric.key] !== undefined
+    )
   );
 
   return (
     <Card
       className={cn(
-        "w-full overflow-hidden border-0 bg-gradient-to-br from-background via-background to-muted/10 shadow-lg",
+        'w-full overflow-hidden border-0 bg-gradient-to-br from-background via-background to-muted/10 shadow-lg',
         className
       )}
     >
       <CardContent className="p-0">
-        <div className="relative" style={{ width: "100%", height: height + 20 }}>
+        <div
+          className="relative"
+          style={{ width: '100%', height: height + 20 }}
+        >
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-muted/5" />
 
           <ResponsiveContainer height="100%" width="100%">
             <AreaChart
               data={chartData}
-              margin={{ top: 30, right: 30, left: 20, bottom: chartData.length > 5 ? 60 : 20 }}
+              margin={{
+                top: 30,
+                right: 30,
+                left: 20,
+                bottom: chartData.length > 5 ? 60 : 20,
+              }}
             >
               <defs>
                 {Object.entries(METRIC_COLORS).map(([key, colors]) => (
-                  <linearGradient id={`gradient-${key}`} key={key} x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor={colors.primary} stopOpacity={0.3} />
-                    <stop offset="50%" stopColor={colors.primary} stopOpacity={0.1} />
-                    <stop offset="100%" stopColor={colors.primary} stopOpacity={0.02} />
+                  <linearGradient
+                    id={`gradient-${key}`}
+                    key={key}
+                    x1="0"
+                    x2="0"
+                    y1="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="0%"
+                      stopColor={colors.primary}
+                      stopOpacity={0.3}
+                    />
+                    <stop
+                      offset="50%"
+                      stopColor={colors.primary}
+                      stopOpacity={0.1}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor={colors.primary}
+                      stopOpacity={0.02}
+                    />
                   </linearGradient>
                 ))}
                 {Object.entries(METRIC_COLORS).map(([key]) => (
@@ -183,70 +237,77 @@ export function MetricsChart({
                 vertical={false}
               />
               <XAxis
-                axisLine={{ stroke: "var(--border)", strokeOpacity: 0.5 }}
+                axisLine={{ stroke: 'var(--border)', strokeOpacity: 0.5 }}
                 dataKey="date"
                 dy={10}
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)", fontWeight: 500 }}
+                tick={{
+                  fontSize: 11,
+                  fill: 'var(--muted-foreground)',
+                  fontWeight: 500,
+                }}
                 tickLine={false}
               />
               <YAxis {...yAxisConfig} />
               <Tooltip
                 content={<CustomTooltip />}
                 cursor={{
-                  stroke: "var(--primary)",
+                  stroke: 'var(--primary)',
                   strokeWidth: 1,
                   strokeOpacity: 0.5,
-                  strokeDasharray: "4 4",
+                  strokeDasharray: '4 4',
                 }}
-                wrapperStyle={{ outline: "none" }}
+                wrapperStyle={{ outline: 'none' }}
               />
               <Legend
                 formatter={(value) => (
                   <span
                     className={cn(
-                      "cursor-pointer font-medium text-xs",
+                      'cursor-pointer font-medium text-xs',
                       hoveredMetric === value
-                        ? "text-primary"
-                        : "text-muted-foreground hover:text-foreground"
+                        ? 'text-primary'
+                        : 'text-muted-foreground hover:text-foreground'
                     )}
                     onMouseEnter={() => setHoveredMetric(value)}
                     onMouseLeave={() => setHoveredMetric(null)}
                   >
-                    {value.charAt(0).toUpperCase() + value.slice(1).replace(/_/g, " ")}
+                    {value.charAt(0).toUpperCase() +
+                      value.slice(1).replace(/_/g, ' ')}
                   </span>
                 )}
                 iconSize={10}
                 iconType="circle"
-                wrapperStyle={{
-                  fontSize: "12px",
-                  paddingTop: "20px",
-                  bottom: chartData.length > 5 ? 35 : 5,
-                  fontWeight: 500,
-                }}
-                payload={presentMetrics.map(metric => ({
+                payload={presentMetrics.map((metric) => ({
                   value: metric.label,
-                  type: "circle",
+                  type: 'circle',
                   color: metric.color,
                   id: metric.key,
                 }))}
+                wrapperStyle={{
+                  fontSize: '12px',
+                  paddingTop: '20px',
+                  bottom: chartData.length > 5 ? 35 : 5,
+                  fontWeight: 500,
+                }}
               />
               {METRICS.map((metric) => {
-                const present = chartData.some(item => metric.key in item && item[metric.key] !== undefined);
+                const present = chartData.some(
+                  (item) => metric.key in item && item[metric.key] !== undefined
+                );
                 return (
                   <Area
-                    key={metric.key}
-                    hide={!present}
                     activeDot={{
                       r: 6,
                       strokeWidth: 3,
                       stroke: metric.color,
-                      fill: "var(--background)",
+                      fill: 'var(--background)',
                       filter: `url(#glow-${metric.gradient})`,
                     }}
                     dataKey={metric.key}
                     dot={{ r: 0 }}
                     fill={`url(#gradient-${metric.gradient})`}
                     fillOpacity={1}
+                    hide={!present}
+                    key={metric.key}
                     name={metric.label}
                     stroke={metric.color}
                     strokeWidth={2.5}

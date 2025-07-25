@@ -1,9 +1,7 @@
-"use client";
+'use client';
 
-import PricingTable from "@/components/autumn/pricing-table";
+import PricingTable from '@/components/autumn/pricing-table';
 
 export function PlansTab() {
-  return (
-    <PricingTable />
-  );
-} 
+  return <PricingTable />;
+}

@@ -1,4 +1,4 @@
-import { type CheckProductPreview } from "autumn-js";
+import type { CheckProductPreview } from 'autumn-js';
 
 export const getPricingTableContent = (product: any) => {
   const { scenario, free_trial } = product;
@@ -10,43 +10,42 @@ export const getPricingTableContent = (product: any) => {
   }
 
   switch (scenario) {
-    case "scheduled":
+    case 'scheduled':
       return {
         buttonText: <p>Plan Scheduled</p>,
       };
 
-    case "active":
+    case 'active':
       return {
         buttonText: <p>Current Plan</p>,
       };
 
-    case "new":
+    case 'new':
       if (product.properties?.is_one_off) {
         return {
           buttonText: <p>Purchase</p>,
         };
-      } else {
-        return {
-          buttonText: <p>Get started</p>,
-        };
       }
+      return {
+        buttonText: <p>Get started</p>,
+      };
 
-    case "renew":
+    case 'renew':
       return {
         buttonText: <p>Renew</p>,
       };
 
-    case "upgrade":
+    case 'upgrade':
       return {
         buttonText: <p>Upgrade</p>,
       };
 
-    case "downgrade":
+    case 'downgrade':
       return {
         buttonText: <p>Downgrade</p>,
       };
 
-    case "cancel":
+    case 'cancel':
       return {
         buttonText: <p>Cancel Plan</p>,
       };

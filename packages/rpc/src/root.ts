@@ -1,9 +1,9 @@
-import { websitesRouter } from "./routers/websites";
-import { miniChartsRouter } from "./routers/mini-charts";
-import { funnelsRouter } from "./routers/funnels";
-import { preferencesRouter } from "./routers/preferences";
-import { goalsRouter } from "./routers/goals";
-import { createTRPCRouter } from "./trpc";
+import { funnelsRouter } from './routers/funnels';
+import { goalsRouter } from './routers/goals';
+import { miniChartsRouter } from './routers/mini-charts';
+import { preferencesRouter } from './routers/preferences';
+import { websitesRouter } from './routers/websites';
+import { createTRPCRouter } from './trpc';
 
 export const appRouter = createTRPCRouter({
   websites: websitesRouter,

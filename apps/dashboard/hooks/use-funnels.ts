@@ -1,11 +1,16 @@
-import { useMutation, useQuery, useQueryClient, useQueries } from "@tanstack/react-query";
-import { useCallback, useMemo } from "react";
-import { trpc } from "@/lib/trpc";
-import type { DateRange } from "@databuddy/shared";
+import type { DateRange } from '@databuddy/shared';
+import {
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { useCallback, useMemo } from 'react';
+import { trpc } from '@/lib/trpc';
 
 // Types
 export interface FunnelStep {
-  type: "PAGE_VIEW" | "EVENT" | "CUSTOM";
+  type: 'PAGE_VIEW' | 'EVENT' | 'CUSTOM';
   target: string;
   name: string;
   conditions?: Record<string, any>;
@@ -13,7 +18,7 @@ export interface FunnelStep {
 
 export interface FunnelFilter {
   field: string;
-  operator: "equals" | "contains" | "not_equals" | "in" | "not_in";
+  operator: 'equals' | 'contains' | 'not_equals' | 'in' | 'not_in';
   value: string | string[];
   label?: string;
 }
@@ -83,7 +88,6 @@ export interface FunnelAnalyticsByReferrerResult {
   conversion_rate: number;
 }
 
-
 // Hook for managing funnels (CRUD operations)
 export function useFunnels(websiteId: string, enabled = true) {
   const queryClient = useQueryClient();
@@ -93,29 +97,40 @@ export function useFunnels(websiteId: string, enabled = true) {
     { enabled: enabled && !!websiteId }
   );
 
-  const funnelsData = useMemo(() => (query.data || []).map(f => ({ ...f, steps: f.steps as FunnelStep[], filters: (f.filters as FunnelFilter[]) || [] })), [query.data])
-
+  const funnelsData = useMemo(
+    () =>
+      (query.data || []).map((f) => ({
+        ...f,
+        steps: f.steps as FunnelStep[],
+        filters: (f.filters as FunnelFilter[]) || [],
+      })),
+    [query.data]
+  );
 
   // Create funnel mutation
   const createMutation = trpc.funnels.create.useMutation({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [["funnels", "list"]] });
+      queryClient.invalidateQueries({ queryKey: [['funnels', 'list']] });
     },
   });
 
   // Update funnel mutation
   const updateMutation = trpc.funnels.update.useMutation({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [["funnels", "list"]] });
-      queryClient.invalidateQueries({ queryKey: [["funnels", "getAnalytics"]] });
+      queryClient.invalidateQueries({ queryKey: [['funnels', 'list']] });
+      queryClient.invalidateQueries({
+        queryKey: [['funnels', 'getAnalytics']],
+      });
     },
   });
 
   // Delete funnel mutation
   const deleteMutation = trpc.funnels.delete.useMutation({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [["funnels", "list"]] });
-      queryClient.invalidateQueries({ queryKey: [["funnels", "getAnalytics"]] });
+      queryClient.invalidateQueries({ queryKey: [['funnels', 'list']] });
+      queryClient.invalidateQueries({
+        queryKey: [['funnels', 'getAnalytics']],
+      });
     },
   });
 
@@ -172,7 +187,7 @@ export function useFunnelAnalytics(
   websiteId: string,
   funnelId: string,
   dateRange: DateRange,
-  options: { enabled: boolean } = { enabled: true },
+  options: { enabled: boolean } = { enabled: true }
 ) {
   return trpc.funnels.getAnalytics.useQuery(
     {
@@ -181,7 +196,7 @@ export function useFunnelAnalytics(
       startDate: dateRange?.start_date,
       endDate: dateRange?.end_date,
     },
-    { enabled: options.enabled && !!websiteId && !!funnelId },
+    { enabled: options.enabled && !!websiteId && !!funnelId }
   );
 }
 
@@ -190,7 +205,7 @@ export function useFunnelAnalyticsByReferrer(
   websiteId: string,
   funnelId: string,
   dateRange?: DateRange,
-  options: { enabled: boolean } = { enabled: true },
+  options: { enabled: boolean } = { enabled: true }
 ) {
   return trpc.funnels.getAnalyticsByReferrer.useQuery(
     {
@@ -199,7 +214,7 @@ export function useFunnelAnalyticsByReferrer(
       startDate: dateRange?.start_date,
       endDate: dateRange?.end_date,
     },
-    { enabled: options.enabled && !!websiteId && !!funnelId },
+    { enabled: options.enabled && !!websiteId && !!funnelId }
   );
 }
 
@@ -214,7 +229,9 @@ export function useEnhancedFunnelAnalytics(
   const funnelQuery = useFunnel(websiteId, funnelId, enabled);
 
   // Get analytics data using direct endpoint
-  const analyticsQuery = useFunnelAnalytics(websiteId, funnelId, dateRange, { enabled });
+  const analyticsQuery = useFunnelAnalytics(websiteId, funnelId, dateRange, {
+    enabled,
+  });
 
   // Process and structure the enhanced data
   const enhancedData = useMemo(() => {
@@ -267,11 +284,7 @@ export function useFunnelComparison(
 ) {
   const funnels = useQueries({
     queries: funnelIds.map((funnelId) => ({
-      queryKey: [
-        "funnels",
-        "getAnalytics",
-        { websiteId, funnelId, dateRange },
-      ],
+      queryKey: ['funnels', 'getAnalytics', { websiteId, funnelId, dateRange }],
       queryFn: () =>
         trpc.funnels.getAnalytics.useQuery({
           websiteId,
@@ -297,7 +310,7 @@ export function useFunnelComparison(
 
   return {
     data: comparisonData,
-    isLoading: funnels.some(q => q.isLoading),
+    isLoading: funnels.some((q) => q.isLoading),
   };
 }
 
@@ -307,13 +320,16 @@ export function useFunnelPerformance(
   dateRange: DateRange,
   enabled = true
 ) {
-  const { data: funnels, isLoading: funnelsLoading } = useFunnels(websiteId, enabled);
+  const { data: funnels, isLoading: funnelsLoading } = useFunnels(
+    websiteId,
+    enabled
+  );
 
   const results = useQueries({
     queries: (funnels || []).map((funnel) => ({
       queryKey: [
-        "funnels",
-        "getAnalytics",
+        'funnels',
+        'getAnalytics',
         { websiteId, funnelId: funnel.id, dateRange },
       ],
       queryFn: () =>

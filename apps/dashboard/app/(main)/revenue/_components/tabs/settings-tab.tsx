@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ArrowClockwiseIcon,
@@ -10,9 +10,9 @@ import {
   LightningIcon,
   TestTubeIcon,
   TrashIcon,
-} from "@phosphor-icons/react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+} from '@phosphor-icons/react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,30 +23,30 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import type { useRevenueConfig } from "../../hooks/use-revenue-config";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import type { useRevenueConfig } from '../../hooks/use-revenue-config';
 
 export function RevenueSettingsTab({
   revenueConfig,
 }: {
   revenueConfig: ReturnType<typeof useRevenueConfig>;
 }) {
-  const [webhookSecret, setWebhookSecret] = useState("");
+  const [webhookSecret, setWebhookSecret] = useState('');
   const [isLiveMode, setIsLiveMode] = useState(revenueConfig.isLiveMode);
 
   // Check if the webhook secret is masked (contains asterisks)
-  const isMaskedSecret = (secret: string) => secret.includes("*");
+  const isMaskedSecret = (secret: string) => secret.includes('*');
 
   // Initialize webhook secret only if it's not masked
   useEffect(() => {
-    const currentSecret = revenueConfig.webhookSecret || "";
+    const currentSecret = revenueConfig.webhookSecret || '';
     if (!isMaskedSecret(currentSecret)) {
       setWebhookSecret(currentSecret);
     }
@@ -113,7 +113,9 @@ export function RevenueSettingsTab({
                 value={revenueConfig.webhookUrl}
               />
               <Button
-                onClick={() => handleCopy(revenueConfig.webhookUrl, "Webhook URL")}
+                onClick={() =>
+                  handleCopy(revenueConfig.webhookUrl, 'Webhook URL')
+                }
                 size="icon"
                 variant="outline"
               >
@@ -136,7 +138,9 @@ export function RevenueSettingsTab({
                 value={revenueConfig.webhookToken}
               />
               <Button
-                onClick={() => handleCopy(revenueConfig.webhookToken, "Webhook Token")}
+                onClick={() =>
+                  handleCopy(revenueConfig.webhookToken, 'Webhook Token')
+                }
                 size="icon"
                 variant="outline"
               >
@@ -149,7 +153,7 @@ export function RevenueSettingsTab({
                 variant="outline"
               >
                 <ArrowClockwiseIcon
-                  className={`h-4 w-4 ${revenueConfig.isRegeneratingToken ? "animate-spin" : ""}`}
+                  className={`h-4 w-4 ${revenueConfig.isRegeneratingToken ? 'animate-spin' : ''}`}
                   size={16}
                   weight="fill"
                 />
@@ -169,14 +173,14 @@ export function RevenueSettingsTab({
                 id="webhook-secret"
                 onChange={(e) => setWebhookSecret(e.target.value)}
                 placeholder={
-                  isMaskedSecret(revenueConfig.webhookSecret || "")
-                    ? "Enter new webhook secret to update..."
-                    : "whsec_..."
+                  isMaskedSecret(revenueConfig.webhookSecret || '')
+                    ? 'Enter new webhook secret to update...'
+                    : 'whsec_...'
                 }
                 type="password"
                 value={webhookSecret}
               />
-              {isMaskedSecret(revenueConfig.webhookSecret || "") && (
+              {isMaskedSecret(revenueConfig.webhookSecret || '') && (
                 <div className="absolute inset-y-0 right-3 flex items-center">
                   <span className="font-mono text-muted-foreground text-xs">
                     {revenueConfig.webhookSecret}
@@ -185,9 +189,9 @@ export function RevenueSettingsTab({
               )}
             </div>
             <p className="text-muted-foreground text-xs">
-              {isMaskedSecret(revenueConfig.webhookSecret || "")
-                ? "Current secret is hidden for security. Enter a new secret to update it."
-                : "Get this from your Stripe webhook endpoint settings"}
+              {isMaskedSecret(revenueConfig.webhookSecret || '')
+                ? 'Current secret is hidden for security. Enter a new secret to update it.'
+                : 'Get this from your Stripe webhook endpoint settings'}
             </p>
           </div>
         </CardContent>
@@ -206,15 +210,26 @@ export function RevenueSettingsTab({
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
                 <Label htmlFor="live-mode">Live Mode</Label>
-                <Badge className="text-xs" variant={isLiveMode ? "default" : "secondary"}>
+                <Badge
+                  className="text-xs"
+                  variant={isLiveMode ? 'default' : 'secondary'}
+                >
                   {isLiveMode ? (
                     <>
-                      <GlobeIcon className="mr-1 h-3 w-3" size={12} weight="duotone" />
+                      <GlobeIcon
+                        className="mr-1 h-3 w-3"
+                        size={12}
+                        weight="duotone"
+                      />
                       Live
                     </>
                   ) : (
                     <>
-                      <TestTubeIcon className="mr-1 h-3 w-3" size={12} weight="duotone" />
+                      <TestTubeIcon
+                        className="mr-1 h-3 w-3"
+                        size={12}
+                        weight="duotone"
+                      />
                       Test
                     </>
                   )}
@@ -222,21 +237,30 @@ export function RevenueSettingsTab({
               </div>
               <p className="text-muted-foreground text-sm">
                 {isLiveMode
-                  ? "Track real payments from live Stripe events"
-                  : "Track test payments for development and testing"}
+                  ? 'Track real payments from live Stripe events'
+                  : 'Track test payments for development and testing'}
               </p>
             </div>
-            <Switch checked={isLiveMode} id="live-mode" onCheckedChange={setIsLiveMode} />
+            <Switch
+              checked={isLiveMode}
+              id="live-mode"
+              onCheckedChange={setIsLiveMode}
+            />
           </div>
 
           {!isLiveMode && (
             <div className="rounded-md bg-blue-50 p-3 text-blue-700 text-sm dark:bg-blue-950/20 dark:text-blue-400">
               <div className="flex items-start gap-2">
-                <TestTubeIcon className="mt-0.5 h-4 w-4 flex-shrink-0" size={16} weight="duotone" />
+                <TestTubeIcon
+                  className="mt-0.5 h-4 w-4 flex-shrink-0"
+                  size={16}
+                  weight="duotone"
+                />
                 <div>
                   <p className="font-medium">Test Mode Active</p>
                   <p className="mt-1 text-xs">
-                    Only test payments will be tracked. Switch to live mode for production.
+                    Only test payments will be tracked. Switch to live mode for
+                    production.
                   </p>
                 </div>
               </div>
@@ -286,7 +310,8 @@ export function RevenueSettingsTab({
               <div>
                 <p className="font-medium">Configure Events</p>
                 <p className="text-muted-foreground text-sm">
-                  Select events: payment_intent.succeeded, payment_intent.payment_failed
+                  Select events: payment_intent.succeeded,
+                  payment_intent.payment_failed
                 </p>
               </div>
             </div>
@@ -313,7 +338,11 @@ export function RevenueSettingsTab({
                 rel="noopener noreferrer"
                 target="_blank"
               >
-                <ArrowSquareOutIcon className="mr-2 h-4 w-4" size={16} weight="duotone" />
+                <ArrowSquareOutIcon
+                  className="mr-2 h-4 w-4"
+                  size={16}
+                  weight="duotone"
+                />
                 Open Stripe Dashboard
               </a>
             </Button>
@@ -334,8 +363,8 @@ export function RevenueSettingsTab({
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Revenue Configuration</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete your revenue configuration? This will stop all
-                revenue tracking and cannot be undone.
+                Are you sure you want to delete your revenue configuration? This
+                will stop all revenue tracking and cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -345,14 +374,14 @@ export function RevenueSettingsTab({
                 disabled={revenueConfig.isDeleting}
                 onClick={() => revenueConfig.deleteConfig()}
               >
-                {revenueConfig.isDeleting ? "Deleting..." : "Delete"}
+                {revenueConfig.isDeleting ? 'Deleting...' : 'Delete'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
 
         <Button disabled={revenueConfig.isCreating} onClick={handleSave}>
-          {revenueConfig.isCreating ? "Saving..." : "Save Configuration"}
+          {revenueConfig.isCreating ? 'Saving...' : 'Save Configuration'}
         </Button>
       </div>
     </div>

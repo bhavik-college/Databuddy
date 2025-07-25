@@ -1,24 +1,25 @@
-"use client";
+'use client';
 
-import type { ColumnDef } from "@tanstack/react-table";
 import {
   ChartBar,
   ChartLine,
   ChartPie,
+  Compass, // for radar
   Database,
+  DotsThreeOutlineVertical, // for scatter
   Funnel,
   TrendUp,
-  DotsThreeOutlineVertical, // for scatter
-  Compass, // for radar
-} from "@phosphor-icons/react";
-import React, { useMemo } from "react";
-import { DataTable } from "@/components/analytics/data-table";
+} from '@phosphor-icons/react';
+import type { ColumnDef } from '@tanstack/react-table';
+import { useAtom } from 'jotai';
+import React, { useMemo } from 'react';
 import {
   Area,
+  AreaChart,
   Bar,
+  BarChart,
   CartesianGrid,
   Cell,
-  Funnel as RechartsFunnel,
   FunnelChart,
   Legend,
   Line,
@@ -27,67 +28,60 @@ import {
   PieChart,
   PolarAngleAxis,
   PolarGrid,
-  Radar as RechartsRadar,
   RadarChart,
   RadialBar,
+  Funnel as RechartsFunnel,
+  Radar as RechartsRadar,
   ResponsiveContainer,
   Scatter,
   ScatterChart,
   Tooltip,
   XAxis,
   YAxis,
-  BarChart,
-  AreaChart,
-} from "recharts";
+} from 'recharts';
+import { DataTable } from '@/components/analytics/data-table';
+import { Badge } from '@/components/ui/badge';
 import {
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
-import type { Message } from "../types/message";
-import { useAtom } from 'jotai';
+} from '@/components/ui/chart';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import {
-  websiteDataAtom,
-  websiteIdAtom,
+  currentMessageAtom,
   dateRangeAtom,
   messagesAtom,
-  currentMessageAtom,
+  websiteDataAtom,
+  websiteIdAtom,
 } from '@/stores/jotai/assistantAtoms';
-import { cn } from '@/lib/utils';
+import type { Message } from '../types/message';
 
-const CHART_COLORS = [
-  "#2563eb",
-  "#f97316",
-  "#22c55e",
-  "#ef4444",
-  "#8b5cf6",
-];
+const CHART_COLORS = ['#2563eb', '#f97316', '#22c55e', '#ef4444', '#8b5cf6'];
 
 const getChartIcon = (chartType: string) => {
   switch (chartType?.toLowerCase()) {
-    case "bar":
+    case 'bar':
       return <ChartBar className="h-3 w-3" />;
-    case "line":
-    case "area": // No ChartArea, use ChartLine
+    case 'line':
+    case 'area': // No ChartArea, use ChartLine
       return <ChartLine className="h-3 w-3" />;
-    case "pie":
+    case 'pie':
       return <ChartPie className="h-3 w-3" />;
-    case "stacked_bar":
+    case 'stacked_bar':
       return <ChartBar className="h-3 w-3" />;
-    case "multi_line":
+    case 'multi_line':
       return <ChartLine className="h-3 w-3" />;
-    case "scatter":
+    case 'scatter':
       // TODO: Replace with a better scatter icon if available
       return <DotsThreeOutlineVertical className="h-3 w-3" />;
-    case "radar":
+    case 'radar':
       // TODO: Replace with a better radar icon if available
       return <Compass className="h-3 w-3" />;
-    case "funnel":
+    case 'funnel':
       return <Funnel className="h-3 w-3" />;
     default:
       return <ChartBar className="h-3 w-3" />;
@@ -136,27 +130,32 @@ export default function VisualizationSection() {
 
   // Find the latest assistant message with a chartType
   const latestAssistantMsg = useMemo(() => {
-    return [...messages].reverse().find((msg: Message) => msg.type === 'assistant' && msg.chartType);
+    return [...messages]
+      .reverse()
+      .find((msg: Message) => msg.type === 'assistant' && msg.chartType);
   }, [messages]);
 
   const rawAiData = useMemo(() => {
-    if (!latestAssistantMsg?.data || latestAssistantMsg.data.length === 0) return [];
+    if (!latestAssistantMsg?.data || latestAssistantMsg.data.length === 0)
+      return [];
     return latestAssistantMsg.data;
   }, [latestAssistantMsg]);
 
   const chartDisplayConfig = useMemo(() => {
     if (!rawAiData || rawAiData.length === 0)
-      return { chartDataForDisplay: [], finalXAxisKey: "date" };
+      return { chartDataForDisplay: [], finalXAxisKey: 'date' };
     const chartType = latestAssistantMsg?.chartType;
 
     // For bar charts, use the raw data directly if it's already in the right format
-    if (chartType === "bar" && rawAiData.length > 0) {
+    if (chartType === 'bar' && rawAiData.length > 0) {
       const firstRow = rawAiData[0];
       const keys = Object.keys(firstRow);
 
       // Find the categorical key (string) and metric key (number)
-      const categoryKey = keys.find((k) => typeof firstRow[k] === "string") || keys[0];
-      const metricKey = keys.find((k) => typeof firstRow[k] === "number") || keys[1];
+      const categoryKey =
+        keys.find((k) => typeof firstRow[k] === 'string') || keys[0];
+      const metricKey =
+        keys.find((k) => typeof firstRow[k] === 'number') || keys[1];
 
       if (categoryKey && metricKey) {
         // Create properly formatted data for the chart
@@ -166,7 +165,9 @@ export default function VisualizationSection() {
         }));
 
         // Sort by the metric value in descending order
-        formattedData.sort((a, b) => (Number(b[metricKey]) || 0) - (Number(a[metricKey]) || 0));
+        formattedData.sort(
+          (a, b) => (Number(b[metricKey]) || 0) - (Number(a[metricKey]) || 0)
+        );
 
         const MAX_CHART_ITEMS = 10; // Show up to 10 items for "Top 10" queries
         const finalData = formattedData.slice(0, MAX_CHART_ITEMS);
@@ -186,24 +187,28 @@ export default function VisualizationSection() {
     let workingData = transformedDataFromFunc;
 
     if (
-      chartType === "bar" &&
-      xAxisKeyFromFunc === "date" &&
+      chartType === 'bar' &&
+      xAxisKeyFromFunc === 'date' &&
       workingData.length > 0 &&
       workingData[0]
     ) {
       const metricKeyForAggregation =
-        "pageviews" in workingData[0]
-          ? "pageviews"
+        'pageviews' in workingData[0]
+          ? 'pageviews'
           : Object.keys(workingData[0]).find(
-            (k) => typeof workingData[0][k] === "number" && k !== xAxisKeyFromFunc
-          );
+              (k) =>
+                typeof workingData[0][k] === 'number' && k !== xAxisKeyFromFunc
+            );
 
       if (metricKeyForAggregation) {
         const aggregatedMap = new Map<string, number>();
         for (const item of workingData) {
           const displayName = String(item[xAxisKeyFromFunc]);
           const metricValue = Number(item[metricKeyForAggregation]) || 0;
-          aggregatedMap.set(displayName, (aggregatedMap.get(displayName) || 0) + metricValue);
+          aggregatedMap.set(
+            displayName,
+            (aggregatedMap.get(displayName) || 0) + metricValue
+          );
         }
         workingData = Array.from(aggregatedMap, ([name, value]) => ({
           [xAxisKeyFromFunc]: name,
@@ -215,14 +220,19 @@ export default function VisualizationSection() {
     let finalChartData = workingData;
     const MAX_CHART_ITEMS = 7;
 
-    if ((chartType === "bar" || chartType === "pie") && workingData.length > MAX_CHART_ITEMS) {
+    if (
+      (chartType === 'bar' || chartType === 'pie') &&
+      workingData.length > MAX_CHART_ITEMS
+    ) {
       const primaryMetricKeyForSorting =
-        workingData[0] && "pageviews" in workingData[0]
-          ? "pageviews"
+        workingData[0] && 'pageviews' in workingData[0]
+          ? 'pageviews'
           : workingData[0]
             ? Object.keys(workingData[0]).find(
-              (k) => typeof workingData[0][k] === "number" && k !== xAxisKeyFromFunc
-            )
+                (k) =>
+                  typeof workingData[0][k] === 'number' &&
+                  k !== xAxisKeyFromFunc
+              )
             : undefined;
 
       if (primaryMetricKeyForSorting) {
@@ -237,24 +247,32 @@ export default function VisualizationSection() {
         finalChartData = workingData.slice(0, MAX_CHART_ITEMS);
       }
     }
-    return { chartDataForDisplay: finalChartData, finalXAxisKey: xAxisKeyFromFunc };
+    return {
+      chartDataForDisplay: finalChartData,
+      finalXAxisKey: xAxisKeyFromFunc,
+    };
   }, [rawAiData, latestAssistantMsg?.chartType]);
 
   const chartConfig = useMemo(() => {
-    if (!chartDisplayConfig.chartDataForDisplay || chartDisplayConfig.chartDataForDisplay.length === 0) {
+    if (
+      !chartDisplayConfig.chartDataForDisplay ||
+      chartDisplayConfig.chartDataForDisplay.length === 0
+    ) {
       return {};
     }
     const data = chartDisplayConfig.chartDataForDisplay;
     const xAxisKey = chartDisplayConfig.finalXAxisKey;
-    const keys = Object.keys(data[0] || {}).filter(key => key !== xAxisKey);
+    const keys = Object.keys(data[0] || {}).filter((key) => key !== xAxisKey);
     const config: any = {
       [xAxisKey]: {
-        label: xAxisKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        label: xAxisKey
+          .replace(/_/g, ' ')
+          .replace(/\b\w/g, (l) => l.toUpperCase()),
       },
     };
     keys.forEach((key, index) => {
       config[key] = {
-        label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        label: key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
         color: CHART_COLORS[index % CHART_COLORS.length],
       };
     });
@@ -274,159 +292,255 @@ export default function VisualizationSection() {
     ) {
       return (
         <div
-          className={`flex h-full min-h-[200px] flex-col items-center justify-center py-6 text-center text-muted-foreground transition-all duration-300 ${websiteData ? "animate-pulse" : "fade-in-0 slide-in-from-bottom-2 animate-in"}`}
+          className={`flex h-full min-h-[200px] flex-col items-center justify-center py-6 text-center text-muted-foreground transition-all duration-300 ${websiteData ? 'animate-pulse' : 'fade-in-0 slide-in-from-bottom-2 animate-in'}`}
         >
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-muted transition-all duration-300">
             <Database className="h-6 w-6 opacity-50" />
           </div>
           <h3 className="mb-1 font-medium text-sm transition-all duration-300">
-            {websiteData ? "Loading Visualization..." : "No Visualization Available"}
+            {websiteData
+              ? 'Loading Visualization...'
+              : 'No Visualization Available'}
           </h3>
           <p className="max-w-xs px-4 text-xs transition-all duration-300">
             {websiteData
-              ? "Processing your data query..."
-              : "Ask a question that needs a chart or table to see your data visualized here. For single metrics or general questions, check the chat area."}
+              ? 'Processing your data query...'
+              : 'Ask a question that needs a chart or table to see your data visualized here. For single metrics or general questions, check the chat area.'}
           </p>
         </div>
       );
     }
 
     const { chartType: aiChartType } = latestAssistantMsg;
-    const showMetricsChart = ["line", "bar", "area", "multi_line", "stacked_bar", "grouped_bar"].includes(
-      aiChartType?.toLowerCase() || ""
-    );
+    const showMetricsChart = [
+      'line',
+      'bar',
+      'area',
+      'multi_line',
+      'stacked_bar',
+      'grouped_bar',
+    ].includes(aiChartType?.toLowerCase() || '');
 
-    const metricKeys = Object.keys(chartConfig).filter(key => key !== chartDisplayConfig.finalXAxisKey);
+    const metricKeys = Object.keys(chartConfig).filter(
+      (key) => key !== chartDisplayConfig.finalXAxisKey
+    );
 
     const renderChart = () => {
       switch (aiChartType?.toLowerCase()) {
-        case "bar":
+        case 'bar':
           return (
             <BarChart data={chartDisplayConfig.chartDataForDisplay}>
               <CartesianGrid vertical={false} />
-              <XAxis dataKey={chartDisplayConfig.finalXAxisKey} tickLine={false} axisLine={false} tickMargin={8} />
+              <XAxis
+                axisLine={false}
+                dataKey={chartDisplayConfig.finalXAxisKey}
+                tickLine={false}
+                tickMargin={8}
+              />
               <YAxis />
               <Tooltip
-                cursor={false}
                 content={<ChartTooltipContent indicator="dot" />}
+                cursor={false}
               />
-              <Bar dataKey={metricKeys[0]} fill={chartConfig[metricKeys[0]]?.color || CHART_COLORS[0]} radius={4} />
+              <Bar
+                dataKey={metricKeys[0]}
+                fill={chartConfig[metricKeys[0]]?.color || CHART_COLORS[0]}
+                radius={4}
+              />
             </BarChart>
           );
-        case "line":
+        case 'line':
           return (
             <LineChart data={chartDisplayConfig.chartDataForDisplay}>
               <CartesianGrid vertical={false} />
-              <XAxis dataKey={chartDisplayConfig.finalXAxisKey} tickLine={false} axisLine={false} tickMargin={8} />
+              <XAxis
+                axisLine={false}
+                dataKey={chartDisplayConfig.finalXAxisKey}
+                tickLine={false}
+                tickMargin={8}
+              />
               <YAxis />
               <Tooltip
-                cursor={false}
                 content={<ChartTooltipContent indicator="dot" />}
+                cursor={false}
               />
               <Legend content={<ChartLegendContent />} />
               {metricKeys.map((key) => (
-                <Line key={key} dataKey={key} stroke={chartConfig[key]?.color} strokeWidth={2} dot={false} />
+                <Line
+                  dataKey={key}
+                  dot={false}
+                  key={key}
+                  stroke={chartConfig[key]?.color}
+                  strokeWidth={2}
+                />
               ))}
             </LineChart>
           );
-        case "area":
+        case 'area':
           return (
             <AreaChart data={chartDisplayConfig.chartDataForDisplay}>
               <CartesianGrid vertical={false} />
-              <XAxis dataKey={chartDisplayConfig.finalXAxisKey} tickLine={false} axisLine={false} tickMargin={8} />
+              <XAxis
+                axisLine={false}
+                dataKey={chartDisplayConfig.finalXAxisKey}
+                tickLine={false}
+                tickMargin={8}
+              />
               <YAxis />
               <Tooltip
-                cursor={false}
                 content={<ChartTooltipContent indicator="dot" />}
+                cursor={false}
               />
               <Legend content={<ChartLegendContent />} />
               {metricKeys.map((key) => (
-                <Area key={key} dataKey={key} type="natural" fill={chartConfig[key]?.color} stroke={chartConfig[key]?.color} stackId="a" />
+                <Area
+                  dataKey={key}
+                  fill={chartConfig[key]?.color}
+                  key={key}
+                  stackId="a"
+                  stroke={chartConfig[key]?.color}
+                  type="natural"
+                />
               ))}
             </AreaChart>
           );
-        case "pie": {
-          const COLORS = chartDisplayConfig.chartDataForDisplay.map((_entry, index) => CHART_COLORS[index % CHART_COLORS.length])
+        case 'pie': {
+          const COLORS = chartDisplayConfig.chartDataForDisplay.map(
+            (_entry, index) => CHART_COLORS[index % CHART_COLORS.length]
+          );
           return (
             <PieChart>
               <Tooltip
-                cursor={false}
                 content={<ChartTooltipContent indicator="dot" />}
+                cursor={false}
               />
               <Pie
                 data={chartDisplayConfig.chartDataForDisplay}
                 dataKey={metricKeys[0]}
-                nameKey={chartDisplayConfig.finalXAxisKey}
                 innerRadius={60}
+                nameKey={chartDisplayConfig.finalXAxisKey}
                 strokeWidth={5}
               >
                 {chartDisplayConfig.chartDataForDisplay.map((entry, index) => (
-                  <Cell key={`cell-${entry[chartDisplayConfig.finalXAxisKey]}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    fill={COLORS[index % COLORS.length]}
+                    key={`cell-${entry[chartDisplayConfig.finalXAxisKey]}`}
+                  />
                 ))}
               </Pie>
               <Legend content={<ChartLegendContent />} />
             </PieChart>
-          )
+          );
         }
-        case "multi_line":
+        case 'multi_line':
           return (
             <LineChart data={chartDisplayConfig.chartDataForDisplay}>
               <CartesianGrid vertical={false} />
-              <XAxis dataKey={chartDisplayConfig.finalXAxisKey} tickLine={false} axisLine={false} tickMargin={8} />
+              <XAxis
+                axisLine={false}
+                dataKey={chartDisplayConfig.finalXAxisKey}
+                tickLine={false}
+                tickMargin={8}
+              />
               <YAxis />
               <Tooltip
-                cursor={false}
                 content={<ChartTooltipContent indicator="dot" />}
+                cursor={false}
               />
               <Legend content={<ChartLegendContent />} />
               {metricKeys.map((key) => (
-                <Line key={key} dataKey={key} stroke={chartConfig[key]?.color} strokeWidth={2} dot={false} />
+                <Line
+                  dataKey={key}
+                  dot={false}
+                  key={key}
+                  stroke={chartConfig[key]?.color}
+                  strokeWidth={2}
+                />
               ))}
             </LineChart>
           );
-        case "stacked_bar":
+        case 'stacked_bar':
           return (
-            <BarChart data={chartDisplayConfig.chartDataForDisplay} layout="vertical">
+            <BarChart
+              data={chartDisplayConfig.chartDataForDisplay}
+              layout="vertical"
+            >
               <CartesianGrid horizontal={false} />
               <XAxis type="number" />
-              <YAxis dataKey={chartDisplayConfig.finalXAxisKey} type="category" tickLine={false} axisLine={false} tickMargin={8} />
+              <YAxis
+                axisLine={false}
+                dataKey={chartDisplayConfig.finalXAxisKey}
+                tickLine={false}
+                tickMargin={8}
+                type="category"
+              />
               <Tooltip
-                cursor={false}
                 content={<ChartTooltipContent indicator="dot" />}
+                cursor={false}
               />
               <Legend content={<ChartLegendContent />} />
               {metricKeys.map((key) => (
-                <Bar key={key} dataKey={key} fill={chartConfig[key]?.color} stackId="a" radius={4} />
+                <Bar
+                  dataKey={key}
+                  fill={chartConfig[key]?.color}
+                  key={key}
+                  radius={4}
+                  stackId="a"
+                />
               ))}
             </BarChart>
           );
-        case "grouped_bar":
+        case 'grouped_bar':
           return (
             <BarChart data={chartDisplayConfig.chartDataForDisplay}>
               <CartesianGrid vertical={false} />
-              <XAxis dataKey={chartDisplayConfig.finalXAxisKey} tickLine={false} axisLine={false} tickMargin={8} />
+              <XAxis
+                axisLine={false}
+                dataKey={chartDisplayConfig.finalXAxisKey}
+                tickLine={false}
+                tickMargin={8}
+              />
               <YAxis />
               <Tooltip
-                cursor={false}
                 content={<ChartTooltipContent indicator="dot" />}
+                cursor={false}
               />
               <Legend content={<ChartLegendContent />} />
               {metricKeys.map((key, index) => (
-                <Bar key={key} dataKey={key} fill={CHART_COLORS[index % CHART_COLORS.length]} radius={4} />
+                <Bar
+                  dataKey={key}
+                  fill={CHART_COLORS[index % CHART_COLORS.length]}
+                  key={key}
+                  radius={4}
+                />
               ))}
             </BarChart>
-          )
-        case "scatter":
+          );
+        case 'scatter':
           return (
             <ScatterChart>
               <CartesianGrid />
-              <XAxis type="number" dataKey={metricKeys[0]} name={metricKeys[0]} />
-              <YAxis type="number" dataKey={metricKeys[1]} name={metricKeys[1]} />
-              <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<ChartTooltipContent hideLabel />} />
-              <Scatter data={chartDisplayConfig.chartDataForDisplay} fill={CHART_COLORS[0]} />
+              <XAxis
+                dataKey={metricKeys[0]}
+                name={metricKeys[0]}
+                type="number"
+              />
+              <YAxis
+                dataKey={metricKeys[1]}
+                name={metricKeys[1]}
+                type="number"
+              />
+              <Tooltip
+                content={<ChartTooltipContent hideLabel />}
+                cursor={{ strokeDasharray: '3 3' }}
+              />
+              <Scatter
+                data={chartDisplayConfig.chartDataForDisplay}
+                fill={CHART_COLORS[0]}
+              />
             </ScatterChart>
-          )
-        case "radar":
+          );
+        case 'radar':
           return (
             <RadarChart data={chartDisplayConfig.chartDataForDisplay}>
               <PolarGrid />
@@ -434,41 +548,50 @@ export default function VisualizationSection() {
               <Tooltip content={<ChartTooltipContent />} />
               <Legend content={<ChartLegendContent />} />
               {metricKeys.map((key) => (
-                <RechartsRadar key={key} name={key} dataKey={key} stroke={chartConfig[key]?.color} fill={chartConfig[key]?.color} fillOpacity={0.6} />
+                <RechartsRadar
+                  dataKey={key}
+                  fill={chartConfig[key]?.color}
+                  fillOpacity={0.6}
+                  key={key}
+                  name={key}
+                  stroke={chartConfig[key]?.color}
+                />
               ))}
             </RadarChart>
-          )
-        case "funnel":
+          );
+        case 'funnel':
           return (
             <FunnelChart>
               <Tooltip />
               <RechartsFunnel
-                dataKey="users"
                 data={chartDisplayConfig.chartDataForDisplay}
+                dataKey="users"
                 isAnimationActive
               >
                 {chartDisplayConfig.chartDataForDisplay.map((entry, index) => (
-                  <Cell key={`cell-${entry.step}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                  <Cell
+                    fill={CHART_COLORS[index % CHART_COLORS.length]}
+                    key={`cell-${entry.step}`}
+                  />
                 ))}
               </RechartsFunnel>
             </FunnelChart>
-          )
+          );
         default:
-          return <></>
+          return <></>;
       }
     };
 
     return (
       <div className="fade-in-0 slide-in-from-bottom-2 animate-in space-y-4 duration-500">
-        {showMetricsChart && chartDisplayConfig.chartDataForDisplay.length > 0 && (
-          <div className="fade-in-0 slide-in-from-top-1 animate-in rounded-lg bg-muted/30 p-2 shadow-sm delay-100 duration-700">
-            <ChartContainer config={chartConfig} className="h-[260px] w-full">
-              <ResponsiveContainer>
-                {renderChart()}
-              </ResponsiveContainer>
-            </ChartContainer>
-          </div>
-        )}
+        {showMetricsChart &&
+          chartDisplayConfig.chartDataForDisplay.length > 0 && (
+            <div className="fade-in-0 slide-in-from-top-1 animate-in rounded-lg bg-muted/30 p-2 shadow-sm delay-100 duration-700">
+              <ChartContainer className="h-[260px] w-full" config={chartConfig}>
+                <ResponsiveContainer>{renderChart()}</ResponsiveContainer>
+              </ChartContainer>
+            </div>
+          )}
 
         <div className="fade-in-0 slide-in-from-bottom-1 animate-in delay-200 duration-700">
           <DataTable
@@ -488,48 +611,50 @@ export default function VisualizationSection() {
   };
 
   const getChartTypeDescription = (chartType?: string) => {
-    if (!chartType) return "Data";
+    if (!chartType) return 'Data';
     switch (chartType.toLowerCase()) {
-      case "multi_line":
-        return "Multi-Series Line Chart";
-      case "stacked_bar":
-        return "Stacked Bar Chart";
-      case "grouped_bar":
-        return "Grouped Bar Chart";
-      case "area":
-        return "Area Chart";
-      case "line":
-        return "Line Chart";
-      case "bar":
-        return "Bar Chart";
-      case "pie":
-        return "Pie Chart";
-      case "scatter":
-        return "Scatter Chart";
-      case "radar":
-        return "Radar Chart";
-      case "funnel":
-        return "Funnel Chart";
+      case 'multi_line':
+        return 'Multi-Series Line Chart';
+      case 'stacked_bar':
+        return 'Stacked Bar Chart';
+      case 'grouped_bar':
+        return 'Grouped Bar Chart';
+      case 'area':
+        return 'Area Chart';
+      case 'line':
+        return 'Line Chart';
+      case 'bar':
+        return 'Bar Chart';
+      case 'pie':
+        return 'Pie Chart';
+      case 'scatter':
+        return 'Scatter Chart';
+      case 'radar':
+        return 'Radar Chart';
+      case 'funnel':
+        return 'Funnel Chart';
       default:
-        return chartType.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+        return chartType
+          .replace(/_/g, ' ')
+          .replace(/\b\w/g, (l) => l.toUpperCase());
     }
   };
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded border bg-background shadow-sm transition-all duration-300">
       <div
-        className={`flex flex-shrink-0 items-center gap-2 border-b p-3 transition-all duration-300 ${websiteData ? "bg-muted/30" : "bg-muted/10"}`}
+        className={`flex flex-shrink-0 items-center gap-2 border-b p-3 transition-all duration-300 ${websiteData ? 'bg-muted/30' : 'bg-muted/10'}`}
       >
         <div
-          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded transition-all duration-300 ${websiteData ? "bg-primary/10" : "bg-muted/20"}`}
+          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded transition-all duration-300 ${websiteData ? 'bg-primary/10' : 'bg-muted/20'}`}
         >
           <TrendUp
-            className={`h-4 w-4 transition-all duration-300 ${websiteData ? "text-primary" : "text-muted-foreground/60"}`}
+            className={`h-4 w-4 transition-all duration-300 ${websiteData ? 'text-primary' : 'text-muted-foreground/60'}`}
           />
         </div>
         <div className="min-w-0 flex-1">
           <h2
-            className={`truncate font-semibold text-base transition-all duration-300 ${websiteData ? "text-foreground" : "text-muted-foreground/80"}`}
+            className={`truncate font-semibold text-base transition-all duration-300 ${websiteData ? 'text-foreground' : 'text-muted-foreground/80'}`}
           >
             Data Visualization
           </h2>
@@ -549,7 +674,7 @@ export default function VisualizationSection() {
       <div className="min-h-0 flex-1 overflow-y-auto">
         <ScrollArea className="h-full">
           <div
-            className={`p-3 transition-all duration-300 ${websiteData ? "opacity-100" : "opacity-90"}`}
+            className={`p-3 transition-all duration-300 ${websiteData ? 'opacity-100' : 'opacity-90'}`}
           >
             {renderChartContent()}
           </div>
@@ -560,57 +685,60 @@ export default function VisualizationSection() {
 }
 
 const REFERRER_NAME_MAP: Record<string, string> = {
-  "google.com": "Google",
-  "www.google.com": "Google",
-  "m.google.com": "Google",
-  "t.co": "Twitter / X",
-  "twitter.com": "Twitter / X",
-  "x.com": "Twitter / X",
-  "facebook.com": "Facebook",
-  "www.facebook.com": "Facebook",
-  "m.facebook.com": "Facebook",
-  "linkedin.com": "LinkedIn",
-  "www.linkedin.com": "LinkedIn",
-  "bing.com": "Bing",
-  "www.bing.com": "Bing",
-  "duckduckgo.com": "DuckDuckGo",
-  "yahoo.com": "Yahoo",
-  "yandex.com": "Yandex",
-  "baidu.com": "Baidu",
-  "github.com": "GitHub",
-  "producthunt.com": "Product Hunt",
-  "reddit.com": "Reddit",
-  "www.reddit.com": "Reddit",
-  "dev.to": "DEV Community",
-  "medium.com": "Medium",
-  "stackoverflow.com": "Stack Overflow",
-  "slack.com": "Slack",
-  localhost: "Localhost",
+  'google.com': 'Google',
+  'www.google.com': 'Google',
+  'm.google.com': 'Google',
+  't.co': 'Twitter / X',
+  'twitter.com': 'Twitter / X',
+  'x.com': 'Twitter / X',
+  'facebook.com': 'Facebook',
+  'www.facebook.com': 'Facebook',
+  'm.facebook.com': 'Facebook',
+  'linkedin.com': 'LinkedIn',
+  'www.linkedin.com': 'LinkedIn',
+  'bing.com': 'Bing',
+  'www.bing.com': 'Bing',
+  'duckduckgo.com': 'DuckDuckGo',
+  'yahoo.com': 'Yahoo',
+  'yandex.com': 'Yandex',
+  'baidu.com': 'Baidu',
+  'github.com': 'GitHub',
+  'producthunt.com': 'Product Hunt',
+  'reddit.com': 'Reddit',
+  'www.reddit.com': 'Reddit',
+  'dev.to': 'DEV Community',
+  'medium.com': 'Medium',
+  'stackoverflow.com': 'Stack Overflow',
+  'slack.com': 'Slack',
+  localhost: 'Localhost',
 };
 
 function getReferrerDisplayName(referrer: string | unknown): string {
   if (
     referrer === null ||
-    referrer === "" ||
-    (typeof referrer === "string" && referrer.toLowerCase() === "(direct)")
+    referrer === '' ||
+    (typeof referrer === 'string' && referrer.toLowerCase() === '(direct)')
   ) {
-    return "Direct";
+    return 'Direct';
   }
-  if (typeof referrer !== "string" || !referrer.trim()) {
-    return "Unknown";
+  if (typeof referrer !== 'string' || !referrer.trim()) {
+    return 'Unknown';
   }
 
   const trimmedReferrer = referrer.trim();
 
   try {
     const fullUrl =
-      trimmedReferrer.startsWith("http://") || trimmedReferrer.startsWith("https://")
+      trimmedReferrer.startsWith('http://') ||
+      trimmedReferrer.startsWith('https://')
         ? trimmedReferrer
         : `http://${trimmedReferrer}`;
     const url = new URL(fullUrl);
     const hostname = url.hostname;
 
-    const baseHostname = hostname.startsWith("www.") ? hostname.substring(4) : hostname;
+    const baseHostname = hostname.startsWith('www.')
+      ? hostname.substring(4)
+      : hostname;
 
     if (REFERRER_NAME_MAP[hostname]) {
       return REFERRER_NAME_MAP[hostname];
@@ -631,15 +759,16 @@ const generateColumns = (data: any[]): ColumnDef<any, any>[] => {
 
   return firstItemKeys.map((key) => ({
     accessorKey: key,
-    header: key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+    header: key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
     cell: ({ row }) => {
       const value = row.getValue(key);
-      if (typeof value === "number") {
+      if (typeof value === 'number') {
         return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
       }
       if (
-        typeof value === "string" &&
-        (key.toLowerCase().includes("referrer") || key.toLowerCase().includes("source"))
+        typeof value === 'string' &&
+        (key.toLowerCase().includes('referrer') ||
+          key.toLowerCase().includes('source'))
       ) {
         return getReferrerDisplayName(value);
       }
@@ -649,72 +778,73 @@ const generateColumns = (data: any[]): ColumnDef<any, any>[] => {
 };
 
 // Moved TIME_KEYS to be globally accessible if needed by future helpers or for clarity.
-const TIME_KEYS = ["date", "time", "hour", "day", "week", "month", "timestamp"];
+const TIME_KEYS = ['date', 'time', 'hour', 'day', 'week', 'month', 'timestamp'];
 
 const transformDataForMetricsChart = (
   rawData: any[],
   chartTypeInput?: string
   // aiQuery parameter removed as it was unused
 ): TransformResult => {
-  if (!rawData || rawData.length === 0 || !rawData[0]) return { chartData: [], xAxisKey: "date" };
+  if (!rawData || rawData.length === 0 || !rawData[0])
+    return { chartData: [], xAxisKey: 'date' };
 
-  let determinedXAxisKey = "date";
+  let determinedXAxisKey = 'date';
   const chartType = chartTypeInput?.toLowerCase();
   // TIME_KEYS is now global. Other constants remain local as they are only used within this function scope.
   const DATE_ALIASES = [
-    "date",
-    "time",
-    "day",
-    "timestamp",
-    "category",
-    "label",
-    "name",
-    "month",
-    "year",
-    "hour",
-    "period",
-    "referrer",
-    "source",
+    'date',
+    'time',
+    'day',
+    'timestamp',
+    'category',
+    'label',
+    'name',
+    'month',
+    'year',
+    'hour',
+    'period',
+    'referrer',
+    'source',
   ];
   const PRIMARY_METRIC_ALIASES = [
-    "pageviews",
-    "page_views",
-    "page views",
-    "count",
-    "visits",
-    "value",
-    "sessions",
-    "users",
-    "total",
-    "metric",
-    "records",
-    "events",
-    "avg_load_time",
-    "load_time",
+    'pageviews',
+    'page_views',
+    'page views',
+    'count',
+    'visits',
+    'value',
+    'sessions',
+    'users',
+    'total',
+    'metric',
+    'records',
+    'events',
+    'avg_load_time',
+    'load_time',
   ];
   const SECONDARY_METRIC_ALIASES = [
-    "visitors",
-    "unique_visitors",
-    "unique visitors",
-    "users",
-    "distinct_users",
-    "uniques",
+    'visitors',
+    'unique_visitors',
+    'unique visitors',
+    'users',
+    'distinct_users',
+    'uniques',
   ];
 
-  if (chartType === "multi_line") {
+  if (chartType === 'multi_line') {
     const firstItemKeys = Object.keys(rawData[0]);
     const timeCol = firstItemKeys.find(
-      (k: string) => k.toLowerCase() === "date" || k.toLowerCase() === "hour"
+      (k: string) => k.toLowerCase() === 'date' || k.toLowerCase() === 'hour'
     );
     let categoryCol: string | undefined;
     let metricCol: string | undefined;
 
     if (timeCol) {
       categoryCol = firstItemKeys.find(
-        (k: string) => k !== timeCol && typeof rawData[0][k] === "string"
+        (k: string) => k !== timeCol && typeof rawData[0][k] === 'string'
       );
       metricCol = firstItemKeys.find(
-        (k: string) => k !== timeCol && typeof rawData[0][k] === "number"
+        (k: string) => k !== timeCol && typeof rawData[0][k] === 'number'
       );
     }
 
@@ -730,13 +860,14 @@ const transformDataForMetricsChart = (
         let categoryVal = String(item[_categoryCol]);
         const metricVal = Number(item[_metricCol]);
 
-        if (_categoryCol.toLowerCase().includes("path")) {
+        if (_categoryCol.toLowerCase().includes('path')) {
           categoryVal =
-            categoryVal.startsWith("/") && categoryVal.length > 1
+            categoryVal.startsWith('/') && categoryVal.length > 1
               ? categoryVal.substring(1)
               : categoryVal;
-          categoryVal = categoryVal.split("?")[0] || "Home";
-          if (categoryVal.length > 20) categoryVal = `${categoryVal.substring(0, 17)}...`;
+          categoryVal = categoryVal.split('?')[0] || 'Home';
+          if (categoryVal.length > 20)
+            categoryVal = `${categoryVal.substring(0, 17)}...`;
         }
         if (!pivotedData[timeVal]) {
           pivotedData[timeVal] = { [_timeCol]: timeVal };
@@ -747,13 +878,14 @@ const transformDataForMetricsChart = (
       const allCategoryKeys = new Set<string>();
       for (const item of rawData) {
         let categoryVal = String(item[_categoryCol]);
-        if (_categoryCol.toLowerCase().includes("path")) {
+        if (_categoryCol.toLowerCase().includes('path')) {
           categoryVal =
-            categoryVal.startsWith("/") && categoryVal.length > 1
+            categoryVal.startsWith('/') && categoryVal.length > 1
               ? categoryVal.substring(1)
               : categoryVal;
-          categoryVal = categoryVal.split("?")[0] || "Home";
-          if (categoryVal.length > 20) categoryVal = `${categoryVal.substring(0, 17)}...`;
+          categoryVal = categoryVal.split('?')[0] || 'Home';
+          if (categoryVal.length > 20)
+            categoryVal = `${categoryVal.substring(0, 17)}...`;
         }
         allCategoryKeys.add(categoryVal);
       }
@@ -770,7 +902,10 @@ const transformDataForMetricsChart = (
 
       if (TIME_KEYS.includes(_timeCol.toLowerCase())) {
         try {
-          result.sort((a, b) => new Date(a[_timeCol]).getTime() - new Date(b[_timeCol]).getTime());
+          result.sort(
+            (a, b) =>
+              new Date(a[_timeCol]).getTime() - new Date(b[_timeCol]).getTime()
+          );
         } catch (e) {
           /* ignore sort error for non-standard time keys */
         }
@@ -784,10 +919,12 @@ const transformDataForMetricsChart = (
     TIME_KEYS.includes(key.toLowerCase())
   );
   const identifiedMetricKey = firstItemKeys.find(
-    (key: string) => key !== identifiedTimeKeyForSingleSeries && typeof rawData[0][key] === "number"
+    (key: string) =>
+      key !== identifiedTimeKeyForSingleSeries &&
+      typeof rawData[0][key] === 'number'
   );
 
-  determinedXAxisKey = "date";
+  determinedXAxisKey = 'date';
 
   const transformedChartData = rawData.map((item) => {
     const transformed: any = {};
@@ -796,23 +933,29 @@ const transformDataForMetricsChart = (
     const dateField = determinedXAxisKey;
 
     let categoryValueToSet: string | number | Date | undefined | null;
-    let foundDateKeyActual: string | undefined = identifiedTimeKeyForSingleSeries;
+    let foundDateKeyActual: string | undefined =
+      identifiedTimeKeyForSingleSeries;
 
     if (foundDateKeyActual && originalKeys.includes(foundDateKeyActual)) {
       categoryValueToSet = item[foundDateKeyActual];
       usedOriginalKeys.add(foundDateKeyActual);
     } else {
       // DATE_ALIASES is defined locally
-      foundDateKeyActual = originalKeys.find((k: string) => DATE_ALIASES.includes(k.toLowerCase()));
+      foundDateKeyActual = originalKeys.find((k: string) =>
+        DATE_ALIASES.includes(k.toLowerCase())
+      );
       if (foundDateKeyActual) {
         categoryValueToSet = item[foundDateKeyActual];
         usedOriginalKeys.add(foundDateKeyActual);
       }
     }
 
-    if (categoryValueToSet === undefined && (chartType === "bar" || chartType === "pie")) {
+    if (
+      categoryValueToSet === undefined &&
+      (chartType === 'bar' || chartType === 'pie')
+    ) {
       const stringKey = originalKeys.find(
-        (k: string) => typeof item[k] === "string" && !usedOriginalKeys.has(k)
+        (k: string) => typeof item[k] === 'string' && !usedOriginalKeys.has(k)
       );
       if (stringKey) {
         categoryValueToSet = item[stringKey];
@@ -822,7 +965,9 @@ const transformDataForMetricsChart = (
     }
 
     if (categoryValueToSet === undefined && originalKeys.length > 0) {
-      const firstNonUsedKey = originalKeys.find((k: string) => !usedOriginalKeys.has(k));
+      const firstNonUsedKey = originalKeys.find(
+        (k: string) => !usedOriginalKeys.has(k)
+      );
       if (firstNonUsedKey) {
         categoryValueToSet = String(item[firstNonUsedKey]);
         foundDateKeyActual = firstNonUsedKey;
@@ -830,11 +975,18 @@ const transformDataForMetricsChart = (
       }
     }
 
-    if (chartType === "bar" && typeof categoryValueToSet === "string") {
+    if (chartType === 'bar' && typeof categoryValueToSet === 'string') {
       const keyUsedForCategoryIsReferrer =
-        (foundDateKeyActual || "").toLowerCase().includes("referrer") ||
-        (foundDateKeyActual || "").toLowerCase().includes("source");
-      const potentialReferrerIndicators = ["/", ".com", ".net", ".org", "http", "www"];
+        (foundDateKeyActual || '').toLowerCase().includes('referrer') ||
+        (foundDateKeyActual || '').toLowerCase().includes('source');
+      const potentialReferrerIndicators = [
+        '/',
+        '.com',
+        '.net',
+        '.org',
+        'http',
+        'www',
+      ];
       // Corrected based on previous partial application: removed categoryValueToSet && and ! from categoryValueToSet.toLowerCase()
       if (
         keyUsedForCategoryIsReferrer ||
@@ -847,16 +999,16 @@ const transformDataForMetricsChart = (
         transformed[dateField] = categoryValueToSet;
       }
     } else if (
-      typeof categoryValueToSet === "object" &&
+      typeof categoryValueToSet === 'object' &&
       categoryValueToSet !== null &&
       categoryValueToSet instanceof Date
     ) {
-      transformed[dateField] = categoryValueToSet.toISOString().split("T")[0];
+      transformed[dateField] = categoryValueToSet.toISOString().split('T')[0];
     } else {
-      transformed[dateField] = String(categoryValueToSet ?? "Unknown");
+      transformed[dateField] = String(categoryValueToSet ?? 'Unknown');
     }
 
-    const primaryMetricField = identifiedMetricKey || "pageviews";
+    const primaryMetricField = identifiedMetricKey || 'pageviews';
     transformed[primaryMetricField] = null;
 
     // PRIMARY_METRIC_ALIASES is defined locally
@@ -873,23 +1025,26 @@ const transformDataForMetricsChart = (
         currentPrimaryMetricAliases.includes(k.toLowerCase()) &&
         !usedOriginalKeys.has(k) &&
         k !== foundDateKeyActual &&
-        typeof item[k] === "number"
+        typeof item[k] === 'number'
     );
 
     if (!foundPrimaryMetricKey) {
       foundPrimaryMetricKey =
         identifiedMetricKey &&
-          !usedOriginalKeys.has(identifiedMetricKey) &&
-          typeof item[identifiedMetricKey] === "number"
+        !usedOriginalKeys.has(identifiedMetricKey) &&
+        typeof item[identifiedMetricKey] === 'number'
           ? identifiedMetricKey
           : originalKeys.find(
-            (k: string) =>
-              typeof item[k] === "number" && !usedOriginalKeys.has(k) && k !== foundDateKeyActual
-          );
+              (k: string) =>
+                typeof item[k] === 'number' &&
+                !usedOriginalKeys.has(k) &&
+                k !== foundDateKeyActual
+            );
     }
 
     if (foundPrimaryMetricKey && item[foundPrimaryMetricKey] !== undefined) {
-      transformed[primaryMetricField] = Number(item[foundPrimaryMetricKey]) || 0;
+      transformed[primaryMetricField] =
+        Number(item[foundPrimaryMetricKey]) || 0;
       usedOriginalKeys.add(foundPrimaryMetricKey);
     } else if (
       Object.keys(transformed).length === 1 &&
@@ -900,8 +1055,8 @@ const transformDataForMetricsChart = (
       usedOriginalKeys.add(identifiedMetricKey);
     }
 
-    if (chartType === "line" || chartType === "area") {
-      const visitorsMetricName = "visitors";
+    if (chartType === 'line' || chartType === 'area') {
+      const visitorsMetricName = 'visitors';
       // SECONDARY_METRIC_ALIASES is defined locally
       const foundSecondaryMetricKey = originalKeys.find(
         (k: string) =>
@@ -909,21 +1064,25 @@ const transformDataForMetricsChart = (
           !usedOriginalKeys.has(k) &&
           k !== foundDateKeyActual &&
           k !== foundPrimaryMetricKey &&
-          typeof item[k] === "number"
+          typeof item[k] === 'number'
       );
-      if (foundSecondaryMetricKey && item[foundSecondaryMetricKey] !== undefined) {
-        transformed[visitorsMetricName] = Number(item[foundSecondaryMetricKey]) || 0;
+      if (
+        foundSecondaryMetricKey &&
+        item[foundSecondaryMetricKey] !== undefined
+      ) {
+        transformed[visitorsMetricName] =
+          Number(item[foundSecondaryMetricKey]) || 0;
         usedOriginalKeys.add(foundSecondaryMetricKey);
       }
     }
 
     for (const key of originalKeys) {
       if (
-        typeof item[key] === "number" &&
+        typeof item[key] === 'number' &&
         !usedOriginalKeys.has(key) &&
         key !== foundDateKeyActual
       ) {
-        const sanitizedKey = key.replace(/[^a-zA-Z0-9_]/g, "_");
+        const sanitizedKey = key.replace(/[^a-zA-Z0-9_]/g, '_');
         if (!Object.hasOwn(transformed, sanitizedKey)) {
           transformed[sanitizedKey] = Number(item[key]) || 0;
         }

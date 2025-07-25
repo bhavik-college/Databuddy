@@ -1,27 +1,35 @@
-"use client";
+'use client';
 
-import { TrendDownIcon } from "@phosphor-icons/react";
-import { useAtom } from "jotai";
-import { useParams } from "next/navigation";
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { TrendDownIcon } from '@phosphor-icons/react';
+import { useAtom } from 'jotai';
+import { useParams } from 'next/navigation';
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { useAutocompleteData } from '@/hooks/use-funnels';
 import {
   type CreateGoalData,
   type Goal,
   useBulkGoalAnalytics,
   useGoals,
-} from "@/hooks/use-goals";
-import { useWebsite } from "@/hooks/use-websites";
-import { useAutocompleteData } from "@/hooks/use-funnels";
+} from '@/hooks/use-goals';
+import { useWebsite } from '@/hooks/use-websites';
 import {
   dateRangeAtom,
   formattedDateRangeAtom,
   timeGranularityAtom,
-} from "@/stores/jotai/filterAtoms";
-import { DeleteGoalDialog } from "./_components/delete-goal-dialog";
-import { EditGoalDialog } from "./_components/edit-goal-dialog";
-import { GoalsList } from "./_components/goals-list";
-import { WebsitePageHeader } from "../_components/website-page-header";
+} from '@/stores/jotai/filterAtoms';
+import { WebsitePageHeader } from '../_components/website-page-header';
+import { DeleteGoalDialog } from './_components/delete-goal-dialog';
+import { EditGoalDialog } from './_components/edit-goal-dialog';
+import { GoalsList } from './_components/goals-list';
 
 const GoalsListSkeleton = () => (
   <div className="space-y-3">
@@ -137,13 +145,20 @@ export default function GoalsPage() {
         refetchAnalytics();
       }
     } catch (error) {
-      console.error("Failed to refresh goal data:", error);
+      console.error('Failed to refresh goal data:', error);
     } finally {
       setIsRefreshing(false);
     }
-  }, [refetchGoals, refetchAnalytics, goalIds.length, autocompleteQuery.refetch]);
+  }, [
+    refetchGoals,
+    refetchAnalytics,
+    goalIds.length,
+    autocompleteQuery.refetch,
+  ]);
 
-  const handleSaveGoal = async (data: Goal | Omit<CreateGoalData, 'websiteId'>) => {
+  const handleSaveGoal = async (
+    data: Goal | Omit<CreateGoalData, 'websiteId'>
+  ) => {
     try {
       if ('id' in data) {
         // Updating existing goal
@@ -166,7 +181,7 @@ export default function GoalsPage() {
       setIsDialogOpen(false);
       setEditingGoal(null);
     } catch (error) {
-      console.error("Failed to save goal:", error);
+      console.error('Failed to save goal:', error);
     }
   };
 
@@ -175,7 +190,7 @@ export default function GoalsPage() {
       await deleteGoal(goalId);
       setDeletingGoalId(null);
     } catch (error) {
-      console.error("Failed to delete goal:", error);
+      console.error('Failed to delete goal:', error);
     }
   };
 
@@ -185,8 +200,14 @@ export default function GoalsPage() {
         <Card className="rounded border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <TrendDownIcon className="h-5 w-5 text-red-600" size={16} weight="duotone" />
-              <p className="font-medium text-red-600">Error loading goal data</p>
+              <TrendDownIcon
+                className="h-5 w-5 text-red-600"
+                size={16}
+                weight="duotone"
+              />
+              <p className="font-medium text-red-600">
+                Error loading goal data
+              </p>
             </div>
             <p className="mt-2 text-red-600/80 text-sm">{goalsError.message}</p>
           </CardContent>
@@ -196,23 +217,36 @@ export default function GoalsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1600px] space-y-4 p-3 sm:p-4 lg:p-6" ref={pageRef}>
+    <div
+      className="mx-auto max-w-[1600px] space-y-4 p-3 sm:p-4 lg:p-6"
+      ref={pageRef}
+    >
       <WebsitePageHeader
-        title="Goals"
+        createActionLabel="Create Goal"
         description="Track key conversions and measure success"
-        icon={<TrendDownIcon className="h-6 w-6 text-primary" size={16} weight="duotone" />}
-        websiteId={websiteId}
-        websiteName={websiteData?.name || undefined}
+        hasError={!!goalsError}
+        icon={
+          <TrendDownIcon
+            className="h-6 w-6 text-primary"
+            size={16}
+            weight="duotone"
+          />
+        }
         isLoading={goalsLoading}
         isRefreshing={isRefreshing}
-        hasError={!!goalsError}
-        onRefresh={handleRefresh}
         onCreateAction={() => {
           setEditingGoal(null);
           setIsDialogOpen(true);
         }}
-        createActionLabel="Create Goal"
-        subtitle={goalsLoading ? undefined : `${goals.length} active goal${goals.length !== 1 ? "s" : ""}`}
+        onRefresh={handleRefresh}
+        subtitle={
+          goalsLoading
+            ? undefined
+            : `${goals.length} active goal${goals.length !== 1 ? 's' : ''}`
+        }
+        title="Goals"
+        websiteId={websiteId}
+        websiteName={websiteData?.name || undefined}
       />
 
       {isVisible && (

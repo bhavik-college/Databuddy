@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import type { ColumnDef } from "@tanstack/react-table";
-import { Path, Target } from "@phosphor-icons/react";
-import { useAtom } from "jotai";
+import { Path, Target } from '@phosphor-icons/react';
+import type { ColumnDef } from '@tanstack/react-table';
+import { useAtom } from 'jotai';
 import {
   ArrowRight,
   ChevronRight,
@@ -13,24 +13,24 @@ import {
   TrendingDown,
   TrendingUp,
   Users,
-} from "lucide-react";
-import { useParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
-import { DataTable } from "@/components/analytics/data-table";
-import { StatCard } from "@/components/analytics/stat-card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ClosableAlert } from "@/components/ui/closable-alert";
-import { useJourneyAnalytics } from "@/hooks/use-dynamic-query";
-import { useWebsite } from "@/hooks/use-websites";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { useCallback, useMemo, useState } from 'react';
+import { DataTable } from '@/components/analytics/data-table';
+import { StatCard } from '@/components/analytics/stat-card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { ClosableAlert } from '@/components/ui/closable-alert';
+import { useJourneyAnalytics } from '@/hooks/use-dynamic-query';
+import { useWebsite } from '@/hooks/use-websites';
+import { cn } from '@/lib/utils';
 import {
   dateRangeAtom,
   formattedDateRangeAtom,
   timeGranularityAtom,
-} from "@/stores/jotai/filterAtoms";
-import { WebsitePageHeader } from "../_components/website-page-header";
+} from '@/stores/jotai/filterAtoms';
+import { WebsitePageHeader } from '../_components/website-page-header';
 
 export default function JourneysPage() {
   const { id } = useParams();
@@ -71,7 +71,7 @@ export default function JourneysPage() {
     try {
       await refetchBatch();
     } catch (error) {
-      console.error("Failed to refresh journey data:", error);
+      console.error('Failed to refresh journey data:', error);
     } finally {
       setIsRefreshing(false);
     }
@@ -79,21 +79,21 @@ export default function JourneysPage() {
 
   // Helper function to create better page display
   const formatPagePath = (url: string) => {
-    if (!url) return "/";
+    if (!url) return '/';
     try {
-      let path = url.startsWith("http") ? new URL(url).pathname : url;
-      if (!path.startsWith("/")) path = `/${path}`;
+      let path = url.startsWith('http') ? new URL(url).pathname : url;
+      if (!path.startsWith('/')) path = `/${path}`;
       return path;
     } catch {
-      return url.startsWith("/") ? url : `/${url}`;
+      return url.startsWith('/') ? url : `/${url}`;
     }
   };
 
   // Helper to get page name from path
   const getPageDisplayName = (path: string) => {
     const cleanPath = formatPagePath(path);
-    if (cleanPath === "/") return "Home";
-    return cleanPath.split("/").filter(Boolean).join(" › ") || "Home";
+    if (cleanPath === '/') return 'Home';
+    return cleanPath.split('/').filter(Boolean).join(' › ') || 'Home';
   };
 
   // Enhanced page column with better design - simplified
@@ -107,7 +107,10 @@ export default function JourneysPage() {
 
       return (
         <div className="min-w-0">
-          <div className="truncate font-medium text-foreground text-sm" title={displayName}>
+          <div
+            className="truncate font-medium text-foreground text-sm"
+            title={displayName}
+          >
             {displayName}
           </div>
           <div
@@ -127,12 +130,12 @@ export default function JourneysPage() {
   const journeyFlowColumns = useMemo(
     () => [
       {
-        ...createEnhancedPageColumn("From Page", "from_page"),
+        ...createEnhancedPageColumn('From Page', 'from_page'),
         size: 200,
       },
       {
-        id: "flow_indicator",
-        header: "",
+        id: 'flow_indicator',
+        header: '',
         cell: ({ row }: any) => {
           const transitions = row.original.transitions;
           return (
@@ -150,36 +153,40 @@ export default function JourneysPage() {
         size: 80,
       },
       {
-        ...createEnhancedPageColumn("To Page", "to_page"),
+        ...createEnhancedPageColumn('To Page', 'to_page'),
         size: 200,
       },
       {
-        id: "users",
-        accessorKey: "users",
-        header: "Users",
+        id: 'users',
+        accessorKey: 'users',
+        header: 'Users',
         cell: (info: any) => (
           <div>
             <div>
               <Users className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">{(info.getValue() as number)?.toLocaleString()}</span>
+              <span className="font-medium">
+                {(info.getValue() as number)?.toLocaleString()}
+              </span>
             </div>
           </div>
         ),
       },
       {
-        id: "sessions",
-        accessorKey: "sessions",
-        header: "Sessions",
+        id: 'sessions',
+        accessorKey: 'sessions',
+        header: 'Sessions',
         cell: (info: any) => (
           <div>
-            <div className="font-medium">{(info.getValue() as number)?.toLocaleString()}</div>
+            <div className="font-medium">
+              {(info.getValue() as number)?.toLocaleString()}
+            </div>
           </div>
         ),
       },
       {
-        id: "avg_step_in_journey",
-        accessorKey: "avg_step_in_journey",
-        header: "Journey Step",
+        id: 'avg_step_in_journey',
+        accessorKey: 'avg_step_in_journey',
+        header: 'Journey Step',
         cell: (info: any) => (
           <div>
             <Badge className="font-mono text-xs" variant="outline">
@@ -196,12 +203,12 @@ export default function JourneysPage() {
   const journeyPathsColumns = useMemo(
     () => [
       {
-        id: "journey_path",
-        accessorKey: "name",
-        header: "Journey Path",
+        id: 'journey_path',
+        accessorKey: 'name',
+        header: 'Journey Path',
         cell: (info: any) => {
           const pathString = info.getValue() as string;
-          const pages = pathString.split(" → ").map((p) => p.trim());
+          const pages = pathString.split(' → ').map((p) => p.trim());
 
           return (
             <div className="min-w-0 space-y-2">
@@ -220,7 +227,9 @@ export default function JourneysPage() {
                   </div>
                 ))}
                 {pages.length > 3 && (
-                  <span className="text-muted-foreground text-xs">+{pages.length - 3} more</span>
+                  <span className="text-muted-foreground text-xs">
+                    +{pages.length - 3} more
+                  </span>
                 )}
               </div>
               <div className="flex items-center gap-2 text-muted-foreground text-xs">
@@ -233,9 +242,9 @@ export default function JourneysPage() {
         size: 300,
       },
       {
-        id: "frequency",
-        accessorKey: "frequency",
-        header: "Frequency",
+        id: 'frequency',
+        accessorKey: 'frequency',
+        header: 'Frequency',
         cell: (info: any) => (
           <div>
             <div className="font-bold text-blue-600">
@@ -246,9 +255,9 @@ export default function JourneysPage() {
         ),
       },
       {
-        id: "unique_users",
-        accessorKey: "unique_users",
-        header: "Users",
+        id: 'unique_users',
+        accessorKey: 'unique_users',
+        header: 'Users',
         cell: (info: any) => (
           <div>
             <div className="font-medium text-green-600">
@@ -259,9 +268,9 @@ export default function JourneysPage() {
         ),
       },
       {
-        id: "avg_pages_in_path",
-        accessorKey: "avg_pages_in_path",
-        header: "Avg Pages",
+        id: 'avg_pages_in_path',
+        accessorKey: 'avg_pages_in_path',
+        header: 'Avg Pages',
         cell: (info: any) => (
           <div>
             <div>
@@ -272,9 +281,9 @@ export default function JourneysPage() {
         ),
       },
       {
-        id: "avg_duration_minutes",
-        accessorKey: "avg_duration_minutes",
-        header: "Duration",
+        id: 'avg_duration_minutes',
+        accessorKey: 'avg_duration_minutes',
+        header: 'Duration',
         cell: (info: any) => (
           <div>
             <div className="flex justify-center gap-1">
@@ -292,24 +301,26 @@ export default function JourneysPage() {
   const dropoffColumns = useMemo(
     () => [
       {
-        ...createEnhancedPageColumn("Page", "name"),
+        ...createEnhancedPageColumn('Page', 'name'),
         size: 200,
       },
       {
-        id: "total_visits",
-        accessorKey: "total_visits",
-        header: "Total Visits",
+        id: 'total_visits',
+        accessorKey: 'total_visits',
+        header: 'Total Visits',
         cell: (info: any) => (
           <div>
-            <div className="font-medium">{(info.getValue() as number)?.toLocaleString()}</div>
+            <div className="font-medium">
+              {(info.getValue() as number)?.toLocaleString()}
+            </div>
             <div className="text-muted-foreground text-xs">visits</div>
           </div>
         ),
       },
       {
-        id: "exits",
-        accessorKey: "exits",
-        header: "Exits",
+        id: 'exits',
+        accessorKey: 'exits',
+        header: 'Exits',
         cell: (info: any) => (
           <div>
             <div>
@@ -322,15 +333,23 @@ export default function JourneysPage() {
         ),
       },
       {
-        id: "exit_rate",
-        accessorKey: "exit_rate",
-        header: "Exit Rate",
+        id: 'exit_rate',
+        accessorKey: 'exit_rate',
+        header: 'Exit Rate',
         cell: (info: any) => {
           const rate = info.getValue() as number;
           return (
             <div>
               <div>
-                <Badge variant={rate > 70 ? "destructive" : rate > 40 ? "secondary" : "default"}>
+                <Badge
+                  variant={
+                    rate > 70
+                      ? 'destructive'
+                      : rate > 40
+                        ? 'secondary'
+                        : 'default'
+                  }
+                >
                   {rate}%
                 </Badge>
                 {rate > 70 && <TrendingDown className="h-3 w-3 text-red-500" />}
@@ -340,9 +359,9 @@ export default function JourneysPage() {
         },
       },
       {
-        id: "continuations",
-        accessorKey: "continuations",
-        header: "Continuations",
+        id: 'continuations',
+        accessorKey: 'continuations',
+        header: 'Continuations',
         cell: (info: any) => (
           <div>
             <div>
@@ -355,15 +374,23 @@ export default function JourneysPage() {
         ),
       },
       {
-        id: "continuation_rate",
-        accessorKey: "continuation_rate",
-        header: "Continue Rate",
+        id: 'continuation_rate',
+        accessorKey: 'continuation_rate',
+        header: 'Continue Rate',
         cell: (info: any) => {
           const rate = info.getValue() as number;
           return (
             <div>
               <div>
-                <Badge variant={rate > 60 ? "default" : rate > 30 ? "secondary" : "destructive"}>
+                <Badge
+                  variant={
+                    rate > 60
+                      ? 'default'
+                      : rate > 30
+                        ? 'secondary'
+                        : 'destructive'
+                  }
+                >
                   {rate}%
                 </Badge>
                 {rate > 60 && <TrendingUp className="h-3 w-3 text-green-500" />}
@@ -380,13 +407,13 @@ export default function JourneysPage() {
   const entryPointsColumns = useMemo(
     () => [
       {
-        ...createEnhancedPageColumn("Entry Page", "name"),
+        ...createEnhancedPageColumn('Entry Page', 'name'),
         size: 200,
       },
       {
-        id: "entries",
-        accessorKey: "entries",
-        header: "Entries",
+        id: 'entries',
+        accessorKey: 'entries',
+        header: 'Entries',
         cell: (info: any) => (
           <div>
             <div className="font-bold text-blue-600">
@@ -397,22 +424,24 @@ export default function JourneysPage() {
         ),
       },
       {
-        id: "users",
-        accessorKey: "users",
-        header: "Users",
+        id: 'users',
+        accessorKey: 'users',
+        header: 'Users',
         cell: (info: any) => (
           <div>
             <div>
               <Users className="h-3 w-3 text-muted-foreground" />
-              <span className="font-medium">{(info.getValue() as number)?.toLocaleString()}</span>
+              <span className="font-medium">
+                {(info.getValue() as number)?.toLocaleString()}
+              </span>
             </div>
           </div>
         ),
       },
       {
-        id: "sessions",
-        accessorKey: "sessions",
-        header: "Sessions",
+        id: 'sessions',
+        accessorKey: 'sessions',
+        header: 'Sessions',
         cell: (info: any) => (
           <div>
             <div className="font-medium text-purple-600">
@@ -423,16 +452,22 @@ export default function JourneysPage() {
         ),
       },
       {
-        id: "bounce_rate",
-        accessorKey: "bounce_rate",
-        header: "Bounce Rate",
+        id: 'bounce_rate',
+        accessorKey: 'bounce_rate',
+        header: 'Bounce Rate',
         cell: (info: any) => {
           const rate = info.getValue() as number;
-          const safeRate = typeof rate === "number" && !isNaN(rate) ? rate : 0;
+          const safeRate = typeof rate === 'number' && !isNaN(rate) ? rate : 0;
           return (
             <div>
               <Badge
-                variant={safeRate > 70 ? "destructive" : safeRate > 40 ? "secondary" : "default"}
+                variant={
+                  safeRate > 70
+                    ? 'destructive'
+                    : safeRate > 40
+                      ? 'secondary'
+                      : 'default'
+                }
               >
                 {safeRate.toFixed(1)}%
               </Badge>
@@ -441,12 +476,13 @@ export default function JourneysPage() {
         },
       },
       {
-        id: "avg_pages_per_session",
-        accessorKey: "avg_pages_per_session",
-        header: "Pages/Session",
+        id: 'avg_pages_per_session',
+        accessorKey: 'avg_pages_per_session',
+        header: 'Pages/Session',
         cell: (info: any) => {
           const value = info.getValue() as number;
-          const safeValue = typeof value === "number" && !isNaN(value) ? value : 0;
+          const safeValue =
+            typeof value === 'number' && !isNaN(value) ? value : 0;
           return (
             <div>
               <div>
@@ -466,9 +502,10 @@ export default function JourneysPage() {
     () =>
       [
         {
-          id: "flow",
-          label: "Page Flow",
-          description: "Track direct page-to-page navigation patterns and user flow directions",
+          id: 'flow',
+          label: 'Page Flow',
+          description:
+            'Track direct page-to-page navigation patterns and user flow directions',
           data: journeyData.transitions.map((item, i) => ({
             ...item,
             _uniqueKey: `flow-${i}`,
@@ -476,16 +513,21 @@ export default function JourneysPage() {
           columns: journeyFlowColumns as any,
         },
         {
-          id: "paths",
-          label: "Journey Paths",
-          description: "View complete sequences of pages users visit in order (up to 5 pages)",
-          data: journeyData.paths.map((item, i) => ({ ...item, _uniqueKey: `path-${i}` })) as any,
+          id: 'paths',
+          label: 'Journey Paths',
+          description:
+            'View complete sequences of pages users visit in order (up to 5 pages)',
+          data: journeyData.paths.map((item, i) => ({
+            ...item,
+            _uniqueKey: `path-${i}`,
+          })) as any,
           columns: journeyPathsColumns as any,
         },
         {
-          id: "dropoffs",
-          label: "Drop-off Analysis",
-          description: "Find pages with high exit rates where users leave your website",
+          id: 'dropoffs',
+          label: 'Drop-off Analysis',
+          description:
+            'Find pages with high exit rates where users leave your website',
           data: journeyData.dropoffs.map((item, i) => ({
             ...item,
             _uniqueKey: `dropoff-${i}`,
@@ -493,9 +535,10 @@ export default function JourneysPage() {
           columns: dropoffColumns as any,
         },
         {
-          id: "entries",
-          label: "Entry Points",
-          description: "Analyze landing pages and their bounce rates (first page = exit)",
+          id: 'entries',
+          label: 'Entry Points',
+          description:
+            'Analyze landing pages and their bounce rates (first page = exit)',
           data: journeyData.entryPoints.map((item, i) => ({
             ...item,
             _uniqueKey: `entry-${i}`,
@@ -503,7 +546,13 @@ export default function JourneysPage() {
           columns: entryPointsColumns as any,
         },
       ] as any,
-    [journeyData, journeyFlowColumns, journeyPathsColumns, dropoffColumns, entryPointsColumns]
+    [
+      journeyData,
+      journeyFlowColumns,
+      journeyPathsColumns,
+      dropoffColumns,
+      entryPointsColumns,
+    ]
   );
 
   const isLoading = isBatchLoading || isRefreshing;
@@ -518,8 +567,12 @@ export default function JourneysPage() {
                 <TrendingDown className="h-6 w-6 text-destructive" />
               </div>
               <div>
-                <h4 className="font-semibold text-destructive">Error loading journey data</h4>
-                <p className="mt-1 text-destructive/80 text-sm">{batchError.message}</p>
+                <h4 className="font-semibold text-destructive">
+                  Error loading journey data
+                </h4>
+                <p className="mt-1 text-destructive/80 text-sm">
+                  {batchError.message}
+                </p>
               </div>
               <Button
                 className="gap-2 rounded-lg"
@@ -541,20 +594,22 @@ export default function JourneysPage() {
     <div className="mx-auto max-w-[1600px] space-y-6 p-3 sm:p-4 lg:p-6">
       {/* Header */}
       <WebsitePageHeader
-        title="User Journeys"
         description="Analyze user navigation patterns and identify optimization opportunities"
         icon={<Path className="h-6 w-6 text-primary" weight="duotone" />}
-        websiteId={websiteId}
-        websiteName={websiteData?.name || undefined}
         isRefreshing={isRefreshing}
         onRefresh={handleRefresh}
+        title="User Journeys"
+        websiteId={websiteId}
+        websiteName={websiteData?.name || undefined}
       />
 
       {/* Enhanced Summary Stats */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <MousePointer className="h-5 w-5 text-primary" />
-          <h2 className="font-semibold text-foreground text-lg">Journey Overview</h2>
+          <h2 className="font-semibold text-foreground text-lg">
+            Journey Overview
+          </h2>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
@@ -589,41 +644,48 @@ export default function JourneysPage() {
       </div>
 
       {/* Quick Insights Cards */}
-      {!isLoading && (hasJourneyData || hasPathData || hasDropoffData || hasEntryPointData) && (
-        <div className="space-y-4">
-          <div className="space-y-3">
-            {/* Drop-off Alert */}
-            {journeyData.dropoffs.length > 0 && journeyData.dropoffs[0].exit_rate > 70 && (
-              <ClosableAlert
-                description={`The page "${getPageDisplayName(journeyData.dropoffs[0].name)}" has an unusually high exit rate. Many users leave your site from here instead of continuing their journey.`}
-                icon={TrendingDown}
-                id={`high-dropoff-${journeyData.dropoffs[0].name}`}
-                title="High Drop-off Page Alert"
-                variant="error"
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-xs">
-                      Page: {getPageDisplayName(journeyData.dropoffs[0].name)}
-                    </span>
-                    <Badge className="text-xs" variant="destructive">
-                      {journeyData.dropoffs[0].exit_rate}% exit rate
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      {journeyData.dropoffs[0].exits.toLocaleString()} exits
-                    </span>
-                    <span className="text-muted-foreground">
-                      {journeyData.dropoffs[0].total_visits.toLocaleString()} total visits
-                    </span>
-                  </div>
-                </div>
-              </ClosableAlert>
-            )}
+      {!isLoading &&
+        (hasJourneyData ||
+          hasPathData ||
+          hasDropoffData ||
+          hasEntryPointData) && (
+          <div className="space-y-4">
+            <div className="space-y-3">
+              {/* Drop-off Alert */}
+              {journeyData.dropoffs.length > 0 &&
+                journeyData.dropoffs[0].exit_rate > 70 && (
+                  <ClosableAlert
+                    description={`The page "${getPageDisplayName(journeyData.dropoffs[0].name)}" has an unusually high exit rate. Many users leave your site from here instead of continuing their journey.`}
+                    icon={TrendingDown}
+                    id={`high-dropoff-${journeyData.dropoffs[0].name}`}
+                    title="High Drop-off Page Alert"
+                    variant="error"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-xs">
+                          Page:{' '}
+                          {getPageDisplayName(journeyData.dropoffs[0].name)}
+                        </span>
+                        <Badge className="text-xs" variant="destructive">
+                          {journeyData.dropoffs[0].exit_rate}% exit rate
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">
+                          {journeyData.dropoffs[0].exits.toLocaleString()} exits
+                        </span>
+                        <span className="text-muted-foreground">
+                          {journeyData.dropoffs[0].total_visits.toLocaleString()}{' '}
+                          total visits
+                        </span>
+                      </div>
+                    </div>
+                  </ClosableAlert>
+                )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       <div className="space-y-4">
         <DataTable

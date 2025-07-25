@@ -1,5 +1,6 @@
-"use client";
+'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Activity,
   AlertCircle,
@@ -22,13 +23,13 @@ import {
   TableProperties,
   Trash2,
   Zap,
-} from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import oneDark from "react-syntax-highlighter/dist/esm/styles/prism/one-dark";
-import { toast } from "sonner";
+} from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import oneDark from 'react-syntax-highlighter/dist/esm/styles/prism/one-dark';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,33 +39,36 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { WebsiteDialog } from "@/components/website-dialog";
-import { useDeleteWebsite } from "@/hooks/use-websites";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { WebsiteDialog } from '@/components/website-dialog';
+import { useDeleteWebsite } from '@/hooks/use-websites';
 import {
   generateNpmCode,
   generateNpmComponentCode,
   generateScriptTag,
-} from "../utils/code-generators";
-import { RECOMMENDED_DEFAULTS } from "../utils/tracking-defaults";
+} from '../utils/code-generators';
+import { RECOMMENDED_DEFAULTS } from '../utils/tracking-defaults';
 import {
   enableAllAdvancedTracking,
   enableAllBasicTracking,
   enableAllOptimization,
   resetToDefaults,
   toggleTrackingOption,
-} from "../utils/tracking-helpers";
-import type { TrackingOptions, WebsiteDataTabProps } from "../utils/types";
+} from '../utils/tracking-helpers';
+import type { TrackingOptions, WebsiteDataTabProps } from '../utils/types';
 
 export function WebsiteSettingsTab({
   websiteId,
@@ -74,21 +78,22 @@ export function WebsiteSettingsTab({
   const router = useRouter();
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
-  const [installMethod, setInstallMethod] = useState<"script" | "npm">(
-    "script"
+  const [installMethod, setInstallMethod] = useState<'script' | 'npm'>(
+    'script'
   );
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [activeTab, setActiveTab] = useState<"tracking" | "basic" | "advanced" | "optimization">(
-    "tracking"
-  );
-  const [trackingOptions, setTrackingOptions] = useState<TrackingOptions>(RECOMMENDED_DEFAULTS);
+  const [activeTab, setActiveTab] = useState<
+    'tracking' | 'basic' | 'advanced' | 'optimization'
+  >('tracking');
+  const [trackingOptions, setTrackingOptions] =
+    useState<TrackingOptions>(RECOMMENDED_DEFAULTS);
   const deleteWebsiteMutation = useDeleteWebsite();
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
     setCopied(true);
-    toast.success("Code copied to clipboard");
+    toast.success('Code copied to clipboard');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -98,12 +103,12 @@ export function WebsiteSettingsTab({
 
   const handleDeleteWebsite = async () => {
     toast.promise(deleteWebsiteMutation.mutateAsync({ id: websiteId }), {
-      loading: "Deleting website...",
+      loading: 'Deleting website...',
       success: () => {
-        router.push("/websites");
-        return "Website deleted successfully!";
+        router.push('/websites');
+        return 'Website deleted successfully!';
       },
-      error: "Failed to delete website.",
+      error: 'Failed to delete website.',
     });
   };
 
@@ -138,14 +143,16 @@ export function WebsiteSettingsTab({
         <div className="col-span-12 lg:col-span-9">
           <Card className="rounded-lg border bg-background shadow-sm">
             <CardContent className="p-6">
-              {activeTab === "tracking" && (
+              {activeTab === 'tracking' && (
                 <TrackingCodeTab
                   copied={copied}
                   installMethod={installMethod}
                   npmCode={npmCode}
                   onCopyCode={handleCopyCode}
                   onCopyComponentCode={() =>
-                    handleCopyCode(generateNpmComponentCode(websiteId, trackingOptions))
+                    handleCopyCode(
+                      generateNpmComponentCode(websiteId, trackingOptions)
+                    )
                   }
                   setInstallMethod={setInstallMethod}
                   trackingCode={trackingCode}
@@ -154,44 +161,48 @@ export function WebsiteSettingsTab({
                 />
               )}
 
-              {activeTab === "basic" && (
+              {activeTab === 'basic' && (
                 <BasicTrackingTab
                   onToggleOption={handleToggleOption}
                   trackingOptions={trackingOptions}
                 />
               )}
 
-              {activeTab === "advanced" && (
+              {activeTab === 'advanced' && (
                 <AdvancedTrackingTab
                   onToggleOption={handleToggleOption}
                   trackingOptions={trackingOptions}
                 />
               )}
 
-              {activeTab === "optimization" && (
+              {activeTab === 'optimization' && (
                 <OptimizationTab
                   setTrackingOptions={setTrackingOptions}
                   trackingOptions={trackingOptions}
                 />
               )}
 
-              {activeTab !== "tracking" && (
+              {activeTab !== 'tracking' && (
                 <TabActions
                   activeTab={activeTab}
                   installMethod={installMethod}
                   onCopyCode={() =>
                     handleCopyCode(
-                      installMethod === "script"
+                      installMethod === 'script'
                         ? trackingCode
                         : generateNpmComponentCode(websiteId, trackingOptions)
                     )
                   }
                   onEnableAll={() => {
-                    if (activeTab === "basic") {
-                      setTrackingOptions((prev) => enableAllBasicTracking(prev));
-                    } else if (activeTab === "advanced") {
-                      setTrackingOptions((prev) => enableAllAdvancedTracking(prev));
-                    } else if (activeTab === "optimization") {
+                    if (activeTab === 'basic') {
+                      setTrackingOptions((prev) =>
+                        enableAllBasicTracking(prev)
+                      );
+                    } else if (activeTab === 'advanced') {
+                      setTrackingOptions((prev) =>
+                        enableAllAdvancedTracking(prev)
+                      );
+                    } else if (activeTab === 'optimization') {
                       setTrackingOptions((prev) => enableAllOptimization(prev));
                     }
                   }}
@@ -246,7 +257,7 @@ function WebsiteHeader({
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="font-bold text-2xl tracking-tight">
-                    {websiteData.name || "Unnamed Website"}
+                    {websiteData.name || 'Unnamed Website'}
                   </h1>
                   <TooltipProvider>
                     <Tooltip>
@@ -284,7 +295,9 @@ function WebsiteHeader({
             <div className="flex items-center gap-4 text-muted-foreground text-xs">
               <div className="flex items-center gap-1">
                 <span>Created:</span>
-                <span>{new Date(websiteData.createdAt).toLocaleDateString()}</span>
+                <span>
+                  {new Date(websiteData.createdAt).toLocaleDateString()}
+                </span>
               </div>
               <div className="flex items-center gap-1">
                 <span>ID:</span>
@@ -363,8 +376,8 @@ function SettingsNavigation({
           <div className="sticky top-4 space-y-2">
             <Button
               className="h-10 w-full justify-between gap-2 transition-all duration-200"
-              onClick={() => setActiveTab("tracking")}
-              variant={activeTab === "tracking" ? "default" : "ghost"}
+              onClick={() => setActiveTab('tracking')}
+              variant={activeTab === 'tracking' ? 'default' : 'ghost'}
             >
               <div className="flex items-center gap-2">
                 <Code className="h-4 w-4" />
@@ -383,8 +396,8 @@ function SettingsNavigation({
 
             <Button
               className="h-10 w-full justify-between gap-2 transition-all duration-200"
-              onClick={() => setActiveTab("basic")}
-              variant={activeTab === "basic" ? "default" : "ghost"}
+              onClick={() => setActiveTab('basic')}
+              variant={activeTab === 'basic' ? 'default' : 'ghost'}
             >
               <div className="flex items-center gap-2">
                 <Activity className="h-4 w-4" />
@@ -392,7 +405,13 @@ function SettingsNavigation({
               </div>
               <Badge
                 className="h-5 px-2 text-xs"
-                variant={basicEnabled > 4 ? "default" : basicEnabled > 2 ? "secondary" : "outline"}
+                variant={
+                  basicEnabled > 4
+                    ? 'default'
+                    : basicEnabled > 2
+                      ? 'secondary'
+                      : 'outline'
+                }
               >
                 {basicEnabled}/7
               </Badge>
@@ -400,8 +419,8 @@ function SettingsNavigation({
 
             <Button
               className="h-10 w-full justify-between gap-2 transition-all duration-200"
-              onClick={() => setActiveTab("advanced")}
-              variant={activeTab === "advanced" ? "default" : "ghost"}
+              onClick={() => setActiveTab('advanced')}
+              variant={activeTab === 'advanced' ? 'default' : 'ghost'}
             >
               <div className="flex items-center gap-2">
                 <TableProperties className="h-4 w-4" />
@@ -410,7 +429,11 @@ function SettingsNavigation({
               <Badge
                 className="h-5 px-2 text-xs"
                 variant={
-                  advancedEnabled > 4 ? "default" : advancedEnabled > 2 ? "secondary" : "outline"
+                  advancedEnabled > 4
+                    ? 'default'
+                    : advancedEnabled > 2
+                      ? 'secondary'
+                      : 'outline'
                 }
               >
                 {advancedEnabled}/7
@@ -419,8 +442,8 @@ function SettingsNavigation({
 
             <Button
               className="h-10 w-full justify-between gap-2 transition-all duration-200"
-              onClick={() => setActiveTab("optimization")}
-              variant={activeTab === "optimization" ? "default" : "ghost"}
+              onClick={() => setActiveTab('optimization')}
+              variant={activeTab === 'optimization' ? 'default' : 'ghost'}
             >
               <div className="flex items-center gap-2">
                 <Sliders className="h-4 w-4" />
@@ -428,9 +451,9 @@ function SettingsNavigation({
               </div>
               <Badge
                 className="h-5 px-2 text-xs"
-                variant={optimizationConfigured ? "default" : "outline"}
+                variant={optimizationConfigured ? 'default' : 'outline'}
               >
-                {optimizationConfigured ? "Custom" : "Default"}
+                {optimizationConfigured ? 'Custom' : 'Default'}
               </Badge>
             </Button>
 
@@ -497,14 +520,15 @@ function TrackingCodeTab({
       <div className="flex flex-col space-y-1.5">
         <h3 className="font-semibold text-lg">Tracking Installation</h3>
         <p className="text-muted-foreground text-sm">
-          Add this tracking code to your website to start collecting analytics data
+          Add this tracking code to your website to start collecting analytics
+          data
         </p>
       </div>
 
       <Tabs
         className="w-full"
         defaultValue="script"
-        onValueChange={(value) => setInstallMethod(value as "script" | "npm")}
+        onValueChange={(value) => setInstallMethod(value as 'script' | 'npm')}
       >
         <TabsList className="mb-3 grid h-8 grid-cols-2">
           <TabsTrigger className="text-xs" value="script">
@@ -527,7 +551,8 @@ function TrackingCodeTab({
         <TabsContent className="mt-0" value="npm">
           <div className="space-y-2">
             <p className="mb-3 text-muted-foreground text-xs">
-              Install the DataBuddy package using your preferred package manager:
+              Install the DataBuddy package using your preferred package
+              manager:
             </p>
 
             <Tabs className="w-full" defaultValue="npm">
@@ -551,7 +576,7 @@ function TrackingCodeTab({
                   code="npm install @databuddy/sdk"
                   copied={copied}
                   description=""
-                  onCopy={() => onCopyCode("npm install @databuddy/sdk")}
+                  onCopy={() => onCopyCode('npm install @databuddy/sdk')}
                 />
               </TabsContent>
 
@@ -560,7 +585,7 @@ function TrackingCodeTab({
                   code="yarn add @databuddy/sdk"
                   copied={copied}
                   description=""
-                  onCopy={() => onCopyCode("yarn add @databuddy/sdk")}
+                  onCopy={() => onCopyCode('yarn add @databuddy/sdk')}
                 />
               </TabsContent>
 
@@ -569,7 +594,7 @@ function TrackingCodeTab({
                   code="pnpm add @databuddy/sdk"
                   copied={copied}
                   description=""
-                  onCopy={() => onCopyCode("pnpm add @databuddy/sdk")}
+                  onCopy={() => onCopyCode('pnpm add @databuddy/sdk')}
                 />
               </TabsContent>
 
@@ -578,7 +603,7 @@ function TrackingCodeTab({
                   code="bun add @databuddy/sdk"
                   copied={copied}
                   description=""
-                  onCopy={() => onCopyCode("bun add @databuddy/sdk")}
+                  onCopy={() => onCopyCode('bun add @databuddy/sdk')}
                 />
               </TabsContent>
             </Tabs>
@@ -601,20 +626,23 @@ function TrackingCodeTab({
 function CodeBlock({ code, description, copied, onCopy }: any) {
   // Determine language based on code content
   const getLanguage = (code: string) => {
-    if (code.includes("npm install") || code.includes("bun add")) return "bash";
-    if (code.includes("<script")) return "html";
-    if (code.includes("import") && code.includes("from")) return "jsx";
-    return "javascript";
+    if (code.includes('npm install') || code.includes('bun add')) return 'bash';
+    if (code.includes('<script')) return 'html';
+    if (code.includes('import') && code.includes('from')) return 'jsx';
+    return 'javascript';
   };
 
   return (
     <div className="space-y-2">
       <p className="text-muted-foreground text-xs">
-        {description === "Add this script to the <head> section of your website:" ? (
+        {description ===
+        'Add this script to the <head> section of your website:' ? (
           <>
-            Add this script to the{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">&lt;head&gt;</code> section of
-            your website:
+            Add this script to the{' '}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">
+              &lt;head&gt;
+            </code>{' '}
+            section of your website:
           </>
         ) : (
           description
@@ -625,9 +653,9 @@ function CodeBlock({ code, description, copied, onCopy }: any) {
           <SyntaxHighlighter
             customStyle={{
               margin: 0,
-              fontSize: "12px",
-              lineHeight: "1.5",
-              padding: "12px",
+              fontSize: '12px',
+              lineHeight: '1.5',
+              padding: '12px',
             }}
             language={getLanguage(code)}
             showLineNumbers={false}
@@ -674,7 +702,7 @@ function WebsiteInfoSection({ websiteData, websiteId }: any) {
                 className="h-5 w-5"
                 onClick={() => {
                   navigator.clipboard.writeText(websiteId);
-                  toast.success("Website ID copied to clipboard");
+                  toast.success('Website ID copied to clipboard');
                 }}
                 size="icon"
                 variant="ghost"
@@ -696,7 +724,11 @@ function WebsiteInfoSection({ websiteData, websiteId }: any) {
             <p className="mt-1 text-muted-foreground text-xs">
               Add the tracking code to your website to start collecting data.
             </p>
-            <Button className="h-6 px-0 text-primary text-xs" size="sm" variant="link">
+            <Button
+              className="h-6 px-0 text-primary text-xs"
+              size="sm"
+              variant="link"
+            >
               View Documentation
               <ChevronRight className="ml-1 h-3 w-3" />
             </Button>
@@ -710,70 +742,70 @@ function WebsiteInfoSection({ websiteData, websiteId }: any) {
 function BasicTrackingTab({ trackingOptions, onToggleOption }: any) {
   const trackingOptionsConfig = [
     {
-      key: "disabled",
-      title: "Enable Tracking",
-      description: "Master switch for all tracking functionality",
+      key: 'disabled',
+      title: 'Enable Tracking',
+      description: 'Master switch for all tracking functionality',
       required: false,
       inverted: true, // This option is inverted (checked when disabled is false)
       data: [
-        "Controls whether any tracking occurs",
-        "When disabled, no data is collected",
-        "Useful for privacy compliance or testing",
+        'Controls whether any tracking occurs',
+        'When disabled, no data is collected',
+        'Useful for privacy compliance or testing',
       ],
     },
     {
-      key: "trackScreenViews",
-      title: "Page Views",
-      description: "Track when users navigate to different pages",
+      key: 'trackScreenViews',
+      title: 'Page Views',
+      description: 'Track when users navigate to different pages',
       required: true,
-      data: ["Page URL, title and referrer", "Timestamp", "User session ID"],
+      data: ['Page URL, title and referrer', 'Timestamp', 'User session ID'],
     },
     {
-      key: "trackHashChanges",
-      title: "Hash Changes",
-      description: "Track navigation using URL hash changes (SPA routing)",
+      key: 'trackHashChanges',
+      title: 'Hash Changes',
+      description: 'Track navigation using URL hash changes (SPA routing)',
       data: [
-        "Hash fragment changes",
-        "Previous and new hash values",
-        "Useful for single-page applications",
+        'Hash fragment changes',
+        'Previous and new hash values',
+        'Useful for single-page applications',
       ],
     },
     {
-      key: "trackSessions",
-      title: "Sessions",
-      description: "Track user sessions and engagement",
+      key: 'trackSessions',
+      title: 'Sessions',
+      description: 'Track user sessions and engagement',
       data: [
-        "Session duration",
-        "Session start/end times",
-        "Number of pages visited",
-        "Bounce detection",
+        'Session duration',
+        'Session start/end times',
+        'Number of pages visited',
+        'Bounce detection',
       ],
     },
     {
-      key: "trackInteractions",
-      title: "Interactions",
-      description: "Track button clicks and form submissions",
+      key: 'trackInteractions',
+      title: 'Interactions',
+      description: 'Track button clicks and form submissions',
       data: [
-        "Element clicked (button, link, etc.)",
-        "Element ID, class and text content",
-        "Form submission success/failure",
+        'Element clicked (button, link, etc.)',
+        'Element ID, class and text content',
+        'Form submission success/failure',
       ],
     },
     {
-      key: "trackAttributes",
-      title: "Data Attributes",
-      description: "Track events automatically using HTML data-* attributes",
+      key: 'trackAttributes',
+      title: 'Data Attributes',
+      description: 'Track events automatically using HTML data-* attributes',
       data: [
-        "Elements with data-track attributes",
-        "All data-* attribute values converted to camelCase",
-        "Automatic event generation from markup",
+        'Elements with data-track attributes',
+        'All data-* attribute values converted to camelCase',
+        'Automatic event generation from markup',
       ],
     },
     {
-      key: "trackOutgoingLinks",
-      title: "Outbound Links",
-      description: "Track when users click links to external sites",
-      data: ["Target URL", "Link text", "Page URL where link was clicked"],
+      key: 'trackOutgoingLinks',
+      title: 'Outbound Links',
+      description: 'Track when users click links to external sites',
+      data: ['Target URL', 'Link text', 'Page URL where link was clicked'],
     },
   ];
 
@@ -791,68 +823,77 @@ function BasicTrackingTab({ trackingOptions, onToggleOption }: any) {
 function AdvancedTrackingTab({ trackingOptions, onToggleOption }: any) {
   const advancedOptionsConfig = [
     {
-      key: "trackEngagement",
-      title: "Engagement Tracking",
-      description: "Track detailed user engagement metrics",
-      data: ["Time on page", "Scroll behavior", "Mouse movements", "Interaction patterns"],
-    },
-    {
-      key: "trackScrollDepth",
-      title: "Scroll Depth",
-      description: "Track how far users scroll on pages",
+      key: 'trackEngagement',
+      title: 'Engagement Tracking',
+      description: 'Track detailed user engagement metrics',
       data: [
-        "Maximum scroll percentage",
-        "Scroll milestones (25%, 50%, 75%, 100%)",
-        "Time spent at different scroll positions",
+        'Time on page',
+        'Scroll behavior',
+        'Mouse movements',
+        'Interaction patterns',
       ],
     },
     {
-      key: "trackExitIntent",
-      title: "Exit Intent",
-      description: "Track when users are about to leave the page",
+      key: 'trackScrollDepth',
+      title: 'Scroll Depth',
+      description: 'Track how far users scroll on pages',
       data: [
-        "Mouse movement towards browser controls",
-        "Exit intent events",
-        "Time before exit detection",
+        'Maximum scroll percentage',
+        'Scroll milestones (25%, 50%, 75%, 100%)',
+        'Time spent at different scroll positions',
       ],
     },
     {
-      key: "trackBounceRate",
-      title: "Bounce Rate",
-      description: "Track bounce behavior and engagement quality",
-      data: ["Single page sessions", "Time spent before bounce", "Interaction before leaving"],
-    },
-    {
-      key: "trackErrors",
-      title: "Error Tracking",
-      description: "Track JavaScript errors and exceptions",
+      key: 'trackExitIntent',
+      title: 'Exit Intent',
+      description: 'Track when users are about to leave the page',
       data: [
-        "Error message and type",
-        "Stack trace",
-        "Browser and OS info",
-        "Page URL where error occurred",
+        'Mouse movement towards browser controls',
+        'Exit intent events',
+        'Time before exit detection',
       ],
     },
     {
-      key: "trackPerformance",
-      title: "Performance",
-      description: "Track page load and runtime performance",
+      key: 'trackBounceRate',
+      title: 'Bounce Rate',
+      description: 'Track bounce behavior and engagement quality',
       data: [
-        "Page load time",
-        "DOM content loaded time",
-        "First paint and first contentful paint",
-        "Resource timing",
+        'Single page sessions',
+        'Time spent before bounce',
+        'Interaction before leaving',
       ],
     },
     {
-      key: "trackWebVitals",
-      title: "Web Vitals",
-      description: "Track Core Web Vitals metrics",
+      key: 'trackErrors',
+      title: 'Error Tracking',
+      description: 'Track JavaScript errors and exceptions',
       data: [
-        "Largest Contentful Paint (LCP)",
-        "First Input Delay (FID)",
-        "Cumulative Layout Shift (CLS)",
-        "Interaction to Next Paint (INP)",
+        'Error message and type',
+        'Stack trace',
+        'Browser and OS info',
+        'Page URL where error occurred',
+      ],
+    },
+    {
+      key: 'trackPerformance',
+      title: 'Performance',
+      description: 'Track page load and runtime performance',
+      data: [
+        'Page load time',
+        'DOM content loaded time',
+        'First paint and first contentful paint',
+        'Resource timing',
+      ],
+    },
+    {
+      key: 'trackWebVitals',
+      title: 'Web Vitals',
+      description: 'Track Core Web Vitals metrics',
+      data: [
+        'Largest Contentful Paint (LCP)',
+        'First Input Delay (FID)',
+        'Cumulative Layout Shift (CLS)',
+        'Interaction to Next Paint (INP)',
       ],
     },
   ];
@@ -922,7 +963,8 @@ function TrackingOptionCard({
             <AlertCircle className="h-3 w-3" />
             Warning:
           </span>
-          Disabling page views will prevent analytics from working. This option is required.
+          Disabling page views will prevent analytics from working. This option
+          is required.
         </div>
       )}
       <div className="text-muted-foreground text-xs">
@@ -980,7 +1022,9 @@ function SamplingRateSection({ samplingRate, onSamplingRateChange }: any) {
               <Label className="text-sm" htmlFor="sampling-rate">
                 Data Collection Rate
               </Label>
-              <span className="font-medium text-sm">{Math.round(samplingRate * 100)}%</span>
+              <span className="font-medium text-sm">
+                {Math.round(samplingRate * 100)}%
+              </span>
             </div>
             <Slider
               className="py-4"
@@ -1000,12 +1044,14 @@ function SamplingRateSection({ samplingRate, onSamplingRateChange }: any) {
 
           <div className="space-y-2 text-sm">
             <p className="text-muted-foreground text-xs leading-relaxed">
-              Sampling rate determines what percentage of your visitors will be tracked. Lower
-              sampling rates reduce data collection costs and server load.
+              Sampling rate determines what percentage of your visitors will be
+              tracked. Lower sampling rates reduce data collection costs and
+              server load.
             </p>
             <p className="flex items-center gap-1 text-muted-foreground text-xs">
               <Info className="h-3 w-3" />
-              Recommended: 100% for low traffic sites, 10-50% for high traffic sites
+              Recommended: 100% for low traffic sites, 10-50% for high traffic
+              sites
             </p>
           </div>
         </div>
@@ -1054,7 +1100,9 @@ function BatchingSection({ trackingOptions, setTrackingOptions }: any) {
                 >
                   -
                 </Button>
-                <span className="w-8 text-center">{trackingOptions.batchSize}</span>
+                <span className="w-8 text-center">
+                  {trackingOptions.batchSize}
+                </span>
                 <Button
                   className="h-7 w-7"
                   disabled={trackingOptions.batchSize >= 10}
@@ -1094,8 +1142,8 @@ function BatchingSection({ trackingOptions, setTrackingOptions }: any) {
             </div>
 
             <div className="col-span-2 text-muted-foreground text-xs">
-              Batching helps reduce the number of requests sent to the server, improving
-              performance.
+              Batching helps reduce the number of requests sent to the server,
+              improving performance.
             </div>
           </div>
         )}
@@ -1104,7 +1152,10 @@ function BatchingSection({ trackingOptions, setTrackingOptions }: any) {
   );
 }
 
-function NetworkResilienceSection({ trackingOptions, setTrackingOptions }: any) {
+function NetworkResilienceSection({
+  trackingOptions,
+  setTrackingOptions,
+}: any) {
   return (
     <div className="rounded-lg border p-4">
       <h4 className="mb-3 font-medium">Network Resilience</h4>
@@ -1144,7 +1195,9 @@ function NetworkResilienceSection({ trackingOptions, setTrackingOptions }: any) 
                 >
                   -
                 </Button>
-                <span className="w-8 text-center">{trackingOptions.maxRetries}</span>
+                <span className="w-8 text-center">
+                  {trackingOptions.maxRetries}
+                </span>
                 <Button
                   className="h-7 w-7"
                   disabled={trackingOptions.maxRetries >= 10}
@@ -1184,7 +1237,8 @@ function NetworkResilienceSection({ trackingOptions, setTrackingOptions }: any) 
             </div>
 
             <div className="col-span-2 text-muted-foreground text-xs">
-              Retries use exponential backoff with jitter to avoid overwhelming servers.
+              Retries use exponential backoff with jitter to avoid overwhelming
+              servers.
             </div>
           </div>
         )}
@@ -1193,22 +1247,38 @@ function NetworkResilienceSection({ trackingOptions, setTrackingOptions }: any) 
   );
 }
 
-function TabActions({ activeTab, onResetDefaults, onEnableAll, onCopyCode, installMethod }: any) {
+function TabActions({
+  activeTab,
+  onResetDefaults,
+  onEnableAll,
+  onCopyCode,
+  installMethod,
+}: any) {
   return (
     <div className="mt-8 flex justify-between border-t pt-4">
-      <Button className="h-8 text-xs" onClick={onResetDefaults} size="sm" variant="outline">
+      <Button
+        className="h-8 text-xs"
+        onClick={onResetDefaults}
+        size="sm"
+        variant="outline"
+      >
         Reset to defaults
       </Button>
 
       <div className="flex gap-2">
-        <Button className="h-8 text-xs" onClick={onEnableAll} size="sm" variant="outline">
+        <Button
+          className="h-8 text-xs"
+          onClick={onEnableAll}
+          size="sm"
+          variant="outline"
+        >
           <Check className="mr-1.5 h-3.5 w-3.5" />
           Enable all
         </Button>
 
         <Button className="h-8 text-xs" onClick={onCopyCode} size="sm">
           <Code className="mr-1.5 h-3.5 w-3.5" />
-          Copy {installMethod === "script" ? "script" : "component code"}
+          Copy {installMethod === 'script' ? 'script' : 'component code'}
         </Button>
       </div>
     </div>
@@ -1230,9 +1300,11 @@ function DeleteWebsiteDialog({
           <AlertDialogDescription asChild>
             <div className="space-y-4">
               <p className="text-muted-foreground text-sm">
-                Are you sure you want to delete{" "}
-                <span className="font-medium">{websiteData.name || websiteData.domain}</span>? This
-                action cannot be undone.
+                Are you sure you want to delete{' '}
+                <span className="font-medium">
+                  {websiteData.name || websiteData.domain}
+                </span>
+                ? This action cannot be undone.
               </p>
 
               <div className="rounded-md bg-amber-50 p-3 text-amber-700 text-sm dark:bg-amber-950/20 dark:text-amber-400">
@@ -1258,7 +1330,7 @@ function DeleteWebsiteDialog({
             disabled={isDeleting}
             onClick={onConfirmDelete}
           >
-            {isDeleting ? "Deleting..." : "Delete Website"}
+            {isDeleting ? 'Deleting...' : 'Delete Website'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

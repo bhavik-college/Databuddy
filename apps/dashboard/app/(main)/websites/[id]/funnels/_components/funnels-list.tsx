@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import type { Funnel } from "@/hooks/use-funnels";
-import { EmptyState } from "./empty-state";
-import { FunnelCard } from "./funnel-card";
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { Funnel } from '@/hooks/use-funnels';
+import { EmptyState } from './empty-state';
+import { FunnelCard } from './funnel-card';
 
 interface FunnelsListProps {
   funnels: Funnel[];

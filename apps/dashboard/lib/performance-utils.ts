@@ -1,4 +1,4 @@
-import type { PerformanceEntry, PerformanceSummary } from "@/types/performance";
+import type { PerformanceEntry, PerformanceSummary } from '@/types/performance';
 
 export const SCORE_THRESHOLDS = {
   FAST: 1000,
@@ -6,9 +6,17 @@ export const SCORE_THRESHOLDS = {
   SLOW_PENALTY_RANGE: 4000,
 };
 
-export function calculatePerformanceSummary(pages: PerformanceEntry[]): PerformanceSummary {
+export function calculatePerformanceSummary(
+  pages: PerformanceEntry[]
+): PerformanceSummary {
   if (!pages.length) {
-    return { avgLoadTime: 0, fastPages: 0, slowPages: 0, totalPages: 0, performanceScore: 0 };
+    return {
+      avgLoadTime: 0,
+      fastPages: 0,
+      slowPages: 0,
+      totalPages: 0,
+      performanceScore: 0,
+    };
   }
 
   let totalLoadTime = 0;
@@ -35,15 +43,21 @@ export function calculatePerformanceSummary(pages: PerformanceEntry[]): Performa
       score = 100 - ((loadTime - SCORE_THRESHOLDS.FAST) / range) * 50;
     } else {
       score =
-        50 - ((loadTime - SCORE_THRESHOLDS.MODERATE) / SCORE_THRESHOLDS.SLOW_PENALTY_RANGE) * 50;
+        50 -
+        ((loadTime - SCORE_THRESHOLDS.MODERATE) /
+          SCORE_THRESHOLDS.SLOW_PENALTY_RANGE) *
+          50;
     }
 
     weightedScoreSum += Math.max(0, score) * visitors;
   }
 
-  const avgLoadTime = totalVisitorWeight > 0 ? totalLoadTime / totalVisitorWeight : 0;
+  const avgLoadTime =
+    totalVisitorWeight > 0 ? totalLoadTime / totalVisitorWeight : 0;
   const performanceScore =
-    totalVisitorWeight > 0 ? Math.round(weightedScoreSum / totalVisitorWeight) : 0;
+    totalVisitorWeight > 0
+      ? Math.round(weightedScoreSum / totalVisitorWeight)
+      : 0;
 
   return {
     avgLoadTime,

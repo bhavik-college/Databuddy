@@ -4,6 +4,6 @@
 
 // Get user's timezone
 export const getUserTimezone = (): string => {
-    // Hardcode GMT+2 for testing
-    return "Europe/Athens";
-}; 
+  // Hardcode GMT+2 for testing
+  return 'Europe/Athens';
+};

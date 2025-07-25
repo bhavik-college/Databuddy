@@ -1,12 +1,13 @@
-"use client";
+'use client';
 
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import * as z from "zod";
-import { useEffect, useRef } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-
-import { Button } from "@/components/ui/button";
+import { authClient } from '@databuddy/auth/client';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { LoaderCircle } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -14,7 +15,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -22,21 +23,19 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import type { CreateWebsiteData, Website } from "@/hooks/use-websites";
-import { useCreateWebsite, useUpdateWebsite } from "@/hooks/use-websites";
-import { authClient } from "@databuddy/auth/client";
-import { LoaderCircle } from "lucide-react";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import type { CreateWebsiteData, Website } from '@/hooks/use-websites';
+import { useCreateWebsite, useUpdateWebsite } from '@/hooks/use-websites';
 
 const formSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().min(1, 'Name is required'),
   domain: z
     .string()
-    .min(1, "Domain is required")
+    .min(1, 'Domain is required')
     .regex(
       /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$/,
-      "Invalid domain format",
+      'Invalid domain format'
     ),
 });
 
@@ -53,7 +52,7 @@ export function WebsiteDialog({
   open,
   onOpenChange,
   website,
-  onSave = () => { },
+  onSave = () => {},
 }: WebsiteDialogProps) {
   const isEditing = !!website;
   const { data: activeOrganization } = authClient.useActiveOrganization();
@@ -65,16 +64,16 @@ export function WebsiteDialog({
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      domain: "",
+      name: '',
+      domain: '',
     },
   });
 
   useEffect(() => {
     if (website) {
-      form.reset({ name: website.name || "", domain: website.domain || "" });
+      form.reset({ name: website.name || '', domain: website.domain || '' });
     } else {
-      form.reset({ name: "", domain: "" });
+      form.reset({ name: '', domain: '' });
     }
   }, [website, form]);
 
@@ -91,40 +90,43 @@ export function WebsiteDialog({
         : createWebsiteMutation.mutate(submissionData);
 
     toast.promise(promise(), {
-      loading: "Loading...",
+      loading: 'Loading...',
       success: (result) => {
         onSave(result as unknown as Website);
         onOpenChange(false);
-        return `Website ${isEditing ? "updated" : "created"} successfully!`;
+        return `Website ${isEditing ? 'updated' : 'created'} successfully!`;
       },
       error: (err: any) => {
         const message =
-          err.data?.code === "CONFLICT"
-            ? "A website with this domain already exists."
-            : `Failed to ${isEditing ? "update" : "create"} website.`;
+          err.data?.code === 'CONFLICT'
+            ? 'A website with this domain already exists.'
+            : `Failed to ${isEditing ? 'update' : 'create'} website.`;
         return message;
       },
     });
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Edit Website" : "Create a new website"}</DialogTitle>
+          <DialogTitle>
+            {isEditing ? 'Edit Website' : 'Create a new website'}
+          </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Update the details of your existing website."
-              : "Create a new website to start tracking analytics."}
+              ? 'Update the details of your existing website.'
+              : 'Create a new website to start tracking analytics.'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit} ref={formRef}>
             <fieldset
-              disabled={
-                createWebsiteMutation.isPending || updateWebsiteMutation.isPending
-              }
               className="space-y-4"
+              disabled={
+                createWebsiteMutation.isPending ||
+                updateWebsiteMutation.isPending
+              }
             >
               <FormField
                 control={form.control}
@@ -147,7 +149,7 @@ export function WebsiteDialog({
                     <FormLabel>Domain</FormLabel>
                     <FormControl>
                       <div className="flex items-center">
-                        <span className="inline-flex h-10 items-center rounded-l-md border border-r-0 border-input bg-muted px-3 text-sm text-muted-foreground">
+                        <span className="inline-flex h-10 items-center rounded-l-md border border-input border-r-0 bg-muted px-3 text-muted-foreground text-sm">
                           https://
                         </span>
                         <Input
@@ -157,14 +159,14 @@ export function WebsiteDialog({
                           onChange={(e) => {
                             let domain = e.target.value.trim();
                             if (
-                              domain.startsWith("http://") ||
-                              domain.startsWith("https://")
+                              domain.startsWith('http://') ||
+                              domain.startsWith('https://')
                             ) {
                               try {
                                 domain = new URL(domain).hostname;
-                              } catch { }
+                              } catch {}
                             }
-                            field.onChange(domain.replace(/^www\./, ""));
+                            field.onChange(domain.replace(/^www\./, ''));
                           }}
                         />
                       </div>
@@ -178,17 +180,18 @@ export function WebsiteDialog({
         </Form>
         <DialogFooter>
           <Button
-            type="submit"
-            form="form"
-            onClick={handleSubmit}
             disabled={
               createWebsiteMutation.isPending || updateWebsiteMutation.isPending
             }
+            form="form"
+            onClick={handleSubmit}
+            type="submit"
           >
-            {(createWebsiteMutation.isPending || updateWebsiteMutation.isPending) && (
+            {(createWebsiteMutation.isPending ||
+              updateWebsiteMutation.isPending) && (
               <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
             )}
-            {isEditing ? "Save changes" : "Create website"}
+            {isEditing ? 'Save changes' : 'Create website'}
           </Button>
         </DialogFooter>
       </DialogContent>

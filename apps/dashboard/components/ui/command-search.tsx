@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { CogIcon, LayoutDashboard } from "lucide-react";
-import { useRouter } from "next/navigation";
-import type { DialogProps } from "radix-ui";
-import * as React from "react";
+import { CogIcon, LayoutDashboard } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import type { DialogProps } from 'radix-ui';
+import * as React from 'react';
 
 import {
   CommandDialog,
@@ -12,7 +12,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from '@/components/ui/command';
 
 // Define a type for website items
 interface WebsiteItem {
@@ -23,8 +23,8 @@ interface WebsiteItem {
 // Static Search items organized by category - to be merged with dynamic items
 const staticSearchGroups = [
   {
-    category: "Pages",
-    items: [{ name: "Settings", path: "/settings", icon: CogIcon }],
+    category: 'Pages',
+    items: [{ name: 'Settings', path: '/settings', icon: CogIcon }],
   },
   // {
   //   category: "Actions",
@@ -62,7 +62,8 @@ export function CommandSearch({
   const setOpen = React.useCallback(
     (value: boolean | ((prevState: boolean) => boolean)) => {
       if (isControlled) {
-        const newValue = typeof value === "function" ? value(controlledOpen) : value;
+        const newValue =
+          typeof value === 'function' ? value(controlledOpen) : value;
         setControlledOpen?.(newValue);
       } else {
         setInternalOpen(value);
@@ -73,14 +74,14 @@ export function CommandSearch({
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || e.key === "/") {
+      if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || e.key === '/') {
         e.preventDefault();
         setOpen((prevOpen) => !prevOpen); // Corrected to use functional update
       }
     };
 
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
+    document.addEventListener('keydown', down);
+    return () => document.removeEventListener('keydown', down);
   }, [setOpen]);
 
   // Combine static and dynamic search items
@@ -88,7 +89,7 @@ export function CommandSearch({
     const dynamicGroups = [];
     if (userWebsites.length > 0) {
       dynamicGroups.push({
-        category: "My Websites",
+        category: 'My Websites',
         items: userWebsites.map((site) => ({
           name: site.name,
           path: `/websites/${site.id}`,
@@ -101,10 +102,12 @@ export function CommandSearch({
       userWebsites.length > 0
         ? staticSearchGroups
             .map((group) => {
-              if (group.category === "Pages") {
+              if (group.category === 'Pages') {
                 return {
                   ...group,
-                  items: group.items.filter((item) => item.path !== "/websites"),
+                  items: group.items.filter(
+                    (item) => item.path !== '/websites'
+                  ),
                 };
               }
               return group;
@@ -132,8 +135,10 @@ export function CommandSearch({
                 }}
               >
                 <item.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span>{item.name}</span>{" "}
-                <span className="text-end text-muted-foreground text-xs">{item.path}</span>
+                <span>{item.name}</span>{' '}
+                <span className="text-end text-muted-foreground text-xs">
+                  {item.path}
+                </span>
               </CommandItem>
             ))}
           </CommandGroup>

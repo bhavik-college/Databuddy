@@ -1,14 +1,14 @@
-import { source } from '@/lib/source';
+import { createRelativeLink } from 'fumadocs-ui/mdx';
 import {
-  DocsPage,
   DocsBody,
   DocsDescription,
+  DocsPage,
   DocsTitle,
 } from 'fumadocs-ui/page';
 import { notFound } from 'next/navigation';
-import { createRelativeLink } from 'fumadocs-ui/mdx';
-import { getMDXComponents } from '@/mdx-components';
 import { StructuredData } from '@/components/structured-data';
+import { source } from '@/lib/source';
+import { getMDXComponents } from '@/mdx-components';
 
 export default async function Page(props: {
   params: Promise<{ slug?: string[] }>;
@@ -44,17 +44,14 @@ export default async function Page(props: {
   return (
     <>
       <StructuredData
-        type="documentation"
-        title={page.data.title}
-        description={page.data.description}
-        url={url}
         datePublished={new Date().toISOString()}
+        description={page.data.description}
+        title={page.data.title}
+        type="documentation"
+        url={url}
       />
-      <StructuredData
-        type="breadcrumb"
-        breadcrumbs={breadcrumbs}
-      />
-      <DocsPage toc={page.data.toc} full={page.data.full}>
+      <StructuredData breadcrumbs={breadcrumbs} type="breadcrumb" />
+      <DocsPage full={page.data.full} toc={page.data.toc}>
         <DocsTitle>{page.data.title}</DocsTitle>
         <DocsDescription>{page.data.description}</DocsDescription>
         <DocsBody>
@@ -83,7 +80,9 @@ export async function generateMetadata(props: {
 
   const url = `https://www.databuddy.cc${page.url}`;
   const title = `${page.data.title} | Databuddy Documentation`;
-  const description = page.data.description || `Learn about ${page.data.title} in Databuddy's privacy-first analytics platform. Complete guides and API documentation.`;
+  const description =
+    page.data.description ||
+    `Learn about ${page.data.title} in Databuddy's privacy-first analytics platform. Complete guides and API documentation.`;
 
   // Generate dynamic keywords based on page content and URL
   const baseKeywords = [
@@ -100,17 +99,31 @@ export async function generateMetadata(props: {
 
   // Add context-specific keywords
   const contextKeywords = [
-    ...(page.url.includes('integration') || page.url.includes('Integrations') ? ['integration', 'setup guide', 'installation'] : []),
-    ...(page.url.includes('api') ? ['API', 'reference', 'endpoints', 'REST API'] : []),
-    ...(page.url.includes('getting-started') ? ['tutorial', 'quickstart', 'setup'] : []),
+    ...(page.url.includes('integration') || page.url.includes('Integrations')
+      ? ['integration', 'setup guide', 'installation']
+      : []),
+    ...(page.url.includes('api')
+      ? ['API', 'reference', 'endpoints', 'REST API']
+      : []),
+    ...(page.url.includes('getting-started')
+      ? ['tutorial', 'quickstart', 'setup']
+      : []),
     ...(page.url.includes('sdk') ? ['SDK', 'JavaScript', 'tracking'] : []),
     ...(page.url.includes('dashboard') ? ['dashboard', 'interface', 'UI'] : []),
-    ...(page.url.includes('security') ? ['security', 'privacy', 'compliance'] : []),
-    ...(page.url.includes('performance') ? ['performance', 'core web vitals', 'optimization'] : []),
+    ...(page.url.includes('security')
+      ? ['security', 'privacy', 'compliance']
+      : []),
+    ...(page.url.includes('performance')
+      ? ['performance', 'core web vitals', 'optimization']
+      : []),
     ...(page.url.includes('react') ? ['React', 'React.js', 'component'] : []),
-    ...(page.url.includes('nextjs') ? ['Next.js', 'React framework', 'SSR'] : []),
+    ...(page.url.includes('nextjs')
+      ? ['Next.js', 'React framework', 'SSR']
+      : []),
     ...(page.url.includes('wordpress') ? ['WordPress', 'plugin', 'CMS'] : []),
-    ...(page.url.includes('shopify') ? ['Shopify', 'e-commerce', 'online store'] : []),
+    ...(page.url.includes('shopify')
+      ? ['Shopify', 'e-commerce', 'online store']
+      : []),
   ];
 
   return {

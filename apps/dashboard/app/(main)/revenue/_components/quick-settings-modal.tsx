@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ArrowClockwiseIcon,
@@ -7,11 +7,11 @@ import {
   CopyIcon,
   GearSixIcon,
   WarningCircleIcon,
-} from "@phosphor-icons/react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from '@phosphor-icons/react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -19,11 +19,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 
 interface QuickSettingsModalProps {
   webhookToken: string;
@@ -66,12 +66,16 @@ export function QuickSettingsModal({
 
   const handleSecretChange = (value: string) => {
     setLocalWebhookSecret(value);
-    setHasUnsavedChanges(value !== webhookSecret || localIsLiveMode !== isLiveMode);
+    setHasUnsavedChanges(
+      value !== webhookSecret || localIsLiveMode !== isLiveMode
+    );
   };
 
   const handleLiveModeChange = (value: boolean) => {
     setLocalIsLiveMode(value);
-    setHasUnsavedChanges(localWebhookSecret !== webhookSecret || value !== isLiveMode);
+    setHasUnsavedChanges(
+      localWebhookSecret !== webhookSecret || value !== isLiveMode
+    );
   };
 
   const handleSave = () => {
@@ -80,7 +84,7 @@ export function QuickSettingsModal({
       isLiveMode: localIsLiveMode,
     });
     setHasUnsavedChanges(false);
-    toast.success("Settings saved successfully");
+    toast.success('Settings saved successfully');
   };
 
   const handleReset = () => {
@@ -91,7 +95,11 @@ export function QuickSettingsModal({
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen && hasUnsavedChanges) {
-      if (window.confirm("You have unsaved changes. Are you sure you want to close?")) {
+      if (
+        window.confirm(
+          'You have unsaved changes. Are you sure you want to close?'
+        )
+      ) {
         handleReset();
         setOpen(false);
       }
@@ -116,7 +124,9 @@ export function QuickSettingsModal({
             <GearSixIcon className="h-5 w-5" size={20} weight="duotone" />
             Revenue Settings
           </DialogTitle>
-          <DialogDescription>Quickly adjust your Stripe integration settings</DialogDescription>
+          <DialogDescription>
+            Quickly adjust your Stripe integration settings
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -124,16 +134,24 @@ export function QuickSettingsModal({
           <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
             <div className="flex items-center gap-2">
               {isSetupComplete ? (
-                <CheckCircleIcon className="h-4 w-4 text-green-500" size={16} weight="fill" />
+                <CheckCircleIcon
+                  className="h-4 w-4 text-green-500"
+                  size={16}
+                  weight="fill"
+                />
               ) : (
-                <WarningCircleIcon className="h-4 w-4 text-orange-500" size={16} weight="duotone" />
+                <WarningCircleIcon
+                  className="h-4 w-4 text-orange-500"
+                  size={16}
+                  weight="duotone"
+                />
               )}
               <span className="font-medium text-sm">
-                {isSetupComplete ? "Integration Active" : "Setup Required"}
+                {isSetupComplete ? 'Integration Active' : 'Setup Required'}
               </span>
             </div>
-            <Badge variant={localIsLiveMode ? "default" : "secondary"}>
-              {localIsLiveMode ? "Live Mode" : "Test Mode"}
+            <Badge variant={localIsLiveMode ? 'default' : 'secondary'}>
+              {localIsLiveMode ? 'Live Mode' : 'Test Mode'}
             </Badge>
           </div>
 
@@ -142,20 +160,33 @@ export function QuickSettingsModal({
             <div className="space-y-2">
               <Label className="font-medium text-sm">Webhook Endpoint</Label>
               <div className="flex items-center gap-2">
-                <Input className="font-mono text-xs" readOnly value={webhookUrl} />
+                <Input
+                  className="font-mono text-xs"
+                  readOnly
+                  value={webhookUrl}
+                />
                 <Button
-                  onClick={() => copyToClipboard(webhookUrl, "Webhook URL")}
+                  onClick={() => copyToClipboard(webhookUrl, 'Webhook URL')}
                   size="sm"
                   variant="outline"
                 >
                   <CopyIcon className="h-4 w-4" size={16} weight="duotone" />
                 </Button>
                 <Button
-                  onClick={() => window.open("https://dashboard.stripe.com/webhooks", "_blank")}
+                  onClick={() =>
+                    window.open(
+                      'https://dashboard.stripe.com/webhooks',
+                      '_blank'
+                    )
+                  }
                   size="sm"
                   variant="outline"
                 >
-                  <ArrowSquareOutIcon className="h-4 w-4" size={16} weight="duotone" />
+                  <ArrowSquareOutIcon
+                    className="h-4 w-4"
+                    size={16}
+                    weight="duotone"
+                  />
                 </Button>
               </div>
             </div>
@@ -189,10 +220,15 @@ export function QuickSettingsModal({
               <div className="space-y-1">
                 <Label className="font-medium text-sm">Live Mode</Label>
                 <p className="text-muted-foreground text-xs">
-                  {localIsLiveMode ? "Processing real payments" : "Using test data"}
+                  {localIsLiveMode
+                    ? 'Processing real payments'
+                    : 'Using test data'}
                 </p>
               </div>
-              <Switch checked={localIsLiveMode} onCheckedChange={handleLiveModeChange} />
+              <Switch
+                checked={localIsLiveMode}
+                onCheckedChange={handleLiveModeChange}
+              />
             </div>
             {localIsLiveMode && (
               <div className="rounded border border-red-200 bg-red-50 p-2 text-red-600 text-xs dark:border-red-800 dark:bg-red-950/20 dark:text-red-400">
@@ -212,7 +248,7 @@ export function QuickSettingsModal({
                 onClick={handleSave}
                 size="sm"
               >
-                {isSaving ? "Saving..." : "Save Changes"}
+                {isSaving ? 'Saving...' : 'Save Changes'}
               </Button>
               {hasUnsavedChanges && (
                 <Button onClick={handleReset} size="sm" variant="outline">
@@ -230,11 +266,13 @@ export function QuickSettingsModal({
                 variant="outline"
               >
                 <ArrowClockwiseIcon
-                  className={`mr-2 h-4 w-4 ${isRegeneratingToken ? "animate-spin" : ""}`}
+                  className={`mr-2 h-4 w-4 ${isRegeneratingToken ? 'animate-spin' : ''}`}
                   size={16}
                   weight="fill"
                 />
-                {isRegeneratingToken ? "Regenerating Token..." : "Regenerate Webhook Token"}
+                {isRegeneratingToken
+                  ? 'Regenerating Token...'
+                  : 'Regenerate Webhook Token'}
               </Button>
             )}
           </div>

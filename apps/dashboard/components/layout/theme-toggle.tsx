@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { MoonIcon, SunIcon } from "@phosphor-icons/react";
-import { useTheme } from "next-themes";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { MoonIcon, SunIcon } from '@phosphor-icons/react';
+import { useTheme } from 'next-themes';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 type ThemeTogglerProps = {
   className?: string;
@@ -13,7 +13,7 @@ export function ThemeToggle({ className }: ThemeTogglerProps) {
   const { resolvedTheme, setTheme } = useTheme();
 
   const switchTheme = () => {
-    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   };
 
   const toggleTheme = () => {
@@ -23,7 +23,7 @@ export function ThemeToggle({ className }: ThemeTogglerProps) {
 
   return (
     <Button
-      className={cn("relative hidden h-8 w-8 md:flex", className)}
+      className={cn('relative hidden h-8 w-8 md:flex', className)}
       onClick={toggleTheme}
       variant="ghost"
     >

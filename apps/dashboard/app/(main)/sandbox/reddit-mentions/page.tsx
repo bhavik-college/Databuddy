@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ArrowClockwiseIcon,
@@ -17,24 +17,30 @@ import {
   WifiHighIcon,
   WifiLowIcon,
   X,
-} from "@phosphor-icons/react";
-import { useState } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@phosphor-icons/react';
+import { useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import {
   type RedditPost,
   type SearchFilters,
@@ -43,9 +49,13 @@ import {
   useRedditMentions,
   useRefreshRedditMentions,
   useSearchHistory,
-} from "./hooks/use-reddit-mentions";
+} from './hooks/use-reddit-mentions';
 
-const DEFAULT_KEYWORDS = ["databuddy", "analytics platform", "website analytics"];
+const DEFAULT_KEYWORDS = [
+  'databuddy',
+  'analytics platform',
+  'website analytics',
+];
 
 function LoadingSkeleton() {
   return (
@@ -113,13 +123,18 @@ function EmptyState({ onRefresh }: { onRefresh: () => void }) {
           />
         </div>
         <div className="-top-2 -right-2 absolute rounded-full border border-primary/20 bg-primary/10 p-2">
-          <ChatCircleIcon className="h-6 w-6 text-primary" size={24} weight="fill" />
+          <ChatCircleIcon
+            className="h-6 w-6 text-primary"
+            size={24}
+            weight="fill"
+          />
         </div>
       </div>
 
       <h3 className="mb-4 font-bold text-2xl">No mentions found</h3>
       <p className="mb-8 max-w-md text-muted-foreground leading-relaxed">
-        Try adjusting your keywords or time range, or check back later for new mentions.
+        Try adjusting your keywords or time range, or check back later for new
+        mentions.
       </p>
 
       <Button onClick={onRefresh} size="lg" variant="outline">
@@ -130,14 +145,26 @@ function EmptyState({ onRefresh }: { onRefresh: () => void }) {
   );
 }
 
-function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
+function ErrorState({
+  error,
+  onRetry,
+}: {
+  error: string;
+  onRetry: () => void;
+}) {
   return (
     <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
       <div className="mb-8 rounded-full border border-red-200 bg-red-50 p-8">
-        <WarningCircleIcon className="h-16 w-16 text-red-500" size={64} weight="fill" />
+        <WarningCircleIcon
+          className="h-16 w-16 text-red-500"
+          size={64}
+          weight="fill"
+        />
       </div>
       <h3 className="mb-4 font-bold text-2xl">Something went wrong</h3>
-      <p className="mb-8 max-w-md text-muted-foreground leading-relaxed">{error}</p>
+      <p className="mb-8 max-w-md text-muted-foreground leading-relaxed">
+        {error}
+      </p>
       <Button onClick={onRetry} size="lg" variant="outline">
         Try Again
       </Button>
@@ -147,11 +174,13 @@ function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) 
 
 export default function RedditMentionsPage() {
   const [keywords, setKeywords] = useState<string[]>(DEFAULT_KEYWORDS);
-  const [newKeyword, setNewKeyword] = useState("");
-  const [timeRange, setTimeRange] = useState("24h");
+  const [newKeyword, setNewKeyword] = useState('');
+  const [timeRange, setTimeRange] = useState('24h');
   const [subreddits, setSubreddits] = useState<string[]>([]);
   const [minScore, setMinScore] = useState<number | undefined>(undefined);
-  const [sortBy, setSortBy] = useState<"relevance" | "new" | "top" | "hot">("new");
+  const [sortBy, setSortBy] = useState<'relevance' | 'new' | 'top' | 'hot'>(
+    'new'
+  );
   const [excludeStickied, setExcludeStickied] = useState(false);
   const [backgroundSync, setBackgroundSync] = useState(false);
 
@@ -183,7 +212,7 @@ export default function RedditMentionsPage() {
   const stats = redditData?.stats || {
     total_mentions: 0,
     average_score: 0,
-    top_subreddit: "",
+    top_subreddit: '',
     recent_mentions: 0,
   };
 
@@ -194,9 +223,13 @@ export default function RedditMentionsPage() {
   };
 
   const addKeyword = () => {
-    if (newKeyword.trim() && !keywords.includes(newKeyword.trim()) && keywords.length < 10) {
+    if (
+      newKeyword.trim() &&
+      !keywords.includes(newKeyword.trim()) &&
+      keywords.length < 10
+    ) {
       setKeywords([...keywords, newKeyword.trim()]);
-      setNewKeyword("");
+      setNewKeyword('');
     }
   };
 
@@ -204,53 +237,60 @@ export default function RedditMentionsPage() {
     setKeywords(keywords.filter((k) => k !== keyword));
   };
 
-  const handleExport = (format: "json" | "csv") => {
+  const handleExport = (format: 'json' | 'csv') => {
     exportMutation.mutate({ format, filters });
   };
 
   const formatTimeAgo = (timestamp: number) => {
     const date = new Date(timestamp * 1000);
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    );
 
-    if (diffInHours < 1) return "Less than an hour ago";
-    if (diffInHours === 1) return "1 hour ago";
+    if (diffInHours < 1) return 'Less than an hour ago';
+    if (diffInHours === 1) return '1 hour ago';
     if (diffInHours < 24) return `${diffInHours} hours ago`;
     return `${Math.floor(diffInHours / 24)} days ago`;
   };
 
-  const isApiHealthy = healthData?.status === "healthy" && healthData?.reddit_connected;
+  const isApiHealthy =
+    healthData?.status === 'healthy' && healthData?.reddit_connected;
   const isRefreshing = refreshMutation.isPending || isFetching;
 
-    return (
-        <div className="h-full flex flex-col">
-            {/* Enhanced header */}
-            <div className="border-b bg-gradient-to-r from-background via-background to-muted/20">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:px-4 sm:py-4 gap-3 sm:gap-0">
-                    <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-                                <ChatCircleIcon size={20} weight="fill" className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground truncate">
-                                    Reddit Mentions
-                                </h1>
-                                <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">
-                                    Track mentions of your keywords across Reddit
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+  return (
+    <div className="flex h-full flex-col">
+      {/* Enhanced header */}
+      <div className="border-b bg-gradient-to-r from-background via-background to-muted/20">
+        <div className="flex flex-col justify-between gap-3 p-3 sm:flex-row sm:items-center sm:gap-0 sm:px-4 sm:py-4">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg border border-primary/20 bg-primary/10 p-2">
+                <ChatCircleIcon
+                  className="h-5 w-5 text-primary"
+                  size={20}
+                  weight="fill"
+                />
+              </div>
+              <div>
+                <h1 className="truncate font-bold text-foreground text-xl tracking-tight sm:text-2xl">
+                  Reddit Mentions
+                </h1>
+                <p className="mt-0.5 text-muted-foreground text-xs sm:text-sm">
+                  Track mentions of your keywords across Reddit
+                </p>
+              </div>
+            </div>
+          </div>
 
           <div className="flex items-center gap-2">
             {/* API Status Indicator */}
             <div
               className={cn(
-                "flex items-center gap-2 rounded-full border px-3 py-1.5 font-medium text-xs",
+                'flex items-center gap-2 rounded-full border px-3 py-1.5 font-medium text-xs',
                 isApiHealthy
-                  ? "border-green-200 bg-green-50 text-green-700"
-                  : "border-red-200 bg-red-50 text-red-700"
+                  ? 'border-green-200 bg-green-50 text-green-700'
+                  : 'border-red-200 bg-red-50 text-red-700'
               )}
             >
               {isApiHealthy ? (
@@ -258,13 +298,15 @@ export default function RedditMentionsPage() {
               ) : (
                 <WifiLowIcon className="h-4 w-4" size={16} />
               )}
-              <span>{isApiHealthy ? "Connected" : "Disconnected"}</span>
+              <span>{isApiHealthy ? 'Connected' : 'Disconnected'}</span>
             </div>
 
             <div className="flex gap-2">
               <Button
                 disabled={exportMutation.isPending || posts.length === 0}
-                onClick={() => exportMutation.mutate({ format: "csv", filters })}
+                onClick={() =>
+                  exportMutation.mutate({ format: 'csv', filters })
+                }
                 size="default"
                 variant="outline"
               >
@@ -274,9 +316,9 @@ export default function RedditMentionsPage() {
 
               <Button
                 className={cn(
-                  "gap-2 px-6 py-3 font-medium",
-                  "bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary",
-                  "group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl"
+                  'gap-2 px-6 py-3 font-medium',
+                  'bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary',
+                  'group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl'
                 )}
                 disabled={isRefreshing || !isApiHealthy}
                 onClick={handleRefresh}
@@ -290,9 +332,15 @@ export default function RedditMentionsPage() {
                     weight="fill"
                   />
                 ) : (
-                  <ArrowClockwiseIcon className="relative z-10 h-4 w-4" size={16} weight="fill" />
+                  <ArrowClockwiseIcon
+                    className="relative z-10 h-4 w-4"
+                    size={16}
+                    weight="fill"
+                  />
                 )}
-                <span className="relative z-10">{isRefreshing ? "Refreshing..." : "Refresh"}</span>
+                <span className="relative z-10">
+                  {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                </span>
               </Button>
             </div>
           </div>
@@ -306,7 +354,8 @@ export default function RedditMentionsPage() {
           <Alert className="mb-6" variant="destructive">
             <WarningCircleIcon className="h-4 w-4" size={16} weight="duotone" />
             <AlertDescription>
-              {error?.message || "Failed to fetch Reddit mentions. Please try again."}
+              {error?.message ||
+                'Failed to fetch Reddit mentions. Please try again.'}
             </AlertDescription>
           </Alert>
         )}
@@ -315,14 +364,18 @@ export default function RedditMentionsPage() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-lg">Configuration</CardTitle>
-            <CardDescription>Manage your keywords and time range settings</CardDescription>
+            <CardDescription>
+              Manage your keywords and time range settings
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Keywords Management */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="font-medium text-sm">Keywords</Label>
-                <span className="text-muted-foreground text-xs">{keywords.length}/10</span>
+                <span className="text-muted-foreground text-xs">
+                  {keywords.length}/10
+                </span>
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -344,7 +397,7 @@ export default function RedditMentionsPage() {
                   className="flex-1"
                   disabled={keywords.length >= 10}
                   onChange={(e) => setNewKeyword(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && addKeyword()}
+                  onKeyPress={(e) => e.key === 'Enter' && addKeyword()}
                   placeholder="Add new keyword..."
                   value={newKeyword}
                 />
@@ -359,7 +412,8 @@ export default function RedditMentionsPage() {
 
               {keywords.length >= 10 && (
                 <p className="text-muted-foreground text-xs">
-                  Maximum of 10 keywords reached. Remove a keyword to add a new one.
+                  Maximum of 10 keywords reached. Remove a keyword to add a new
+                  one.
                 </p>
               )}
             </div>
@@ -395,7 +449,10 @@ export default function RedditMentionsPage() {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label className="font-medium text-xs">Sort By</Label>
-                  <Select onValueChange={(value: any) => setSortBy(value)} value={sortBy}>
+                  <Select
+                    onValueChange={(value: any) => setSortBy(value)}
+                    value={sortBy}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -412,11 +469,15 @@ export default function RedditMentionsPage() {
                   <Label className="font-medium text-xs">Min Score</Label>
                   <Input
                     onChange={(e) =>
-                      setMinScore(e.target.value ? Number.parseInt(e.target.value) : undefined)
+                      setMinScore(
+                        e.target.value
+                          ? Number.parseInt(e.target.value)
+                          : undefined
+                      )
                     }
                     placeholder="e.g. 10"
                     type="number"
-                    value={minScore || ""}
+                    value={minScore || ''}
                   />
                 </div>
               </div>
@@ -470,7 +531,9 @@ export default function RedditMentionsPage() {
                     />
                   </div>
                   <div>
-                    <p className="font-medium text-muted-foreground text-sm">Total Mentions</p>
+                    <p className="font-medium text-muted-foreground text-sm">
+                      Total Mentions
+                    </p>
                     <p className="font-bold text-2xl">{stats.total_mentions}</p>
                   </div>
                 </div>
@@ -488,8 +551,12 @@ export default function RedditMentionsPage() {
                     />
                   </div>
                   <div>
-                    <p className="font-medium text-muted-foreground text-sm">Avg Score</p>
-                    <p className="font-bold text-2xl">{Math.round(stats.average_score)}</p>
+                    <p className="font-medium text-muted-foreground text-sm">
+                      Avg Score
+                    </p>
+                    <p className="font-bold text-2xl">
+                      {Math.round(stats.average_score)}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -506,8 +573,12 @@ export default function RedditMentionsPage() {
                     />
                   </div>
                   <div>
-                    <p className="font-medium text-muted-foreground text-sm">Top Subreddit</p>
-                    <p className="truncate font-bold text-lg">r/{stats.top_subreddit || "N/A"}</p>
+                    <p className="font-medium text-muted-foreground text-sm">
+                      Top Subreddit
+                    </p>
+                    <p className="truncate font-bold text-lg">
+                      r/{stats.top_subreddit || 'N/A'}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -524,8 +595,12 @@ export default function RedditMentionsPage() {
                     />
                   </div>
                   <div>
-                    <p className="font-medium text-muted-foreground text-sm">Recent</p>
-                    <p className="font-bold text-2xl">{stats.recent_mentions}</p>
+                    <p className="font-medium text-muted-foreground text-sm">
+                      Recent
+                    </p>
+                    <p className="font-bold text-2xl">
+                      {stats.recent_mentions}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -550,7 +625,7 @@ export default function RedditMentionsPage() {
           {/* Error State */}
           {isError && (
             <ErrorState
-              error={error?.message || "Failed to fetch Reddit mentions"}
+              error={error?.message || 'Failed to fetch Reddit mentions'}
               onRetry={() => refetch()}
             />
           )}
@@ -580,15 +655,29 @@ export default function RedditMentionsPage() {
                             </h3>
                             <div className="flex items-center gap-4 text-muted-foreground text-sm">
                               <div className="flex items-center gap-1">
-                                <ChatCircleIcon className="h-4 w-4" size={16} weight="fill" />
-                                <span className="font-medium">r/{post.subreddit}</span>
+                                <ChatCircleIcon
+                                  className="h-4 w-4"
+                                  size={16}
+                                  weight="fill"
+                                />
+                                <span className="font-medium">
+                                  r/{post.subreddit}
+                                </span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <UserIcon className="h-4 w-4" size={16} weight="fill" />
+                                <UserIcon
+                                  className="h-4 w-4"
+                                  size={16}
+                                  weight="fill"
+                                />
                                 <span>u/{post.author}</span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <ClockIcon className="h-4 w-4" size={16} weight="fill" />
+                                <ClockIcon
+                                  className="h-4 w-4"
+                                  size={16}
+                                  weight="fill"
+                                />
                                 <span>{formatTimeAgo(post.created_utc)}</span>
                               </div>
                             </div>
@@ -599,7 +688,11 @@ export default function RedditMentionsPage() {
                               rel="noopener noreferrer"
                               target="_blank"
                             >
-                              <ArrowSquareOutIcon className="h-4 w-4" size={16} weight="fill" />
+                              <ArrowSquareOutIcon
+                                className="h-4 w-4"
+                                size={16}
+                                weight="fill"
+                              />
                             </a>
                           </Button>
                         </div>
@@ -619,11 +712,19 @@ export default function RedditMentionsPage() {
 
                           <div className="flex items-center gap-4 text-muted-foreground text-sm">
                             <div className="flex items-center gap-1">
-                              <ArrowUpIcon className="h-4 w-4" size={16} weight="fill" />
+                              <ArrowUpIcon
+                                className="h-4 w-4"
+                                size={16}
+                                weight="fill"
+                              />
                               <span className="font-medium">{post.score}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <ChatCircleIcon className="h-4 w-4" size={16} weight="fill" />
+                              <ChatCircleIcon
+                                className="h-4 w-4"
+                                size={16}
+                                weight="fill"
+                              />
                               <span>{post.num_comments}</span>
                             </div>
                           </div>

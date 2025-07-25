@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { CopyIcon } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
+import { CopyIcon } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
 
 interface TestingStepProps {
   copyToClipboard: (text: string, label: string) => void;
@@ -9,7 +9,11 @@ interface TestingStepProps {
   onNext: () => void;
 }
 
-export function TestingStep({ copyToClipboard, onBack, onNext }: TestingStepProps) {
+export function TestingStep({
+  copyToClipboard,
+  onBack,
+  onNext,
+}: TestingStepProps) {
   return (
     <div className="space-y-6">
       <div>
@@ -31,7 +35,7 @@ export function TestingStep({ copyToClipboard, onBack, onNext }: TestingStepProp
                 onClick={() =>
                   copyToClipboard(
                     'stripe payment_intents create --amount 2000 --currency usd --client-reference-id "sess_db_test_123" --metadata[user_id]="user_test_123"',
-                    "Test command"
+                    'Test command'
                   )
                 }
                 size="sm"

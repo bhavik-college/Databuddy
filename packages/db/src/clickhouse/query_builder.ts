@@ -1,13 +1,13 @@
 import type { ClickHouseClient, ResponseJSON } from '@clickhouse/client';
 import type { IInterval } from '@databuddy/validation';
 import { escape } from 'sqlstring';
-import type { 
-  AnalyticsEvent, 
-  ErrorEvent, 
-  WebVitalsEvent, 
-  StripePaymentIntent, 
-  StripeCharge, 
-  StripeRefund 
+import type {
+  AnalyticsEvent,
+  ErrorEvent,
+  StripeCharge,
+  StripePaymentIntent,
+  StripeRefund,
+  WebVitalsEvent,
 } from './schema';
 
 // Table type mapping
@@ -24,7 +24,10 @@ export type TableName = keyof TableMap;
 
 // Helper types for column operations
 export type ColumnKeys<T extends TableName> = keyof TableMap[T];
-export type ColumnValue<T extends TableName, K extends ColumnKeys<T>> = TableMap[T][K];
+export type ColumnValue<
+  T extends TableName,
+  K extends ColumnKeys<T>,
+> = TableMap[T][K];
 
 // Type definitions
 type SqlValue = string | number | boolean | Date | null | Expression;
@@ -115,11 +118,11 @@ export class Query<T = any> {
   private _fill?: FillClause;
   private _transform?: Record<string, (item: T) => any>;
   private _union?: Query;
-  private readonly _dateRegex = /\d{4}-\d{2}-\d{2}([\s\:\d\.]+)?/g;
+  private readonly _dateRegex = /\d{4}-\d{2}-\d{2}([\s:\d.]+)?/g;
 
   constructor(
     private readonly client: ClickHouseClient,
-    private readonly timezone: string,
+    private readonly timezone: string
   ) {}
 
   // SELECT methods
@@ -128,18 +131,18 @@ export class Query<T = any> {
    */
   select<U>(
     columns: (string | null | undefined | false)[],
-    type: 'merge' | 'replace' = 'replace',
+    type: 'merge' | 'replace' = 'replace'
   ): Query<U> {
     if (this._skipNext) return this as unknown as Query<U>;
-    
+
     const validColumns = columns.filter((col): col is string => Boolean(col));
-    
+
     if (type === 'merge') {
       this._select = [...this._select, ...validColumns];
     } else {
       this._select = validColumns;
     }
-    
+
     return this as unknown as Query<U>;
   }
 
@@ -214,7 +217,7 @@ export class Query<T = any> {
   public buildCondition(
     column: string,
     operator: Operator,
-    value?: QueryParam,
+    value?: QueryParam
   ): string {
     switch (operator) {
       case 'IS NULL':
@@ -228,7 +231,7 @@ export class Query<T = any> {
         throw new Error('BETWEEN operator requires an array of two values');
       case 'IN':
       case 'NOT IN':
-        if (!Array.isArray(value) && !(value instanceof Expression)) {
+        if (!(Array.isArray(value) || value instanceof Expression)) {
           throw new Error(`${operator} operator requires an array value`);
         }
         return `${column} ${operator} ${this.escapeValue(value)}`;
@@ -358,7 +361,7 @@ export class Query<T = any> {
     this._fill = {
       from: this.escapeDate(from),
       to: this.escapeDate(to),
-      step: step,
+      step,
     };
     return this;
   }
@@ -390,7 +393,7 @@ export class Query<T = any> {
   innerJoin(
     table: string | Expression,
     condition: string,
-    alias?: string,
+    alias?: string
   ): this {
     return this.joinWithType('INNER', table, condition, alias);
   }
@@ -401,7 +404,7 @@ export class Query<T = any> {
   leftJoin(
     table: string | Expression | Query,
     condition: string,
-    alias?: string,
+    alias?: string
   ): this {
     return this.joinWithType('LEFT', table, condition, alias);
   }
@@ -412,7 +415,7 @@ export class Query<T = any> {
   leftAnyJoin(
     table: string | Expression | Query,
     condition: string,
-    alias?: string,
+    alias?: string
   ): this {
     return this.joinWithType('LEFT ANY', table, condition, alias);
   }
@@ -423,7 +426,7 @@ export class Query<T = any> {
   rightJoin(
     table: string | Expression,
     condition: string,
-    alias?: string,
+    alias?: string
   ): this {
     return this.joinWithType('RIGHT', table, condition, alias);
   }
@@ -434,7 +437,7 @@ export class Query<T = any> {
   fullJoin(
     table: string | Expression,
     condition: string,
-    alias?: string,
+    alias?: string
   ): this {
     return this.joinWithType('FULL', table, condition, alias);
   }
@@ -453,7 +456,7 @@ export class Query<T = any> {
     type: JoinType,
     table: string | Expression | Query,
     condition: string,
-    alias?: string,
+    alias?: string
   ): this {
     if (this._skipNext) return this;
     this._joins.push({
@@ -512,7 +515,7 @@ export class Query<T = any> {
     if (this._select.length > 0) {
       parts.push(
         'SELECT',
-        this._select.map((col) => this.escapeDate(col)).join(', '),
+        this._select.map((col) => this.escapeDate(col)).join(', ')
       );
     } else {
       parts.push('SELECT *');
@@ -534,14 +537,15 @@ export class Query<T = any> {
       for (const join of this._joins) {
         const aliasClause = join.alias ? ` ${join.alias} ` : ' ';
         const conditionStr = join.condition ? `ON ${join.condition}` : '';
-        const tableStr = join.table instanceof Query 
-          ? `(${join.table.toSQL()})` 
-          : join.table instanceof Expression 
-            ? `(${join.table.toString()})` 
-            : join.table;
-        
+        const tableStr =
+          join.table instanceof Query
+            ? `(${join.table.toSQL()})`
+            : join.table instanceof Expression
+              ? `(${join.table.toString()})`
+              : join.table;
+
         parts.push(
-          `${join.type} JOIN ${tableStr}${aliasClause}${conditionStr}`,
+          `${join.type} JOIN ${tableStr}${aliasClause}${conditionStr}`
         );
       }
     }
@@ -761,7 +765,7 @@ export class WhereGroupBuilder {
 
   constructor(
     private readonly query: Query,
-    private readonly groupOperator: 'AND' | 'OR',
+    private readonly groupOperator: 'AND' | 'OR'
   ) {}
 
   /**
@@ -828,8 +832,8 @@ export function clix(client: ClickHouseClient, timezone?: string): Query {
  * Create a type-safe query for a specific table
  */
 export function clixTable<T extends TableName>(
-  client: ClickHouseClient, 
-  tableName: T, 
+  client: ClickHouseClient,
+  tableName: T,
   timezone?: string
 ): Query<TableMap[T]> {
   return new Query<TableMap[T]>(client, timezone ?? 'UTC').from(tableName);
@@ -839,22 +843,22 @@ export function clixTable<T extends TableName>(
  * Type-safe table query builders
  */
 export const tables = {
-  events: (client: ClickHouseClient, timezone?: string) => 
+  events: (client: ClickHouseClient, timezone?: string) =>
     clixTable(client, 'analytics.events', timezone),
-  
-  errors: (client: ClickHouseClient, timezone?: string) => 
+
+  errors: (client: ClickHouseClient, timezone?: string) =>
     clixTable(client, 'analytics.errors', timezone),
-  
-  webVitals: (client: ClickHouseClient, timezone?: string) => 
+
+  webVitals: (client: ClickHouseClient, timezone?: string) =>
     clixTable(client, 'analytics.web_vitals', timezone),
-  
-  stripePaymentIntents: (client: ClickHouseClient, timezone?: string) => 
+
+  stripePaymentIntents: (client: ClickHouseClient, timezone?: string) =>
     clixTable(client, 'analytics.stripe_payment_intents', timezone),
-  
-  stripeCharges: (client: ClickHouseClient, timezone?: string) => 
+
+  stripeCharges: (client: ClickHouseClient, timezone?: string) =>
     clixTable(client, 'analytics.stripe_charges', timezone),
-  
-  stripeRefunds: (client: ClickHouseClient, timezone?: string) => 
+
+  stripeRefunds: (client: ClickHouseClient, timezone?: string) =>
     clixTable(client, 'analytics.stripe_refunds', timezone),
 } as const;
 
@@ -865,13 +869,13 @@ export function columns<T extends TableName>(tableName: T) {
   return new Proxy({} as Record<ColumnKeys<T>, string>, {
     get(target, prop) {
       return String(prop);
-    }
+    },
   });
 }
 
 /**
  * Example usage:
- * 
+ *
  * const eventCols = columns('analytics.events');
  * const query = tables.events(client)
  *   .select([eventCols.id, eventCols.client_id, eventCols.event_name])
@@ -923,7 +927,7 @@ clix.toStartOf = (node: string, interval: IInterval, timezone?: string) => {
 clix.toStartOfInterval = (
   node: string,
   interval: IInterval,
-  origin: string | Date,
+  origin: string | Date
 ) => {
   switch (interval) {
     case 'minute': {
@@ -978,4 +982,4 @@ clix.toDate = (node: string, interval: IInterval) => {
 
 export type { SqlValue, QueryParam, Operator };
 
-// Inspired by openpanel.dev 
+// Inspired by openpanel.dev

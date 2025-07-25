@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { ArrowClockwise, Plus, Target } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
+import { ArrowClockwise, Plus, Target } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
 
 interface PageHeaderProps {
   websiteName: string;
@@ -37,7 +37,7 @@ export function PageHeader({
               {isLoading ? (
                 <span className="inline-block h-4 w-16 animate-pulse rounded bg-muted" />
               ) : (
-                `${goalsCount} active goal${goalsCount !== 1 ? "s" : ""} • Track key conversions`
+                `${goalsCount} active goal${goalsCount !== 1 ? 's' : ''} • Track key conversions`
               )}
             </p>
           </div>
@@ -50,7 +50,10 @@ export function PageHeader({
             onClick={onRefresh}
             variant="outline"
           >
-            <ArrowClockwise className={isRefreshing ? "animate-spin" : ""} size={16} />
+            <ArrowClockwise
+              className={isRefreshing ? 'animate-spin' : ''}
+              size={16}
+            />
             Refresh
           </Button>
           <Button

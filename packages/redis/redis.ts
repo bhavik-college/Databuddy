@@ -1,17 +1,17 @@
-import { SuperJSON } from 'superjson';
 import type { RedisOptions } from 'ioredis';
 import Redis from 'ioredis';
+import { SuperJSON } from 'superjson';
 
 // Initialize logger
 const logger = console;
 
 const options: RedisOptions = {
-  connectTimeout: 10000,
+  connectTimeout: 10_000,
   retryStrategy: (times) => {
     const delay = Math.min(times * 100, 3000);
     return delay;
   },
-  maxRetriesPerRequest: 3
+  maxRetriesPerRequest: 3,
 };
 
 export { Redis };
@@ -21,15 +21,14 @@ interface ExtendedRedis extends Redis {
   setJson: <T = any>(
     key: string,
     value: T,
-    expireInSec: number,
+    expireInSec: number
   ) => Promise<void>;
 }
 
 const createRedisClient = (
   url: string,
-  overrides: RedisOptions = {},
+  overrides: RedisOptions = {}
 ): ExtendedRedis => {
-
   const client = new Redis(url, {
     ...options,
     ...overrides,
@@ -59,8 +58,10 @@ const createRedisClient = (
       const res = SuperJSON.parse(value) as T;
 
       // Check for empty collections
-      if ((Array.isArray(res) && res.length === 0) ||
-        (res && typeof res === 'object' && Object.keys(res).length === 0)) {
+      if (
+        (Array.isArray(res) && res.length === 0) ||
+        (res && typeof res === 'object' && Object.keys(res).length === 0)
+      ) {
         return null;
       }
 
@@ -74,7 +75,7 @@ const createRedisClient = (
   client.setJson = async <T = any>(
     key: string,
     value: T,
-    expireInSec: number,
+    expireInSec: number
   ): Promise<void> => {
     await client.setex(key, expireInSec, SuperJSON.stringify(value));
   };
@@ -120,16 +121,23 @@ export const getRawRedis = () => {
     rawRedis = new Redis(process.env.REDIS_URL as string);
   }
   return rawRedis;
-}
+};
 
 // Helper for distributed locks
-export async function getLock(key: string, value: string, timeout: number): Promise<boolean> {
+export async function getLock(
+  key: string,
+  value: string,
+  timeout: number
+): Promise<boolean> {
   const lock = await redis.set(key, value, 'PX', timeout, 'NX');
   return lock === 'OK';
 }
 
 // Helper to release lock
-export async function releaseLock(key: string, value: string): Promise<boolean> {
+export async function releaseLock(
+  key: string,
+  value: string
+): Promise<boolean> {
   const script = `
     if redis.call("get", KEYS[1]) == ARGV[1] then
       return redis.call("del", KEYS[1])

@@ -256,12 +256,8 @@
           "tableFrom": "posts",
           "tableTo": "user",
           "schemaTo": "public",
-          "columnsFrom": [
-            "authorId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["authorId"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "cascade"
         },
@@ -270,12 +266,8 @@
           "tableFrom": "posts",
           "tableTo": "categories",
           "schemaTo": "public",
-          "columnsFrom": [
-            "categoryId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["categoryId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "cascade"
         }
@@ -509,12 +501,8 @@
           "tableFrom": "account",
           "tableTo": "user",
           "schemaTo": "public",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "cascade"
         }
@@ -666,12 +654,8 @@
           "tableFrom": "websites",
           "tableTo": "user",
           "schemaTo": "public",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "cascade"
         },
@@ -680,12 +664,8 @@
           "tableFrom": "websites",
           "tableTo": "projects",
           "schemaTo": "public",
-          "columnsFrom": [
-            "projectId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["projectId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "cascade"
         },
@@ -694,12 +674,8 @@
           "tableFrom": "websites",
           "tableTo": "domains",
           "schemaTo": "public",
-          "columnsFrom": [
-            "domainId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["domainId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "cascade"
         }
@@ -988,12 +964,8 @@
           "tableFrom": "event_meta",
           "tableTo": "projects",
           "schemaTo": "public",
-          "columnsFrom": [
-            "projectId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["projectId"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "cascade"
         }
@@ -1135,12 +1107,8 @@
           "tableFrom": "subscriptions",
           "tableTo": "user",
           "schemaTo": "public",
-          "columnsFrom": [
-            "createdByUserId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["createdByUserId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "cascade"
         }
@@ -1241,12 +1209,8 @@
           "tableFrom": "projects",
           "tableTo": "clients",
           "schemaTo": "public",
-          "columnsFrom": [
-            "clientId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["clientId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "cascade"
         }
@@ -1339,12 +1303,8 @@
           "tableFrom": "project_access",
           "tableTo": "projects",
           "schemaTo": "public",
-          "columnsFrom": [
-            "projectId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["projectId"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "cascade"
         },
@@ -1353,12 +1313,8 @@
           "tableFrom": "project_access",
           "tableTo": "user",
           "schemaTo": "public",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "cascade"
         }
@@ -1509,12 +1465,8 @@
           "tableFrom": "user_preferences",
           "tableTo": "user",
           "schemaTo": "public",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "cascade"
         }
@@ -1561,12 +1513,8 @@
           "tableFrom": "twoFactor",
           "tableTo": "user",
           "schemaTo": "public",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "cascade"
         }
@@ -1671,12 +1619,8 @@
           "tableFrom": "session",
           "tableTo": "user",
           "schemaTo": "public",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "cascade"
         }
@@ -1794,12 +1738,8 @@
           "tableFrom": "audit_logs",
           "tableTo": "user",
           "schemaTo": "public",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "cascade"
         }
@@ -1957,12 +1897,8 @@
           "tableFrom": "domains",
           "tableTo": "user",
           "schemaTo": "public",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "cascade"
         },
@@ -1971,12 +1907,8 @@
           "tableFrom": "domains",
           "tableTo": "projects",
           "schemaTo": "public",
-          "columnsFrom": [
-            "projectId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["projectId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "cascade"
         }
@@ -2028,12 +1960,8 @@
           "tableFrom": "_PostToTag",
           "tableTo": "posts",
           "schemaTo": "public",
-          "columnsFrom": [
-            "A"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["A"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "cascade"
         },
@@ -2042,12 +1970,8 @@
           "tableFrom": "_PostToTag",
           "tableTo": "tags",
           "schemaTo": "public",
-          "columnsFrom": [
-            "B"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["B"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "cascade"
         }
@@ -2055,10 +1979,7 @@
       "compositePrimaryKeys": {
         "_PostToTag_AB_pkey": {
           "name": "_PostToTag_AB_pkey",
-          "columns": [
-            "A",
-            "B"
-          ]
+          "columns": ["A", "B"]
         }
       },
       "uniqueConstraints": {},
@@ -2070,53 +1991,27 @@
   "enums": {
     "public.ClientType": {
       "name": "ClientType",
-      "values": [
-        "INDIVIDUAL",
-        "COMPANY",
-        "NONPROFIT"
-      ],
+      "values": ["INDIVIDUAL", "COMPANY", "NONPROFIT"],
       "schema": "public"
     },
     "public.OrganizationRole": {
       "name": "OrganizationRole",
-      "values": [
-        "ADMIN",
-        "OWNER",
-        "MEMBER",
-        "VIEWER"
-      ],
+      "values": ["ADMIN", "OWNER", "MEMBER", "VIEWER"],
       "schema": "public"
     },
     "public.ProjectStatus": {
       "name": "ProjectStatus",
-      "values": [
-        "ACTIVE",
-        "COMPLETED",
-        "ON_HOLD",
-        "CANCELLED"
-      ],
+      "values": ["ACTIVE", "COMPLETED", "ON_HOLD", "CANCELLED"],
       "schema": "public"
     },
     "public.ProjectType": {
       "name": "ProjectType",
-      "values": [
-        "WEBSITE",
-        "MOBILE_APP",
-        "DESKTOP_APP",
-        "API"
-      ],
+      "values": ["WEBSITE", "MOBILE_APP", "DESKTOP_APP", "API"],
       "schema": "public"
     },
     "public.Role": {
       "name": "Role",
-      "values": [
-        "ADMIN",
-        "OWNER",
-        "EDITOR",
-        "AUTHOR",
-        "VIEWER",
-        "USER"
-      ],
+      "values": ["ADMIN", "OWNER", "EDITOR", "AUTHOR", "VIEWER", "USER"],
       "schema": "public"
     },
     "public.SubscriptionStatus": {
@@ -2133,31 +2028,17 @@
     },
     "public.UserStatus": {
       "name": "UserStatus",
-      "values": [
-        "ACTIVE",
-        "SUSPENDED",
-        "INACTIVE"
-      ],
+      "values": ["ACTIVE", "SUSPENDED", "INACTIVE"],
       "schema": "public"
     },
     "public.VerificationStatus": {
       "name": "VerificationStatus",
-      "values": [
-        "PENDING",
-        "VERIFIED",
-        "FAILED"
-      ],
+      "values": ["PENDING", "VERIFIED", "FAILED"],
       "schema": "public"
     },
     "public.WebsiteStatus": {
       "name": "WebsiteStatus",
-      "values": [
-        "ACTIVE",
-        "HEALTHY",
-        "UNHEALTHY",
-        "INACTIVE",
-        "PENDING"
-      ],
+      "values": ["ACTIVE", "HEALTHY", "UNHEALTHY", "INACTIVE", "PENDING"],
       "schema": "public"
     }
   },

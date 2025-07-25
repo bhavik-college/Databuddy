@@ -13,25 +13,29 @@ interface CacheOptions {
 }
 
 const defaultSerialize = (data: unknown): string => JSON.stringify(data);
-const defaultDeserialize = (data: string): unknown => JSON.parse(data, (_, value) => {
-  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*Z$/.test(value)) {
-    return new Date(value);
-  }
-  return value;
-});
+const defaultDeserialize = (data: string): unknown =>
+  JSON.parse(data, (_, value) => {
+    if (
+      typeof value === 'string' &&
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*Z$/.test(value)
+    ) {
+      return new Date(value);
+    }
+    return value;
+  });
 
 export async function getCache<T>(
   key: string,
   options: CacheOptions | number,
-  fn: () => Promise<T>,
+  fn: () => Promise<T>
 ): Promise<T> {
-  const { 
-    expireInSec, 
-    serialize = defaultSerialize, 
+  const {
+    expireInSec,
+    serialize = defaultSerialize,
     deserialize = defaultDeserialize,
     staleWhileRevalidate = false,
     staleTime = 0,
-    maxRetries = 3
+    maxRetries = 3,
   } = typeof options === 'number' ? { expireInSec: options } : options;
 
   let retries = 0;
@@ -41,22 +45,27 @@ export async function getCache<T>(
       const hit = await redis.get(key);
       if (hit) {
         const data = deserialize(hit) as T;
-        
+
         if (staleWhileRevalidate) {
           const ttl = await redis.ttl(key);
           if (ttl < staleTime) {
             // Return stale data and revalidate in background
-            fn().then(async (freshData: T) => {
-              if (freshData !== undefined && freshData !== null) {
-                const redis = getRedisCache();
-                await redis.setex(key, expireInSec, serialize(freshData));
-              }
-            }).catch((error: unknown) => {
-              logger.error(`Background revalidation failed for key ${key}:`, error);
-            });
+            fn()
+              .then(async (freshData: T) => {
+                if (freshData !== undefined && freshData !== null) {
+                  const redis = getRedisCache();
+                  await redis.setex(key, expireInSec, serialize(freshData));
+                }
+              })
+              .catch((error: unknown) => {
+                logger.error(
+                  `Background revalidation failed for key ${key}:`,
+                  error
+                );
+              });
           }
         }
-        
+
         return data;
       }
 
@@ -68,32 +77,35 @@ export async function getCache<T>(
     } catch (error: unknown) {
       retries++;
       if (retries === maxRetries) {
-        logger.error(`Cache error for key ${key} after ${maxRetries} retries:`, error);
+        logger.error(
+          `Cache error for key ${key} after ${maxRetries} retries:`,
+          error
+        );
         return fn();
       }
-      await new Promise(resolve => setTimeout(resolve, 100 * retries)); // Exponential backoff
+      await new Promise((resolve) => setTimeout(resolve, 100 * retries)); // Exponential backoff
     }
   }
-  
+
   return fn();
 }
 
 export function cacheable<T extends (...args: any) => any>(
   fn: T,
-  options: CacheOptions | number,
+  options: CacheOptions | number
 ) {
-  const { 
-    expireInSec, 
-    prefix = fn.name, 
-    serialize = defaultSerialize, 
+  const {
+    expireInSec,
+    prefix = fn.name,
+    serialize = defaultSerialize,
     deserialize = defaultDeserialize,
     staleWhileRevalidate = false,
     staleTime = 0,
-    maxRetries = 3
+    maxRetries = 3,
   } = typeof options === 'number' ? { expireInSec: options } : options;
 
   const cachePrefix = `cacheable:${prefix}`;
-  
+
   function stringify(obj: unknown): string {
     if (obj === null) return 'null';
     if (obj === undefined) return 'undefined';
@@ -116,34 +128,42 @@ export function cacheable<T extends (...args: any) => any>(
     return String(obj);
   }
 
-  const getKey = (...args: Parameters<T>) => `${cachePrefix}:${stringify(args)}`;
+  const getKey = (...args: Parameters<T>) =>
+    `${cachePrefix}:${stringify(args)}`;
 
-  const cachedFn = async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
+  const cachedFn = async (
+    ...args: Parameters<T>
+  ): Promise<Awaited<ReturnType<T>>> => {
     const key = getKey(...args);
     let retries = 0;
-    
+
     while (retries < maxRetries) {
       try {
         const redis = getRedisCache();
         const cached = await redis.get(key);
         if (cached) {
           const data = deserialize(cached) as Awaited<ReturnType<T>>;
-          
+
           if (staleWhileRevalidate) {
             const ttl = await redis.ttl(key);
             if (ttl < staleTime) {
               // Return stale data and revalidate in background
-              fn(...args).then(async (freshData: Awaited<ReturnType<T>>) => {
-                if (freshData !== undefined && freshData !== null) {
-                  const redis = getRedisCache();
-                  await redis.setex(key, expireInSec, serialize(freshData));
-                }
-              }).catch((error: unknown) => {
-                logger.error(`Background revalidation failed for function ${fn.name}:`, error);
-              });
+              fn(...args)
+                .then(async (freshData: Awaited<ReturnType<T>>) => {
+                  if (freshData !== undefined && freshData !== null) {
+                    const redis = getRedisCache();
+                    await redis.setex(key, expireInSec, serialize(freshData));
+                  }
+                })
+                .catch((error: unknown) => {
+                  logger.error(
+                    `Background revalidation failed for function ${fn.name}:`,
+                    error
+                  );
+                });
             }
           }
-          
+
           return data;
         }
 
@@ -155,13 +175,16 @@ export function cacheable<T extends (...args: any) => any>(
       } catch (error: unknown) {
         retries++;
         if (retries === maxRetries) {
-          logger.error(`Cache error for function ${fn.name} after ${maxRetries} retries:`, error);
+          logger.error(
+            `Cache error for function ${fn.name} after ${maxRetries} retries:`,
+            error
+          );
           return fn(...args);
         }
-        await new Promise(resolve => setTimeout(resolve, 100 * retries)); // Exponential backoff
+        await new Promise((resolve) => setTimeout(resolve, 100 * retries)); // Exponential backoff
       }
     }
-    
+
     return fn(...args);
   };
 

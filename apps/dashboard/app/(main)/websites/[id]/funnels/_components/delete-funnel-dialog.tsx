@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { TrashIcon } from "@phosphor-icons/react";
+import { TrashIcon } from '@phosphor-icons/react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,7 +10,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 interface DeleteFunnelDialogProps {
   isOpen: boolean;
@@ -18,22 +18,30 @@ interface DeleteFunnelDialogProps {
   onConfirm: () => void;
 }
 
-export function DeleteFunnelDialog({ isOpen, onClose, onConfirm }: DeleteFunnelDialogProps) {
+export function DeleteFunnelDialog({
+  isOpen,
+  onClose,
+  onConfirm,
+}: DeleteFunnelDialogProps) {
   return (
     <AlertDialog onOpenChange={onClose} open={isOpen}>
       <AlertDialogContent className="fade-in-50 zoom-in-95 animate-in rounded-xl border-border/50 bg-gradient-to-br from-background to-muted/10 duration-300">
         <AlertDialogHeader className="space-y-3">
           <div className="flex items-center gap-3">
             <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-3">
-              <TrashIcon className="h-6 w-6 text-destructive" size={16} weight="duotone" />
+              <TrashIcon
+                className="h-6 w-6 text-destructive"
+                size={16}
+                weight="duotone"
+              />
             </div>
             <div>
               <AlertDialogTitle className="font-semibold text-foreground text-xl">
                 Delete Funnel
               </AlertDialogTitle>
               <AlertDialogDescription className="mt-1 text-muted-foreground">
-                Are you sure you want to delete this funnel? This action cannot be undone and will
-                permanently remove it
+                Are you sure you want to delete this funnel? This action cannot
+                be undone and will permanently remove it
               </AlertDialogDescription>
             </div>
           </div>

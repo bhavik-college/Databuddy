@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 interface SectionProps {
   children: ReactNode;
@@ -11,27 +11,25 @@ interface SectionProps {
 
 export default function Section({
   children,
-  className = "",
+  className = '',
   crosses = false,
-  crossesOffset = "",
+  crossesOffset = '',
   customPaddings = false,
   id,
 }: SectionProps) {
   return (
     <section
+      className={`relative ${customPaddings ? '' : 'py-20'} ${className} `}
       id={id}
-      className={`
-        relative
-        ${customPaddings ? "" : "py-20"}
-        ${className}
-      `}
     >
       {children}
       {crosses && (
-        <div className={`absolute inset-0 pointer-events-none ${crossesOffset}`}>
+        <div
+          className={`pointer-events-none absolute inset-0 ${crossesOffset}`}
+        >
           <div className="absolute inset-0 bg-grid-white/[0.02] dark:bg-grid-black/[0.02]" />
         </div>
       )}
     </section>
   );
-} 
+}

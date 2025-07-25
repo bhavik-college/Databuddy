@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { FileTextIcon, SparklesIcon } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { FileTextIcon, SparklesIcon } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import {
   cleanUrl,
   formatPropertyValue,
   getDisplayPath,
   getEventIconAndColor,
-} from "./session-utils";
+} from './session-utils';
 
 interface SessionEvent {
   event_id?: string;
@@ -36,18 +36,21 @@ export function SessionEventTimeline({ events }: SessionEventTimelineProps) {
   return (
     <div className="max-h-96 space-y-3 overflow-y-auto">
       {events.map((event, eventIndex) => {
-        const hasProperties = Boolean(event.properties && Object.keys(event.properties).length > 0);
-        const { icon, color, bgColor, borderColor, badgeColor } = getEventIconAndColor(
-          event.event_name,
-          Boolean(event.error_message),
-          hasProperties
+        const hasProperties = Boolean(
+          event.properties && Object.keys(event.properties).length > 0
         );
-        const displayPath = getDisplayPath(event.path || "");
-        const fullPath = cleanUrl(event.path || "");
+        const { icon, color, bgColor, borderColor, badgeColor } =
+          getEventIconAndColor(
+            event.event_name,
+            Boolean(event.error_message),
+            hasProperties
+          );
+        const displayPath = getDisplayPath(event.path || '');
+        const fullPath = cleanUrl(event.path || '');
 
         return (
           <div
-            className={`group flex items-start gap-3 rounded-lg border-2 p-4 ${bgColor} ${borderColor} ${hasProperties ? "shadow-sm" : ""}`}
+            className={`group flex items-start gap-3 rounded-lg border-2 p-4 ${bgColor} ${borderColor} ${hasProperties ? 'shadow-sm' : ''}`}
             key={event.event_id || eventIndex}
           >
             <div
@@ -61,22 +64,29 @@ export function SessionEventTimeline({ events }: SessionEventTimelineProps) {
                 <div className="mb-2 flex items-start justify-between gap-2">
                   <div className="flex min-w-0 flex-wrap items-center gap-2">
                     <span
-                      className={`font-semibold text-sm ${event.error_message
-                        ? "text-destructive"
-                        : hasProperties
-                          ? "text-accent-foreground"
-                          : "text-foreground"
-                        }`}
+                      className={`font-semibold text-sm ${
+                        event.error_message
+                          ? 'text-destructive'
+                          : hasProperties
+                            ? 'text-accent-foreground'
+                            : 'text-foreground'
+                      }`}
                     >
-                      {event.error_message ? "Error" : event.event_name}
+                      {event.error_message ? 'Error' : event.event_name}
                     </span>
                     {displayPath && (
-                      <Badge className="font-mono text-xs" title={fullPath} variant="secondary">
+                      <Badge
+                        className="font-mono text-xs"
+                        title={fullPath}
+                        variant="secondary"
+                      >
                         {displayPath}
                       </Badge>
                     )}
                     {hasProperties && (
-                      <Badge className={`font-medium text-xs ${badgeColor}`}>Custom Event</Badge>
+                      <Badge className={`font-medium text-xs ${badgeColor}`}>
+                        Custom Event
+                      </Badge>
                     )}
                   </div>
                   <div className="flex-shrink-0 whitespace-nowrap font-medium text-muted-foreground text-xs">
@@ -93,19 +103,21 @@ export function SessionEventTimeline({ events }: SessionEventTimelineProps) {
                       </span>
                     </div>
                     <div className="space-y-2">
-                      {Object.entries(event.properties || {}).map(([key, value]) => (
-                        <div
-                          className="flex items-center gap-3 rounded border border-accent/20 bg-card/60 p-2"
-                          key={key}
-                        >
-                          <span className="min-w-0 truncate font-mono font-semibold text-accent-foreground text-xs">
-                            {key}
-                          </span>
-                          <span className="rounded bg-accent/20 px-2 py-1 font-medium text-accent-foreground text-xs">
-                            {formatPropertyValue(value)}
-                          </span>
-                        </div>
-                      ))}
+                      {Object.entries(event.properties || {}).map(
+                        ([key, value]) => (
+                          <div
+                            className="flex items-center gap-3 rounded border border-accent/20 bg-card/60 p-2"
+                            key={key}
+                          >
+                            <span className="min-w-0 truncate font-mono font-semibold text-accent-foreground text-xs">
+                              {key}
+                            </span>
+                            <span className="rounded bg-accent/20 px-2 py-1 font-medium text-accent-foreground text-xs">
+                              {formatPropertyValue(value)}
+                            </span>
+                          </div>
+                        )
+                      )}
                     </div>
                   </div>
                 )}
@@ -113,7 +125,7 @@ export function SessionEventTimeline({ events }: SessionEventTimelineProps) {
                 {event.error_message && (
                   <div className="mt-3 rounded-lg border-2 border-destructive/20 bg-destructive/10 p-3">
                     <div className="text-destructive text-sm">
-                      <span className="font-semibold">{event.error_type}:</span>{" "}
+                      <span className="font-semibold">{event.error_type}:</span>{' '}
                       {event.error_message}
                     </div>
                   </div>

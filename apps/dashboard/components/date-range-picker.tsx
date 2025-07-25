@@ -1,13 +1,17 @@
-"use client";
+'use client';
 
-import { CalendarIcon } from "@phosphor-icons/react";
-import { format } from "date-fns";
-import * as React from "react";
-import type { DateRange } from "react-day-picker";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { CalendarIcon } from '@phosphor-icons/react';
+import { format } from 'date-fns';
+import * as React from 'react';
+import type { DateRange } from 'react-day-picker';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 interface DateRangePickerProps {
   className?: string;
@@ -24,13 +28,17 @@ export function DateRangePicker({
   value,
   onChange,
   disabled = false,
-  placeholder = "Pick a date range",
+  placeholder = 'Pick a date range',
   maxDate,
   minDate,
 }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [tempRange, setTempRange] = React.useState<DateRange | undefined>(value);
-  const [appliedRange, setAppliedRange] = React.useState<DateRange | undefined>(value);
+  const [tempRange, setTempRange] = React.useState<DateRange | undefined>(
+    value
+  );
+  const [appliedRange, setAppliedRange] = React.useState<DateRange | undefined>(
+    value
+  );
 
   // Sync with external value changes
   React.useEffect(() => {
@@ -84,64 +92,73 @@ export function DateRangePicker({
   // Format display text
   const getDisplayText = React.useCallback(() => {
     if (!appliedRange?.from) {
-      return "Select dates";
+      return 'Select dates';
     }
 
     if (appliedRange.from && !appliedRange.to) {
-      return format(appliedRange.from, "MMM d, yyyy");
+      return format(appliedRange.from, 'MMM d, yyyy');
     }
 
     if (appliedRange.from && appliedRange.to) {
       if (appliedRange.from.getTime() === appliedRange.to.getTime()) {
-        return format(appliedRange.from, "MMM d, yyyy");
+        return format(appliedRange.from, 'MMM d, yyyy');
       }
 
       // Show year for both dates if they're different years
       if (appliedRange.from.getFullYear() !== appliedRange.to.getFullYear()) {
-        return `${format(appliedRange.from, "MMM d, yyyy")} - ${format(appliedRange.to, "MMM d, yyyy")}`;
+        return `${format(appliedRange.from, 'MMM d, yyyy')} - ${format(appliedRange.to, 'MMM d, yyyy')}`;
       }
 
       // Same year, show full format
-      return `${format(appliedRange.from, "MMM d")} - ${format(appliedRange.to, "MMM d, yyyy")}`;
+      return `${format(appliedRange.from, 'MMM d')} - ${format(appliedRange.to, 'MMM d, yyyy')}`;
     }
 
-    return "Select dates";
+    return 'Select dates';
   }, [appliedRange]);
 
   const hasSelection = appliedRange?.from && appliedRange?.to;
   const hasValidTempSelection = tempRange?.from && tempRange?.to;
 
   return (
-    <div className={cn("grid gap-2", className)}>
+    <div className={cn('grid gap-2', className)}>
       <Popover onOpenChange={setIsOpen} open={isOpen}>
         <PopoverTrigger asChild>
           <Button
             className={cn(
-              "h-8 justify-start gap-2 whitespace-nowrap border px-3 text-left font-normal text-sm shadow-xs transition-[color,box-shadow]",
-              !hasSelection && "text-muted-foreground"
+              'h-8 justify-start gap-2 whitespace-nowrap border px-3 text-left font-normal text-sm shadow-xs transition-[color,box-shadow]',
+              !hasSelection && 'text-muted-foreground'
             )}
             disabled={disabled}
             size="sm"
             variant="outline"
           >
             <CalendarIcon className="h-4 w-4 shrink-0" size={16} />
-            <span className="truncate font-medium text-sm">{getDisplayText()}</span>
+            <span className="truncate font-medium text-sm">
+              {getDisplayText()}
+            </span>
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="end" className="w-auto rounded border p-0 shadow-md">
+        <PopoverContent
+          align="end"
+          className="w-auto rounded border p-0 shadow-md"
+        >
           {/* Header showing current selection */}
           <div className="border-b bg-muted/20 p-4">
             <div className="text-muted-foreground text-sm">
               {tempRange?.from && tempRange?.to ? (
                 <span className="font-medium text-foreground">
-                  {format(tempRange.from, "MMM d")} - {format(tempRange.to, "MMM d, yyyy")}
+                  {format(tempRange.from, 'MMM d')} -{' '}
+                  {format(tempRange.to, 'MMM d, yyyy')}
                 </span>
               ) : tempRange?.from ? (
                 <span>
                   <span className="font-medium text-foreground">
-                    {format(tempRange.from, "MMM d")}
+                    {format(tempRange.from, 'MMM d')}
                   </span>
-                  <span className="text-muted-foreground"> → Select end date</span>
+                  <span className="text-muted-foreground">
+                    {' '}
+                    → Select end date
+                  </span>
                 </span>
               ) : (
                 <span className="font-medium">Select start date</span>
@@ -167,7 +184,9 @@ export function DateRangePicker({
 
           {/* Quick presets */}
           <div className="border-t bg-muted/20 p-4">
-            <div className="mb-3 font-medium text-muted-foreground text-sm">Quick select:</div>
+            <div className="mb-3 font-medium text-muted-foreground text-sm">
+              Quick select:
+            </div>
             <div className="flex flex-wrap gap-2">
               <Button
                 className="h-8 text-sm transition-[color,box-shadow]"

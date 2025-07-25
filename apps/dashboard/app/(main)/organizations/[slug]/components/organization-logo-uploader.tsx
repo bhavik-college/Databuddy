@@ -1,24 +1,29 @@
-"use client";
+'use client';
 
-import { useRef, useState } from "react";
-import ReactCrop, { type Crop, centerCrop, makeAspectCrop, type PixelCrop } from "react-image-crop";
-import { toast } from "sonner";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { useRef, useState } from 'react';
+import ReactCrop, {
+  type Crop,
+  centerCrop,
+  makeAspectCrop,
+  type PixelCrop,
+} from 'react-image-crop';
+import { toast } from 'sonner';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useOrganizations } from "@/hooks/use-organizations";
-import { getOrganizationInitials } from "@/lib/utils";
-import "react-image-crop/dist/ReactCrop.css";
-import { UploadSimpleIcon } from "@phosphor-icons/react";
-import { getCroppedImage } from "@/lib/canvas-utils";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useOrganizations } from '@/hooks/use-organizations';
+import { getOrganizationInitials } from '@/lib/utils';
+import 'react-image-crop/dist/ReactCrop.css';
+import { UploadSimpleIcon } from '@phosphor-icons/react';
+import { getCroppedImage } from '@/lib/canvas-utils';
 
 interface OrganizationLogoUploaderProps {
   organization: {
@@ -28,8 +33,11 @@ interface OrganizationLogoUploaderProps {
   };
 }
 
-export function OrganizationLogoUploader({ organization }: OrganizationLogoUploaderProps) {
-  const { uploadOrganizationLogo, isUploadingOrganizationLogo } = useOrganizations();
+export function OrganizationLogoUploader({
+  organization,
+}: OrganizationLogoUploaderProps) {
+  const { uploadOrganizationLogo, isUploadingOrganizationLogo } =
+    useOrganizations();
   const [preview, setPreview] = useState<string | null>(organization.logo);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState<Crop>();
@@ -40,7 +48,7 @@ export function OrganizationLogoUploader({ organization }: OrganizationLogoUploa
 
   const handleModalOpenChange = (isOpen: boolean) => {
     if (!isOpen && fileInputRef.current) {
-      fileInputRef.current.value = "";
+      fileInputRef.current.value = '';
     }
     if (!isOpen) {
       setImageSrc(null);
@@ -55,7 +63,7 @@ export function OrganizationLogoUploader({ organization }: OrganizationLogoUploa
     const percentCrop = centerCrop(
       makeAspectCrop(
         {
-          unit: "%",
+          unit: '%',
           width: 90,
         },
         1,
@@ -67,7 +75,7 @@ export function OrganizationLogoUploader({ organization }: OrganizationLogoUploa
     );
     setCrop(percentCrop);
     const pixelCrop = {
-      unit: "px" as const,
+      unit: 'px' as const,
       x: Math.round((percentCrop.x / 100) * width),
       y: Math.round((percentCrop.y / 100) * height),
       width: Math.round((percentCrop.width / 100) * width),
@@ -89,16 +97,20 @@ export function OrganizationLogoUploader({ organization }: OrganizationLogoUploa
   };
 
   const handleUpload = async () => {
-    if (!imageSrc || !(completedCrop && imageRef.current)) {
-      toast.error("Please crop the image before uploading.");
+    if (!(imageSrc && completedCrop && imageRef.current)) {
+      toast.error('Please crop the image before uploading.');
       return;
     }
 
     try {
-      const croppedFile = await getCroppedImage(imageRef.current, completedCrop, "logo.png");
+      const croppedFile = await getCroppedImage(
+        imageRef.current,
+        completedCrop,
+        'logo.png'
+      );
 
       const formData = new FormData();
-      formData.append("file", croppedFile);
+      formData.append('file', croppedFile);
 
       uploadOrganizationLogo(
         { organizationId: organization.id, formData },
@@ -106,15 +118,15 @@ export function OrganizationLogoUploader({ organization }: OrganizationLogoUploa
           onSuccess: (data) => {
             setPreview(data.url);
             handleModalOpenChange(false);
-            toast.success("Logo updated successfully!");
+            toast.success('Logo updated successfully!');
           },
           onError: (error) => {
-            toast.error(error.message || "Failed to upload logo.");
+            toast.error(error.message || 'Failed to upload logo.');
           },
         }
       );
     } catch (e) {
-      toast.error("Failed to crop image.");
+      toast.error('Failed to crop image.');
       console.error(e);
     }
   };
@@ -131,17 +143,19 @@ export function OrganizationLogoUploader({ organization }: OrganizationLogoUploa
             </AvatarFallback>
           </Avatar>
           <button
-            type="button"
+            aria-label="Upload new organization logo"
             className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/50 opacity-0 transition-opacity group-hover:opacity-100"
             onClick={() => fileInputRef.current?.click()}
-            aria-label="Upload new organization logo"
+            type="button"
           >
             <UploadSimpleIcon className="text-white" size={24} />
           </button>
         </div>
         <div className="space-y-2">
           <p className="font-medium text-foreground">Update your logo</p>
-          <p className="text-muted-foreground text-sm">Click the image to upload a new one.</p>
+          <p className="text-muted-foreground text-sm">
+            Click the image to upload a new one.
+          </p>
           <Input
             accept="image/png, image/jpeg, image/gif"
             className="hidden"
@@ -167,15 +181,25 @@ export function OrganizationLogoUploader({ organization }: OrganizationLogoUploa
                 setCompletedCrop(pixelCrop);
               }}
             >
-              <img alt="Crop preview" onLoad={onImageLoad} ref={imageRef} src={imageSrc} />
+              <img
+                alt="Crop preview"
+                onLoad={onImageLoad}
+                ref={imageRef}
+                src={imageSrc}
+              />
             </ReactCrop>
           )}
           <DialogFooter>
-            <Button onClick={() => handleModalOpenChange(false)} variant="outline">
+            <Button
+              onClick={() => handleModalOpenChange(false)}
+              variant="outline"
+            >
               Cancel
             </Button>
             <Button
-              disabled={isUploadingOrganizationLogo || !imageSrc || !completedCrop}
+              disabled={
+                isUploadingOrganizationLogo || !imageSrc || !completedCrop
+              }
               onClick={handleUpload}
             >
               {isUploadingOrganizationLogo ? (
@@ -184,7 +208,7 @@ export function OrganizationLogoUploader({ organization }: OrganizationLogoUploa
                   Uploading...
                 </>
               ) : (
-                "Save and Upload"
+                'Save and Upload'
               )}
             </Button>
           </DialogFooter>

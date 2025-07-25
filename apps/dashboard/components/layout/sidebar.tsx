@@ -1,35 +1,37 @@
-"use client";
+'use client';
 
-import { XIcon } from "@phosphor-icons/react";
-import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useWebsites } from "@/hooks/use-websites";
-import { cn } from "@/lib/utils";
+import { XIcon } from '@phosphor-icons/react';
+import { usePathname } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useWebsites } from '@/hooks/use-websites';
+import { cn } from '@/lib/utils';
 import {
   demoNavigation,
   mainNavigation,
   sandboxNavigation,
   websiteNavigation,
-} from "./navigation/navigation-config";
-import { NavigationSection } from "./navigation/navigation-section";
-import { SandboxHeader } from "./navigation/sandbox-header";
-import { WebsiteHeader } from "./navigation/website-header";
-import { OrganizationSelector } from "./organization-selector";
-import { TopHeader } from "./top-header";
+} from './navigation/navigation-config';
+import { NavigationSection } from './navigation/navigation-section';
+import { SandboxHeader } from './navigation/sandbox-header';
+import { WebsiteHeader } from './navigation/website-header';
+import { OrganizationSelector } from './organization-selector';
+import { TopHeader } from './top-header';
 
 export function Sidebar() {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { websites } = useWebsites();
 
-  const isDemo = pathname.startsWith("/demo");
-  const isSandbox = pathname.startsWith("/sandbox");
-  const isWebsite = pathname.startsWith("/websites/");
+  const isDemo = pathname.startsWith('/demo');
+  const isSandbox = pathname.startsWith('/sandbox');
+  const isWebsite = pathname.startsWith('/websites/');
 
-  const websiteId = isDemo || isWebsite ? pathname.split("/")[2] : null;
-  const currentWebsite = websiteId ? websites?.find((site) => site.id === websiteId) : null;
+  const websiteId = isDemo || isWebsite ? pathname.split('/')[2] : null;
+  const currentWebsite = websiteId
+    ? websites?.find((site) => site.id === websiteId)
+    : null;
 
   const closeSidebar = useCallback(() => {
     setIsMobileOpen(false);
@@ -37,13 +39,13 @@ export function Sidebar() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isMobileOpen) {
+      if (e.key === 'Escape' && isMobileOpen) {
         closeSidebar();
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isMobileOpen, closeSidebar]);
 
   const renderNavigation = () => {
@@ -120,16 +122,16 @@ export function Sidebar() {
       {isMobileOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/20 md:hidden"
-          onKeyDown={closeSidebar}
           onClick={closeSidebar}
+          onKeyDown={closeSidebar}
         />
       )}
 
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 bg-background",
-          "border-r pt-16 transition-transform duration-200 ease-out md:translate-x-0",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full"
+          'fixed inset-y-0 left-0 z-40 w-64 bg-background',
+          'border-r pt-16 transition-transform duration-200 ease-out md:translate-x-0',
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <Button
@@ -143,9 +145,7 @@ export function Sidebar() {
         </Button>
 
         <ScrollArea className="h-[calc(100vh-4rem)]">
-          <div className="select-none space-y-4 p-3">
-            {renderNavigation()}
-          </div>
+          <div className="select-none space-y-4 p-3">{renderNavigation()}</div>
         </ScrollArea>
       </div>
     </>

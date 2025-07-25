@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useParams } from "next/navigation";
-import { SessionsList } from "./_components";
+import { useParams } from 'next/navigation';
+import { SessionsList } from './_components';
 
 export default function SessionsPage() {
   const { id: websiteId } = useParams();

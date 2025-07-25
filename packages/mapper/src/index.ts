@@ -1,5 +1,5 @@
-import type { AnalyticsEventAdapter } from './types';
 import { umamiAdapter } from './adapters';
+import type { AnalyticsEventAdapter } from './types';
 
 export { mapEvents } from './utils-map-events';
 

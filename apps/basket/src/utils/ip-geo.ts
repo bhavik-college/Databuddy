@@ -1,13 +1,17 @@
-import { Reader, AddressNotFoundError, BadMethodCallError } from "@maxmind/geoip2-node";
-import type { City } from "@maxmind/geoip2-node";
 import { createHash } from 'node:crypto';
+import type { City } from '@maxmind/geoip2-node';
+import {
+  AddressNotFoundError,
+  BadMethodCallError,
+  Reader,
+} from '@maxmind/geoip2-node';
 
 interface GeoIPReader extends Reader {
   city(ip: string): City;
 }
 
 // Database configuration
-const CDN_URL = "https://cdn.databuddy.cc/GeoLite2-City.mmdb";
+const CDN_URL = 'https://cdn.databuddy.cc/GeoLite2-City.mmdb';
 
 let reader: GeoIPReader | null = null;
 let isLoading = false;
@@ -18,20 +22,25 @@ async function loadDatabaseFromCdn(): Promise<Buffer> {
   try {
     const response = await fetch(CDN_URL);
     if (!response.ok) {
-      throw new Error(`Failed to fetch database from CDN: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch database from CDN: ${response.status} ${response.statusText}`
+      );
     }
 
     const arrayBuffer = await response.arrayBuffer();
     const dbBuffer = Buffer.from(arrayBuffer);
 
     // Validate that we got a reasonable file size (should be ~50-100MB)
-    if (dbBuffer.length < 1000000) { // Less than 1MB
-      throw new Error(`Database file seems too small: ${dbBuffer.length} bytes`);
+    if (dbBuffer.length < 1_000_000) {
+      // Less than 1MB
+      throw new Error(
+        `Database file seems too small: ${dbBuffer.length} bytes`
+      );
     }
 
     return dbBuffer;
   } catch (error) {
-    console.error("Failed to load database from CDN:", error);
+    console.error('Failed to load database from CDN:', error);
     throw error;
   }
 }
@@ -55,11 +64,11 @@ async function loadDatabase() {
       const dbBuffer = await loadDatabaseFromCdn();
 
       // Add a small delay to prevent overwhelming the system
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       reader = Reader.openBuffer(dbBuffer) as GeoIPReader;
     } catch (error) {
-      console.error("Failed to load GeoIP database:", error);
+      console.error('Failed to load GeoIP database:', error);
       loadError = error as Error;
       reader = null;
     } finally {
@@ -78,7 +87,8 @@ function isValidIp(ip: string): boolean {
   if (!ip) return false;
 
   // Check for IPv4 format
-  const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+  const ipv4Regex =
+    /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
   if (ipv4Regex.test(ip)) return true;
 
   // Check for IPv6 format (basic check)
@@ -94,11 +104,11 @@ export async function getGeoLocation(ip: string) {
   }
 
   // Lazy load database on first use
-  if (!reader && !isLoading && !loadError) {
+  if (!(reader || isLoading || loadError)) {
     try {
       await loadDatabase();
     } catch (error) {
-      console.error("Failed to load database for IP lookup:", error);
+      console.error('Failed to load database for IP lookup:', error);
       return { country: undefined, region: undefined, city: undefined };
     }
   }
@@ -116,8 +126,8 @@ export async function getGeoLocation(ip: string) {
 
     return {
       country: response.country?.names?.en,
-      region: region,
-      city: city,
+      region,
+      city,
     };
   } catch (error) {
     // Handle AddressNotFoundError specifically (IP not in database)
@@ -127,12 +137,14 @@ export async function getGeoLocation(ip: string) {
 
     // Handle BadMethodCallError (wrong database type)
     if (error instanceof BadMethodCallError) {
-      console.error("Database type mismatch - using city() method with ipinfo database");
+      console.error(
+        'Database type mismatch - using city() method with ipinfo database'
+      );
       return { country: undefined, region: undefined, city: undefined };
     }
 
     // Handle other errors
-    console.error("Error looking up IP:", ip, error);
+    console.error('Error looking up IP:', ip, error);
     return { country: undefined, region: undefined, city: undefined };
   }
 }
@@ -150,7 +162,7 @@ export function getClientIp(req: Request): string | undefined {
   const realIp = req.headers.get('x-real-ip');
   if (realIp) return realIp;
 
-  return undefined;
+  return;
 }
 
 export async function parseIp(req: Request) {
@@ -190,4 +202,3 @@ export function extractIpFromRequest(request: Request): string {
 
   return '';
 }
-

@@ -11,4 +11,4 @@ export default defineConfig({
   extensionsFilters: ['postgis'],
   tablesFilter: ['!pg_stat_*'],
   schemaFilter: ['public', 'analytics'],
-}); 
+});

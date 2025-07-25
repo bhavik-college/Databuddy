@@ -1,7 +1,10 @@
-import type { SimpleQueryConfig, Filter, TimeUnit } from "../types";
-import { Analytics } from "../../types/tables";
+import { Analytics } from '../../types/tables';
+import type { Filter, SimpleQueryConfig, TimeUnit } from '../types';
 
-export const SummaryBuilders: Record<string, SimpleQueryConfig<typeof Analytics.events>> = {
+export const SummaryBuilders: Record<
+  string,
+  SimpleQueryConfig<typeof Analytics.events>
+> = {
   summary_metrics: {
     customSql: (websiteId: string, startDate: string, endDate: string) => {
       return {
@@ -62,12 +65,18 @@ export const SummaryBuilders: Record<string, SimpleQueryConfig<typeof Analytics.
           websiteId,
           startDate,
           endDate,
-        }
+        },
       };
     },
     timeField: 'time',
-    allowedFilters: ['path', 'referrer', 'device_type', 'browser_name', 'country'],
-    customizable: true
+    allowedFilters: [
+      'path',
+      'referrer',
+      'device_type',
+      'browser_name',
+      'country',
+    ],
+    customizable: true,
   },
 
   today_metrics: {
@@ -76,19 +85,25 @@ export const SummaryBuilders: Record<string, SimpleQueryConfig<typeof Analytics.
       'COUNT(*) as pageviews',
       'COUNT(DISTINCT anonymous_id) as visitors',
       'COUNT(DISTINCT session_id) as sessions',
-      'ROUND(AVG(CASE WHEN is_bounce = 1 THEN 100 ELSE 0 END), 2) as bounce_rate'
+      'ROUND(AVG(CASE WHEN is_bounce = 1 THEN 100 ELSE 0 END), 2) as bounce_rate',
     ],
-    where: [
-      'event_name = \'screen_view\'',
-      'toDate(time) = today()'
-    ],
+    where: ["event_name = 'screen_view'", 'toDate(time) = today()'],
     timeField: 'time',
     allowedFilters: ['path', 'referrer', 'device_type'],
-    customizable: true
+    customizable: true,
   },
 
   events_by_date: {
-    customSql: (websiteId: string, startDate: string, endDate: string, filters?: Filter[], granularity?: TimeUnit, limit?: number, offset?: number, timezone?: string) => {
+    customSql: (
+      websiteId: string,
+      startDate: string,
+      endDate: string,
+      filters?: Filter[],
+      granularity?: TimeUnit,
+      limit?: number,
+      offset?: number,
+      timezone?: string
+    ) => {
       const tz = timezone || 'UTC';
       const isHourly = granularity === 'hour' || granularity === 'hourly';
 
@@ -161,7 +176,7 @@ export const SummaryBuilders: Record<string, SimpleQueryConfig<typeof Analytics.
             startDate,
             endDate,
             timezone: tz,
-          }
+          },
         };
       }
 
@@ -233,19 +248,20 @@ export const SummaryBuilders: Record<string, SimpleQueryConfig<typeof Analytics.
           startDate,
           endDate,
           timezone: tz,
-        }
+        },
       };
     },
     timeField: 'time',
     allowedFilters: ['path', 'referrer', 'device_type'],
-    customizable: true
+    customizable: true,
   },
 
   active_stats: {
     customSql: (websiteId: string, startDate?: string, endDate?: string) => {
       let timeCondition = '';
       if (startDate && endDate) {
-        timeCondition = 'time >= parseDateTimeBestEffort({startDate:String}) AND time <= parseDateTimeBestEffort({endDate:String})';
+        timeCondition =
+          'time >= parseDateTimeBestEffort({startDate:String}) AND time <= parseDateTimeBestEffort({endDate:String})';
       } else {
         timeCondition = 'time >= now() - INTERVAL 5 MINUTE';
       }
@@ -261,13 +277,13 @@ export const SummaryBuilders: Record<string, SimpleQueryConfig<typeof Analytics.
         `,
         params: {
           websiteId,
-          ...(startDate && endDate ? { startDate, endDate } : {})
-        }
+          ...(startDate && endDate ? { startDate, endDate } : {}),
+        },
       };
     },
     timeField: 'time',
     allowedFilters: ['path', 'referrer'],
     customizable: true,
-    appendEndOfDayToTo: false
-  }
-}; 
+    appendEndOfDayToTo: false,
+  },
+};

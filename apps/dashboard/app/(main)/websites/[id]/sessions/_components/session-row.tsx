@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   AlertTriangleIcon,
@@ -8,18 +8,22 @@ import {
   ExternalLinkIcon,
   EyeIcon,
   SparklesIcon,
-} from "lucide-react";
-import React, { useCallback } from "react";
-import { FaviconImage } from "@/components/analytics/favicon-image";
-import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { SessionEventTimeline } from "./session-event-timeline";
+} from 'lucide-react';
+import React, { useCallback } from 'react';
+import { FaviconImage } from '@/components/analytics/favicon-image';
+import { Badge } from '@/components/ui/badge';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import { SessionEventTimeline } from './session-event-timeline';
 import {
   getBrowserIconComponent,
   getCountryFlag,
   getDeviceIcon,
   getOSIconComponent,
-} from "./session-utils";
+} from './session-utils';
 
 interface SessionRowProps {
   session: any;
@@ -31,7 +35,10 @@ interface SessionRowProps {
 function getReferrerInfo(session: any) {
   if (session.referrer_parsed) {
     return {
-      name: session.referrer_parsed.name || session.referrer_parsed.domain || "Unknown",
+      name:
+        session.referrer_parsed.name ||
+        session.referrer_parsed.domain ||
+        'Unknown',
       domain: session.referrer_parsed.domain,
     };
   }
@@ -45,23 +52,38 @@ function getReferrerInfo(session: any) {
       };
     } catch {
       return {
-        name: "Direct",
+        name: 'Direct',
         domain: null,
       };
     }
   }
 
   return {
-    name: "Direct",
+    name: 'Direct',
     domain: null,
   };
 }
 
-function SessionRowInternal({ session, index, isExpanded, onToggle }: SessionRowProps) {
-  const errorCount = session.events?.filter((event: any) => event.event_name === 'error').length || 0;
-  const customEventCount = session.events?.filter((event: any) =>
-    !['screen_view', 'page_exit', 'error', 'web_vitals', 'link_out'].includes(event.event_name)
-  ).length || 0;
+function SessionRowInternal({
+  session,
+  index,
+  isExpanded,
+  onToggle,
+}: SessionRowProps) {
+  const errorCount =
+    session.events?.filter((event: any) => event.event_name === 'error')
+      .length || 0;
+  const customEventCount =
+    session.events?.filter(
+      (event: any) =>
+        ![
+          'screen_view',
+          'page_exit',
+          'error',
+          'web_vitals',
+          'link_out',
+        ].includes(event.event_name)
+    ).length || 0;
   const referrerInfo = getReferrerInfo(session);
 
   const handleToggle = useCallback(() => {
@@ -71,7 +93,7 @@ function SessionRowInternal({ session, index, isExpanded, onToggle }: SessionRow
   return (
     <Collapsible onOpenChange={handleToggle} open={isExpanded}>
       <CollapsibleTrigger asChild>
-        <div className="group flex cursor-pointer items-center justify-between border-l-4 border-transparent p-5 hover:border-primary/20 hover:bg-muted/30">
+        <div className="group flex cursor-pointer items-center justify-between border-transparent border-l-4 p-5 hover:border-primary/20 hover:bg-muted/30">
           <div className="flex min-w-0 flex-1 items-center gap-4">
             <div className="flex flex-shrink-0 items-center gap-3">
               <div>
@@ -86,20 +108,27 @@ function SessionRowInternal({ session, index, isExpanded, onToggle }: SessionRow
               </div>
             </div>
             <div className="flex flex-shrink-0 items-center gap-2">
-              {getCountryFlag(session.country || "")}
-              {getDeviceIcon(session.device || session.device_type || "")}
-              {getBrowserIconComponent(session.browser || session.browser_name || "")}
-              {getOSIconComponent(session.os || "")}
+              {getCountryFlag(session.country || '')}
+              {getDeviceIcon(session.device || session.device_type || '')}
+              {getBrowserIconComponent(
+                session.browser || session.browser_name || ''
+              )}
+              {getOSIconComponent(session.os || '')}
             </div>
 
             <div className="min-w-0 flex-1">
               <div className="truncate font-semibold text-base text-foreground">
-                {session.session_name || `Session ${session.session_id?.slice(-8)}`}
+                {session.session_name ||
+                  `Session ${session.session_id?.slice(-8)}`}
               </div>
               <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <span>{session.browser || session.browser_name || "Unknown"}</span>
+                <span>
+                  {session.browser || session.browser_name || 'Unknown'}
+                </span>
                 <span className="text-muted-foreground/60">•</span>
-                <span>{session.country_name || session.country || "Unknown"}</span>
+                <span>
+                  {session.country_name || session.country || 'Unknown'}
+                </span>
                 {session.is_returning_visitor && (
                   <>
                     <span className="text-muted-foreground/60">•</span>
@@ -112,11 +141,17 @@ function SessionRowInternal({ session, index, isExpanded, onToggle }: SessionRow
             <div className="hidden min-w-[120px] flex-shrink-0 items-center gap-2 lg:flex">
               <div className="flex items-center gap-2">
                 {referrerInfo.domain ? (
-                  <FaviconImage className="flex-shrink-0" domain={referrerInfo.domain} size={16} />
+                  <FaviconImage
+                    className="flex-shrink-0"
+                    domain={referrerInfo.domain}
+                    size={16}
+                  />
                 ) : (
                   <ExternalLinkIcon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                 )}
-                <span className="truncate text-muted-foreground text-sm">{referrerInfo.name}</span>
+                <span className="truncate text-muted-foreground text-sm">
+                  {referrerInfo.name}
+                </span>
               </div>
             </div>
           </div>
@@ -128,7 +163,7 @@ function SessionRowInternal({ session, index, isExpanded, onToggle }: SessionRow
                 <span>Duration</span>
               </div>
               <span className="font-semibold text-foreground text-sm">
-                {session.duration_formatted || "0s"}
+                {session.duration_formatted || '0s'}
               </span>
             </div>
 
@@ -137,13 +172,18 @@ function SessionRowInternal({ session, index, isExpanded, onToggle }: SessionRow
                 <EyeIcon className="h-3 w-3" />
                 <span>Pages</span>
               </div>
-              <span className="font-semibold text-foreground text-sm">{session.page_views || 1}</span>
+              <span className="font-semibold text-foreground text-sm">
+                {session.page_views || 1}
+              </span>
             </div>
 
             <div className="flex min-w-[60px] flex-col items-center gap-1">
               <div className="text-muted-foreground text-xs">Events</div>
               <div className="flex items-center gap-2">
-                <Badge className="px-2 py-1 font-semibold text-xs" variant="outline">
+                <Badge
+                  className="px-2 py-1 font-semibold text-xs"
+                  variant="outline"
+                >
                   {session.events?.length || 0}
                 </Badge>
               </div>
@@ -181,13 +221,17 @@ function SessionRowInternal({ session, index, isExpanded, onToggle }: SessionRow
               <span className="mb-2 block text-muted-foreground text-xs uppercase tracking-wide">
                 Duration
               </span>
-              <div className="font-bold text-foreground text-lg">{session.duration_formatted || "0s"}</div>
+              <div className="font-bold text-foreground text-lg">
+                {session.duration_formatted || '0s'}
+              </div>
             </div>
             <div className="text-center">
               <span className="mb-2 block text-muted-foreground text-xs uppercase tracking-wide">
                 Page Views
               </span>
-              <div className="font-bold text-foreground text-lg">{session.page_views || 1}</div>
+              <div className="font-bold text-foreground text-lg">
+                {session.page_views || 1}
+              </div>
             </div>
             <div className="text-center">
               <span className="mb-2 block text-muted-foreground text-xs uppercase tracking-wide">
@@ -215,7 +259,11 @@ function SessionRowInternal({ session, index, isExpanded, onToggle }: SessionRow
               </span>
               <div className="flex items-center justify-center gap-2">
                 {referrerInfo.domain ? (
-                  <FaviconImage className="flex-shrink-0" domain={referrerInfo.domain} size={16} />
+                  <FaviconImage
+                    className="flex-shrink-0"
+                    domain={referrerInfo.domain}
+                    size={16}
+                  />
                 ) : (
                   <ExternalLinkIcon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                 )}
@@ -228,7 +276,9 @@ function SessionRowInternal({ session, index, isExpanded, onToggle }: SessionRow
 
           <div className="pt-6">
             <div className="mb-6 flex items-center justify-between">
-              <h4 className="font-semibold text-foreground text-lg">Event Timeline</h4>
+              <h4 className="font-semibold text-foreground text-lg">
+                Event Timeline
+              </h4>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2">
                   <span className="font-bold text-slate-800 text-sm">
@@ -239,14 +289,18 @@ function SessionRowInternal({ session, index, isExpanded, onToggle }: SessionRow
                 {customEventCount > 0 && (
                   <div className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-100 to-purple-100 px-3 py-2">
                     <SparklesIcon className="h-4 w-4 text-violet-600" />
-                    <span className="font-bold text-sm text-violet-800">{customEventCount}</span>
+                    <span className="font-bold text-sm text-violet-800">
+                      {customEventCount}
+                    </span>
                     <span className="text-violet-600 text-xs">custom</span>
                   </div>
                 )}
                 {errorCount > 0 && (
                   <div className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-red-100 to-red-100 px-3 py-2">
                     <AlertTriangleIcon className="h-4 w-4 text-red-600" />
-                    <span className="font-bold text-red-800 text-sm">{errorCount}</span>
+                    <span className="font-bold text-red-800 text-sm">
+                      {errorCount}
+                    </span>
                     <span className="text-red-600 text-xs">errors</span>
                   </div>
                 )}

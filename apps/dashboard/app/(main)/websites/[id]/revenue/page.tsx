@@ -1,31 +1,49 @@
-"use client";
+'use client';
 
-import { ChartLineIcon, CreditCardIcon, ReceiptIcon, TrendUpIcon } from "@phosphor-icons/react";
-import { useAtom } from "jotai";
-import { useParams } from "next/navigation";
-import { lazy, Suspense, useCallback, useMemo, useState } from "react";
-import { useRevenueConfig } from "@/app/(main)/revenue/hooks/use-revenue-config";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useWebsite } from "@/hooks/use-websites";
-import { formattedDateRangeAtom, timeGranularityAtom } from "@/stores/jotai/filterAtoms";
-import { useWebsiteRevenue } from "./hooks/use-website-revenue";
+import {
+  ChartLineIcon,
+  CreditCardIcon,
+  ReceiptIcon,
+  TrendUpIcon,
+} from '@phosphor-icons/react';
+import { useAtom } from 'jotai';
+import { useParams } from 'next/navigation';
+import { lazy, Suspense, useCallback, useMemo, useState } from 'react';
+import { useRevenueConfig } from '@/app/(main)/revenue/hooks/use-revenue-config';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useWebsite } from '@/hooks/use-websites';
+import {
+  formattedDateRangeAtom,
+  timeGranularityAtom,
+} from '@/stores/jotai/filterAtoms';
+import { WebsitePageHeader } from '../_components/website-page-header';
+import { useWebsiteRevenue } from './hooks/use-website-revenue';
 
-import { WebsitePageHeader } from "../_components/website-page-header";
 const RevenueMetrics = lazy(() =>
-  import("./_components/revenue-metrics").then((m) => ({ default: m.RevenueMetrics }))
+  import('./_components/revenue-metrics').then((m) => ({
+    default: m.RevenueMetrics,
+  }))
 );
 const RevenueChart = lazy(() =>
-  import("./_components/revenue-chart").then((m) => ({ default: m.RevenueChart }))
+  import('./_components/revenue-chart').then((m) => ({
+    default: m.RevenueChart,
+  }))
 );
 const RecentTransactions = lazy(() =>
-  import("./_components/recent-transactions").then((m) => ({ default: m.RecentTransactions }))
+  import('./_components/recent-transactions').then((m) => ({
+    default: m.RecentTransactions,
+  }))
 );
 const RevenueNotSetup = lazy(() =>
-  import("./_components/empty-states").then((m) => ({ default: m.RevenueNotSetup }))
+  import('./_components/empty-states').then((m) => ({
+    default: m.RevenueNotSetup,
+  }))
 );
 const NoRevenueData = lazy(() =>
-  import("./_components/empty-states").then((m) => ({ default: m.NoRevenueData }))
+  import('./_components/empty-states').then((m) => ({
+    default: m.NoRevenueData,
+  }))
 );
 
 const PageHeaderSkeleton = () => (
@@ -49,7 +67,10 @@ const PageHeaderSkeleton = () => (
 
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
       {[...Array(4)].map((_, i) => (
-        <div className="overflow-hidden rounded-lg border bg-card" key={`${i + 1}-metrics-skeleton`}>
+        <div
+          className="overflow-hidden rounded-lg border bg-card"
+          key={`${i + 1}-metrics-skeleton`}
+        >
           <div className="p-3 sm:p-4">
             <div className="mb-1.5 flex items-center justify-between sm:mb-2">
               <Skeleton className="h-2.5 w-16 rounded sm:h-3 sm:w-20" />
@@ -69,7 +90,10 @@ const PageHeaderSkeleton = () => (
 const RevenueMetricsSkeleton = () => (
   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
     {[...Array(4)].map((_, i) => (
-      <div className="overflow-hidden rounded-lg border bg-card" key={`${i + 1}-metrics-skeleton`}>
+      <div
+        className="overflow-hidden rounded-lg border bg-card"
+        key={`${i + 1}-metrics-skeleton`}
+      >
         <div className="p-3 sm:p-4">
           <div className="mb-1.5 flex items-center justify-between sm:mb-2">
             <Skeleton className="h-2.5 w-16 rounded sm:h-3 sm:w-20" />
@@ -88,7 +112,7 @@ const RevenueMetricsSkeleton = () => (
 export default function WebsiteRevenuePage() {
   const { id } = useParams();
   const websiteId = id as string;
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState('overview');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [formattedDateRangeState] = useAtom(formattedDateRangeAtom);
@@ -118,7 +142,7 @@ export default function WebsiteRevenuePage() {
     try {
       await Promise.all([refetch(), revenueConfig.refetch?.()]);
     } catch (error) {
-      console.error("Failed to refresh revenue data:", error);
+      console.error('Failed to refresh revenue data:', error);
     } finally {
       setIsRefreshing(false);
     }
@@ -136,14 +160,20 @@ export default function WebsiteRevenuePage() {
     return (
       <div className="mx-auto max-w-[1600px] space-y-4 p-3 sm:p-4 lg:p-6">
         <WebsitePageHeader
-          title="Revenue Analytics"
           description="Track revenue and transaction data for this website"
-          icon={<CreditCardIcon className="h-6 w-6 text-green-600 dark:text-green-400" size={16} weight="duotone" />}
-          websiteId={websiteId}
-          websiteName={websiteData?.name || undefined}
+          icon={
+            <CreditCardIcon
+              className="h-6 w-6 text-green-600 dark:text-green-400"
+              size={16}
+              weight="duotone"
+            />
+          }
           isRefreshing={isRefreshing}
           onRefresh={handleRefresh}
           showBackButton={true}
+          title="Revenue Analytics"
+          websiteId={websiteId}
+          websiteName={websiteData?.name || undefined}
         />
 
         <Suspense fallback={<Skeleton className="h-64 w-full" />}>
@@ -157,16 +187,22 @@ export default function WebsiteRevenuePage() {
     return (
       <div className="mx-auto max-w-[1600px] space-y-4 p-3 sm:p-4 lg:p-6">
         <WebsitePageHeader
-          title="Revenue Analytics"
           description="Track revenue and transaction data for this website"
-          icon={<CreditCardIcon className="h-6 w-6 text-green-600 dark:text-green-400" size={16} weight="duotone" />}
-          websiteId={websiteId}
-          websiteName={websiteData?.name || undefined}
+          errorMessage={revenueError?.message}
+          hasError={!!revenueError}
+          icon={
+            <CreditCardIcon
+              className="h-6 w-6 text-green-600 dark:text-green-400"
+              size={16}
+              weight="duotone"
+            />
+          }
           isRefreshing={isRefreshing}
           onRefresh={handleRefresh}
-          hasError={!!revenueError}
-          errorMessage={revenueError?.message}
           showBackButton={true}
+          title="Revenue Analytics"
+          websiteId={websiteId}
+          websiteName={websiteData?.name || undefined}
         />
 
         <Suspense fallback={<Skeleton className="h-64 w-full" />}>
@@ -179,16 +215,22 @@ export default function WebsiteRevenuePage() {
   return (
     <div className="mx-auto max-w-[1600px] space-y-4 p-3 sm:p-4 lg:p-6">
       <WebsitePageHeader
-        title="Revenue Analytics"
         description="Track revenue and transaction data for this website"
-        icon={<CreditCardIcon className="h-6 w-6 text-green-600 dark:text-green-400" size={16} weight="duotone" />}
-        websiteId={websiteId}
-        websiteName={websiteData?.name || undefined}
+        errorMessage={revenueError?.message}
+        hasError={!!revenueError}
+        icon={
+          <CreditCardIcon
+            className="h-6 w-6 text-green-600 dark:text-green-400"
+            size={16}
+            weight="duotone"
+          />
+        }
         isRefreshing={isRefreshing}
         onRefresh={handleRefresh}
-        hasError={!!revenueError}
-        errorMessage={revenueError?.message}
         showBackButton={true}
+        title="Revenue Analytics"
+        websiteId={websiteId}
+        websiteName={websiteData?.name || undefined}
       />
 
       <Suspense fallback={<RevenueMetricsSkeleton />}>
@@ -199,7 +241,11 @@ export default function WebsiteRevenuePage() {
         />
       </Suspense>
 
-      <Tabs className="space-y-4" onValueChange={setActiveTab} value={activeTab}>
+      <Tabs
+        className="space-y-4"
+        onValueChange={setActiveTab}
+        value={activeTab}
+      >
         <div className="relative border-b">
           <TabsList className="h-10 w-full justify-start overflow-x-auto bg-transparent p-0">
             <TabsTrigger
@@ -208,7 +254,7 @@ export default function WebsiteRevenuePage() {
             >
               <ChartLineIcon size={16} />
               Overview
-              {activeTab === "overview" && (
+              {activeTab === 'overview' && (
                 <div className="absolute bottom-0 left-0 h-[2px] w-full bg-primary" />
               )}
             </TabsTrigger>
@@ -218,7 +264,7 @@ export default function WebsiteRevenuePage() {
             >
               <ReceiptIcon size={16} />
               Transactions
-              {activeTab === "transactions" && (
+              {activeTab === 'transactions' && (
                 <div className="absolute bottom-0 left-0 h-[2px] w-full bg-primary" />
               )}
             </TabsTrigger>
@@ -237,7 +283,8 @@ export default function WebsiteRevenuePage() {
                   Revenue Trends
                 </h2>
                 <p className="text-muted-foreground text-sm">
-                  {dateRange.granularity === "hourly" ? "Hourly" : "Daily"} revenue data
+                  {dateRange.granularity === 'hourly' ? 'Hourly' : 'Daily'}{' '}
+                  revenue data
                 </p>
               </div>
             </div>
@@ -249,11 +296,16 @@ export default function WebsiteRevenuePage() {
                       <div className="h-6 w-6 rounded-full border-2 border-muted" />
                       <div className="absolute top-0 left-0 h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                     </div>
-                    <div className="ml-3 text-muted-foreground text-sm">Loading chart...</div>
+                    <div className="ml-3 text-muted-foreground text-sm">
+                      Loading chart...
+                    </div>
                   </div>
                 }
               >
-                <RevenueChart data={revenueData.trends} isLoading={revenueLoading} />
+                <RevenueChart
+                  data={revenueData.trends}
+                  isLoading={revenueLoading}
+                />
               </Suspense>
             </div>
           </div>

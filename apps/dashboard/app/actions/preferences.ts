@@ -1,13 +1,13 @@
-"use server";
+'use server';
 
-import { auth } from "@databuddy/auth";
-import { db, eq, userPreferences } from "@databuddy/db";
-import { nanoid } from "nanoid";
-import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
-import { cache } from "react";
-import { z } from "zod";
-import { logger } from "@/lib/discord-webhook";
+import { auth } from '@databuddy/auth';
+import { db, eq, userPreferences } from '@databuddy/db';
+import { nanoid } from 'nanoid';
+import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
+import { cache } from 'react';
+import { z } from 'zod';
+import { logger } from '@/lib/discord-webhook';
 
 // Helper to get authenticated user
 const getUser = cache(async () => {
@@ -30,7 +30,7 @@ const preferencesSchema = z.object({
  */
 export async function getUserPreferences() {
   const user = await getUser();
-  if (!user) return { error: "Unauthorized" };
+  if (!user) return { error: 'Unauthorized' };
 
   try {
     // Try to find existing preferences
@@ -45,9 +45,9 @@ export async function getUserPreferences() {
         .values({
           id: nanoid(),
           userId: user.id,
-          timezone: "auto",
-          dateFormat: "MMM D, YYYY",
-          timeFormat: "h:mm a",
+          timezone: 'auto',
+          dateFormat: 'MMM D, YYYY',
+          timeFormat: 'h:mm a',
           updatedAt: new Date().toISOString(),
         })
         .returning();
@@ -56,8 +56,8 @@ export async function getUserPreferences() {
 
       // Log first-time preferences setup (only when creating, not updating)
       await logger.info(
-        "User Preferences Initialized",
-        "Default preferences were created for new user",
+        'User Preferences Initialized',
+        'Default preferences were created for new user',
         {
           userId: user.id,
           userName: user.name || user.email,
@@ -69,16 +69,20 @@ export async function getUserPreferences() {
 
     return { data: preferences };
   } catch (error) {
-    console.error("Failed to get user preferences", { error });
+    console.error('Failed to get user preferences', { error });
 
     // Log preferences error
-    await logger.error("Preferences Setup Failed", "Failed to initialize user preferences", {
-      userId: user.id,
-      userName: user.name || user.email,
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
+    await logger.error(
+      'Preferences Setup Failed',
+      'Failed to initialize user preferences',
+      {
+        userId: user.id,
+        userName: user.name || user.email,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      }
+    );
 
-    return { error: "Failed to get user preferences" };
+    return { error: 'Failed to get user preferences' };
   }
 }
 
@@ -87,13 +91,13 @@ export async function getUserPreferences() {
  */
 export async function updateUserPreferences(formData: FormData) {
   const user = await getUser();
-  if (!user) return { error: "Unauthorized" };
+  if (!user) return { error: 'Unauthorized' };
 
   try {
     // Parse and validate form data
-    const timezone = formData.get("timezone") as string;
-    const dateFormat = formData.get("dateFormat") as string;
-    const timeFormat = formData.get("timeFormat") as string;
+    const timezone = formData.get('timezone') as string;
+    const dateFormat = formData.get('dateFormat') as string;
+    const timeFormat = formData.get('timeFormat') as string;
 
     // Validate the data
     const validatedData = preferencesSchema.parse({
@@ -128,9 +132,9 @@ export async function updateUserPreferences(formData: FormData) {
         .values({
           id: nanoid(),
           userId: user.id,
-          timezone: validatedData.timezone || "auto",
-          dateFormat: validatedData.dateFormat || "MMM D, YYYY",
-          timeFormat: validatedData.timeFormat || "h:mm a",
+          timezone: validatedData.timezone || 'auto',
+          dateFormat: validatedData.dateFormat || 'MMM D, YYYY',
+          timeFormat: validatedData.timeFormat || 'h:mm a',
           updatedAt: new Date().toISOString(),
         })
         .returning();
@@ -138,13 +142,13 @@ export async function updateUserPreferences(formData: FormData) {
       preferences = inserted[0];
     }
 
-    revalidatePath("/settings");
+    revalidatePath('/settings');
     return { success: true, data: preferences };
   } catch (error) {
-    console.error("Preferences update error:", error);
+    console.error('Preferences update error:', error);
     if (error instanceof z.ZodError) {
       return { error: error.errors[0].message };
     }
-    return { error: "Failed to update preferences" };
+    return { error: 'Failed to update preferences' };
   }
 }

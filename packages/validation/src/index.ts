@@ -1,1 +1,8 @@
-export type IInterval = 'second' | 'minute' | 'hour' | 'day' | 'week' | 'month' | 'year';
+export type IInterval =
+  | 'second'
+  | 'minute'
+  | 'hour'
+  | 'day'
+  | 'week'
+  | 'month'
+  | 'year';

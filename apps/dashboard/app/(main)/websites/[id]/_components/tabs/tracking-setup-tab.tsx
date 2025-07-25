@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Activity,
@@ -11,31 +11,44 @@ import {
   FileCode,
   Info,
   RefreshCw,
-} from "lucide-react";
-import { useState } from "react";
-import { trpc } from "@/lib/trpc";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+} from 'lucide-react';
+import { useState } from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { trpc } from '@/lib/trpc';
 import {
   generateNpmCode,
   generateNpmComponentCode,
   generateScriptTag,
-} from "../utils/code-generators";
+} from '../utils/code-generators';
 
-import { RECOMMENDED_DEFAULTS } from "../utils/tracking-defaults";
-import { toggleTrackingOption } from "../utils/tracking-helpers";
-import type { TrackingOptions, WebsiteDataTabProps } from "../utils/types";
+import { RECOMMENDED_DEFAULTS } from '../utils/tracking-defaults';
+import { toggleTrackingOption } from '../utils/tracking-helpers';
+import type { TrackingOptions, WebsiteDataTabProps } from '../utils/types';
 
-export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdated }: WebsiteDataTabProps) {
+export function WebsiteTrackingSetupTab({
+  websiteId,
+  websiteData,
+  onWebsiteUpdated,
+}: WebsiteDataTabProps) {
   const [copied, setCopied] = useState(false);
-  const [installMethod, setInstallMethod] = useState<"script" | "npm">("script");
-  const [trackingOptions, setTrackingOptions] = useState<TrackingOptions>(RECOMMENDED_DEFAULTS);
+  const [installMethod, setInstallMethod] = useState<'script' | 'npm'>(
+    'script'
+  );
+  const [trackingOptions, setTrackingOptions] =
+    useState<TrackingOptions>(RECOMMENDED_DEFAULTS);
 
   const trackingCode = generateScriptTag(websiteId, trackingOptions);
   const npmCode = generateNpmCode(websiteId, trackingOptions);
@@ -43,7 +56,7 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
     setCopied(true);
-    toast.success("Tracking code copied to clipboard");
+    toast.success('Tracking code copied to clipboard');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -55,21 +68,21 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
 
   const handleRefresh = () => {
     utils.websites.isTrackingSetup.invalidate({ websiteId });
-    toast.success("Checking tracking status...");
+    toast.success('Checking tracking status...');
   };
 
   // Determine language based on code content
   const getLanguage = (code: string) => {
     if (
-      code.includes("npm install") ||
-      code.includes("yarn add") ||
-      code.includes("pnpm add") ||
-      code.includes("bun add")
+      code.includes('npm install') ||
+      code.includes('yarn add') ||
+      code.includes('pnpm add') ||
+      code.includes('bun add')
     )
-      return "bash";
-    if (code.includes("<script")) return "html";
-    if (code.includes("import") && code.includes("from")) return "jsx";
-    return "javascript";
+      return 'bash';
+    if (code.includes('<script')) return 'html';
+    if (code.includes('import') && code.includes('from')) return 'jsx';
+    return 'javascript';
   };
 
   const CodeBlock = ({
@@ -82,15 +95,17 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
     onCopy: () => void;
   }) => (
     <div className="space-y-2">
-      {description && <p className="text-muted-foreground text-sm">{description}</p>}
+      {description && (
+        <p className="text-muted-foreground text-sm">{description}</p>
+      )}
       <div className="relative">
         <div className="overflow-hidden rounded-md border">
           <SyntaxHighlighter
             customStyle={{
               margin: 0,
-              fontSize: "12px",
-              lineHeight: "1.5",
-              padding: "12px",
+              fontSize: '12px',
+              lineHeight: '1.5',
+              padding: '12px',
             }}
             language={getLanguage(code)}
             showLineNumbers={false}
@@ -136,7 +151,8 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
             </Button>
           </div>
           <CardDescription>
-            Install the tracking script to start collecting analytics data for your website.
+            Install the tracking script to start collecting analytics data for
+            your website.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -148,11 +164,15 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
             <Code className="h-5 w-5" />
             Installation
           </CardTitle>
-          <CardDescription>Choose your preferred installation method</CardDescription>
+          <CardDescription>
+            Choose your preferred installation method
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs
-            onValueChange={(value) => setInstallMethod(value as "script" | "npm")}
+            onValueChange={(value) =>
+              setInstallMethod(value as 'script' | 'npm')
+            }
             value={installMethod}
           >
             <TabsList className="grid w-full grid-cols-2">
@@ -180,7 +200,8 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
             <TabsContent className="space-y-4" value="npm">
               <div className="space-y-2">
                 <p className="mb-3 text-muted-foreground text-xs">
-                  Install the DataBuddy package using your preferred package manager:
+                  Install the DataBuddy package using your preferred package
+                  manager:
                 </p>
 
                 <Tabs className="w-full" defaultValue="npm">
@@ -203,7 +224,9 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                     <CodeBlock
                       code="npm install @databuddy/sdk"
                       description=""
-                      onCopy={() => handleCopyCode("npm install @databuddy/sdk")}
+                      onCopy={() =>
+                        handleCopyCode('npm install @databuddy/sdk')
+                      }
                     />
                   </TabsContent>
 
@@ -211,7 +234,7 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                     <CodeBlock
                       code="yarn add @databuddy/sdk"
                       description=""
-                      onCopy={() => handleCopyCode("yarn add @databuddy/sdk")}
+                      onCopy={() => handleCopyCode('yarn add @databuddy/sdk')}
                     />
                   </TabsContent>
 
@@ -219,7 +242,7 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                     <CodeBlock
                       code="pnpm add @databuddy/sdk"
                       description=""
-                      onCopy={() => handleCopyCode("pnpm add @databuddy/sdk")}
+                      onCopy={() => handleCopyCode('pnpm add @databuddy/sdk')}
                     />
                   </TabsContent>
 
@@ -227,7 +250,7 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                     <CodeBlock
                       code="bun add @databuddy/sdk"
                       description=""
-                      onCopy={() => handleCopyCode("bun add @databuddy/sdk")}
+                      onCopy={() => handleCopyCode('bun add @databuddy/sdk')}
                     />
                   </TabsContent>
                 </Tabs>
@@ -236,7 +259,9 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                   code={npmCode}
                   description="Then initialize the tracker in your code:"
                   onCopy={() =>
-                    handleCopyCode(generateNpmComponentCode(websiteId, trackingOptions))
+                    handleCopyCode(
+                      generateNpmComponentCode(websiteId, trackingOptions)
+                    )
                   }
                 />
               </div>
@@ -252,7 +277,9 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
             <Activity className="h-5 w-5" />
             Configuration
           </CardTitle>
-          <CardDescription>Customize tracking options (optional)</CardDescription>
+          <CardDescription>
+            Customize tracking options (optional)
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -272,7 +299,7 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                   <Switch
                     checked={!trackingOptions.disabled}
                     id="disabled"
-                    onCheckedChange={() => handleToggleOption("disabled")}
+                    onCheckedChange={() => handleToggleOption('disabled')}
                   />
                 </div>
                 <div className="flex items-center justify-between py-2">
@@ -280,12 +307,16 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                     <Label className="text-sm" htmlFor="trackScreenViews">
                       Page Views
                     </Label>
-                    <div className="text-muted-foreground text-xs">Track page visits</div>
+                    <div className="text-muted-foreground text-xs">
+                      Track page visits
+                    </div>
                   </div>
                   <Switch
                     checked={trackingOptions.trackScreenViews}
                     id="trackScreenViews"
-                    onCheckedChange={() => handleToggleOption("trackScreenViews")}
+                    onCheckedChange={() =>
+                      handleToggleOption('trackScreenViews')
+                    }
                   />
                 </div>
                 <div className="flex items-center justify-between py-2">
@@ -293,12 +324,16 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                     <Label className="text-sm" htmlFor="trackHashChanges">
                       Hash Changes
                     </Label>
-                    <div className="text-muted-foreground text-xs">Track URL hash navigation</div>
+                    <div className="text-muted-foreground text-xs">
+                      Track URL hash navigation
+                    </div>
                   </div>
                   <Switch
                     checked={trackingOptions.trackHashChanges}
                     id="trackHashChanges"
-                    onCheckedChange={() => handleToggleOption("trackHashChanges")}
+                    onCheckedChange={() =>
+                      handleToggleOption('trackHashChanges')
+                    }
                   />
                 </div>
                 <div className="flex items-center justify-between py-2">
@@ -306,12 +341,14 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                     <Label className="text-sm" htmlFor="trackSessions">
                       Sessions
                     </Label>
-                    <div className="text-muted-foreground text-xs">Track session duration</div>
+                    <div className="text-muted-foreground text-xs">
+                      Track session duration
+                    </div>
                   </div>
                   <Switch
                     checked={trackingOptions.trackSessions}
                     id="trackSessions"
-                    onCheckedChange={() => handleToggleOption("trackSessions")}
+                    onCheckedChange={() => handleToggleOption('trackSessions')}
                   />
                 </div>
               </div>
@@ -326,12 +363,16 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                     <Label className="text-sm" htmlFor="trackInteractions">
                       Interactions
                     </Label>
-                    <div className="text-muted-foreground text-xs">Track clicks and forms</div>
+                    <div className="text-muted-foreground text-xs">
+                      Track clicks and forms
+                    </div>
                   </div>
                   <Switch
                     checked={trackingOptions.trackInteractions}
                     id="trackInteractions"
-                    onCheckedChange={() => handleToggleOption("trackInteractions")}
+                    onCheckedChange={() =>
+                      handleToggleOption('trackInteractions')
+                    }
                   />
                 </div>
                 <div className="flex items-center justify-between py-2">
@@ -339,12 +380,16 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                     <Label className="text-sm" htmlFor="trackAttributes">
                       Data Attributes
                     </Label>
-                    <div className="text-muted-foreground text-xs">Track data-* attributes</div>
+                    <div className="text-muted-foreground text-xs">
+                      Track data-* attributes
+                    </div>
                   </div>
                   <Switch
                     checked={trackingOptions.trackAttributes}
                     id="trackAttributes"
-                    onCheckedChange={() => handleToggleOption("trackAttributes")}
+                    onCheckedChange={() =>
+                      handleToggleOption('trackAttributes')
+                    }
                   />
                 </div>
                 <div className="flex items-center justify-between py-2">
@@ -352,12 +397,16 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                     <Label className="text-sm" htmlFor="trackOutgoingLinks">
                       Outbound Links
                     </Label>
-                    <div className="text-muted-foreground text-xs">Track external link clicks</div>
+                    <div className="text-muted-foreground text-xs">
+                      Track external link clicks
+                    </div>
                   </div>
                   <Switch
                     checked={trackingOptions.trackOutgoingLinks}
                     id="trackOutgoingLinks"
-                    onCheckedChange={() => handleToggleOption("trackOutgoingLinks")}
+                    onCheckedChange={() =>
+                      handleToggleOption('trackOutgoingLinks')
+                    }
                   />
                 </div>
               </div>
@@ -374,12 +423,16 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                     <Label className="text-sm" htmlFor="trackEngagement">
                       Engagement
                     </Label>
-                    <div className="text-muted-foreground text-xs">Track user engagement</div>
+                    <div className="text-muted-foreground text-xs">
+                      Track user engagement
+                    </div>
                   </div>
                   <Switch
                     checked={trackingOptions.trackEngagement}
                     id="trackEngagement"
-                    onCheckedChange={() => handleToggleOption("trackEngagement")}
+                    onCheckedChange={() =>
+                      handleToggleOption('trackEngagement')
+                    }
                   />
                 </div>
                 <div className="flex items-center justify-between py-2">
@@ -387,12 +440,16 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                     <Label className="text-sm" htmlFor="trackScrollDepth">
                       Scroll Depth
                     </Label>
-                    <div className="text-muted-foreground text-xs">Track scroll percentage</div>
+                    <div className="text-muted-foreground text-xs">
+                      Track scroll percentage
+                    </div>
                   </div>
                   <Switch
                     checked={trackingOptions.trackScrollDepth}
                     id="trackScrollDepth"
-                    onCheckedChange={() => handleToggleOption("trackScrollDepth")}
+                    onCheckedChange={() =>
+                      handleToggleOption('trackScrollDepth')
+                    }
                   />
                 </div>
                 <div className="flex items-center justify-between py-2">
@@ -400,12 +457,16 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                     <Label className="text-sm" htmlFor="trackExitIntent">
                       Exit Intent
                     </Label>
-                    <div className="text-muted-foreground text-xs">Track exit behavior</div>
+                    <div className="text-muted-foreground text-xs">
+                      Track exit behavior
+                    </div>
                   </div>
                   <Switch
                     checked={trackingOptions.trackExitIntent}
                     id="trackExitIntent"
-                    onCheckedChange={() => handleToggleOption("trackExitIntent")}
+                    onCheckedChange={() =>
+                      handleToggleOption('trackExitIntent')
+                    }
                   />
                 </div>
                 <div className="flex items-center justify-between py-2">
@@ -413,12 +474,16 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                     <Label className="text-sm" htmlFor="trackBounceRate">
                       Bounce Rate
                     </Label>
-                    <div className="text-muted-foreground text-xs">Track bounce detection</div>
+                    <div className="text-muted-foreground text-xs">
+                      Track bounce detection
+                    </div>
                   </div>
                   <Switch
                     checked={trackingOptions.trackBounceRate}
                     id="trackBounceRate"
-                    onCheckedChange={() => handleToggleOption("trackBounceRate")}
+                    onCheckedChange={() =>
+                      handleToggleOption('trackBounceRate')
+                    }
                   />
                 </div>
               </div>
@@ -433,12 +498,16 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                     <Label className="text-sm" htmlFor="trackPerformance">
                       Load Times
                     </Label>
-                    <div className="text-muted-foreground text-xs">Track page performance</div>
+                    <div className="text-muted-foreground text-xs">
+                      Track page performance
+                    </div>
                   </div>
                   <Switch
                     checked={trackingOptions.trackPerformance}
                     id="trackPerformance"
-                    onCheckedChange={() => handleToggleOption("trackPerformance")}
+                    onCheckedChange={() =>
+                      handleToggleOption('trackPerformance')
+                    }
                   />
                 </div>
                 <div className="flex items-center justify-between py-2">
@@ -446,12 +515,14 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                     <Label className="text-sm" htmlFor="trackWebVitals">
                       Web Vitals
                     </Label>
-                    <div className="text-muted-foreground text-xs">Track Core Web Vitals</div>
+                    <div className="text-muted-foreground text-xs">
+                      Track Core Web Vitals
+                    </div>
                   </div>
                   <Switch
                     checked={trackingOptions.trackWebVitals}
                     id="trackWebVitals"
-                    onCheckedChange={() => handleToggleOption("trackWebVitals")}
+                    onCheckedChange={() => handleToggleOption('trackWebVitals')}
                   />
                 </div>
                 <div className="flex items-center justify-between py-2">
@@ -459,12 +530,14 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                     <Label className="text-sm" htmlFor="trackErrors">
                       Errors
                     </Label>
-                    <div className="text-muted-foreground text-xs">Track JS errors</div>
+                    <div className="text-muted-foreground text-xs">
+                      Track JS errors
+                    </div>
                   </div>
                   <Switch
                     checked={trackingOptions.trackErrors}
                     id="trackErrors"
-                    onCheckedChange={() => handleToggleOption("trackErrors")}
+                    onCheckedChange={() => handleToggleOption('trackErrors')}
                   />
                 </div>
               </div>
@@ -480,12 +553,14 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                   <Label className="text-sm" htmlFor="enableBatching">
                     Enable Batching
                   </Label>
-                  <div className="text-muted-foreground text-xs">Batch requests for efficiency</div>
+                  <div className="text-muted-foreground text-xs">
+                    Batch requests for efficiency
+                  </div>
                 </div>
                 <Switch
                   checked={trackingOptions.enableBatching}
                   id="enableBatching"
-                  onCheckedChange={() => handleToggleOption("enableBatching")}
+                  onCheckedChange={() => handleToggleOption('enableBatching')}
                 />
               </div>
               <div className="flex items-center justify-between py-2">
@@ -493,12 +568,14 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
                   <Label className="text-sm" htmlFor="enableRetries">
                     Enable Retries
                   </Label>
-                  <div className="text-muted-foreground text-xs">Retry failed requests</div>
+                  <div className="text-muted-foreground text-xs">
+                    Retry failed requests
+                  </div>
                 </div>
                 <Switch
                   checked={trackingOptions.enableRetries}
                   id="enableRetries"
-                  onCheckedChange={() => handleToggleOption("enableRetries")}
+                  onCheckedChange={() => handleToggleOption('enableRetries')}
                 />
               </div>
             </div>
@@ -521,7 +598,10 @@ export function WebsiteTrackingSetupTab({ websiteId, websiteData, onWebsiteUpdat
           </a>
         </Button>
         <Button asChild size="sm" variant="outline">
-          <a className="flex items-center gap-2" href="mailto:support@databuddy.cc">
+          <a
+            className="flex items-center gap-2"
+            href="mailto:support@databuddy.cc"
+          >
             <Info className="h-4 w-4" />
             Get Support
           </a>

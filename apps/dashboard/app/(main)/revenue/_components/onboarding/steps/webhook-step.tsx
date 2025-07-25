@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ArrowSquareOutIcon,
@@ -6,14 +6,14 @@ import {
   CopyIcon,
   FloppyDiskBackIcon,
   WarningCircleIcon,
-} from "@phosphor-icons/react";
-import { useEffect, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
+} from '@phosphor-icons/react';
+import { useEffect, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 
 interface WebhookStepProps {
   webhookSecret: string;
@@ -52,7 +52,8 @@ export function WebhookStep({
 
   // Track changes
   useEffect(() => {
-    const changed = localWebhookSecret !== webhookSecret || localIsLiveMode !== isLiveMode;
+    const changed =
+      localWebhookSecret !== webhookSecret || localIsLiveMode !== isLiveMode;
     setHasChanges(changed);
   }, [localWebhookSecret, localIsLiveMode, webhookSecret, isLiveMode]);
 
@@ -71,14 +72,23 @@ export function WebhookStep({
           <div>
             <Label htmlFor="webhook-url">Webhook Endpoint URL</Label>
             <div className="mt-1 flex gap-2">
-              <Input className="font-mono text-sm" id="webhook-url" readOnly value={webhookUrl} />
+              <Input
+                className="font-mono text-sm"
+                id="webhook-url"
+                readOnly
+                value={webhookUrl}
+              />
               <Button
-                onClick={() => copyToClipboard(webhookUrl, "Webhook URL")}
+                onClick={() => copyToClipboard(webhookUrl, 'Webhook URL')}
                 size="sm"
                 variant="outline"
               >
                 {copied ? (
-                  <CheckCircleIcon className="h-4 w-4" size={16} weight="fill" />
+                  <CheckCircleIcon
+                    className="h-4 w-4"
+                    size={16}
+                    weight="fill"
+                  />
                 ) : (
                   <CopyIcon className="h-4 w-4" size={16} weight="duotone" />
                 )}
@@ -101,15 +111,20 @@ export function WebhookStep({
               />
             </div>
             <p className="mt-1 text-muted-foreground text-xs">
-              Get this from your Stripe webhook endpoint settings after creating the webhook
+              Get this from your Stripe webhook endpoint settings after creating
+              the webhook
             </p>
           </div>
 
           <div className="flex items-center space-x-2">
-            <Switch checked={localIsLiveMode} id="live-mode" onCheckedChange={setLocalIsLiveMode} />
+            <Switch
+              checked={localIsLiveMode}
+              id="live-mode"
+              onCheckedChange={setLocalIsLiveMode}
+            />
             <Label htmlFor="live-mode">Live Mode</Label>
-            <Badge variant={localIsLiveMode ? "default" : "secondary"}>
-              {localIsLiveMode ? "Production" : "Test"}
+            <Badge variant={localIsLiveMode ? 'default' : 'secondary'}>
+              {localIsLiveMode ? 'Production' : 'Test'}
             </Badge>
           </div>
 
@@ -122,8 +137,12 @@ export function WebhookStep({
                 size="sm"
                 variant="outline"
               >
-                <FloppyDiskBackIcon className="h-4 w-4" size={16} weight="fill" />
-                {isSaving ? "Saving..." : "Save Changes"}
+                <FloppyDiskBackIcon
+                  className="h-4 w-4"
+                  size={16}
+                  weight="fill"
+                />
+                {isSaving ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           )}
@@ -144,16 +163,22 @@ export function WebhookStep({
               Stripe Dashboard Setup
             </h4>
             <p className="mt-1 text-amber-800 text-sm dark:text-amber-200">
-              You'll need to add this webhook URL in your Stripe Dashboard under Developers →
-              Webhooks → Add endpoint
+              You'll need to add this webhook URL in your Stripe Dashboard under
+              Developers → Webhooks → Add endpoint
             </p>
             <Button
               className="mt-2"
-              onClick={() => window.open("https://dashboard.stripe.com/webhooks", "_blank")}
+              onClick={() =>
+                window.open('https://dashboard.stripe.com/webhooks', '_blank')
+              }
               size="sm"
               variant="outline"
             >
-              <ArrowSquareOutIcon className="mr-2 h-4 w-4" size={16} weight="duotone" />
+              <ArrowSquareOutIcon
+                className="mr-2 h-4 w-4"
+                size={16}
+                weight="duotone"
+              />
               Open Stripe Dashboard
             </Button>
           </div>
@@ -164,7 +189,11 @@ export function WebhookStep({
         <Button onClick={onBack} variant="outline">
           Back
         </Button>
-        <Button className="flex-1" disabled={!localWebhookSecret || hasChanges} onClick={onNext}>
+        <Button
+          className="flex-1"
+          disabled={!localWebhookSecret || hasChanges}
+          onClick={onNext}
+        >
           Continue to Testing
         </Button>
       </div>

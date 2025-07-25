@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { ClockIcon, EnvelopeIcon, TrashIcon } from "@phosphor-icons/react";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { useState } from "react";
+import { ClockIcon, EnvelopeIcon, TrashIcon } from '@phosphor-icons/react';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,9 +13,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 dayjs.extend(relativeTime);
 
@@ -24,8 +24,13 @@ interface InvitationToCancel {
   email: string;
 }
 
-export function InvitationList({ invitations, onCancelInvitation, isCancellingInvitation }: any) {
-  const [invitationToCancel, setInvitationToCancel] = useState<InvitationToCancel | null>(null);
+export function InvitationList({
+  invitations,
+  onCancelInvitation,
+  isCancellingInvitation,
+}: any) {
+  const [invitationToCancel, setInvitationToCancel] =
+    useState<InvitationToCancel | null>(null);
 
   const handleCancel = async () => {
     if (!invitationToCancel) return;
@@ -56,7 +61,10 @@ export function InvitationList({ invitations, onCancelInvitation, isCancellingIn
           >
             <div className="flex items-center gap-3">
               <div className="rounded-full border border-border/50 bg-accent p-3">
-                <EnvelopeIcon className="h-4 w-4 text-muted-foreground" size={16} />
+                <EnvelopeIcon
+                  className="h-4 w-4 text-muted-foreground"
+                  size={16}
+                />
               </div>
               <div>
                 <p className="font-medium">{invitation.email}</p>
@@ -74,7 +82,10 @@ export function InvitationList({ invitations, onCancelInvitation, isCancellingIn
                 className="rounded hover:border-destructive/20 hover:bg-destructive/10 hover:text-destructive"
                 disabled={isCancellingInvitation}
                 onClick={() =>
-                  setInvitationToCancel({ id: invitation.id, email: invitation.email })
+                  setInvitationToCancel({
+                    id: invitation.id,
+                    email: invitation.email,
+                  })
                 }
                 size="sm"
                 variant="outline"
@@ -92,14 +103,18 @@ export function InvitationList({ invitations, onCancelInvitation, isCancellingIn
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancel invitation for {invitationToCancel?.email}?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Cancel invitation for {invitationToCancel?.email}?
+            </AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. The invitation will be cancelled.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleCancel}>Confirm</AlertDialogAction>
+            <AlertDialogAction onClick={handleCancel}>
+              Confirm
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

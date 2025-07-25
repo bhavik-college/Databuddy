@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
 import {
+  Brain,
+  CaretDown,
   ChartBar,
-  Robot,
-  Clock,
-  Hash,
   ChartLine,
   ChartPie,
+  Clock,
+  Hash,
+  Robot,
   User,
-  CaretDown,
-  Brain,
-} from "@phosphor-icons/react";
-import React, { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
-import type { Message } from "../types/message";
+} from '@phosphor-icons/react';
+import React, { useEffect, useState } from 'react';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from '@/components/ui/accordion';
+import { cn } from '@/lib/utils';
+import type { Message } from '../types/message';
 
 interface MessageBubbleProps {
   message: Message;
@@ -27,11 +27,11 @@ interface MessageBubbleProps {
 
 const getChartIcon = (chartType: string) => {
   switch (chartType) {
-    case "bar":
+    case 'bar':
       return <ChartBar className="h-4 w-4" />;
-    case "line":
+    case 'line':
       return <ChartLine className="h-4 w-4" />;
-    case "pie":
+    case 'pie':
       return <ChartPie className="h-4 w-4" />;
     default:
       return <ChartBar className="h-4 w-4" />;
@@ -54,7 +54,7 @@ function ThinkingStepsPreview({ steps }: { steps: string[] }) {
     const newStepIndex = latestSteps.length - 1;
     if (newStepIndex >= 0) {
       setTimeout(() => {
-        setAnimatedSteps(prev => new Set([...prev, newStepIndex]));
+        setAnimatedSteps((prev) => new Set([...prev, newStepIndex]));
       }, 50);
     }
   }, [steps]);
@@ -62,20 +62,22 @@ function ThinkingStepsPreview({ steps }: { steps: string[] }) {
   if (visibleSteps.length === 0) return null;
 
   return (
-    <div className="mt-2 space-y-1 max-h-20 overflow-hidden">
+    <div className="mt-2 max-h-20 space-y-1 overflow-hidden">
       {visibleSteps.map((step, index) => {
         const isAnimated = animatedSteps.has(index);
 
         return (
           <div
-            key={`preview-${index}-${step.slice(0, 20)}`}
             className={cn(
-              "flex items-start gap-2 py-1 pl-1 text-muted-foreground text-xs transition-all duration-300 ease-in-out",
-              isAnimated ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+              'flex items-start gap-2 py-1 pl-1 text-muted-foreground text-xs transition-all duration-300 ease-in-out',
+              isAnimated
+                ? 'translate-y-0 opacity-100'
+                : 'translate-y-2 opacity-0'
             )}
+            key={`preview-${index}-${step.slice(0, 20)}`}
           >
             <Clock className="mt-0.5 h-3 w-3 flex-shrink-0" />
-            <span className="leading-relaxed break-words">{step}</span>
+            <span className="break-words leading-relaxed">{step}</span>
           </div>
         );
       })}
@@ -93,8 +95,8 @@ function ThinkingStepsAccordion({ steps }: { steps: string[] }) {
   if (steps.length === 0) return null;
 
   return (
-    <Accordion type="single" collapsible className="w-full">
-      <AccordionItem value="thinking-steps" className="border-border/30">
+    <Accordion className="w-full" collapsible type="single">
+      <AccordionItem className="border-border/30" value="thinking-steps">
         <AccordionTrigger className="py-2 text-xs hover:no-underline">
           <div className="flex items-center gap-2">
             <Brain className="h-3 w-3" />
@@ -102,16 +104,15 @@ function ThinkingStepsAccordion({ steps }: { steps: string[] }) {
           </div>
         </AccordionTrigger>
         <AccordionContent className="pt-2">
-          <div className="space-y-2 max-h-48 overflow-y-auto">
+          <div className="max-h-48 space-y-2 overflow-y-auto">
             {steps.map((step, index) => {
-
               return (
                 <div
-                  key={`step-${index}-${step.slice(0, 20)}`}
                   className="flex items-start gap-2 py-1 pl-1 text-muted-foreground text-xs"
+                  key={`step-${index}-${step.slice(0, 20)}`}
                 >
-                  <div className="mt-0.5 h-3 w-3 flex-shrink-0 rounded-full bg-muted-foreground/20 flex items-center justify-center">
-                    <span className="text-[10px] font-mono">{index + 1}</span>
+                  <div className="mt-0.5 flex h-3 w-3 flex-shrink-0 items-center justify-center rounded-full bg-muted-foreground/20">
+                    <span className="font-mono text-[10px]">{index + 1}</span>
                   </div>
                   <span className="leading-relaxed">{step}</span>
                 </div>
@@ -125,9 +126,10 @@ function ThinkingStepsAccordion({ steps }: { steps: string[] }) {
 }
 
 export function MessageBubble({ message }: MessageBubbleProps) {
-  const isUser = message.type === "user";
-  const isInProgress = message.type === "assistant" && !message.content;
-  const hasThinkingSteps = message.thinkingSteps && message.thinkingSteps.length > 0;
+  const isUser = message.type === 'user';
+  const isInProgress = message.type === 'assistant' && !message.content;
+  const hasThinkingSteps =
+    message.thinkingSteps && message.thinkingSteps.length > 0;
 
   if (isInProgress) {
     return (
@@ -158,17 +160,17 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   return (
     <div
       className={cn(
-        "group flex w-full gap-3",
-        isUser ? "justify-end" : "justify-start"
+        'group flex w-full gap-3',
+        isUser ? 'justify-end' : 'justify-start'
       )}
     >
       {/* Avatar */}
       <div
         className={cn(
-          "mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full shadow-sm",
+          'mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full shadow-sm',
           isUser
-            ? "order-2 bg-primary text-primary-foreground"
-            : "order-1 border bg-muted"
+            ? 'order-2 bg-primary text-primary-foreground'
+            : 'order-1 border bg-muted'
         )}
       >
         {isUser ? <User className="h-4 w-4" /> : <Robot className="h-4 w-4" />}
@@ -177,10 +179,10 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       {/* Message Content */}
       <div
         className={cn(
-          "relative min-w-0 max-w-[85%] rounded-lg px-4 py-3 shadow-sm",
+          'relative min-w-0 max-w-[85%] rounded-lg px-4 py-3 shadow-sm',
           isUser
-            ? "order-1 bg-primary text-primary-foreground"
-            : "order-2 border bg-muted"
+            ? 'order-1 bg-primary text-primary-foreground'
+            : 'order-2 border bg-muted'
         )}
       >
         {/* Main message text */}
@@ -196,7 +198,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         )}
 
         {/* Metric Display */}
-        {message.responseType === "metric" &&
+        {message.responseType === 'metric' &&
           message.metricValue !== undefined &&
           !isUser && (
             <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
@@ -206,10 +208,10 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-medium text-muted-foreground text-xs uppercase tracking-wide">
-                    {message.metricLabel || "Result"}
+                    {message.metricLabel || 'Result'}
                   </div>
                   <div className="mt-1 break-words font-bold text-2xl text-foreground">
-                    {typeof message.metricValue === "number"
+                    {typeof message.metricValue === 'number'
                       ? message.metricValue.toLocaleString()
                       : message.metricValue}
                   </div>
@@ -222,18 +224,18 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         {message.hasVisualization && !isUser && (
           <div className="mt-3 border-border/30 border-t pt-3">
             <div className="flex items-center gap-2 text-muted-foreground text-xs">
-              {getChartIcon(message.chartType || "bar")}
+              {getChartIcon(message.chartType || 'bar')}
               <span>Visualization generated in the data panel.</span>
             </div>
           </div>
         )}
 
         {/* Timestamp (hover) */}
-        <div className="absolute -bottom-5 right-0 opacity-0 transition-opacity group-hover:opacity-60">
+        <div className="-bottom-5 absolute right-0 opacity-0 transition-opacity group-hover:opacity-60">
           <div className="mt-1 font-mono text-xs">
             {message.timestamp.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
+              hour: '2-digit',
+              minute: '2-digit',
             })}
           </div>
         </div>

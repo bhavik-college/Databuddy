@@ -1,10 +1,10 @@
-import { GlobeIcon } from "lucide-react";
-import Image from "next/image";
+import { GlobeIcon } from 'lucide-react';
+import Image from 'next/image';
 import {
   getBrowserIcon,
   getDeviceTypeIcon,
   getOSIcon,
-} from "../../_components/utils/technology-helpers";
+} from '../../_components/utils/technology-helpers';
 
 // Default date range for testing
 export const getDefaultDateRange = () => {
@@ -12,15 +12,15 @@ export const getDefaultDateRange = () => {
   const thirtyDaysAgo = new Date(today);
   thirtyDaysAgo.setDate(today.getDate() - 30);
   return {
-    start_date: thirtyDaysAgo.toISOString().split("T")[0],
-    end_date: today.toISOString().split("T")[0],
-    granularity: "daily" as "hourly" | "daily",
+    start_date: thirtyDaysAgo.toISOString().split('T')[0],
+    end_date: today.toISOString().split('T')[0],
+    granularity: 'daily' as 'hourly' | 'daily',
   };
 };
 
 // Helper function to get device icon
 export const getDeviceIcon = (device: string) => {
-  return getDeviceTypeIcon(device, "md");
+  return getDeviceTypeIcon(device, 'md');
 };
 
 export const getBrowserIconComponent = (browser: string) => {
@@ -30,7 +30,7 @@ export const getBrowserIconComponent = (browser: string) => {
       alt={browser}
       className="h-4 w-4 object-contain"
       onError={(e) => {
-        (e.target as HTMLImageElement).style.display = "none";
+        (e.target as HTMLImageElement).style.display = 'none';
       }}
       src={iconPath}
     />
@@ -44,7 +44,7 @@ export const getOSIconComponent = (os: string) => {
       alt={os}
       className="h-4 w-4 object-contain"
       onError={(e) => {
-        (e.target as HTMLImageElement).style.display = "none";
+        (e.target as HTMLImageElement).style.display = 'none';
       }}
       src={iconPath}
     />
@@ -52,7 +52,7 @@ export const getOSIconComponent = (os: string) => {
 };
 
 export const getCountryFlag = (country: string) => {
-  if (!country || country === "Unknown") {
+  if (!country || country === 'Unknown') {
     return <GlobeIcon className="h-4 w-4 text-muted-foreground" />;
   }
 
@@ -77,7 +77,9 @@ export const formatDuration = (seconds: number): string => {
   const remainingSeconds = Math.round(seconds % 60);
 
   if (minutes < 60) {
-    return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
+    return remainingSeconds > 0
+      ? `${minutes}m ${remainingSeconds}s`
+      : `${minutes}m`;
   }
 
   const hours = Math.floor(minutes / 60);

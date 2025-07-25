@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { WarningCircleIcon } from "@phosphor-icons/react";
-import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { WarningCircleIcon } from '@phosphor-icons/react';
+import { useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 
 export default function GlobalError({
   error,
@@ -12,11 +12,11 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("Global error occurred:", error);
+    console.error('Global error occurred:', error);
   }, [error]);
 
   const handleGoToHomepage = () => {
-    window.location.href = "/";
+    window.location.href = '/';
   };
 
   return (
@@ -39,7 +39,12 @@ export default function GlobalError({
         <Button className="mt-6" onClick={() => reset()} size="lg">
           Try again
         </Button>
-        <Button className="mt-3 ml-3" onClick={handleGoToHomepage} size="lg" variant="outline">
+        <Button
+          className="mt-3 ml-3"
+          onClick={handleGoToHomepage}
+          size="lg"
+          variant="outline"
+        >
           Go to Homepage
         </Button>
       </div>

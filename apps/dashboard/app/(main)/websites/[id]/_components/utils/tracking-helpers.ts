@@ -1,5 +1,5 @@
-import { RECOMMENDED_DEFAULTS } from "./tracking-defaults";
-import type { TrackingOptions } from "./types";
+import { RECOMMENDED_DEFAULTS } from './tracking-defaults';
+import type { TrackingOptions } from './types';
 
 /**
  * Toggle a specific tracking option
@@ -17,7 +17,9 @@ export function toggleTrackingOption(
 /**
  * Enable all basic tracking options
  */
-export function enableAllBasicTracking(options: TrackingOptions): TrackingOptions {
+export function enableAllBasicTracking(
+  options: TrackingOptions
+): TrackingOptions {
   return {
     ...options,
     trackScreenViews: true,
@@ -30,7 +32,9 @@ export function enableAllBasicTracking(options: TrackingOptions): TrackingOption
 /**
  * Enable all interaction tracking options
  */
-export function enableAllInteractionTracking(options: TrackingOptions): TrackingOptions {
+export function enableAllInteractionTracking(
+  options: TrackingOptions
+): TrackingOptions {
   return {
     ...options,
     trackAttributes: true,
@@ -43,7 +47,9 @@ export function enableAllInteractionTracking(options: TrackingOptions): Tracking
 /**
  * Enable all engagement tracking options
  */
-export function enableAllEngagementTracking(options: TrackingOptions): TrackingOptions {
+export function enableAllEngagementTracking(
+  options: TrackingOptions
+): TrackingOptions {
   return {
     ...options,
     trackEngagement: true,
@@ -56,7 +62,9 @@ export function enableAllEngagementTracking(options: TrackingOptions): TrackingO
 /**
  * Enable all performance tracking options
  */
-export function enableAllPerformanceTracking(options: TrackingOptions): TrackingOptions {
+export function enableAllPerformanceTracking(
+  options: TrackingOptions
+): TrackingOptions {
   return {
     ...options,
     trackPerformance: true,
@@ -68,7 +76,9 @@ export function enableAllPerformanceTracking(options: TrackingOptions): Tracking
 /**
  * Enable all advanced tracking options
  */
-export function enableAllAdvancedTracking(options: TrackingOptions): TrackingOptions {
+export function enableAllAdvancedTracking(
+  options: TrackingOptions
+): TrackingOptions {
   return {
     ...options,
     ...enableAllEngagementTracking(options),
@@ -82,7 +92,9 @@ export function enableAllAdvancedTracking(options: TrackingOptions): TrackingOpt
 /**
  * Enable batching with optimal settings
  */
-export function enableOptimalBatching(options: TrackingOptions): TrackingOptions {
+export function enableOptimalBatching(
+  options: TrackingOptions
+): TrackingOptions {
   return {
     ...options,
     enableBatching: true,
@@ -94,7 +106,9 @@ export function enableOptimalBatching(options: TrackingOptions): TrackingOptions
 /**
  * Enable all optimization options
  */
-export function enableAllOptimization(options: TrackingOptions): TrackingOptions {
+export function enableAllOptimization(
+  options: TrackingOptions
+): TrackingOptions {
   return {
     ...options,
     ...enableOptimalBatching(options),

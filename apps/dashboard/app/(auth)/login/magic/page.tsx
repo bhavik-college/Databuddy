@@ -1,46 +1,46 @@
-"use client";
+'use client';
 
-import { signIn } from "@databuddy/auth/client";
-import { ChevronLeft, Loader2, Sparkles } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { signIn } from '@databuddy/auth/client';
+import { ChevronLeft, Loader2, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function MagicLinkPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleMagicLinkLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
-      toast.error("Please enter your email address");
+      toast.error('Please enter your email address');
       return;
     }
     setIsLoading(true);
     try {
       await signIn.magicLink({
         email,
-        callbackURL: "/home",
+        callbackURL: '/home',
         fetchOptions: {
           onSuccess: () => {
             setIsLoading(false);
-            toast.success("Magic link sent! Please check your email.");
+            toast.success('Magic link sent! Please check your email.');
             router.push(`/login/magic-sent?email=${encodeURIComponent(email)}`);
           },
           onError: () => {
             setIsLoading(false);
-            toast.error("Failed to send magic link. Please try again.");
+            toast.error('Failed to send magic link. Please try again.');
           },
         },
       });
     } catch (error) {
       setIsLoading(false);
-      toast.error("Failed to send magic link. Please try again.");
+      toast.error('Failed to send magic link. Please try again.');
     }
   };
 
@@ -54,8 +54,12 @@ export default function MagicLinkPage() {
             <Sparkles className="h-8 w-8 text-white" />
           </div>
         </div>
-        <h1 className="font-bold text-2xl text-foreground">Sign in with magic link</h1>
-        <p className="mt-2 text-muted-foreground">No password needed — just use your email</p>
+        <h1 className="font-bold text-2xl text-foreground">
+          Sign in with magic link
+        </h1>
+        <p className="mt-2 text-muted-foreground">
+          No password needed — just use your email
+        </p>
       </div>
       <form className="space-y-4" onSubmit={handleMagicLinkLogin}>
         <div className="space-y-2">
@@ -77,8 +81,8 @@ export default function MagicLinkPage() {
         <div className="flex gap-2 rounded-lg border border-blue-100 bg-blue-50 p-3 text-blue-800 text-sm">
           <Sparkles className="h-5 w-5 flex-shrink-0 text-blue-500" />
           <p>
-            We'll send a secure link to your email that will sign you in instantly — no password
-            needed.
+            We'll send a secure link to your email that will sign you in
+            instantly — no password needed.
           </p>
         </div>
         <Button

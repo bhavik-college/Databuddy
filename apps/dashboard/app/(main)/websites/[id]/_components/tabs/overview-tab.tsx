@@ -1,63 +1,71 @@
-"use client";
+'use client';
 
 import {
   CaretDownIcon,
   CaretRightIcon,
   ChartLineIcon,
   CursorIcon,
+  DesktopIcon,
+  DeviceMobileIcon,
+  DeviceTabletIcon,
   GlobeIcon,
+  LaptopIcon,
   LayoutIcon,
+  MonitorIcon,
+  QuestionIcon,
+  TelevisionIcon,
   TimerIcon,
   UsersIcon,
   WarningIcon,
-} from "@phosphor-icons/react";
-import { differenceInDays } from "date-fns";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useAtom } from "jotai";
-import { DataTable } from "@/components/analytics/data-table";
-import { StatCard } from "@/components/analytics/stat-card";
+  WatchIcon,
+} from '@phosphor-icons/react';
+import { differenceInDays } from 'date-fns';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+import { useAtom } from 'jotai';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { DataTable } from '@/components/analytics/data-table';
+import { StatCard } from '@/components/analytics/stat-card';
 import {
   ReferrerSourceCell,
   type ReferrerSourceCellData,
-} from "@/components/atomic/ReferrerSourceCell";
-import { MetricsChart } from "@/components/charts/metrics-chart";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useBatchDynamicQuery, useRealTimeStats } from "@/hooks/use-dynamic-query";
+} from '@/components/atomic/ReferrerSourceCell';
+import { MetricsChart } from '@/components/charts/metrics-chart';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  useBatchDynamicQuery,
+  useRealTimeStats,
+} from '@/hooks/use-dynamic-query';
+import { useTableTabs } from '@/lib/table-tabs';
+import { getUserTimezone } from '@/lib/timezone';
+import {
+  metricVisibilityAtom,
+  toggleMetricAtom,
+} from '@/stores/jotai/chartAtoms';
 import {
   calculatePercentChange,
   formatDateByGranularity,
   getColorVariant,
-} from "../utils/analytics-helpers";
+} from '../utils/analytics-helpers';
 import {
+  getBrowserIcon,
+  getOSIcon,
   PercentageBadge,
   processBrowserData,
   processDeviceData,
   TechnologyIcon,
-  getOSIcon,
-  getBrowserIcon,
-} from "../utils/technology-helpers";
-import type { FullTabProps, MetricPoint } from "../utils/types";
-import { MetricToggles } from "../utils/ui-components";
-
-import { useTableTabs } from "@/lib/table-tabs";
-import { getUserTimezone } from "@/lib/timezone";
-import { metricVisibilityAtom, toggleMetricAtom } from "@/stores/jotai/chartAtoms";
-
-import {
-  DeviceMobileIcon,
-  DeviceTabletIcon,
-  LaptopIcon,
-  DesktopIcon,
-  MonitorIcon,
-  TelevisionIcon,
-  WatchIcon,
-  QuestionIcon,
-} from "@phosphor-icons/react";
+} from '../utils/technology-helpers';
+import type { FullTabProps, MetricPoint } from '../utils/types';
+import { MetricToggles } from '../utils/ui-components';
 
 interface ChartDataPoint {
   date: string;
@@ -78,24 +86,29 @@ const MIN_PREVIOUS_PAGEVIEWS_FOR_TREND = 10;
 const QUERY_CONFIG = {
   limit: 100,
   parameters: {
-    summary: ["summary_metrics", "today_metrics", "events_by_date"] as string[],
-    pages: ["top_pages", "entry_pages", "exit_pages"] as string[],
-    traffic: ["top_referrers", "utm_sources", "utm_mediums", "utm_campaigns"] as string[],
-    tech: ["device_types", "browsers", "operating_systems"] as string[], // <-- add 'operating_systems' here
-    customEvents: ["custom_events"] as string[],
+    summary: ['summary_metrics', 'today_metrics', 'events_by_date'] as string[],
+    pages: ['top_pages', 'entry_pages', 'exit_pages'] as string[],
+    traffic: [
+      'top_referrers',
+      'utm_sources',
+      'utm_mediums',
+      'utm_campaigns',
+    ] as string[],
+    tech: ['device_types', 'browsers', 'operating_systems'] as string[], // <-- add 'operating_systems' here
+    customEvents: ['custom_events'] as string[],
   },
 } as const;
 
 function LiveUserIndicator({ websiteId }: { websiteId: string }) {
   const { activeUsers: count } = useRealTimeStats(websiteId);
   const [prevCount, setPrevCount] = useState(count);
-  const [change, setChange] = useState<"up" | "down" | null>(null);
+  const [change, setChange] = useState<'up' | 'down' | null>(null);
 
   useEffect(() => {
     if (count > prevCount) {
-      setChange("up");
+      setChange('up');
     } else if (count < prevCount) {
-      setChange("down");
+      setChange('down');
     }
     const timer = setTimeout(() => setChange(null), 1000);
     setPrevCount(count);
@@ -107,9 +120,9 @@ function LiveUserIndicator({ websiteId }: { websiteId: string }) {
   }
 
   const getChangeColor = () => {
-    if (change === "up") return "text-green-500";
-    if (change === "down") return "text-red-500";
-    return "text-foreground";
+    if (change === 'up') return 'text-green-500';
+    if (change === 'down') return 'text-red-500';
+    return 'text-foreground';
   };
 
   return (
@@ -120,7 +133,7 @@ function LiveUserIndicator({ websiteId }: { websiteId: string }) {
           <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500" />
         </span>
         <span className={getChangeColor()}>
-          {count} {count === 1 ? "user" : "users"} live
+          {count} {count === 1 ? 'user' : 'users'} live
         </span>
       </div>
     </div>
@@ -155,7 +168,7 @@ function UnauthorizedAccessError() {
         </p>
         <Button
           className="w-full sm:w-auto"
-          onClick={() => router.push("/websites")}
+          onClick={() => router.push('/websites')}
           variant="destructive"
         >
           Back to Websites
@@ -185,18 +198,27 @@ const deviceTypeColorMap: Record<string, string> = {
   unknown: 'text-gray-400',
 };
 
-function DeviceTypeCell({ device_type, name }: { device_type: string; name: string }) {
+function DeviceTypeCell({
+  device_type,
+  name,
+}: {
+  device_type: string;
+  name: string;
+}) {
   const Icon = deviceTypeIconMap[device_type] || QuestionIcon;
-  const colorClass = deviceTypeColorMap[device_type] || deviceTypeColorMap.unknown;
+  const colorClass =
+    deviceTypeColorMap[device_type] || deviceTypeColorMap.unknown;
   return (
     <div className="flex items-center gap-3">
       <Icon
-        size={20}
-        weight="duotone"
         className={colorClass}
+        size={20}
         style={{ minWidth: 20, minHeight: 20 }}
+        weight="duotone"
       />
-      <span className="font-medium">{device_type.charAt(0).toUpperCase() + device_type.slice(1)}</span>
+      <span className="font-medium">
+        {device_type.charAt(0).toUpperCase() + device_type.slice(1)}
+      </span>
     </div>
   );
 }
@@ -210,31 +232,31 @@ export function WebsiteOverviewTab({
 }: FullTabProps) {
   const queries = [
     {
-      id: "overview-summary",
+      id: 'overview-summary',
       parameters: QUERY_CONFIG.parameters.summary,
       limit: QUERY_CONFIG.limit,
       granularity: dateRange.granularity,
     },
     {
-      id: "overview-pages",
+      id: 'overview-pages',
       parameters: QUERY_CONFIG.parameters.pages,
       limit: QUERY_CONFIG.limit,
       granularity: dateRange.granularity,
     },
     {
-      id: "overview-traffic",
+      id: 'overview-traffic',
       parameters: QUERY_CONFIG.parameters.traffic,
       limit: QUERY_CONFIG.limit,
       granularity: dateRange.granularity,
     },
     {
-      id: "overview-tech",
+      id: 'overview-tech',
       parameters: QUERY_CONFIG.parameters.tech,
       limit: QUERY_CONFIG.limit,
       granularity: dateRange.granularity,
     },
     {
-      id: "overview-custom-events",
+      id: 'overview-custom-events',
       parameters: QUERY_CONFIG.parameters.customEvents,
       limit: QUERY_CONFIG.limit,
       granularity: dateRange.granularity,
@@ -249,23 +271,26 @@ export function WebsiteOverviewTab({
   } = useBatchDynamicQuery(websiteId, dateRange, queries);
 
   const analytics = {
-    summary: getDataForQuery("overview-summary", "summary_metrics")?.[0] || null,
-    today: getDataForQuery("overview-summary", "today_metrics")?.[0] || null,
-    events_by_date: getDataForQuery("overview-summary", "events_by_date") || [],
-    top_pages: getDataForQuery("overview-pages", "top_pages") || [],
-    entry_pages: getDataForQuery("overview-pages", "entry_pages") || [],
-    exit_pages: getDataForQuery("overview-pages", "exit_pages") || [],
-    top_referrers: getDataForQuery("overview-traffic", "top_referrers") || [],
-    utm_sources: getDataForQuery("overview-traffic", "utm_sources") || [],
-    utm_mediums: getDataForQuery("overview-traffic", "utm_mediums") || [],
-    utm_campaigns: getDataForQuery("overview-traffic", "utm_campaigns") || [],
-    device_types: getDataForQuery("overview-tech", "device_types") || [],
-    browser_versions: getDataForQuery("overview-tech", "browsers") || [],
-    operating_systems: getDataForQuery("overview-tech", "operating_systems") || [],
+    summary:
+      getDataForQuery('overview-summary', 'summary_metrics')?.[0] || null,
+    today: getDataForQuery('overview-summary', 'today_metrics')?.[0] || null,
+    events_by_date: getDataForQuery('overview-summary', 'events_by_date') || [],
+    top_pages: getDataForQuery('overview-pages', 'top_pages') || [],
+    entry_pages: getDataForQuery('overview-pages', 'entry_pages') || [],
+    exit_pages: getDataForQuery('overview-pages', 'exit_pages') || [],
+    top_referrers: getDataForQuery('overview-traffic', 'top_referrers') || [],
+    utm_sources: getDataForQuery('overview-traffic', 'utm_sources') || [],
+    utm_mediums: getDataForQuery('overview-traffic', 'utm_mediums') || [],
+    utm_campaigns: getDataForQuery('overview-traffic', 'utm_campaigns') || [],
+    device_types: getDataForQuery('overview-tech', 'device_types') || [],
+    browser_versions: getDataForQuery('overview-tech', 'browsers') || [],
+    operating_systems:
+      getDataForQuery('overview-tech', 'operating_systems') || [],
   };
 
   const customEventsData = {
-    custom_events: getDataForQuery("overview-custom-events", "custom_events") || [],
+    custom_events:
+      getDataForQuery('overview-custom-events', 'custom_events') || [],
   };
 
   const loading = {
@@ -277,11 +302,14 @@ export function WebsiteOverviewTab({
   const [visibleMetrics] = useAtom(metricVisibilityAtom);
   const [, toggleMetricAction] = useAtom(toggleMetricAtom);
 
-  const toggleMetric = useCallback((metric: string) => {
-    if (metric in visibleMetrics) {
-      toggleMetricAction(metric as keyof typeof visibleMetrics);
-    }
-  }, [visibleMetrics, toggleMetricAction]);
+  const toggleMetric = useCallback(
+    (metric: string) => {
+      if (metric in visibleMetrics) {
+        toggleMetricAction(metric as keyof typeof visibleMetrics);
+      }
+    },
+    [visibleMetrics, toggleMetricAction]
+  );
 
   const metricsForToggles = {
     pageviews: visibleMetrics.pageviews,
@@ -299,7 +327,7 @@ export function WebsiteOverviewTab({
         try {
           await refetchBatch();
         } catch (error) {
-          console.error("Failed to refresh data:", error);
+          console.error('Failed to refresh data:', error);
         } finally {
           if (isMounted) {
             setIsRefreshing(false);
@@ -317,7 +345,9 @@ export function WebsiteOverviewTab({
 
   const isLoading = loading.summary || isRefreshing;
 
-  const [expandedProperties, setExpandedProperties] = useState<Set<string>>(new Set());
+  const [expandedProperties, setExpandedProperties] = useState<Set<string>>(
+    new Set()
+  );
 
   const referrerCustomCell = (info: any) => {
     const cellData: ReferrerSourceCellData = info.row.original;
@@ -327,58 +357,58 @@ export function WebsiteOverviewTab({
   const referrerTabs = useTableTabs({
     referrers: {
       data: analytics.top_referrers || [],
-      label: "Referrers",
-      primaryField: "name",
-      primaryHeader: "Source",
+      label: 'Referrers',
+      primaryField: 'name',
+      primaryHeader: 'Source',
       customCell: referrerCustomCell,
     },
     utm_sources: {
       data: analytics.utm_sources || [],
-      label: "UTM Sources",
-      primaryField: "name",
-      primaryHeader: "Source",
+      label: 'UTM Sources',
+      primaryField: 'name',
+      primaryHeader: 'Source',
     },
     utm_mediums: {
       data: analytics.utm_mediums || [],
-      label: "UTM Mediums",
-      primaryField: "name",
-      primaryHeader: "Medium",
+      label: 'UTM Mediums',
+      primaryField: 'name',
+      primaryHeader: 'Medium',
     },
     utm_campaigns: {
       data: analytics.utm_campaigns || [],
-      label: "UTM Campaigns",
-      primaryField: "name",
-      primaryHeader: "Campaign",
+      label: 'UTM Campaigns',
+      primaryField: 'name',
+      primaryHeader: 'Campaign',
     },
   });
 
   const pagesTabs = useTableTabs({
     top_pages: {
       data: analytics.top_pages || [],
-      label: "Top Pages",
-      primaryField: "name",
-      primaryHeader: "Page",
+      label: 'Top Pages',
+      primaryField: 'name',
+      primaryHeader: 'Page',
     },
     entry_pages: {
       data: analytics.entry_pages || [],
-      label: "Entry Pages",
-      primaryField: "name",
-      primaryHeader: "Page",
+      label: 'Entry Pages',
+      primaryField: 'name',
+      primaryHeader: 'Page',
     },
     exit_pages: {
       data: analytics.exit_pages || [],
-      label: "Exit Pages",
-      primaryField: "name",
-      primaryHeader: "Page",
+      label: 'Exit Pages',
+      primaryField: 'name',
+      primaryHeader: 'Page',
     },
   });
 
   const metricColors = {
-    pageviews: "blue-500",
-    visitors: "green-500",
-    sessions: "purple-500",
-    bounce_rate: "amber-500",
-    avg_session_duration: "red-500",
+    pageviews: 'blue-500',
+    visitors: 'green-500',
+    sessions: 'purple-500',
+    bounce_rate: 'amber-500',
+    avg_session_duration: 'red-500',
   };
   const dateFrom = new Date(dateRange.start_date);
   const dateTo = new Date(dateRange.end_date);
@@ -396,7 +426,9 @@ export function WebsiteOverviewTab({
       }
 
       const endOfToday = now.endOf('day');
-      return eventDate.isBefore(endOfToday) || eventDate.isSame(endOfToday, 'day');
+      return (
+        eventDate.isBefore(endOfToday) || eventDate.isSame(endOfToday, 'day')
+      );
     });
   };
 
@@ -429,13 +461,16 @@ export function WebsiteOverviewTab({
   const miniChartData = (() => {
     if (!analytics.events_by_date?.length) return {};
     const filteredEvents = filterFutureEvents(analytics.events_by_date);
-    const createChartSeries = (field: string, transform?: (value: any) => number) =>
+    const createChartSeries = (
+      field: string,
+      transform?: (value: any) => number
+    ) =>
       filteredEvents.map((event: any) => ({
         date:
-          dateRange.granularity === "hourly"
+          dateRange.granularity === 'hourly'
             ? event.date
             : event.date.slice(0, 10),
-        value: transform ? transform(event[field]) : (event[field] || 0),
+        value: transform ? transform(event[field]) : event[field] || 0,
       }));
     return {
       visitors: createChartSeries('visitors'),
@@ -464,7 +499,7 @@ export function WebsiteOverviewTab({
       pageviews: item.pageviews,
       percentage: item.percentage ?? 0,
       icon: getBrowserIcon(item.name),
-      category: "browser",
+      category: 'browser',
     }));
   })();
 
@@ -474,7 +509,7 @@ export function WebsiteOverviewTab({
     pageviews: item.pageviews,
     percentage: item.percentage ?? 0,
     icon: getOSIcon(item.name),
-    category: "os",
+    category: 'os',
   }));
 
   const togglePropertyExpansion = (propertyId: string) => {
@@ -498,10 +533,10 @@ export function WebsiteOverviewTab({
         percentage: event.percentage || 0,
         last_occurrence_formatted: event.last_occurrence
           ? new Date(event.last_occurrence).toLocaleDateString()
-          : "N/A",
+          : 'N/A',
         first_occurrence_formatted: event.first_occurrence
           ? new Date(event.first_occurrence).toLocaleDateString()
-          : "N/A",
+          : 'N/A',
         propertyCategories: [],
       };
     });
@@ -523,147 +558,162 @@ export function WebsiteOverviewTab({
   };
 
   const formatNumber = (value: number | null | undefined): string => {
-    if (value == null || Number.isNaN(value)) return "0";
-    return Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(value);
+    if (value == null || Number.isNaN(value)) return '0';
+    return Intl.NumberFormat(undefined, {
+      notation: 'compact',
+      maximumFractionDigits: 1,
+    }).format(value);
   };
 
   const createMetricCell = (label: string) => (info: any) => (
     <div>
-      <div className="font-medium text-foreground">{formatNumber(info.getValue())}</div>
+      <div className="font-medium text-foreground">
+        {formatNumber(info.getValue())}
+      </div>
       <div className="text-muted-foreground text-xs">{label}</div>
     </div>
   );
 
-  const deviceColumns =
-    [
-      {
-        id: "device_type",
-        accessorKey: "device_type",
-        header: "Device Type",
-        cell: (info: any) => {
-          const row = info.row.original;
-          return <DeviceTypeCell device_type={row.name} name={row.name} />;
-        },
+  const deviceColumns = [
+    {
+      id: 'device_type',
+      accessorKey: 'device_type',
+      header: 'Device Type',
+      cell: (info: any) => {
+        const row = info.row.original;
+        return <DeviceTypeCell device_type={row.name} name={row.name} />;
       },
-      {
-        id: "visitors",
-        accessorKey: "visitors",
-        header: "Visitors",
-        cell: (info: any) => <span className="font-medium">{formatNumber(info.getValue())}</span>,
-      },
-      {
-        id: "percentage",
-        accessorKey: "percentage",
-        header: "Share",
-        cell: createPercentageCell(),
-      },
-    ]
+    },
+    {
+      id: 'visitors',
+      accessorKey: 'visitors',
+      header: 'Visitors',
+      cell: (info: any) => (
+        <span className="font-medium">{formatNumber(info.getValue())}</span>
+      ),
+    },
+    {
+      id: 'percentage',
+      accessorKey: 'percentage',
+      header: 'Share',
+      cell: createPercentageCell(),
+    },
+  ];
 
-  const browserColumns =
-    [
-      {
-        id: "name",
-        accessorKey: "name",
-        header: "Browser",
-        cell: createTechnologyCell(),
-      },
-      {
-        id: "visitors",
-        accessorKey: "visitors",
-        header: "Visitors",
-        cell: (info: any) => <span className="font-medium">{formatNumber(info.getValue())}</span>,
-      },
-      {
-        id: "pageviews",
-        accessorKey: "pageviews",
-        header: "Pageviews",
-        cell: (info: any) => <span className="font-medium">{formatNumber(info.getValue())}</span>,
-      },
-      {
-        id: "percentage",
-        accessorKey: "percentage",
-        header: "Share",
-        cell: createPercentageCell(),
-      },
-    ]
+  const browserColumns = [
+    {
+      id: 'name',
+      accessorKey: 'name',
+      header: 'Browser',
+      cell: createTechnologyCell(),
+    },
+    {
+      id: 'visitors',
+      accessorKey: 'visitors',
+      header: 'Visitors',
+      cell: (info: any) => (
+        <span className="font-medium">{formatNumber(info.getValue())}</span>
+      ),
+    },
+    {
+      id: 'pageviews',
+      accessorKey: 'pageviews',
+      header: 'Pageviews',
+      cell: (info: any) => (
+        <span className="font-medium">{formatNumber(info.getValue())}</span>
+      ),
+    },
+    {
+      id: 'percentage',
+      accessorKey: 'percentage',
+      header: 'Share',
+      cell: createPercentageCell(),
+    },
+  ];
 
-  const osColumns =
-    [
-      {
-        id: "name",
-        accessorKey: "name",
-        header: "Operating System",
-        cell: createTechnologyCell(),
-      },
-      {
-        id: "visitors",
-        accessorKey: "visitors",
-        header: "Visitors",
-        cell: (info: any) => <span className="font-medium">{formatNumber(info.getValue())}</span>,
-      },
-      {
-        id: "pageviews",
-        accessorKey: "pageviews",
-        header: "Pageviews",
-        cell: (info: any) => <span className="font-medium">{formatNumber(info.getValue())}</span>,
-      },
-      {
-        id: "percentage",
-        accessorKey: "percentage",
-        header: "Share",
-        cell: createPercentageCell(),
-      },
-    ]
+  const osColumns = [
+    {
+      id: 'name',
+      accessorKey: 'name',
+      header: 'Operating System',
+      cell: createTechnologyCell(),
+    },
+    {
+      id: 'visitors',
+      accessorKey: 'visitors',
+      header: 'Visitors',
+      cell: (info: any) => (
+        <span className="font-medium">{formatNumber(info.getValue())}</span>
+      ),
+    },
+    {
+      id: 'pageviews',
+      accessorKey: 'pageviews',
+      header: 'Pageviews',
+      cell: (info: any) => (
+        <span className="font-medium">{formatNumber(info.getValue())}</span>
+      ),
+    },
+    {
+      id: 'percentage',
+      accessorKey: 'percentage',
+      header: 'Share',
+      cell: createPercentageCell(),
+    },
+  ];
 
-  const customEventsColumns =
-    [
-      {
-        id: "name",
-        accessorKey: "name",
-        header: "Event Name",
-        cell: (info: any) => {
-          const eventName = info.getValue() as string;
-          return (
-            <div className="flex items-center gap-3">
-              <div className="h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
-              <span className="font-medium text-foreground">{eventName}</span>
-            </div>
-          );
-        },
+  const customEventsColumns = [
+    {
+      id: 'name',
+      accessorKey: 'name',
+      header: 'Event Name',
+      cell: (info: any) => {
+        const eventName = info.getValue() as string;
+        return (
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
+            <span className="font-medium text-foreground">{eventName}</span>
+          </div>
+        );
       },
-      {
-        id: "total_events",
-        accessorKey: "total_events",
-        header: "Events",
-        cell: createMetricCell("total"),
-      },
-      {
-        id: "unique_users",
-        accessorKey: "unique_users",
-        header: "Users",
-        cell: createMetricCell("unique"),
-      },
-      {
-        id: "percentage",
-        accessorKey: "percentage",
-        header: "Share",
-        cell: createPercentageCell(),
-      },
-    ]
+    },
+    {
+      id: 'total_events',
+      accessorKey: 'total_events',
+      header: 'Events',
+      cell: createMetricCell('total'),
+    },
+    {
+      id: 'unique_users',
+      accessorKey: 'unique_users',
+      header: 'Users',
+      cell: createMetricCell('unique'),
+    },
+    {
+      id: 'percentage',
+      accessorKey: 'percentage',
+      header: 'Share',
+      cell: createPercentageCell(),
+    },
+  ];
 
   const userTimezone = getUserTimezone();
   dayjs.extend(utc);
   dayjs.extend(timezone);
-  const todayDate = dayjs().tz(userTimezone).format("YYYY-MM-DD");
+  const todayDate = dayjs().tz(userTimezone).format('YYYY-MM-DD');
   const todayEvent = analytics.events_by_date.find(
-    (event: any) => dayjs(event.date).tz(userTimezone).format("YYYY-MM-DD") === todayDate
+    (event: any) =>
+      dayjs(event.date).tz(userTimezone).format('YYYY-MM-DD') === todayDate
   );
   const todayVisitors = todayEvent?.visitors ?? 0;
   const todaySessions = todayEvent?.sessions ?? 0;
   const todayPageviews = todayEvent?.pageviews ?? 0;
 
   const calculateTrends = (() => {
-    if (!analytics.events_by_date?.length || analytics.events_by_date.length < 2) {
+    if (
+      !analytics.events_by_date?.length ||
+      analytics.events_by_date.length < 2
+    ) {
       return {};
     }
     const events = [...analytics.events_by_date].sort(
@@ -677,36 +727,55 @@ export function WebsiteOverviewTab({
     }
     const sumCountMetric = (
       period: MetricPoint[],
-      field: keyof Pick<MetricPoint, "pageviews" | "visitors" | "sessions">
+      field: keyof Pick<MetricPoint, 'pageviews' | 'visitors' | 'sessions'>
     ) => period.reduce((acc, item) => acc + (Number(item[field]) || 0), 0);
-    const currentSumVisitors = sumCountMetric(currentPeriodData, "visitors");
-    const currentSumSessions = sumCountMetric(currentPeriodData, "sessions");
-    const currentSumPageviews = sumCountMetric(currentPeriodData, "pageviews");
+    const currentSumVisitors = sumCountMetric(currentPeriodData, 'visitors');
+    const currentSumSessions = sumCountMetric(currentPeriodData, 'sessions');
+    const currentSumPageviews = sumCountMetric(currentPeriodData, 'pageviews');
     const currentPagesPerSession =
       currentSumSessions > 0 ? currentSumPageviews / currentSumSessions : 0;
-    const previousSumVisitors = sumCountMetric(previousPeriodData, "visitors");
-    const previousSumSessions = sumCountMetric(previousPeriodData, "sessions");
-    const previousSumPageviews = sumCountMetric(previousPeriodData, "pageviews");
+    const previousSumVisitors = sumCountMetric(previousPeriodData, 'visitors');
+    const previousSumSessions = sumCountMetric(previousPeriodData, 'sessions');
+    const previousSumPageviews = sumCountMetric(
+      previousPeriodData,
+      'pageviews'
+    );
     const previousPagesPerSession =
       previousSumSessions > 0 ? previousSumPageviews / previousSumSessions : 0;
     const averageRateMetric = (
       period: MetricPoint[],
-      field: keyof Pick<MetricPoint, "bounce_rate" | "avg_session_duration">
+      field: keyof Pick<MetricPoint, 'bounce_rate' | 'avg_session_duration'>
     ) => {
       const validEntries = period
         .map((item) => Number(item[field]))
         .filter((value) => !Number.isNaN(value) && value > 0);
       if (validEntries.length === 0) return 0;
-      return validEntries.reduce((acc, value) => acc + value, 0) / validEntries.length;
+      return (
+        validEntries.reduce((acc, value) => acc + value, 0) /
+        validEntries.length
+      );
     };
-    const currentBounceRateAvg = averageRateMetric(currentPeriodData, "bounce_rate");
-    const previousBounceRateAvg = averageRateMetric(previousPeriodData, "bounce_rate");
-    const currentSessionDurationAvg = averageRateMetric(currentPeriodData, "avg_session_duration");
+    const currentBounceRateAvg = averageRateMetric(
+      currentPeriodData,
+      'bounce_rate'
+    );
+    const previousBounceRateAvg = averageRateMetric(
+      previousPeriodData,
+      'bounce_rate'
+    );
+    const currentSessionDurationAvg = averageRateMetric(
+      currentPeriodData,
+      'avg_session_duration'
+    );
     const previousSessionDurationAvg = averageRateMetric(
       previousPeriodData,
-      "avg_session_duration"
+      'avg_session_duration'
     );
-    const calculateTrendPercentage = (current: number, previous: number, minimumBase = 0) => {
+    const calculateTrendPercentage = (
+      current: number,
+      previous: number,
+      minimumBase = 0
+    ) => {
       if (previous < minimumBase && !(previous === 0 && current === 0)) {
         return;
       }
@@ -716,12 +785,19 @@ export function WebsiteOverviewTab({
       const change = calculatePercentChange(current, previous);
       return Math.max(-100, Math.min(1000, Math.round(change)));
     };
-    const canShowSessionBasedTrend = previousSumSessions >= MIN_PREVIOUS_SESSIONS_FOR_TREND;
+    const canShowSessionBasedTrend =
+      previousSumSessions >= MIN_PREVIOUS_SESSIONS_FOR_TREND;
     const previousPeriodStart = previousPeriodData[0]?.date;
-    const previousPeriodEnd = previousPeriodData[previousPeriodData.length - 1]?.date;
+    const previousPeriodEnd =
+      previousPeriodData[previousPeriodData.length - 1]?.date;
     const currentPeriodStart = currentPeriodData[0]?.date;
-    const currentPeriodEnd = currentPeriodData[currentPeriodData.length - 1]?.date;
-    const createDetailedTrend = (current: number, previous: number, minimumBase = 0) => {
+    const currentPeriodEnd =
+      currentPeriodData[currentPeriodData.length - 1]?.date;
+    const createDetailedTrend = (
+      current: number,
+      previous: number,
+      minimumBase = 0
+    ) => {
       const change = calculateTrendPercentage(current, previous, minimumBase);
       if (change === undefined) return change;
       return {
@@ -755,12 +831,15 @@ export function WebsiteOverviewTab({
         ? createDetailedTrend(currentBounceRateAvg, previousBounceRateAvg)
         : undefined,
       session_duration: canShowSessionBasedTrend
-        ? createDetailedTrend(currentSessionDurationAvg, previousSessionDurationAvg)
+        ? createDetailedTrend(
+            currentSessionDurationAvg,
+            previousSessionDurationAvg
+          )
         : undefined,
     };
   })();
 
-  if (error instanceof Error && error.message === "UNAUTHORIZED_ACCESS") {
+  if (error instanceof Error && error.message === 'UNAUTHORIZED_ACCESS') {
     return <UnauthorizedAccessError />;
   }
 
@@ -770,8 +849,8 @@ export function WebsiteOverviewTab({
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6">
         {[
           {
-            id: "visitors-chart",
-            title: "UNIQUE VISITORS",
+            id: 'visitors-chart',
+            title: 'UNIQUE VISITORS',
             value: analytics.summary?.unique_visitors || 0,
             description: `${todayVisitors} today`,
             icon: UsersIcon,
@@ -779,8 +858,8 @@ export function WebsiteOverviewTab({
             trend: calculateTrends.visitors,
           },
           {
-            id: "sessions-chart",
-            title: "SESSIONS",
+            id: 'sessions-chart',
+            title: 'SESSIONS',
             value: analytics.summary?.sessions || 0,
             description: `${todaySessions} today`,
             icon: ChartLineIcon,
@@ -788,8 +867,8 @@ export function WebsiteOverviewTab({
             trend: calculateTrends.sessions,
           },
           {
-            id: "pageviews-chart",
-            title: "PAGEVIEWS",
+            id: 'pageviews-chart',
+            title: 'PAGEVIEWS',
             value: analytics.summary?.pageviews || 0,
             description: `${todayPageviews} today`,
             icon: GlobeIcon,
@@ -797,43 +876,51 @@ export function WebsiteOverviewTab({
             trend: calculateTrends.pageviews,
           },
           {
-            id: "pages-per-session-chart",
-            title: "PAGES/SESSION",
+            id: 'pages-per-session-chart',
+            title: 'PAGES/SESSION',
             value: analytics.summary
               ? analytics.summary.sessions > 0
-                ? (analytics.summary.pageviews / analytics.summary.sessions).toFixed(1)
-                : "0"
-              : "0",
-            description: "",
+                ? (
+                    analytics.summary.pageviews / analytics.summary.sessions
+                  ).toFixed(1)
+                : '0'
+              : '0',
+            description: '',
             icon: LayoutIcon,
             chartData: miniChartData.pagesPerSession,
             trend: calculateTrends.pages_per_session,
             formatValue: (value: number) => value.toFixed(1),
           },
           {
-            id: "bounce-rate-chart",
-            title: "BOUNCE RATE",
-            value: analytics.summary?.bounce_rate ? `${analytics.summary.bounce_rate.toFixed(1)}%` : "0%",
-            description: "",
+            id: 'bounce-rate-chart',
+            title: 'BOUNCE RATE',
+            value: analytics.summary?.bounce_rate
+              ? `${analytics.summary.bounce_rate.toFixed(1)}%`
+              : '0%',
+            description: '',
             icon: CursorIcon,
             chartData: miniChartData.bounceRate,
             trend: calculateTrends.bounce_rate,
             formatValue: (value: number) => `${value.toFixed(1)}%`,
             invertTrend: true,
-            variant: getColorVariant(analytics.summary?.bounce_rate || 0, 70, 50),
+            variant: getColorVariant(
+              analytics.summary?.bounce_rate || 0,
+              70,
+              50
+            ),
           },
           {
-            id: "session-duration-chart",
-            title: "SESSION DURATION",
+            id: 'session-duration-chart',
+            title: 'SESSION DURATION',
             value: (() => {
               const duration = analytics.summary?.avg_session_duration;
-              if (!duration) return "0s";
+              if (!duration) return '0s';
               if (duration < 60) return `${duration.toFixed(1)}s`;
               const minutes = Math.floor(duration / 60);
               const seconds = Math.round(duration % 60);
               return `${minutes}m ${seconds}s`;
             })(),
-            description: "",
+            description: '',
             icon: TimerIcon,
             chartData: miniChartData.sessionDuration,
             trend: calculateTrends.session_duration,
@@ -846,21 +933,35 @@ export function WebsiteOverviewTab({
           },
         ].map((metric) => (
           <StatCard
-            key={metric.id}
             chartData={isLoading ? undefined : metric.chartData}
             className="h-full"
-            description={metric.description && metric.id !== "pages-per-session-chart" && metric.id !== "bounce-rate-chart" && metric.id !== "session-duration-chart" ? formatNumber(Number(metric.description.split(" ")[0])) + " today" : metric.description}
+            description={
+              metric.description &&
+              metric.id !== 'pages-per-session-chart' &&
+              metric.id !== 'bounce-rate-chart' &&
+              metric.id !== 'session-duration-chart'
+                ? formatNumber(Number(metric.description.split(' ')[0])) +
+                  ' today'
+                : metric.description
+            }
+            formatValue={metric.formatValue}
             icon={metric.icon}
             id={metric.id}
+            invertTrend={metric.invertTrend}
             isLoading={isLoading}
+            key={metric.id}
             showChart={true}
             title={metric.title}
             trend={metric.trend}
-            trendLabel={metric.trend !== undefined ? "vs previous period" : undefined}
-            value={typeof metric.value === "number" ? formatNumber(metric.value) : metric.value}
-            variant={metric.variant || "default"}
-            formatValue={metric.formatValue}
-            invertTrend={metric.invertTrend}
+            trendLabel={
+              metric.trend !== undefined ? 'vs previous period' : undefined
+            }
+            value={
+              typeof metric.value === 'number'
+                ? formatNumber(metric.value)
+                : metric.value
+            }
+            variant={metric.variant || 'default'}
           />
         ))}
       </div>
@@ -869,11 +970,14 @@ export function WebsiteOverviewTab({
       <div className="rounded border bg-card shadow-sm">
         <div className="flex flex-col items-start justify-between gap-3 border-b p-4 sm:flex-row">
           <div>
-            <h2 className="font-semibold text-lg tracking-tight">Traffic Trends</h2>
+            <h2 className="font-semibold text-lg tracking-tight">
+              Traffic Trends
+            </h2>
             <p className="text-muted-foreground text-sm">
-              {dateRange.granularity === "hourly" ? "Hourly" : "Daily"} traffic data
+              {dateRange.granularity === 'hourly' ? 'Hourly' : 'Daily'} traffic
+              data
             </p>
-            {dateRange.granularity === "hourly" && dateDiff > 7 && (
+            {dateRange.granularity === 'hourly' && dateDiff > 7 && (
               <div className="mt-1 flex items-center gap-1 text-amber-600 text-xs">
                 <WarningIcon size={16} weight="fill" />
                 <span>Large date ranges may affect performance</span>
@@ -885,24 +989,20 @@ export function WebsiteOverviewTab({
             <LiveUserIndicator websiteId={websiteId} />
             <MetricToggles
               colors={metricColors}
+              labels={{
+                pageviews: 'Views',
+                visitors: 'Visitors',
+                sessions: 'Sessions',
+                bounce_rate: 'Bounce',
+                avg_session_duration: 'Duration',
+              }}
               metrics={metricsForToggles}
               onToggle={toggleMetric}
-              labels={{
-                pageviews: "Views",
-                visitors: "Visitors",
-                sessions: "Sessions",
-                bounce_rate: "Bounce",
-                avg_session_duration: "Duration"
-              }}
             />
           </div>
         </div>
         <div>
-          <MetricsChart
-            data={chartData}
-            height={350}
-            isLoading={isLoading}
-          />
+          <MetricsChart data={chartData} height={350} isLoading={isLoading} />
         </div>
       </div>
 
@@ -964,14 +1064,17 @@ export function WebsiteOverviewTab({
                       weight="fill"
                     />
                   )}
-                  <span className="font-medium text-foreground text-sm">{propertyKey}</span>
+                  <span className="font-medium text-foreground text-sm">
+                    {propertyKey}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="font-medium text-foreground text-sm">
                     {formatNumber(propertyTotal)}
                   </div>
                   <div className="rounded bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs">
-                    {propertyValues.length} {propertyValues.length === 1 ? "value" : "values"}
+                    {propertyValues.length}{' '}
+                    {propertyValues.length === 1 ? 'value' : 'values'}
                   </div>
                 </div>
               </button>

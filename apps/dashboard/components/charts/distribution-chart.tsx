@@ -1,17 +1,31 @@
-import { PieChartIcon } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Sector, Tooltip } from "recharts";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { SkeletonChart } from "./skeleton-chart";
+import { PieChartIcon } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
+import {
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Sector,
+  Tooltip,
+} from 'recharts';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { SkeletonChart } from './skeleton-chart';
 
 // Simple color palette
 const COLORS = [
-  "#3b82f6", // Blue
-  "#10b981", // Green
-  "#f59e0b", // Amber
-  "#ef4444", // Red
-  "#8b5cf6", // Purple
-  "#ec4899", // Pink
+  '#3b82f6', // Blue
+  '#10b981', // Green
+  '#f59e0b', // Amber
+  '#ef4444', // Red
+  '#8b5cf6', // Purple
+  '#ec4899', // Pink
 ];
 
 interface ChartDataItem {
@@ -43,7 +57,9 @@ const CustomTooltip = ({ active, payload }: any) => {
       {data.payload.percent && (
         <p>
           <span className="text-muted-foreground">Percentage: </span>
-          <span className="font-medium">{(data.payload.percent * 100).toFixed(1)}%</span>
+          <span className="font-medium">
+            {(data.payload.percent * 100).toFixed(1)}%
+          </span>
         </p>
       )}
     </div>
@@ -52,7 +68,8 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 // Active shape renderer
 const renderActiveShape = (props: any) => {
-  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } =
+    props;
 
   return (
     <g>
@@ -112,13 +129,20 @@ export function DistributionChart({
       <Card className="w-full">
         <CardHeader className="px-4 py-3">
           <CardTitle className="font-medium text-sm">{title}</CardTitle>
-          {description && <CardDescription className="text-xs">{description}</CardDescription>}
+          {description && (
+            <CardDescription className="text-xs">{description}</CardDescription>
+          )}
         </CardHeader>
         <CardContent className="flex items-center justify-center p-4">
           <div className="py-6 text-center">
-            <PieChartIcon className="mx-auto h-8 w-8 text-muted-foreground/40" strokeWidth={1.5} />
+            <PieChartIcon
+              className="mx-auto h-8 w-8 text-muted-foreground/40"
+              strokeWidth={1.5}
+            />
             <p className="mt-2 font-medium text-sm">No data available</p>
-            <p className="mt-1 text-muted-foreground text-xs">Data will appear as it's collected</p>
+            <p className="mt-1 text-muted-foreground text-xs">
+              Data will appear as it's collected
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -129,10 +153,12 @@ export function DistributionChart({
     <Card className="w-full">
       <CardHeader className="px-4 py-3">
         <CardTitle className="font-medium text-sm">{title}</CardTitle>
-        {description && <CardDescription className="text-xs">{description}</CardDescription>}
+        {description && (
+          <CardDescription className="text-xs">{description}</CardDescription>
+        )}
       </CardHeader>
       <CardContent className="px-0 pt-0 pb-4">
-        <div style={{ width: "100%", height: height - 50 }}>
+        <div style={{ width: '100%', height: height - 50 }}>
           <ResponsiveContainer height="100%" width="100%">
             <PieChart>
               <Pie
@@ -157,12 +183,17 @@ export function DistributionChart({
                   />
                 ))}
               </Pie>
-              <Tooltip content={<CustomTooltip />} wrapperStyle={{ outline: "none" }} />
+              <Tooltip
+                content={<CustomTooltip />}
+                wrapperStyle={{ outline: 'none' }}
+              />
               <Legend
                 align="center"
                 formatter={(value: string, entry: any) => {
                   const item = entry.payload;
-                  const percentage = item.percent ? ` (${(item.percent * 100).toFixed(0)}%)` : "";
+                  const percentage = item.percent
+                    ? ` (${(item.percent * 100).toFixed(0)}%)`
+                    : '';
                   return (
                     <span className="text-xs">
                       {value}
@@ -172,7 +203,7 @@ export function DistributionChart({
                 }}
                 layout="horizontal"
                 verticalAlign="bottom"
-                wrapperStyle={{ fontSize: "10px", bottom: 0 }}
+                wrapperStyle={{ fontSize: '10px', bottom: 0 }}
               />
             </PieChart>
           </ResponsiveContainer>

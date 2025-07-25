@@ -1,7 +1,7 @@
-import type { AnalyticsEvent } from "@databuddy/db"
+import type { AnalyticsEvent } from '@databuddy/db';
 
 export interface AnalyticsEventAdapter<T> {
-    mapRowToEvent(row: T): AnalyticsEvent;
+  mapRowToEvent(row: T): AnalyticsEvent;
 }
 
-export type { AnalyticsEvent }; 
+export type { AnalyticsEvent };

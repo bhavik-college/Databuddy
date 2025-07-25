@@ -100,7 +100,13 @@ export interface Plan {
   is_add_on: boolean;
   price: Price;
   items: PlanItem[];
-  scenario: 'active' | 'upgrade' | 'downgrade' | 'canceled' | 'scheduled' | 'trialing';
+  scenario:
+    | 'active'
+    | 'upgrade'
+    | 'downgrade'
+    | 'canceled'
+    | 'scheduled'
+    | 'trialing';
   button_text: string;
   free_trial?: any | null;
   interval_group?: any | null;
@@ -126,361 +132,361 @@ export interface SubscriptionResponse {
 }
 
 const PLANS_DATA: SubscriptionResponse = {
-  "list": [
+  list: [
     {
-      "id": "free",
-      "name": "Free",
-      "is_add_on": false,
-      "price": {
-        "primary_text": "Free",
-        "secondary_text": " ",
-        "primaryText": "Free",
-        "secondaryText": " "
+      id: 'free',
+      name: 'Free',
+      is_add_on: false,
+      price: {
+        primary_text: 'Free',
+        secondary_text: ' ',
+        primaryText: 'Free',
+        secondaryText: ' ',
       },
-      "items": [
+      items: [
         {
-          "type": "feature",
-          "feature_id": "assistant_message",
-          "feature_type": "single_use",
-          "included_usage": 25,
-          "interval": "day",
-          "reset_usage_when_enabled": true,
-          "display": {
-            "primary_text": "25 assistant messages"
+          type: 'feature',
+          feature_id: 'assistant_message',
+          feature_type: 'single_use',
+          included_usage: 25,
+          interval: 'day',
+          reset_usage_when_enabled: true,
+          display: {
+            primary_text: '25 assistant messages',
           },
-          "primary_text": "25 assistant messages",
-          "primaryText": "25 assistant messages"
+          primary_text: '25 assistant messages',
+          primaryText: '25 assistant messages',
         },
         {
-          "type": "feature",
-          "feature_id": "events",
-          "feature_type": "single_use",
-          "included_usage": 25000,
-          "interval": "month",
-          "reset_usage_when_enabled": true,
-          "display": {
-            "primary_text": "25,000 events"
+          type: 'feature',
+          feature_id: 'events',
+          feature_type: 'single_use',
+          included_usage: 25_000,
+          interval: 'month',
+          reset_usage_when_enabled: true,
+          display: {
+            primary_text: '25,000 events',
           },
-          "primary_text": "25,000 events",
-          "primaryText": "25,000 events"
+          primary_text: '25,000 events',
+          primaryText: '25,000 events',
         },
         {
-          "type": "feature",
-          "feature_id": "websites",
-          "feature_type": "single_use",
-          "included_usage": 5,
-          "interval": null,
-          "reset_usage_when_enabled": true,
-          "display": {
-            "primary_text": "5 websites"
+          type: 'feature',
+          feature_id: 'websites',
+          feature_type: 'single_use',
+          included_usage: 5,
+          interval: null,
+          reset_usage_when_enabled: true,
+          display: {
+            primary_text: '5 websites',
           },
-          "primary_text": "5 websites",
-          "primaryText": "5 websites"
-        }
+          primary_text: '5 websites',
+          primaryText: '5 websites',
+        },
       ],
-      "scenario": "downgrade",
-      "button_text": "Get Started",
-      "free_trial": null,
-      "interval_group": null,
-      "buttonText": "Get Started"
+      scenario: 'downgrade',
+      button_text: 'Get Started',
+      free_trial: null,
+      interval_group: null,
+      buttonText: 'Get Started',
     },
     {
-      "id": "pro",
-      "name": "Pro",
-      "is_add_on": false,
-      "price": {
-        "primary_text": "$9.99",
-        "secondary_text": "per month",
-        "type": "price",
-        "feature_id": null,
-        "interval": "month",
-        "price": 9.99,
-        "display": {
-          "primary_text": "$9.99",
-          "secondary_text": "month"
+      id: 'pro',
+      name: 'Pro',
+      is_add_on: false,
+      price: {
+        primary_text: '$9.99',
+        secondary_text: 'per month',
+        type: 'price',
+        feature_id: null,
+        interval: 'month',
+        price: 9.99,
+        display: {
+          primary_text: '$9.99',
+          secondary_text: 'month',
         },
-        "primaryText": "$9.99",
-        "secondaryText": "per month"
+        primaryText: '$9.99',
+        secondaryText: 'per month',
       },
-      "items": [
+      items: [
         {
-          "type": "priced_feature",
-          "feature_id": "events",
-          "feature_type": "single_use",
-          "included_usage": 50000,
-          "interval": "month",
-          "price": null,
-          "tiers": [
+          type: 'priced_feature',
+          feature_id: 'events',
+          feature_type: 'single_use',
+          included_usage: 50_000,
+          interval: 'month',
+          price: null,
+          tiers: [
             {
-              "to": 2000000,
-              "amount": 0.000035
+              to: 2_000_000,
+              amount: 0.000_035,
             },
             {
-              "to": 10000000,
-              "amount": 0.00003
+              to: 10_000_000,
+              amount: 0.000_03,
             },
             {
-              "to": 50000000,
-              "amount": 0.00002
+              to: 50_000_000,
+              amount: 0.000_02,
             },
             {
-              "to": 250000000,
-              "amount": 0.000015
+              to: 250_000_000,
+              amount: 0.000_015,
             },
             {
-              "to": "inf",
-              "amount": 0.00001
-            }
+              to: 'inf',
+              amount: 0.000_01,
+            },
           ],
-          "usage_model": "pay_per_use",
-          "billing_units": 1,
-          "reset_usage_when_enabled": false,
-          "display": {
-            "primary_text": "50,000 events",
-            "secondary_text": "Then tiered pricing from $0.00001/event"
+          usage_model: 'pay_per_use',
+          billing_units: 1,
+          reset_usage_when_enabled: false,
+          display: {
+            primary_text: '50,000 events',
+            secondary_text: 'Then tiered pricing from $0.00001/event',
           },
-          "primary_text": "50,000 events included",
-          "secondary_text": "Then tiered pricing from $0.00001/event",
-          "primaryText": "50,000 events included",
-          "secondaryText": "Then tiered pricing from $0.00001/event"
+          primary_text: '50,000 events included',
+          secondary_text: 'Then tiered pricing from $0.00001/event',
+          primaryText: '50,000 events included',
+          secondaryText: 'Then tiered pricing from $0.00001/event',
         },
         {
-          "type": "feature",
-          "feature_id": "assistant_message",
-          "feature_type": "single_use",
-          "included_usage": 75,
-          "interval": "day",
-          "reset_usage_when_enabled": true,
-          "display": {
-            "primary_text": "75 assistant messages"
+          type: 'feature',
+          feature_id: 'assistant_message',
+          feature_type: 'single_use',
+          included_usage: 75,
+          interval: 'day',
+          reset_usage_when_enabled: true,
+          display: {
+            primary_text: '75 assistant messages',
           },
-          "primary_text": "75 assistant messages",
-          "primaryText": "75 assistant messages"
+          primary_text: '75 assistant messages',
+          primaryText: '75 assistant messages',
         },
         {
-          "type": "feature",
-          "feature_id": "websites",
-          "feature_type": "single_use",
-          "included_usage": "inf",
-          "interval": null,
-          "reset_usage_when_enabled": true,
-          "display": {
-            "primary_text": "Unlimited websites"
+          type: 'feature',
+          feature_id: 'websites',
+          feature_type: 'single_use',
+          included_usage: 'inf',
+          interval: null,
+          reset_usage_when_enabled: true,
+          display: {
+            primary_text: 'Unlimited websites',
           },
-          "primary_text": "Unlimited websites",
-          "primaryText": "Unlimited websites"
-        }
+          primary_text: 'Unlimited websites',
+          primaryText: 'Unlimited websites',
+        },
       ],
-      "scenario": "downgrade",
-      "button_text": "Get Started",
-      "free_trial": {
-        "duration": "day",
-        "length": 14,
-        "unique_fingerprint": true,
-        "trial_available": true
+      scenario: 'downgrade',
+      button_text: 'Get Started',
+      free_trial: {
+        duration: 'day',
+        length: 14,
+        unique_fingerprint: true,
+        trial_available: true,
       },
-      "interval_group": null,
-      "buttonText": "Get Started"
+      interval_group: null,
+      buttonText: 'Get Started',
     },
     {
-      "id": "scale",
-      "name": "Scale",
-      "is_add_on": false,
-      "price": {
-        "primary_text": "$24.99",
-        "secondary_text": "per month",
-        "type": "price",
-        "feature_id": null,
-        "interval": "month",
-        "price": 24.99,
-        "display": {
-          "primary_text": "$24.99",
-          "secondary_text": "month"
+      id: 'scale',
+      name: 'Scale',
+      is_add_on: false,
+      price: {
+        primary_text: '$24.99',
+        secondary_text: 'per month',
+        type: 'price',
+        feature_id: null,
+        interval: 'month',
+        price: 24.99,
+        display: {
+          primary_text: '$24.99',
+          secondary_text: 'month',
         },
-        "primaryText": "$24.99",
-        "secondaryText": "per month"
+        primaryText: '$24.99',
+        secondaryText: 'per month',
       },
-      "items": [
+      items: [
         {
-          "type": "priced_feature",
-          "feature_id": "events",
-          "feature_type": "single_use",
-          "included_usage": 250000,
-          "interval": "month",
-          "price": null,
-          "tiers": [
+          type: 'priced_feature',
+          feature_id: 'events',
+          feature_type: 'single_use',
+          included_usage: 250_000,
+          interval: 'month',
+          price: null,
+          tiers: [
             {
-              "to": 2000000,
-              "amount": 0.000035
+              to: 2_000_000,
+              amount: 0.000_035,
             },
             {
-              "to": 10000000,
-              "amount": 0.00003
+              to: 10_000_000,
+              amount: 0.000_03,
             },
             {
-              "to": 50000000,
-              "amount": 0.00002
+              to: 50_000_000,
+              amount: 0.000_02,
             },
             {
-              "to": 250000000,
-              "amount": 0.000015
+              to: 250_000_000,
+              amount: 0.000_015,
             },
             {
-              "to": "inf",
-              "amount": 0.00001
-            }
+              to: 'inf',
+              amount: 0.000_01,
+            },
           ],
-          "usage_model": "pay_per_use",
-          "billing_units": 1,
-          "reset_usage_when_enabled": false,
-          "display": {
-            "primary_text": "250,000 events",
-            "secondary_text": "Then tiered pricing from $0.00001/event"
+          usage_model: 'pay_per_use',
+          billing_units: 1,
+          reset_usage_when_enabled: false,
+          display: {
+            primary_text: '250,000 events',
+            secondary_text: 'Then tiered pricing from $0.00001/event',
           },
-          "primary_text": "250,000 events included",
-          "secondary_text": "Then tiered pricing from $0.00001/event",
-          "primaryText": "250,000 events included",
-          "secondaryText": "Then tiered pricing from $0.00001/event"
+          primary_text: '250,000 events included',
+          secondary_text: 'Then tiered pricing from $0.00001/event',
+          primaryText: '250,000 events included',
+          secondaryText: 'Then tiered pricing from $0.00001/event',
         },
         {
-          "type": "feature",
-          "feature_id": "assistant_message",
-          "feature_type": "single_use",
-          "included_usage": 250,
-          "interval": "day",
-          "reset_usage_when_enabled": true,
-          "display": {
-            "primary_text": "250 assistant messages"
+          type: 'feature',
+          feature_id: 'assistant_message',
+          feature_type: 'single_use',
+          included_usage: 250,
+          interval: 'day',
+          reset_usage_when_enabled: true,
+          display: {
+            primary_text: '250 assistant messages',
           },
-          "primary_text": "250 assistant messages",
-          "primaryText": "250 assistant messages"
+          primary_text: '250 assistant messages',
+          primaryText: '250 assistant messages',
         },
         {
-          "type": "feature",
-          "feature_id": "websites",
-          "feature_type": "single_use",
-          "included_usage": "inf",
-          "interval": null,
-          "reset_usage_when_enabled": true,
-          "display": {
-            "primary_text": "Unlimited websites"
+          type: 'feature',
+          feature_id: 'websites',
+          feature_type: 'single_use',
+          included_usage: 'inf',
+          interval: null,
+          reset_usage_when_enabled: true,
+          display: {
+            primary_text: 'Unlimited websites',
           },
-          "primary_text": "Unlimited websites",
-          "primaryText": "Unlimited websites"
-        }
+          primary_text: 'Unlimited websites',
+          primaryText: 'Unlimited websites',
+        },
       ],
-      "scenario": "downgrade",
-      "button_text": "Get Started",
-      "free_trial": {
-        "duration": "day",
-        "length": 14,
-        "unique_fingerprint": true,
-        "trial_available": true
+      scenario: 'downgrade',
+      button_text: 'Get Started',
+      free_trial: {
+        duration: 'day',
+        length: 14,
+        unique_fingerprint: true,
+        trial_available: true,
       },
-      "interval_group": null,
-      "buttonText": "Get Started"
+      interval_group: null,
+      buttonText: 'Get Started',
     },
     {
-      "id": "buddy",
-      "name": "Buddy",
-      "is_add_on": false,
-      "price": {
-        "primary_text": "$49.99",
-        "secondary_text": "per month",
-        "type": "price",
-        "feature_id": null,
-        "interval": "month",
-        "price": 49.99,
-        "display": {
-          "primary_text": "$49.99",
-          "secondary_text": "month"
+      id: 'buddy',
+      name: 'Buddy',
+      is_add_on: false,
+      price: {
+        primary_text: '$49.99',
+        secondary_text: 'per month',
+        type: 'price',
+        feature_id: null,
+        interval: 'month',
+        price: 49.99,
+        display: {
+          primary_text: '$49.99',
+          secondary_text: 'month',
         },
-        "primaryText": "$49.99",
-        "secondaryText": "per month"
+        primaryText: '$49.99',
+        secondaryText: 'per month',
       },
-      "items": [
+      items: [
         {
-          "type": "priced_feature",
-          "feature_id": "events",
-          "feature_type": "single_use",
-          "included_usage": 1000000,
-          "interval": "month",
-          "price": null,
-          "tiers": [
+          type: 'priced_feature',
+          feature_id: 'events',
+          feature_type: 'single_use',
+          included_usage: 1_000_000,
+          interval: 'month',
+          price: null,
+          tiers: [
             {
-              "to": 2000000,
-              "amount": 0.000035
+              to: 2_000_000,
+              amount: 0.000_035,
             },
             {
-              "to": 10000000,
-              "amount": 0.00003
+              to: 10_000_000,
+              amount: 0.000_03,
             },
             {
-              "to": 50000000,
-              "amount": 0.00002
+              to: 50_000_000,
+              amount: 0.000_02,
             },
             {
-              "to": 250000000,
-              "amount": 0.000015
+              to: 250_000_000,
+              amount: 0.000_015,
             },
             {
-              "to": "inf",
-              "amount": 0.00001
-            }
+              to: 'inf',
+              amount: 0.000_01,
+            },
           ],
-          "usage_model": "pay_per_use",
-          "billing_units": 1,
-          "reset_usage_when_enabled": true,
-          "display": {
-            "primary_text": "1,000,000 events",
-            "secondary_text": "Then tiered pricing from $0.00001/event"
+          usage_model: 'pay_per_use',
+          billing_units: 1,
+          reset_usage_when_enabled: true,
+          display: {
+            primary_text: '1,000,000 events',
+            secondary_text: 'Then tiered pricing from $0.00001/event',
           },
-          "primary_text": "1,000,000 events included",
-          "secondary_text": "Then tiered pricing from $0.00001/event",
-          "primaryText": "1,000,000 events included",
-          "secondaryText": "Then tiered pricing from $0.00001/event"
+          primary_text: '1,000,000 events included',
+          secondary_text: 'Then tiered pricing from $0.00001/event',
+          primaryText: '1,000,000 events included',
+          secondaryText: 'Then tiered pricing from $0.00001/event',
         },
         {
-          "type": "feature",
-          "feature_id": "assistant_message",
-          "feature_type": "single_use",
-          "included_usage": 500,
-          "interval": "day",
-          "reset_usage_when_enabled": true,
-          "display": {
-            "primary_text": "500 assistant messages"
+          type: 'feature',
+          feature_id: 'assistant_message',
+          feature_type: 'single_use',
+          included_usage: 500,
+          interval: 'day',
+          reset_usage_when_enabled: true,
+          display: {
+            primary_text: '500 assistant messages',
           },
-          "primary_text": "500 assistant messages",
-          "primaryText": "500 assistant messages"
+          primary_text: '500 assistant messages',
+          primaryText: '500 assistant messages',
         },
         {
-          "type": "feature",
-          "feature_id": "websites",
-          "feature_type": "single_use",
-          "included_usage": "inf",
-          "interval": null,
-          "reset_usage_when_enabled": true,
-          "display": {
-            "primary_text": "Unlimited websites"
+          type: 'feature',
+          feature_id: 'websites',
+          feature_type: 'single_use',
+          included_usage: 'inf',
+          interval: null,
+          reset_usage_when_enabled: true,
+          display: {
+            primary_text: 'Unlimited websites',
           },
-          "primary_text": "Unlimited websites",
-          "primaryText": "Unlimited websites"
-        }
+          primary_text: 'Unlimited websites',
+          primaryText: 'Unlimited websites',
+        },
       ],
-      "scenario": "active",
-      "button_text": "Current Plan",
-      "free_trial": {
-        "duration": "day",
-        "length": 7,
-        "unique_fingerprint": true,
-        "trial_available": true
+      scenario: 'active',
+      button_text: 'Current Plan',
+      free_trial: {
+        duration: 'day',
+        length: 7,
+        unique_fingerprint: true,
+        trial_available: true,
       },
-      "interval_group": null,
-      "buttonText": "Current Plan"
-    }
+      interval_group: null,
+      buttonText: 'Current Plan',
+    },
   ],
-  "paymentMethods": []
-}
+  paymentMethods: [],
+};
 
 export type FeatureUsage = {
   id: string;
@@ -497,21 +503,28 @@ export type FeatureUsage = {
 
 export type Usage = {
   features: FeatureUsage[];
-}
+};
 
 export const useBillingData = () => {
-  const { customer, isLoading: isCustomerLoading, refetch } = useCustomer({
-    expand: ["invoices"]
+  const {
+    customer,
+    isLoading: isCustomerLoading,
+    refetch,
+  } = useCustomer({
+    expand: ['invoices'],
   });
 
   const subscriptionData: SubscriptionResponse = {
-    list: PLANS_DATA.list.map(plan => {
-      const customerProduct = customer?.products?.find(p => p.id === plan.id);
+    list: PLANS_DATA.list.map((plan) => {
+      const customerProduct = customer?.products?.find((p) => p.id === plan.id);
 
       if (customerProduct) {
         let scenario: Plan['scenario'] = 'upgrade';
 
-        if (customerProduct.status === 'active' || customerProduct.status === 'trialing') {
+        if (
+          customerProduct.status === 'active' ||
+          customerProduct.status === 'trialing'
+        ) {
           scenario = customerProduct.canceled_at ? 'canceled' : 'active';
         } else if (customerProduct.status === 'scheduled') {
           scenario = 'scheduled';
@@ -545,41 +558,55 @@ export const useBillingData = () => {
   };
 
   const usage: Usage = {
-    features: !customer ? [] : Object.values(customer.features).map(feature => {
-      const used = feature.usage || 0;
-      const limit = feature.unlimited ? Number.POSITIVE_INFINITY : (feature.included_usage || 0);
-      const unlimited = feature.unlimited || false;
+    features: customer
+      ? Object.values(customer.features).map((feature) => {
+          const used = feature.usage || 0;
+          const limit = feature.unlimited
+            ? Number.POSITIVE_INFINITY
+            : feature.included_usage || 0;
+          const unlimited = feature.unlimited;
 
-      const currentPlan = subscriptionData.list.find(p => p.scenario === 'active');
-      const planItem = currentPlan?.items.find(item => item.feature_id === feature.id);
+          const currentPlan = subscriptionData.list.find(
+            (p) => p.scenario === 'active'
+          );
+          const planItem = currentPlan?.items.find(
+            (item) => item.feature_id === feature.id
+          );
 
-      let overageRate = 0;
-      let overageAmount = 0;
-      let hasOverage = false;
+          let overageRate = 0;
+          let overageAmount = 0;
+          let hasOverage = false;
 
-      if (!unlimited && used > limit && planItem?.type === 'priced_feature') {
-        hasOverage = true;
-        const overageUnits = used - limit;
+          if (
+            !unlimited &&
+            used > limit &&
+            planItem?.type === 'priced_feature'
+          ) {
+            hasOverage = true;
+            const overageUnits = used - limit;
 
-        if (planItem.tiers && planItem.tiers.length > 0) {
-          overageRate = planItem.tiers[0].amount || 0;
-          overageAmount = overageUnits * overageRate;
-        }
-      }
+            if (planItem.tiers && planItem.tiers.length > 0) {
+              overageRate = planItem.tiers[0].amount || 0;
+              overageAmount = overageUnits * overageRate;
+            }
+          }
 
-      return {
-        id: feature.id,
-        name: feature.name,
-        used,
-        limit,
-        unlimited,
-        nextReset: feature.next_reset_at ? new Date(feature.next_reset_at).toLocaleDateString() : null,
-        interval: feature.interval || null,
-        overageRate,
-        overageAmount,
-        hasOverage
-      };
-    }),
+          return {
+            id: feature.id,
+            name: feature.name,
+            used,
+            limit,
+            unlimited,
+            nextReset: feature.next_reset_at
+              ? new Date(feature.next_reset_at).toLocaleDateString()
+              : null,
+            interval: feature.interval || null,
+            overageRate,
+            overageAmount,
+            hasOverage,
+          };
+        })
+      : [],
   };
 
   return {

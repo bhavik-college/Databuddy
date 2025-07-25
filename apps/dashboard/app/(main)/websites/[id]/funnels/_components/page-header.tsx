@@ -1,8 +1,13 @@
-"use client";
+'use client';
 
-import { ArrowClockwiseIcon, PlusIcon, TargetIcon, TrendDownIcon } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  ArrowClockwiseIcon,
+  PlusIcon,
+  TargetIcon,
+  TrendDownIcon,
+} from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface PageHeaderProps {
   websiteName?: string;
@@ -31,7 +36,11 @@ export function PageHeader({
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <div className="rounded-xl border border-primary/20 bg-primary/10 p-3">
-                <TargetIcon className="h-6 w-6 text-primary" size={16} weight="duotone" />
+                <TargetIcon
+                  className="h-6 w-6 text-primary"
+                  size={16}
+                  weight="duotone"
+                />
               </div>
               <div>
                 <h1 className="font-bold text-2xl text-foreground tracking-tight sm:text-3xl">
@@ -52,7 +61,7 @@ export function PageHeader({
               variant="outline"
             >
               <ArrowClockwiseIcon
-                className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+                className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
                 size={16}
                 weight="fill"
               />
@@ -79,16 +88,32 @@ export function PageHeader({
           <CardContent className="pt-6">
             <div className="flex flex-col items-center space-y-3 text-center">
               <div className="rounded-full border border-destructive/20 bg-destructive/10 p-3">
-                <TrendDownIcon className="h-6 w-6 text-destructive" size={16} weight="duotone" />
+                <TrendDownIcon
+                  className="h-6 w-6 text-destructive"
+                  size={16}
+                  weight="duotone"
+                />
               </div>
               <div>
-                <h4 className="font-semibold text-destructive">Error loading funnel data</h4>
+                <h4 className="font-semibold text-destructive">
+                  Error loading funnel data
+                </h4>
                 <p className="mt-1 text-destructive/80 text-sm">
-                  There was an issue loading your funnels. Please try refreshing the page.
+                  There was an issue loading your funnels. Please try refreshing
+                  the page.
                 </p>
               </div>
-              <Button className="gap-2 rounded-lg" onClick={onRefresh} size="sm" variant="outline">
-                <ArrowClockwiseIcon className="h-4 w-4" size={16} weight="fill" />
+              <Button
+                className="gap-2 rounded-lg"
+                onClick={onRefresh}
+                size="sm"
+                variant="outline"
+              >
+                <ArrowClockwiseIcon
+                  className="h-4 w-4"
+                  size={16}
+                  weight="fill"
+                />
                 Retry
               </Button>
             </div>
@@ -104,7 +129,7 @@ export function PageHeader({
             {isLoading ? (
               <div className="h-4 w-16 animate-pulse rounded bg-muted" />
             ) : (
-              `${funnelsCount} funnel${funnelsCount !== 1 ? "s" : ""}`
+              `${funnelsCount} funnel${funnelsCount !== 1 ? 's' : ''}`
             )}
           </div>
         </div>

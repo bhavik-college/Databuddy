@@ -1,7 +1,7 @@
 'use client';
 
-import pkg from '../package.json';
 import { useEffect } from 'react';
+import pkg from '../package.json' with { type: 'json' };
 import type { DatabuddyConfig } from './types';
 
 /**
@@ -43,4 +43,4 @@ export function Databuddy(props: DatabuddyConfig) {
   return null;
 }
 
-export default Databuddy; 
+export default Databuddy;

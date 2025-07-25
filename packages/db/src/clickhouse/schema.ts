@@ -1,6 +1,5 @@
 import { clickHouse } from './client';
 
-
 // Define the analytics database schema with tables for events, sessions, and aggregated data
 const ANALYTICS_DATABASE = 'analytics';
 
@@ -14,7 +13,6 @@ CREATE DATABASE IF NOT EXISTS ${ANALYTICS_DATABASE}
 // 2. Reorder ORDER BY to prioritize time-based queries
 // 3. Add materialized views for common aggregations
 // 4. Remove Nullable where 0 is a sensible default
-
 
 // Events table stores all raw events
 const CREATE_EVENTS_TABLE = `
@@ -563,7 +561,10 @@ export async function initClickHouseSchema() {
       { name: 'events', query: CREATE_EVENTS_TABLE },
       { name: 'errors', query: CREATE_ERRORS_TABLE },
       { name: 'web_vitals', query: CREATE_WEB_VITALS_TABLE },
-      { name: 'stripe_payment_intents', query: CREATE_STRIPE_PAYMENT_INTENTS_TABLE },
+      {
+        name: 'stripe_payment_intents',
+        query: CREATE_STRIPE_PAYMENT_INTENTS_TABLE,
+      },
       { name: 'stripe_charges', query: CREATE_STRIPE_CHARGES_TABLE },
       { name: 'stripe_refunds', query: CREATE_STRIPE_REFUNDS_TABLE },
       { name: 'blocked_traffic', query: CREATE_BLOCKED_TRAFFIC_TABLE },
@@ -582,15 +583,15 @@ export async function initClickHouseSchema() {
       message: 'ClickHouse schema initialized successfully',
       details: {
         database: ANALYTICS_DATABASE,
-        tables: tables.map(t => t.name)
-      }
+        tables: tables.map((t) => t.name),
+      },
     };
   } catch (error) {
     console.error('Error initializing ClickHouse schema:', error);
     return {
       success: false,
       message: 'Failed to initialize ClickHouse schema',
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? error.message : String(error),
     };
   }
-} 
+}

@@ -1,13 +1,19 @@
-"use client";
+'use client';
 
-import { logout, signOut } from "@databuddy/auth/client";
-import { CreditCardIcon, HouseIcon, SignOutIcon, UserIcon } from "@phosphor-icons/react";
-import Link from "next/link";
-import { redirect, useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { logout, signOut } from '@databuddy/auth/client';
+import {
+  CreditCardIcon,
+  HouseIcon,
+  SignOutIcon,
+  UserIcon,
+} from '@phosphor-icons/react';
+import Link from 'next/link';
+import { redirect, useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { useSession } from '@/components/layout/session-provider';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,9 +21,8 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useSession } from "@/components/layout/session-provider";
+} from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function UserButton() {
   const { session } = useSession();
@@ -25,11 +30,11 @@ export function UserButton() {
   const router = useRouter();
 
   const getUserInitials = () => {
-    if (!session?.user?.name) return "U";
+    if (!session?.user?.name) return 'U';
     return session.user.name
-      .split(" ")
+      .split(' ')
       .map((n) => n[0])
-      .join("")
+      .join('')
       .toUpperCase()
       .slice(0, 2);
   };
@@ -39,12 +44,12 @@ export function UserButton() {
     await signOut({
       fetchOptions: {
         onSuccess: () => {
-          toast.success("Logged out successfully");
-          router.push("/login");
+          toast.success('Logged out successfully');
+          router.push('/login');
         },
         onError: (error) => {
-          router.push("/login");
-          toast.error(error.error.message || "Failed to log out");
+          router.push('/login');
+          toast.error(error.error.message || 'Failed to log out');
         },
       },
     });
@@ -64,7 +69,10 @@ export function UserButton() {
       <DropdownMenuTrigger asChild>
         <Button className="flex h-9 w-9 rounded-full" variant="ghost">
           <Avatar className="h-9 w-9 border border-border/50">
-            <AvatarImage alt={session?.user?.name || "User"} src={session?.user?.image || ""} />
+            <AvatarImage
+              alt={session?.user?.name || 'User'}
+              src={session?.user?.image || ''}
+            />
             <AvatarFallback className="bg-primary/10 font-medium text-primary text-sm">
               {getUserInitials()}
             </AvatarFallback>
@@ -74,15 +82,20 @@ export function UserButton() {
       <DropdownMenuContent align="end" className="w-56 p-2">
         <div className="mb-1 flex items-center justify-start gap-3 p-2">
           <Avatar className="h-9 w-9 border border-border/50">
-            <AvatarImage alt={session?.user?.name || "User"} src={session?.user?.image || ""} />
-            <AvatarFallback className="font-medium text-sm">{getUserInitials()}</AvatarFallback>
+            <AvatarImage
+              alt={session?.user?.name || 'User'}
+              src={session?.user?.image || ''}
+            />
+            <AvatarFallback className="font-medium text-sm">
+              {getUserInitials()}
+            </AvatarFallback>
           </Avatar>
           <div className="flex flex-col space-y-0.5">
             <span className="font-medium text-sm leading-none">
-              {session?.user?.name || "User"}
+              {session?.user?.name || 'User'}
             </span>
             <span className="text-muted-foreground text-xs leading-none">
-              {session?.user?.email || ""}
+              {session?.user?.email || ''}
             </span>
           </div>
         </div>
@@ -92,18 +105,29 @@ export function UserButton() {
         <DropdownMenuGroup>
           <DropdownMenuItem asChild className="h-9 rounded-md">
             <Link className="flex w-full items-center" href="/websites">
-              <HouseIcon className="mr-2.5 h-4 w-4" size={32} weight="duotone" />
+              <HouseIcon
+                className="mr-2.5 h-4 w-4"
+                size={32}
+                weight="duotone"
+              />
               Websites
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild className="h-9 rounded-md">
             <Link className="flex w-full items-center" href="/billing">
-              <CreditCardIcon className="mr-2.5 h-4 w-4" size={32} weight="duotone" />
+              <CreditCardIcon
+                className="mr-2.5 h-4 w-4"
+                size={32}
+                weight="duotone"
+              />
               Billing
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild className="h-9 rounded-md">
-            <Link className="flex w-full items-center" href="/settings?tab=profile">
+            <Link
+              className="flex w-full items-center"
+              href="/settings?tab=profile"
+            >
               <UserIcon className="mr-2.5 h-4 w-4" size={32} weight="duotone" />
               Profile
             </Link>
@@ -118,7 +142,7 @@ export function UserButton() {
           onClick={handleLogout}
         >
           <SignOutIcon className="mr-2.5 h-5 w-5" size={32} weight="duotone" />
-          {isLoggingOut ? "Signing out..." : "Sign out"}
+          {isLoggingOut ? 'Signing out...' : 'Sign out'}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

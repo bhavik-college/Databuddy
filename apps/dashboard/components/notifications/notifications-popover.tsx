@@ -1,10 +1,14 @@
-import { BellIcon } from "@phosphor-icons/react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { NotificationEmpty } from "./notification-empty";
-import { NotificationList } from "./notification-list";
-import type { AuditNotification } from "./types";
+import { BellIcon } from '@phosphor-icons/react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { NotificationEmpty } from './notification-empty';
+import { NotificationList } from './notification-list';
+import type { AuditNotification } from './types';
 
 const Notifications: AuditNotification[] = [];
 

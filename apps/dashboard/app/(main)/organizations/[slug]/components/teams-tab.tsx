@@ -1,8 +1,14 @@
-"use client";
+'use client';
 
-import { UsersIcon, BuildingsIcon } from "@phosphor-icons/react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TeamView } from "./team-view";
+import { BuildingsIcon, UsersIcon } from '@phosphor-icons/react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { TeamView } from './team-view';
 
 export function TeamsTab({ organization }: { organization: any }) {
   if (!(organization && organization.id)) {
@@ -11,15 +17,22 @@ export function TeamsTab({ organization }: { organization: any }) {
         <Card className="mx-auto max-w-md">
           <CardContent className="p-8">
             <div className="mx-auto mb-6 w-fit rounded-full border border-primary/20 bg-primary/10 p-4">
-              <UsersIcon className="h-8 w-8 text-primary" size={32} weight="duotone" />
+              <UsersIcon
+                className="h-8 w-8 text-primary"
+                size={32}
+                weight="duotone"
+              />
             </div>
             <CardTitle className="mb-3 text-xl">Team Management</CardTitle>
             <CardDescription className="mb-6 text-base">
-              Teams help you collaborate with others and manage permissions within your organization.
+              Teams help you collaborate with others and manage permissions
+              within your organization.
             </CardDescription>
             <div className="space-y-4">
               <div className="rounded border border-border/50 bg-muted/30 p-4 text-left">
-                <h4 className="mb-2 font-medium text-sm">What you can do with teams:</h4>
+                <h4 className="mb-2 font-medium text-sm">
+                  What you can do with teams:
+                </h4>
                 <ul className="space-y-1 text-muted-foreground text-sm">
                   <li className="flex items-center gap-2">
                     <UsersIcon className="h-3 w-3 text-success" size={12} />
@@ -43,7 +56,8 @@ export function TeamsTab({ organization }: { organization: any }) {
                       Select an Organization First
                     </p>
                     <p className="text-warning-foreground/70 text-xs">
-                      Switch to an organization to start managing your team members.
+                      Switch to an organization to start managing your team
+                      members.
                     </p>
                   </div>
                 </div>

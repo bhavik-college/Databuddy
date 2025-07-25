@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useParams } from "next/navigation";
-import { ProfilesList } from "./_components";
+import { useParams } from 'next/navigation';
+import { ProfilesList } from './_components';
 
 export default function ProfilesPage() {
   const { id: websiteId } = useParams();

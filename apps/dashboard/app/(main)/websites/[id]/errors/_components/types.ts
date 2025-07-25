@@ -21,8 +21,6 @@ export interface ErrorSummary {
   errorRate: number;
 }
 
-
-
 export interface ErrorTab {
   id: string;
   label: string;

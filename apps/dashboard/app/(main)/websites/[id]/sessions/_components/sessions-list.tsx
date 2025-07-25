@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { Loader2Icon, UsersIcon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { useSessionsData } from "@/hooks/use-dynamic-query";
-import { WebsitePageHeader } from "../../_components/website-page-header";
-import { SessionRow } from "./session-row";
-import { getDefaultDateRange } from "./session-utils";
+import { Loader2Icon, UsersIcon } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { useSessionsData } from '@/hooks/use-dynamic-query';
+import { WebsitePageHeader } from '../../_components/website-page-header';
+import { SessionRow } from './session-row';
+import { getDefaultDateRange } from './session-utils';
 
 interface SessionsListProps {
   websiteId: string;
@@ -15,7 +15,9 @@ interface SessionsListProps {
 
 export function SessionsList({ websiteId }: SessionsListProps) {
   const [dateRange] = useState(() => getDefaultDateRange());
-  const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null);
+  const [expandedSessionId, setExpandedSessionId] = useState<string | null>(
+    null
+  );
   const [page, setPage] = useState(1);
   const [allSessions, setAllSessions] = useState<any[]>([]);
   const [loadMoreRef, setLoadMoreRef] = useState<HTMLDivElement | null>(null);
@@ -23,11 +25,17 @@ export function SessionsList({ websiteId }: SessionsListProps) {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [hasIntersected, setHasIntersected] = useState(false);
 
-  const { sessions, pagination, isLoading, isError, error } =
-    useSessionsData(websiteId, dateRange, 50, page);
+  const { sessions, pagination, isLoading, isError, error } = useSessionsData(
+    websiteId,
+    dateRange,
+    50,
+    page
+  );
 
   const toggleSession = useCallback((sessionId: string) => {
-    setExpandedSessionId(currentId => currentId === sessionId ? null : sessionId);
+    setExpandedSessionId((currentId) =>
+      currentId === sessionId ? null : sessionId
+    );
   }, []);
 
   const handleIntersection = useCallback(
@@ -35,7 +43,7 @@ export function SessionsList({ websiteId }: SessionsListProps) {
       const [entry] = entries;
       if (entry.isIntersecting && pagination.hasNext && !isLoading) {
         setHasIntersected(true);
-        setPage(prev => prev + 1);
+        setPage((prev) => prev + 1);
       }
     },
     [pagination.hasNext, isLoading]
@@ -46,7 +54,7 @@ export function SessionsList({ websiteId }: SessionsListProps) {
 
     const observer = new IntersectionObserver(handleIntersection, {
       threshold: 0.1,
-      rootMargin: "300px",
+      rootMargin: '300px',
     });
 
     observer.observe(loadMoreRef);
@@ -58,8 +66,8 @@ export function SessionsList({ websiteId }: SessionsListProps) {
 
   useEffect(() => {
     if (sessions?.length) {
-      setAllSessions(prev => {
-        const existingSessions = new Map(prev.map(s => [s.session_id, s]));
+      setAllSessions((prev) => {
+        const existingSessions = new Map(prev.map((s) => [s.session_id, s]));
         for (const session of sessions) {
           if (!existingSessions.has(session.session_id)) {
             existingSessions.set(session.session_id, session);
@@ -91,17 +99,20 @@ export function SessionsList({ websiteId }: SessionsListProps) {
     return (
       <div className="space-y-6">
         <WebsitePageHeader
-          title="Recent Sessions"
           description="User sessions with event timelines and custom event properties"
           icon={<UsersIcon className="h-6 w-6 text-primary" />}
-          websiteId={websiteId}
+          title="Recent Sessions"
           variant="minimal"
+          websiteId={websiteId}
         />
         <Card className="py-0">
           <CardContent>
             <div className="space-y-3">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                <div className="h-16 animate-pulse rounded bg-muted/20" key={`skeleton-${i}`} />
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <div
+                  className="h-16 animate-pulse rounded bg-muted/20"
+                  key={`skeleton-${i}`}
+                />
               ))}
             </div>
             <div className="flex items-center justify-center pt-4">
@@ -120,13 +131,13 @@ export function SessionsList({ websiteId }: SessionsListProps) {
     return (
       <div className="space-y-6">
         <WebsitePageHeader
-          title="Recent Sessions"
           description="User sessions with event timelines and custom event properties"
-          icon={<UsersIcon className="h-6 w-6 text-primary" />}
-          websiteId={websiteId}
-          variant="minimal"
+          errorMessage={error?.message || 'Failed to load sessions'}
           hasError={true}
-          errorMessage={error?.message || "Failed to load sessions"}
+          icon={<UsersIcon className="h-6 w-6 text-primary" />}
+          title="Recent Sessions"
+          variant="minimal"
+          websiteId={websiteId}
         />
       </div>
     );
@@ -136,18 +147,20 @@ export function SessionsList({ websiteId }: SessionsListProps) {
     return (
       <div className="space-y-6">
         <WebsitePageHeader
-          title="Recent Sessions"
           description="User sessions with event timelines and custom event properties"
           icon={<UsersIcon className="h-6 w-6 text-primary" />}
-          websiteId={websiteId}
+          title="Recent Sessions"
           variant="minimal"
+          websiteId={websiteId}
         />
         <Card>
           <CardContent>
             <div className="py-12 text-center text-muted-foreground">
               <UsersIcon className="mx-auto mb-4 h-12 w-12 opacity-50" />
               <p className="mb-2 font-medium text-lg">No sessions found</p>
-              <p className="text-sm">Sessions will appear here once users visit your website</p>
+              <p className="text-sm">
+                Sessions will appear here once users visit your website
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -158,12 +171,12 @@ export function SessionsList({ websiteId }: SessionsListProps) {
   return (
     <div className="space-y-6">
       <WebsitePageHeader
-        title="Recent Sessions"
         description="User sessions with event timelines and custom event properties"
         icon={<UsersIcon className="h-6 w-6 text-primary" />}
-        websiteId={websiteId}
-        variant="minimal"
         subtitle={`${allSessions.length} loaded`}
+        title="Recent Sessions"
+        variant="minimal"
+        websiteId={websiteId}
       />
       <Card>
         <CardContent className="p-0">
@@ -190,7 +203,7 @@ export function SessionsList({ websiteId }: SessionsListProps) {
                 ) : showLoadMore ? (
                   <Button
                     className="w-full"
-                    onClick={() => setPage(prev => prev + 1)}
+                    onClick={() => setPage((prev) => prev + 1)}
                     variant="outline"
                   >
                     Load More Sessions
@@ -199,7 +212,9 @@ export function SessionsList({ websiteId }: SessionsListProps) {
               </div>
             ) : (
               <div className="text-center text-muted-foreground text-sm">
-                {allSessions.length > 0 ? "All sessions loaded" : "No more sessions"}
+                {allSessions.length > 0
+                  ? 'All sessions loaded'
+                  : 'No more sessions'}
               </div>
             )}
           </div>

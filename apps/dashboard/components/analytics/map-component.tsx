@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { scalePow } from "d3-scale";
-import type { Feature, GeoJsonObject } from "geojson";
-import type { Layer } from "leaflet";
-import "leaflet/dist/leaflet.css";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { GeoJSON, MapContainer } from "react-leaflet";
-import { getCountryPopulation } from "@/lib/data";
-import { useCountries } from "@/lib/geo";
-import { CountryFlag } from "./icons/CountryFlag";
+import { scalePow } from 'd3-scale';
+import type { Feature, GeoJsonObject } from 'geojson';
+import type { Layer } from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { GeoJSON, MapContainer } from 'react-leaflet';
+import { getCountryPopulation } from '@/lib/data';
+import { useCountries } from '@/lib/geo';
+import { CountryFlag } from './icons/CountryFlag';
 
 interface TooltipContent {
   name: string;
@@ -29,12 +29,12 @@ const roundToTwo = (num: number): number => {
 
 export function MapComponent({
   height,
-  mode = "total",
+  mode = 'total',
   locationData,
   isLoading: passedIsLoading = false,
 }: {
   height: string;
-  mode?: "total" | "perCapita";
+  mode?: 'total' | 'perCapita';
   locationData?: any;
   isLoading?: boolean;
 }) {
@@ -44,14 +44,16 @@ export function MapComponent({
     if (!locationsData?.countries) return null;
 
     const validCountries = locationsData.countries.filter(
-      (country: any) => country.country && country.country.trim() !== ""
+      (country: any) => country.country && country.country.trim() !== ''
     );
 
-    const totalVisitors = validCountries.reduce((sum: number, c: any) => sum + c.visitors, 0) || 1;
+    const totalVisitors =
+      validCountries.reduce((sum: number, c: any) => sum + c.visitors, 0) || 1;
 
     return {
       data: validCountries.map((country: any) => ({
-        value: country.country_code?.toUpperCase() || country.country.toUpperCase(),
+        value:
+          country.country_code?.toUpperCase() || country.country.toUpperCase(),
         count: country.visitors,
         percentage: (country.visitors / totalVisitors) * 100,
       })),
@@ -66,12 +68,14 @@ export function MapComponent({
     }
   }, [countryData]);
 
-  const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(null);
+  const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(
+    null
+  );
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>({
     x: 0,
     y: 0,
   });
-  const [mapView] = useState<"countries" | "subdivisions">("countries");
+  const [mapView] = useState<'countries' | 'subdivisions'>('countries');
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const processedCountryData = useMemo(() => {
@@ -88,15 +92,15 @@ export function MapComponent({
   }, [countryData?.data]);
 
   const colorScale = useMemo(() => {
-    if (!processedCountryData) return () => "#e5e7eb";
+    if (!processedCountryData) return () => '#e5e7eb';
 
-    const metricToUse = mode === "perCapita" ? "perCapita" : "count";
+    const metricToUse = mode === 'perCapita' ? 'perCapita' : 'count';
     const values = processedCountryData?.map((d: any) => d[metricToUse]) || [0];
     const maxValue = Math.max(...values);
     const minValue = Math.min(...values.filter((v: number) => v > 0));
 
-    const baseBlue = "59, 130, 246";
-    const lightBlue = "147, 197, 253";
+    const baseBlue = '59, 130, 246';
+    const lightBlue = '147, 197, 253';
 
     const scale = scalePow<number>()
       .exponent(0.5)
@@ -104,7 +108,7 @@ export function MapComponent({
       .range([0.1, 1]);
 
     return (value: number) => {
-      if (value === 0) return "rgba(229, 231, 235, 0.6)";
+      if (value === 0) return 'rgba(229, 231, 235, 0.6)';
 
       const intensity = scale(value);
 
@@ -122,9 +126,12 @@ export function MapComponent({
 
   const handleStyle = (feature: Feature<any>) => {
     const dataKey = feature?.properties?.ISO_A2;
-    const foundData = processedCountryData?.find(({ value }: any) => value === dataKey);
+    const foundData = processedCountryData?.find(
+      ({ value }: any) => value === dataKey
+    );
 
-    const metricValue = mode === "perCapita" ? foundData?.perCapita || 0 : foundData?.count || 0;
+    const metricValue =
+      mode === 'perCapita' ? foundData?.perCapita || 0 : foundData?.count || 0;
     const fillColor = colorScale(metricValue);
 
     const isHovered = hoveredId === dataKey?.toString();
@@ -132,9 +139,9 @@ export function MapComponent({
 
     const borderColor = hasData
       ? isHovered
-        ? "rgba(59, 130, 246, 0.9)"
-        : "rgba(59, 130, 246, 0.6)"
-      : "rgba(156, 163, 175, 0.5)";
+        ? 'rgba(59, 130, 246, 0.9)'
+        : 'rgba(59, 130, 246, 0.6)'
+      : 'rgba(156, 163, 175, 0.5)';
 
     const borderWeight = hasData ? (isHovered ? 2.5 : 1.5) : 1.0;
     const fillOpacity = hasData ? (isHovered ? 0.95 : 0.85) : 0.4;
@@ -146,10 +153,11 @@ export function MapComponent({
       fillColor,
       fillOpacity,
       opacity: 1,
-      transition: "all 0.2s ease-in-out",
-      ...(isHovered && hasData && {
-        filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))",
-      }),
+      transition: 'all 0.2s ease-in-out',
+      ...(isHovered &&
+        hasData && {
+          filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))',
+        }),
     };
   };
 
@@ -160,7 +168,9 @@ export function MapComponent({
         setHoveredId(code);
 
         const name = feature.properties?.ADMIN;
-        const foundData = processedCountryData?.find(({ value }: any) => value === code);
+        const foundData = processedCountryData?.find(
+          ({ value }: any) => value === code
+        );
         const count = foundData?.count || 0;
         const percentage = foundData?.percentage || 0;
         const perCapita = foundData?.perCapita || 0;
@@ -194,8 +204,8 @@ export function MapComponent({
     };
 
     updateHeight();
-    window.addEventListener("resize", updateHeight);
-    return () => window.removeEventListener("resize", updateHeight);
+    window.addEventListener('resize', updateHeight);
+    return () => window.removeEventListener('resize', updateHeight);
   }, []);
 
   const zoom = resolvedHeight ? Math.log2(resolvedHeight / 400) + 1 : 1;
@@ -225,22 +235,22 @@ export function MapComponent({
         </div>
       )}
 
-      {(countriesGeoData) && (
+      {countriesGeoData && (
         <MapContainer
           attributionControl={false}
           center={[40, 3]}
           preferCanvas={true}
           style={{
-            height: "100%",
-            background: "rgba(248, 250, 252, 0.8)",
-            cursor: "default",
-            outline: "none",
-            zIndex: "1",
+            height: '100%',
+            background: 'rgba(248, 250, 252, 0.8)',
+            cursor: 'default',
+            outline: 'none',
+            zIndex: '1',
           }}
           zoom={zoom}
           zoomControl={false}
         >
-          {mapView === "countries" && countriesGeoData && (
+          {mapView === 'countries' && countriesGeoData && (
             <GeoJSON
               data={countriesGeoData as GeoJsonObject}
               key={`countries-${dataVersion}-${mode}`}
@@ -257,28 +267,33 @@ export function MapComponent({
           style={{
             left: tooltipPosition.x,
             top: tooltipPosition.y - 10,
-            transform: "translate(-50%, -100%)",
-            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+            transform: 'translate(-50%, -100%)',
+            boxShadow:
+              '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
           }}
         >
           <div className="mb-1 flex items-center gap-2 font-medium">
-            {tooltipContent.code && <CountryFlag country={tooltipContent.code.slice(0, 2)} />}
-            <span className="text-gray-900 dark:text-white">{tooltipContent.name}</span>
+            {tooltipContent.code && (
+              <CountryFlag country={tooltipContent.code.slice(0, 2)} />
+            )}
+            <span className="text-gray-900 dark:text-white">
+              {tooltipContent.name}
+            </span>
           </div>
           <div className="space-y-1">
             <div>
               <span className="font-bold text-blue-600 dark:text-blue-400">
                 {tooltipContent.count.toLocaleString()}
-              </span>{" "}
+              </span>{' '}
               <span className="text-gray-600 dark:text-gray-400">
                 ({tooltipContent.percentage.toFixed(1)}%) visitors
               </span>
             </div>
-            {mode === "perCapita" && (
+            {mode === 'perCapita' && (
               <div className="text-gray-600 text-sm dark:text-gray-400">
                 <span className="font-bold text-blue-600 dark:text-blue-400">
                   {roundToTwo(tooltipContent.perCapita ?? 0)}
-                </span>{" "}
+                </span>{' '}
                 per million people
               </div>
             )}

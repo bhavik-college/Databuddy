@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { CheckCircleIcon } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
+import { CheckCircleIcon } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
 
 interface CompleteStepProps {
   onViewDashboard: () => void;
@@ -25,7 +25,9 @@ export function CompleteStep({ onViewDashboard }: CompleteStepProps) {
       </div>
 
       <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950/20">
-        <h4 className="mb-2 font-medium text-green-900 dark:text-green-100">What's Next?</h4>
+        <h4 className="mb-2 font-medium text-green-900 dark:text-green-100">
+          What's Next?
+        </h4>
         <ul className="space-y-1 text-green-800 text-sm dark:text-green-200">
           <li>• Revenue data will appear in the Overview tab</li>
           <li>• Analytics will be available within 24 hours</li>

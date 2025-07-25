@@ -7,10 +7,18 @@ export const ErrorChartTooltip = ({ active, payload, label }: any) => {
       <p className="mb-2 font-semibold text-foreground">{label}</p>
       <div className="space-y-1.5">
         {payload.map((entry: any) => (
-          <div className="flex items-center gap-2" key={`tooltip-${entry.dataKey}-${entry.value}`}>
-            <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
+          <div
+            className="flex items-center gap-2"
+            key={`tooltip-${entry.dataKey}-${entry.value}`}
+          >
+            <div
+              className="h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: entry.color }}
+            />
             <span className="text-muted-foreground">{entry.name}:</span>
-            <span className="font-medium text-foreground">{entry.value.toLocaleString()}</span>
+            <span className="font-medium text-foreground">
+              {entry.value.toLocaleString()}
+            </span>
           </div>
         ))}
       </div>

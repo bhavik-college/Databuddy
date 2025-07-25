@@ -1,32 +1,46 @@
 import { z } from 'zod';
 
 export const AIResponseJsonSchema = z.object({
-    sql: z.string().nullable().optional(),
-    chart_type: z.enum(['bar', 'line', 'pie', 'area', 'stacked_bar', 'multi_line', 'scatter', 'radar', 'funnel', 'grouped_bar']).nullable().optional(),
-    response_type: z.enum(['chart', 'text', 'metric']),
-    text_response: z.string().nullable().optional(),
-    metric_value: z.union([z.string(), z.number()]).nullable().optional(),
-    metric_label: z.string().nullable().optional(),
-    thinking_steps: z.array(z.string()).optional(),
+  sql: z.string().nullable().optional(),
+  chart_type: z
+    .enum([
+      'bar',
+      'line',
+      'pie',
+      'area',
+      'stacked_bar',
+      'multi_line',
+      'scatter',
+      'radar',
+      'funnel',
+      'grouped_bar',
+    ])
+    .nullable()
+    .optional(),
+  response_type: z.enum(['chart', 'text', 'metric']),
+  text_response: z.string().nullable().optional(),
+  metric_value: z.union([z.string(), z.number()]).nullable().optional(),
+  metric_label: z.string().nullable().optional(),
+  thinking_steps: z.array(z.string()).optional(),
 });
 
 export const AIPlanSchema = z.object({
-    thinking: z.array(z.string()),
-    complexity: z.enum(['low', 'high']),
-    reasoning: z.string(),
-    confidence: z.number().min(0).max(1),
-    suggested_mode: z.enum(['chat', 'agent']),
-    plan: z.array(z.string()),
+  thinking: z.array(z.string()),
+  complexity: z.enum(['low', 'high']),
+  reasoning: z.string(),
+  confidence: z.number().min(0).max(1),
+  suggested_mode: z.enum(['chat', 'agent']),
+  plan: z.array(z.string()),
 });
 
 export const comprehensiveUnifiedPrompt = (
-    userQuery: string,
-    websiteId: string,
-    websiteHostname: string,
-    mode: 'analysis_only' | 'execute_chat' | 'execute_agent_step',
-    previousMessages?: any[],
-    agentToolResult?: any,
-    model?: 'chat' | 'agent' | 'agent-max'
+  userQuery: string,
+  websiteId: string,
+  websiteHostname: string,
+  mode: 'analysis_only' | 'execute_chat' | 'execute_agent_step',
+  previousMessages?: any[],
+  agentToolResult?: any,
+  model?: 'chat' | 'agent' | 'agent-max'
 ) => `
 <persona>
 You are Nova, a world-class, specialized AI analytics assistant for the website ${websiteHostname}. You are precise, analytical, and secure. Your sole purpose is to help users understand their website's analytics data by providing insights, generating SQL queries, and creating visualizations.
@@ -111,11 +125,21 @@ You are Nova, a world-class, specialized AI analytics assistant for the website 
   <user_query>${userQuery}</user_query>
   <current_date_utc>${new Date().toISOString().split('T')[0]}</current_date_utc>
   <current_timestamp_utc>${new Date().toISOString()}</current_timestamp_utc>
-  ${previousMessages && previousMessages.length > 0 ? `
+  ${
+    previousMessages && previousMessages.length > 0
+      ? `
   <conversation_history>
-    ${previousMessages.slice(-4).map((msg: any) => `<message role="${msg.role}">${msg.content?.substring(0, 200)}${msg.content?.length > 200 ? '...' : ''}</message>`).join('\n')}
+    ${previousMessages
+      .slice(-4)
+      .map(
+        (msg: any) =>
+          `<message role="${msg.role}">${msg.content?.substring(0, 200)}${msg.content?.length > 200 ? '...' : ''}</message>`
+      )
+      .join('\n')}
   </conversation_history>
-  ` : ''}
+  `
+      : ''
+  }
   ${agentToolResult ? `<agent_tool_result>${JSON.stringify(agentToolResult)}</agent_tool_result>` : ''}
 </request_context>
 

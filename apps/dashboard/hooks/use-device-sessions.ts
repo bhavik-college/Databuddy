@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { authClient } from "@databuddy/auth/client";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { authClient } from '@databuddy/auth/client';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface DeviceSessionDetails {
   sessionToken: string;
@@ -57,15 +57,21 @@ export function useDeviceSessions() {
             createdAt: item.createdAt,
             expiresAt: item.expiresAt,
           },
-          user: item.user || { email: item.email || "Unknown User", name: item.name },
+          user: item.user || {
+            email: item.email || 'Unknown User',
+            name: item.name,
+          },
           sessionToken: item.sessionToken || item.session?.sessionToken,
-          isCurrent: typeof item.isCurrent === "boolean" ? item.isCurrent : item.session?.isCurrent,
-          provider: item.provider || item.session?.provider || "N/A",
+          isCurrent:
+            typeof item.isCurrent === 'boolean'
+              ? item.isCurrent
+              : item.session?.isCurrent,
+          provider: item.provider || item.session?.provider || 'N/A',
           userId: item.userId || item.session?.userId,
         })) || [];
       setSessions(processedSessions);
     } catch (err: any) {
-      const errorMessage = err.message || "Failed to fetch sessions.";
+      const errorMessage = err.message || 'Failed to fetch sessions.';
       setError(errorMessage);
       // Toasting errors here might be too aggressive if the hook is used in a non-UI critical way
       // Consider letting the component using the hook decide on toast notifications
@@ -86,13 +92,16 @@ export function useDeviceSessions() {
       if (result.error) {
         throw new Error(result.error.message);
       }
-      toast.success("Session switched successfully. Reloading...");
+      toast.success('Session switched successfully. Reloading...');
       window.location.reload();
       // No need to call fetchSessions() here as the page reloads
       return { success: true };
     } catch (err: any) {
-      toast.error(err.message || "Failed to switch session.");
-      return { success: false, error: err.message || "Failed to switch session." };
+      toast.error(err.message || 'Failed to switch session.');
+      return {
+        success: false,
+        error: err.message || 'Failed to switch session.',
+      };
     } finally {
       setOperatingSession(null);
     }
@@ -105,12 +114,15 @@ export function useDeviceSessions() {
       if (result.error) {
         throw new Error(result.error.message);
       }
-      toast.success("Session revoked successfully.");
+      toast.success('Session revoked successfully.');
       fetchSessions(); // Refresh the list after revoking
       return { success: true };
     } catch (err: any) {
-      toast.error(err.message || "Failed to revoke session.");
-      return { success: false, error: err.message || "Failed to revoke session." };
+      toast.error(err.message || 'Failed to revoke session.');
+      return {
+        success: false,
+        error: err.message || 'Failed to revoke session.',
+      };
     } finally {
       setOperatingSession(null);
     }

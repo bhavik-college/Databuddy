@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,22 +9,25 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useOrganizationMembers } from "@/hooks/use-organizations";
+} from '@/components/ui/select';
+import { useOrganizationMembers } from '@/hooks/use-organizations';
 
 export function InviteMemberDialog({ isOpen, onClose, organizationId }: any) {
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<"owner" | "admin" | "member">("member");
-  const { inviteMember, isInvitingMember } = useOrganizationMembers(organizationId);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'owner' | 'admin' | 'member'>(
+    'member'
+  );
+  const { inviteMember, isInvitingMember } =
+    useOrganizationMembers(organizationId);
 
   const handleInvite = async () => {
     if (!inviteEmail.trim()) return;
@@ -33,7 +36,7 @@ export function InviteMemberDialog({ isOpen, onClose, organizationId }: any) {
       role: inviteRole,
       organizationId,
     });
-    setInviteEmail("");
+    setInviteEmail('');
     onClose();
   };
 
@@ -59,7 +62,10 @@ export function InviteMemberDialog({ isOpen, onClose, organizationId }: any) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="role">Role</Label>
-            <Select onValueChange={(value) => setInviteRole(value as any)} value={inviteRole}>
+            <Select
+              onValueChange={(value) => setInviteRole(value as any)}
+              value={inviteRole}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
@@ -76,7 +82,7 @@ export function InviteMemberDialog({ isOpen, onClose, organizationId }: any) {
             Cancel
           </Button>
           <Button disabled={isInvitingMember} onClick={handleInvite}>
-            {isInvitingMember ? "Inviting..." : "Send Invitation"}
+            {isInvitingMember ? 'Inviting...' : 'Send Invitation'}
           </Button>
         </DialogFooter>
       </DialogContent>

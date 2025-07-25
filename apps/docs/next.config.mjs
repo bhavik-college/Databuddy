@@ -7,7 +7,7 @@ const config = {
   reactStrictMode: true,
   compress: true,
   poweredByHeader: false,
-  
+
   async headers() {
     return [
       {
@@ -40,7 +40,8 @@ const config = {
           },
           {
             key: 'X-Robots-Tag',
-            value: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+            value:
+              'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
           },
         ],
       },

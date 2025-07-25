@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { ArrowLeft, BarChart, Home } from "lucide-react";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/layout/logo";
+import { ArrowLeft, BarChart, Home } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { Logo } from '@/components/layout/logo';
+import { Button } from '@/components/ui/button';
 
 export default function NotFound() {
   const [mounted, setMounted] = useState(false);
-  const [randomDigit, setRandomDigit] = useState("4");
+  const [randomDigit, setRandomDigit] = useState('4');
 
   useEffect(() => {
     setMounted(true);
 
     const interval = setInterval(() => {
-      const digits = ["0", "1", "4", "5", "?", "!", "x"];
+      const digits = ['0', '1', '4', '5', '?', '!', 'x'];
       const randomIndex = Math.floor(Math.random() * digits.length);
       setRandomDigit(digits[randomIndex]);
     }, 800);
@@ -56,14 +56,20 @@ export default function NotFound() {
           </span>
         </div>
 
-        <h1 className="mb-2 text-center font-bold text-2xl md:text-3xl">Page Not Found</h1>
+        <h1 className="mb-2 text-center font-bold text-2xl md:text-3xl">
+          Page Not Found
+        </h1>
 
         <p className="mb-8 text-center text-muted-foreground">
           We&apos;ve lost this page in the data stream.
         </p>
 
         <div className="flex w-full max-w-xs flex-col gap-4 sm:flex-row">
-          <Button asChild className="flex-1 bg-primary hover:bg-primary/90" variant="default">
+          <Button
+            asChild
+            className="flex-1 bg-primary hover:bg-primary/90"
+            variant="default"
+          >
             <Link href="/websites">
               <Home className="mr-2 h-4 w-4" />
               Home

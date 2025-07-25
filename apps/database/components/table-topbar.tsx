@@ -1,7 +1,29 @@
-'use client'
+'use client';
 
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import {
+  ChevronDown,
+  Database,
+  Download,
+  MoreHorizontal,
+  RefreshCw,
+  Settings,
+  TableIcon,
+  Trash2,
+} from 'lucide-react';
+import Link from 'next/link';
+import React from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,45 +31,33 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
+} from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Input } from '@/components/ui/input'
-import { 
-  Download, 
-  Trash2, 
-  RefreshCw, 
-  ChevronDown,
-  Database,
-  TableIcon,
-  MoreHorizontal,
-  Settings
-} from 'lucide-react'
-import Link from 'next/link'
-import React from 'react'
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 
 interface TableStats {
-  total_rows: number
-  total_bytes: number
-  compressed_size: string
-  uncompressed_size: string
+  total_rows: number;
+  total_bytes: number;
+  compressed_size: string;
+  uncompressed_size: string;
 }
 
 interface TableTopbarProps {
-  database: string
-  table: string
-  stats: TableStats | null
-  columnsCount: number
-  loading: boolean
-  onRefresh: () => void
-  onExport: () => void
-  onDropTable: () => void
+  database: string;
+  table: string;
+  stats: TableStats | null;
+  columnsCount: number;
+  loading: boolean;
+  onRefresh: () => void;
+  onExport: () => void;
+  onDropTable: () => void;
 }
 
 export function TableTopbar({
@@ -58,20 +68,20 @@ export function TableTopbar({
   loading,
   onRefresh,
   onExport,
-  onDropTable
+  onDropTable,
 }: TableTopbarProps) {
-  const [confirmText, setConfirmText] = React.useState('')
+  const [confirmText, setConfirmText] = React.useState('');
   const formatNumber = (num: number) => {
-    return new Intl.NumberFormat().format(num)
-  }
+    return new Intl.NumberFormat().format(num);
+  };
 
   return (
-    <div className="w-full h-16 bg-sidebar border-b border-border flex items-center px-4">
-      <div className="flex items-center gap-4 flex-1">
+    <div className="flex h-16 w-full items-center border-border border-b bg-sidebar px-4">
+      <div className="flex flex-1 items-center gap-4">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/" className="flex items-center gap-2">
+              <BreadcrumbLink className="flex items-center gap-2" href="/">
                 <Database className="h-4 w-4" />
                 Database
               </BreadcrumbLink>
@@ -79,7 +89,7 @@ export function TableTopbar({
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center gap-1 hover:text-foreground transition-all duration-150 outline-none cursor-pointer select-none">
+                <DropdownMenuTrigger className="flex cursor-pointer select-none items-center gap-1 outline-none transition-all duration-150 hover:text-foreground">
                   {database}
                   <ChevronDown className="h-3 w-3" />
                 </DropdownMenuTrigger>
@@ -102,7 +112,7 @@ export function TableTopbar({
       </div>
 
       {/* Stats in header */}
-      <div className="flex items-center gap-6 text-sm text-muted-foreground">
+      <div className="flex items-center gap-6 text-muted-foreground text-sm">
         {stats && (
           <>
             <div className="flex items-center gap-2">
@@ -119,46 +129,42 @@ export function TableTopbar({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2 ml-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          asChild
-        >
+      <div className="ml-6 flex items-center gap-2">
+        <Button asChild size="sm" variant="ghost">
           <Link href={`/table/${database}/${table}/schema`}>
-            <Settings className="h-4 w-4 mr-2" />
+            <Settings className="mr-2 h-4 w-4" />
             Schema
           </Link>
         </Button>
-        
+
         <Button
-          variant="ghost"
-          size="sm"
-          onClick={onRefresh}
           disabled={loading}
+          onClick={onRefresh}
+          size="sm"
+          variant="ghost"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
         </Button>
-        
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm">
+            <Button size="sm" variant="ghost">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={onExport} disabled={loading}>
-              <Download className="h-4 w-4 mr-2" />
+            <DropdownMenuItem disabled={loading} onClick={onExport}>
+              <Download className="mr-2 h-4 w-4" />
               Export CSV
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <DropdownMenuItem 
-                  onSelect={(e) => e.preventDefault()}
+                <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
+                  onSelect={(e) => e.preventDefault()}
                 >
-                  <Trash2 className="h-4 w-4 mr-2" />
+                  <Trash2 className="mr-2 h-4 w-4" />
                   Drop Table
                 </DropdownMenuItem>
               </AlertDialogTrigger>
@@ -166,23 +172,34 @@ export function TableTopbar({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Drop Table</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to drop table <strong>{database}.{table}</strong>? 
-                    This action cannot be undone and will permanently delete all data.
-                    <br/><br/>
-                    Please type <strong>{database}.{table}</strong> to confirm.
+                    Are you sure you want to drop table{' '}
+                    <strong>
+                      {database}.{table}
+                    </strong>
+                    ? This action cannot be undone and will permanently delete
+                    all data.
+                    <br />
+                    <br />
+                    Please type{' '}
+                    <strong>
+                      {database}.{table}
+                    </strong>{' '}
+                    to confirm.
                   </AlertDialogDescription>
-                  <Input 
-                    value={confirmText}
-                    onChange={(e) => setConfirmText(e.target.value)}
+                  <Input
                     className="mt-2"
+                    onChange={(e) => setConfirmText(e.target.value)}
+                    value={confirmText}
                   />
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel onClick={() => setConfirmText('')}>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel onClick={() => setConfirmText('')}>
+                    Cancel
+                  </AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={onDropTable}
-                    disabled={confirmText !== `${database}.${table}`}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={confirmText !== `${database}.${table}`}
+                    onClick={onDropTable}
                   >
                     Drop Table
                   </AlertDialogAction>
@@ -193,5 +210,5 @@ export function TableTopbar({
         </DropdownMenu>
       </div>
     </div>
-  )
-} 
+  );
+}

@@ -1,37 +1,37 @@
-"use client";
+'use client';
 
 import {
-  ChartBar,
   Brain,
-  Hash,
+  ChartBar,
+  ChatIcon,
   ClockCounterClockwise,
+  Hash,
+  Lightning,
   PaperPlaneRight,
   Sparkle,
   TrendUp,
-  Lightning,
-  ChatIcon,
-} from "@phosphor-icons/react";
-import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+} from '@phosphor-icons/react';
 import { useAtom } from 'jotai';
+import { useEffect, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import {
-  messagesAtom,
   inputValueAtom,
   isLoadingAtom,
   isRateLimitedAtom,
-  scrollAreaRefAtom,
+  messagesAtom,
   modelAtom,
+  scrollAreaRefAtom,
   websiteDataAtom,
   websiteIdAtom,
 } from '@/stores/jotai/assistantAtoms';
-import { ChatHistorySheet } from "./chat-history-sheet";
-import { MessageBubble } from "./message-bubble";
 import { useChat } from '../hooks/use-chat';
-import { ModelSelector } from "./model-selector";
+import { ChatHistorySheet } from './chat-history-sheet';
+import { MessageBubble } from './message-bubble';
+import { ModelSelector } from './model-selector';
 
 export function ChatSkeleton() {
   return (
@@ -92,16 +92,20 @@ export default function ChatSection() {
   // Calculate message statistics
   const messageStats = {
     total: messages.length - 1, // Excluding welcome message
-    charts: messages.filter((m) => m.responseType === "chart").length,
-    metrics: messages.filter((m) => m.responseType === "metric").length,
-    text: messages.filter((m) => m.responseType === "text").length,
+    charts: messages.filter((m) => m.responseType === 'chart').length,
+    metrics: messages.filter((m) => m.responseType === 'metric').length,
+    text: messages.filter((m) => m.responseType === 'text').length,
   };
 
   const quickQuestions = [
-    { text: "Show me page views over the last 7 days", icon: TrendUp, type: "chart" },
-    { text: "How many visitors yesterday?", icon: Hash, type: "metric" },
-    { text: "Top traffic sources breakdown", icon: ChartBar, type: "chart" },
-    { text: "What's my bounce rate?", icon: Hash, type: "metric" },
+    {
+      text: 'Show me page views over the last 7 days',
+      icon: TrendUp,
+      type: 'chart',
+    },
+    { text: 'How many visitors yesterday?', icon: Hash, type: 'metric' },
+    { text: 'Top traffic sources breakdown', icon: ChartBar, type: 'chart' },
+    { text: "What's my bounce rate?", icon: Hash, type: 'metric' },
   ];
 
   // Focus input when component mounts and after sending
@@ -127,7 +131,7 @@ export default function ChatSection() {
 
   // Prevent sending empty/whitespace messages in send button and Enter key
   const handleSend = () => {
-    if (!isLoading && !isRateLimited && inputValue.trim()) {
+    if (!(isLoading || isRateLimited) && inputValue.trim()) {
       sendMessage(inputValue.trim());
       scrollToBottom();
       setTimeout(() => {
@@ -155,29 +159,30 @@ export default function ChatSection() {
             <div className="flex items-center gap-2">
               <h2 className="truncate font-semibold text-lg">Nova</h2>
               {hasMessages && (
-                <span className="px-2 py-0.5 text-xs text-muted-foreground">
-                  {messageStats.total} {messageStats.total === 1 ? "query" : "queries"}
+                <span className="px-2 py-0.5 text-muted-foreground text-xs">
+                  {messageStats.total}{' '}
+                  {messageStats.total === 1 ? 'query' : 'queries'}
                 </span>
               )}
             </div>
             <p className="truncate text-muted-foreground text-sm">
               {isLoading
-                ? "Nova is analyzing your data..."
-                : `Your AI analytics partner for ${websiteData?.name || "your website"}`}
+                ? 'Nova is analyzing your data...'
+                : `Your AI analytics partner for ${websiteData?.name || 'your website'}`}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <ModelSelector
-            selectedModel={selectedModel}
-            onModelChange={() => { }}
             disabled={isLoading}
+            onModelChange={() => {}}
+            selectedModel={selectedModel}
           />
           <Button
             className="h-9 w-9 flex-shrink-0"
-            variant="ghost"
-            title="Open chat history"
             onClick={() => setShowChatHistory(true)}
+            title="Open chat history"
+            variant="ghost"
           >
             <ChatIcon className="h-5 w-5" />
           </Button>
@@ -191,8 +196,8 @@ export default function ChatSection() {
           >
             <ClockCounterClockwise
               className={cn(
-                "h-4 w-4 transition-transform duration-200",
-                isLoading && "animate-spin"
+                'h-4 w-4 transition-transform duration-200',
+                isLoading && 'animate-spin'
               )}
             />
           </Button>
@@ -210,10 +215,13 @@ export default function ChatSection() {
                   <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-accent/10">
                     <Sparkle className="h-8 w-8 text-primary" />
                   </div>
-                  <h3 className="mb-2 font-semibold text-lg">Welcome to Nova</h3>
+                  <h3 className="mb-2 font-semibold text-lg">
+                    Welcome to Nova
+                  </h3>
                   <p className="mx-auto max-w-md text-muted-foreground text-sm">
-                    I'm Nova, your AI analytics partner. I can help you understand your website data
-                    through charts, metrics, and insights. Just ask me anything!
+                    I'm Nova, your AI analytics partner. I can help you
+                    understand your website data through charts, metrics, and
+                    insights. Just ask me anything!
                   </p>
                 </div>
 
@@ -225,15 +233,15 @@ export default function ChatSection() {
                   {quickQuestions.map((question, index) => (
                     <Button
                       className={cn(
-                        "h-auto w-full justify-start px-4 py-3 text-left font-normal text-sm",
-                        "hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5",
-                        "border-dashed transition-all duration-300 hover:border-solid",
-                        "fade-in-0 slide-in-from-left-2 animate-in"
+                        'h-auto w-full justify-start px-4 py-3 text-left font-normal text-sm',
+                        'hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5',
+                        'border-dashed transition-all duration-300 hover:border-solid',
+                        'fade-in-0 slide-in-from-left-2 animate-in'
                       )}
                       disabled={isLoading || isRateLimited}
                       key={question.text}
                       onClick={() => {
-                        if (!isLoading && !isRateLimited) {
+                        if (!(isLoading || isRateLimited)) {
                           sendMessage(question.text);
                           scrollToBottom();
                         }
@@ -259,7 +267,7 @@ export default function ChatSection() {
             {hasMessages && (
               <div className="space-y-6">
                 {messages.map((message) => (
-                  <div key={message.id} className="mb-2">
+                  <div className="mb-2" key={message.id}>
                     <MessageBubble message={message} />
                   </div>
                 ))}
@@ -273,55 +281,57 @@ export default function ChatSection() {
       {/* Enhanced Input Area */}
       <div className="flex-shrink-0 border-t bg-gradient-to-r from-muted/10 to-muted/5 p-4">
         <div className="relative">
-          <div className={cn("flex gap-3")}
-          >
+          <div className={cn('flex gap-3')}>
             <Input
               className={cn(
-                "h-11 flex-1 rounded-xl border-2 bg-background/50 backdrop-blur-sm",
-                "placeholder:text-muted-foreground/60",
-                "focus:border-primary/30 focus:bg-background/80",
-                "transition-all duration-200"
+                'h-11 flex-1 rounded-xl border-2 bg-background/50 backdrop-blur-sm',
+                'placeholder:text-muted-foreground/60',
+                'focus:border-primary/30 focus:bg-background/80',
+                'transition-all duration-200'
               )}
               disabled={isLoading || isRateLimited}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder={
-                isLoading
-                  ? "Nova is thinking..."
-                  : isRateLimited
-                    ? "Rate limited - please wait..."
-                    : "Ask Nova about your analytics data..."
-              }
-              ref={inputRef}
-              value={inputValue}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
+                if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
                   handleSend();
                 } else {
                   handleKeyPress(e);
                 }
               }}
+              placeholder={
+                isLoading
+                  ? 'Nova is thinking...'
+                  : isRateLimited
+                    ? 'Rate limited - please wait...'
+                    : 'Ask Nova about your analytics data...'
+              }
+              ref={inputRef}
+              value={inputValue}
             />
             <Button
               className={cn(
-                "h-11 w-11 flex-shrink-0 rounded-xl",
-                "bg-gradient-to-r from-primary to-primary/80",
-                "hover:from-primary/90 hover:to-primary/70",
-                "disabled:from-muted disabled:to-muted",
-                "shadow-lg transition-all duration-200",
+                'h-11 w-11 flex-shrink-0 rounded-xl',
+                'bg-gradient-to-r from-primary to-primary/80',
+                'hover:from-primary/90 hover:to-primary/70',
+                'disabled:from-muted disabled:to-muted',
+                'shadow-lg transition-all duration-200',
                 (!inputValue.trim() || isRateLimited) &&
-                !isLoading &&
-                "opacity-50"
+                  !isLoading &&
+                  'opacity-50'
               )}
               disabled={!inputValue.trim() || isLoading || isRateLimited}
+              onClick={handleSend}
               size="icon"
               title="Send message"
-              onClick={handleSend}
             >
               <PaperPlaneRight
                 className={cn(
-                  "h-4 w-4",
-                  inputValue.trim() && !isLoading && !isRateLimited && "scale-110"
+                  'h-4 w-4',
+                  inputValue.trim() &&
+                    !isLoading &&
+                    !isRateLimited &&
+                    'scale-110'
                 )}
               />
             </Button>

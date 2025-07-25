@@ -1,50 +1,50 @@
-"use client";
+'use client';
 
-import { signIn } from "@databuddy/auth/client";
-import { Eye, EyeOff, Github, Loader2, Mail, Sparkles } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Suspense, useState, useEffect } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import { signIn } from '@databuddy/auth/client';
+import { Eye, EyeOff, Github, Loader2, Mail, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 
 function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [lastUsed, setLastUsed] = useState<string | null>(null);
 
   useEffect(() => {
-    setLastUsed(localStorage.getItem("lastUsedLogin"));
+    setLastUsed(localStorage.getItem('lastUsedLogin'));
   }, []);
 
   const handleLastUsed = () => {
-    if (lastUsed === "github") handleGithubLogin();
-    else if (lastUsed === "google") handleGoogleLogin();
-    else if (lastUsed === "email") {
+    if (lastUsed === 'github') handleGithubLogin();
+    else if (lastUsed === 'google') handleGoogleLogin();
+    else if (lastUsed === 'email') {
       // Focus email input
-      document.getElementById("email")?.focus();
+      document.getElementById('email')?.focus();
     }
   };
 
   const handleGoogleLogin = () => {
     setIsLoading(true);
     signIn.social({
-      provider: "google",
-      callbackURL: "/home",
+      provider: 'google',
+      callbackURL: '/home',
       fetchOptions: {
         onSuccess: () => {
-          localStorage.setItem("lastUsedLogin", "google");
-          toast.success("Login successful!");
+          localStorage.setItem('lastUsedLogin', 'google');
+          toast.success('Login successful!');
         },
         onError: () => {
           setIsLoading(false);
-          toast.error("Google login failed. Please try again.");
+          toast.error('Google login failed. Please try again.');
         },
       },
     });
@@ -53,16 +53,16 @@ function LoginPage() {
   const handleGithubLogin = () => {
     setIsLoading(true);
     signIn.social({
-      provider: "github",
-      callbackURL: "/home",
+      provider: 'github',
+      callbackURL: '/home',
       fetchOptions: {
         onSuccess: () => {
-          localStorage.setItem("lastUsedLogin", "github");
-          toast.success("Login successful!");
+          localStorage.setItem('lastUsedLogin', 'github');
+          toast.success('Login successful!');
         },
         onError: () => {
           setIsLoading(false);
-          toast.error("GitHub login failed. Please try again.");
+          toast.error('GitHub login failed. Please try again.');
         },
       },
     });
@@ -71,7 +71,7 @@ function LoginPage() {
   const handleEmailPasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!(email && password)) {
-      toast.error("Please enter both email and password");
+      toast.error('Please enter both email and password');
       return;
     }
 
@@ -80,23 +80,25 @@ function LoginPage() {
       const result = await signIn.email({
         email,
         password,
-        callbackURL: "/home",
+        callbackURL: '/home',
         fetchOptions: {
           onSuccess: () => {
-            localStorage.setItem("lastUsedLogin", "email");
-            toast.success("Login successful!");
+            localStorage.setItem('lastUsedLogin', 'email');
+            toast.success('Login successful!');
           },
           onError: (error) => {
             setIsLoading(false);
             if (
-              error?.error?.code === "EMAIL_NOT_VERIFIED" ||
-              error?.error?.message?.toLowerCase().includes("not verified")
+              error?.error?.code === 'EMAIL_NOT_VERIFIED' ||
+              error?.error?.message?.toLowerCase().includes('not verified')
             ) {
-              router.push(`/login/verification-needed?email=${encodeURIComponent(email)}`);
+              router.push(
+                `/login/verification-needed?email=${encodeURIComponent(email)}`
+              );
             } else {
               toast.error(
                 error?.error?.message ||
-                "Login failed. Please check your credentials and try again."
+                  'Login failed. Please check your credentials and try again.'
               );
             }
           },
@@ -104,11 +106,11 @@ function LoginPage() {
       });
 
       if (result?.error) {
-        toast.error("Invalid credentials");
+        toast.error('Invalid credentials');
         return;
       }
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error('Something went wrong');
     } finally {
       setIsLoading(false);
     }
@@ -129,7 +131,7 @@ function LoginPage() {
           <div className="space-y-6">
             <div className="space-y-3">
               <Button
-                className="flex h-11 w-full cursor-pointer items-center justify-center transition-all duration-200 hover:bg-primary/5 relative"
+                className="relative flex h-11 w-full cursor-pointer items-center justify-center transition-all duration-200 hover:bg-primary/5"
                 disabled={isLoading}
                 onClick={handleGithubLogin}
                 type="button"
@@ -138,13 +140,15 @@ function LoginPage() {
                 <Github className="mr-2 h-5 w-5" />
                 <span className="flex items-center gap-2">
                   Sign in with GitHub
-                  {lastUsed === "github" && (
-                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary border border-primary/20 ml-2">Last used</span>
+                  {lastUsed === 'github' && (
+                    <span className="ml-2 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs">
+                      Last used
+                    </span>
                   )}
                 </span>
               </Button>
               <Button
-                className="flex h-11 w-full cursor-pointer items-center justify-center transition-all duration-200 hover:bg-primary/5 relative"
+                className="relative flex h-11 w-full cursor-pointer items-center justify-center transition-all duration-200 hover:bg-primary/5"
                 disabled={isLoading}
                 onClick={handleGoogleLogin}
                 type="button"
@@ -153,8 +157,10 @@ function LoginPage() {
                 <Mail className="mr-2 h-5 w-5" />
                 <span className="flex items-center gap-2">
                   Sign in with Google
-                  {lastUsed === "google" && (
-                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary border border-primary/20 ml-2">Last used</span>
+                  {lastUsed === 'google' && (
+                    <span className="ml-2 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs">
+                      Last used
+                    </span>
                   )}
                 </span>
               </Button>
@@ -186,14 +192,19 @@ function LoginPage() {
                     type="email"
                     value={email}
                   />
-                  {lastUsed === "email" && (
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary border border-primary/20">Last used</span>
+                  {lastUsed === 'email' && (
+                    <span className="-translate-y-1/2 absolute top-1/2 right-2 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs">
+                      Last used
+                    </span>
                   )}
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label className="font-medium text-foreground" htmlFor="password">
+                  <Label
+                    className="font-medium text-foreground"
+                    htmlFor="password"
+                  >
                     Password
                   </Label>
                   <Link
@@ -212,7 +223,7 @@ function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     value={password}
                   />
                   <Button
@@ -222,7 +233,11 @@ function LoginPage() {
                     type="button"
                     variant="ghost"
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -237,7 +252,7 @@ function LoginPage() {
                     Signing in...
                   </>
                 ) : (
-                  "Sign in"
+                  'Sign in'
                 )}
               </Button>
               <Link href="/login/magic" passHref>
@@ -256,8 +271,11 @@ function LoginPage() {
       </div>
       <div className="mt-6 text-center">
         <p className="text-muted-foreground text-sm">
-          Don&apos;t have an account?{" "}
-          <Link className="font-medium text-primary hover:text-primary/80" href="/register">
+          Don&apos;t have an account?{' '}
+          <Link
+            className="font-medium text-primary hover:text-primary/80"
+            href="/register"
+          >
             Sign up
           </Link>
         </p>

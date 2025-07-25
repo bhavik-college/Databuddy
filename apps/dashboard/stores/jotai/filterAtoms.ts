@@ -1,5 +1,5 @@
-import { differenceInDays, format, isValid, subDays } from "date-fns";
-import { atom } from "jotai";
+import { differenceInDays, format, isValid, subDays } from 'date-fns';
+import { atom } from 'jotai';
 // Consider adding nanoid for unique ID generation for complex filters
 // import { nanoid } from 'nanoid';
 
@@ -24,15 +24,15 @@ export const dateRangeAtom = atom<DateRangeState>({
 export const formattedDateRangeAtom = atom((get) => {
   const { startDate, endDate } = get(dateRangeAtom);
   return {
-    startDate: isValid(startDate) ? format(startDate, "yyyy-MM-dd") : "",
-    endDate: isValid(endDate) ? format(endDate, "yyyy-MM-dd") : "",
+    startDate: isValid(startDate) ? format(startDate, 'yyyy-MM-dd') : '',
+    endDate: isValid(endDate) ? format(endDate, 'yyyy-MM-dd') : '',
   };
 });
 
 // --- Time Granularity ---
-export type TimeGranularity = "daily" | "hourly";
+export type TimeGranularity = 'daily' | 'hourly';
 
-export const timeGranularityAtom = atom<TimeGranularity>("daily");
+export const timeGranularityAtom = atom<TimeGranularity>('daily');
 
 /**
  * Action atom to update the date range and intelligently adjust granularity.
@@ -45,20 +45,28 @@ export const setDateRangeAndAdjustGranularityAtom = atom(
     const diffDays = differenceInDays(newRange.endDate, newRange.startDate);
     if (diffDays <= 2) {
       // If 2 days or less, set to hourly
-      set(timeGranularityAtom, "hourly");
+      set(timeGranularityAtom, 'hourly');
     } else {
-      set(timeGranularityAtom, "daily");
+      set(timeGranularityAtom, 'daily');
     }
   }
 );
 
 // --- Timezone ---
-export const timezoneAtom = atom<string>(Intl.DateTimeFormat().resolvedOptions().timeZone);
+export const timezoneAtom = atom<string>(
+  Intl.DateTimeFormat().resolvedOptions().timeZone
+);
 
 // --- Basic Filters ---
 // Used for simple selections, e.g., a list of countries or device types.
 // Example: { countries: ['US', 'CA'], deviceTypes: ['desktop'] }
-export type BasicFilterValue = string[] | number[] | string | number | boolean | undefined;
+export type BasicFilterValue =
+  | string[]
+  | number[]
+  | string
+  | number
+  | boolean
+  | undefined;
 export interface BasicFilters {
   [key: string]: BasicFilterValue; // Allow any string key for flexibility
 }
@@ -68,18 +76,18 @@ export const basicFiltersAtom = atom<BasicFilters>({});
 // --- Complex Filters ---
 // Used for building more structured, rule-based queries.
 export type FilterOperator =
-  | "is"
-  | "isNot"
-  | "contains"
-  | "doesNotContain"
-  | "startsWith"
-  | "endsWith"
-  | "greaterThan"
-  | "lessThan"
-  | "in" // Value is an array, e.g., field IN [val1, val2]
-  | "notIn" // Value is an array, e.g., field NOT IN [val1, val2]
-  | "isSet" // Checks if a field has a value
-  | "isNotSet"; // Checks if a field does not have a value
+  | 'is'
+  | 'isNot'
+  | 'contains'
+  | 'doesNotContain'
+  | 'startsWith'
+  | 'endsWith'
+  | 'greaterThan'
+  | 'lessThan'
+  | 'in' // Value is an array, e.g., field IN [val1, val2]
+  | 'notIn' // Value is an array, e.g., field NOT IN [val1, val2]
+  | 'isSet' // Checks if a field has a value
+  | 'isNotSet'; // Checks if a field does not have a value
 
 export interface ComplexFilter {
   id: string; // Should be unique, e.g., generated with nanoid()
@@ -137,24 +145,30 @@ export const clearBasicFilterAtom = atom(null, (get, set, key?: string) => {
  * const [, saveFilter] = useAtom(upsertComplexFilterAtom);
  * saveFilter({ id: nanoid(), field: 'geo.city', operator: 'is', value: 'New York' });
  */
-export const upsertComplexFilterAtom = atom(null, (get, set, filter: ComplexFilter) => {
-  set(complexFiltersAtom, (prev) => {
-    const existingIndex = prev.findIndex((f) => f.id === filter.id);
-    if (existingIndex > -1) {
-      const updatedFilters = [...prev];
-      updatedFilters[existingIndex] = filter;
-      return updatedFilters;
-    }
-    return [...prev, filter];
-  });
-});
+export const upsertComplexFilterAtom = atom(
+  null,
+  (get, set, filter: ComplexFilter) => {
+    set(complexFiltersAtom, (prev) => {
+      const existingIndex = prev.findIndex((f) => f.id === filter.id);
+      if (existingIndex > -1) {
+        const updatedFilters = [...prev];
+        updatedFilters[existingIndex] = filter;
+        return updatedFilters;
+      }
+      return [...prev, filter];
+    });
+  }
+);
 
 /**
  * Removes a complex filter by its ID.
  */
-export const removeComplexFilterAtom = atom(null, (get, set, filterId: string) => {
-  set(complexFiltersAtom, (prev) => prev.filter((f) => f.id !== filterId));
-});
+export const removeComplexFilterAtom = atom(
+  null,
+  (get, set, filterId: string) => {
+    set(complexFiltersAtom, (prev) => prev.filter((f) => f.id !== filterId));
+  }
+);
 
 /**
  * Clears all complex filters.
@@ -168,7 +182,7 @@ export const clearComplexFiltersAtom = atom(null, (get, set) => {
  */
 export const clearAllFiltersAtom = atom(null, (get, set) => {
   set(dateRangeAtom, { startDate: initialStartDate, endDate: initialEndDate });
-  set(timeGranularityAtom, "daily"); // Reset to default granularity
+  set(timeGranularityAtom, 'daily'); // Reset to default granularity
   set(basicFiltersAtom, {});
   set(complexFiltersAtom, []);
 });
@@ -178,18 +192,23 @@ export const clearAllFiltersAtom = atom(null, (get, set) => {
  * with dates formatted as strings for API compatibility.
  */
 export const activeFiltersForApiAtom = atom((get) => {
-  const { startDate: fmtStartDate, endDate: fmtEndDate } = get(formattedDateRangeAtom);
+  const { startDate: fmtStartDate, endDate: fmtEndDate } = get(
+    formattedDateRangeAtom
+  );
   const granularityValue = get(timeGranularityAtom);
   const basicFiltersValue = get(basicFiltersAtom);
   const complexFiltersValue = get(complexFiltersAtom);
   const timezoneValue = get(timezoneAtom);
 
   // Example: Convert array values in basic filters to comma-separated strings if API needs it
-  const apiReadyBasicFilters: Record<string, string | number | boolean | undefined> = {};
+  const apiReadyBasicFilters: Record<
+    string,
+    string | number | boolean | undefined
+  > = {};
   for (const key in basicFiltersValue) {
     const value = basicFiltersValue[key];
     if (Array.isArray(value)) {
-      apiReadyBasicFilters[key] = value.join(",");
+      apiReadyBasicFilters[key] = value.join(',');
     } else {
       apiReadyBasicFilters[key] = value;
     }

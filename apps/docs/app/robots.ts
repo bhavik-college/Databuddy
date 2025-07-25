@@ -1,4 +1,4 @@
-import type { MetadataRoute } from 'next'
+import type { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -6,13 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: [
-          '/api/',
-          '/_next/',
-          '/admin/',
-          '*.json',
-          '/demo/private/',
-        ],
+        disallow: ['/api/', '/_next/', '/admin/', '*.json', '/demo/private/'],
       },
       {
         userAgent: 'GPTBot',
@@ -27,5 +21,5 @@ export default function robots(): MetadataRoute.Robots {
     ],
     sitemap: 'https://www.databuddy.cc/sitemap.xml',
     host: 'https://www.databuddy.cc',
-  }
-} 
+  };
+}

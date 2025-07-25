@@ -1,4 +1,4 @@
-import type { User, Session } from "./auth";
+import type { Session, User } from './auth';
 
 export interface SessionData {
   role: string;
@@ -12,11 +12,7 @@ export interface AuthError {
   status?: number;
 }
 
-export type Provider = 
-  | "email" 
-  | "google" 
-  | "github" 
-  | "credentials";
+export type Provider = 'email' | 'google' | 'github' | 'credentials';
 
 export interface SignInOptions {
   redirect?: boolean;

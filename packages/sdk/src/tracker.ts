@@ -7,15 +7,14 @@ import type {
   DatabuddyTracker,
   EventName,
   PropertiesForEvent,
-  TrackFunction
+  TrackFunction,
 } from './types';
 
 /**
  * Check if the Databuddy tracker is available
  */
 export function isTrackerAvailable(): boolean {
-  return typeof window !== 'undefined' &&
-    (!!window.databuddy || !!window.db);
+  return typeof window !== 'undefined' && (!!window.databuddy || !!window.db);
 }
 
 /**
@@ -46,8 +45,7 @@ export const track: TrackFunction = async <T extends EventName>(
 
   try {
     await tracker(eventName, properties as any);
-  } catch (error) {
-  }
+  } catch (error) {}
 };
 /**
  * Clear the current session
@@ -65,8 +63,7 @@ export function clear(): void {
 
   try {
     tracker();
-  } catch (error) {
-  }
+  } catch (error) {}
 }
 
 /**
@@ -85,21 +82,23 @@ export function flush(): void {
 
   try {
     tracker();
-  } catch (error) {
-  }
+  } catch (error) {}
 }
 
 /**
  * Track an error event
  */
-export function trackError(message: string, properties?: {
-  filename?: string;
-  lineno?: number;
-  colno?: number;
-  stack?: string;
-  error_type?: string;
-  [key: string]: any;
-}): Promise<void> {
+export function trackError(
+  message: string,
+  properties?: {
+    filename?: string;
+    lineno?: number;
+    colno?: number;
+    stack?: string;
+    error_type?: string;
+    [key: string]: any;
+  }
+): Promise<void> {
   return track('error', { message, ...properties });
 }
 
@@ -108,4 +107,4 @@ export default {
   clear,
   flush,
   trackError,
-}; 
+};

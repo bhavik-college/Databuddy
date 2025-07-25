@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
-import utcPlugin from 'dayjs/plugin/utc';
-import timezonePlugin from 'dayjs/plugin/timezone';
 import relativeTimePlugin from 'dayjs/plugin/relativeTime';
+import timezonePlugin from 'dayjs/plugin/timezone';
+import utcPlugin from 'dayjs/plugin/utc';
 import { TIMEZONES } from '../lists/timezones';
 
 // Initialize dayjs plugins
@@ -29,20 +29,23 @@ type DateInput = Date | string | number | null;
  * @param options - Formatting options
  * @returns Formatted date string
  */
-export function formatDate(date: DateInput, options?: DateFormatOptions): string {
+export function formatDate(
+  date: DateInput,
+  options?: DateFormatOptions
+): string {
   if (!date) return '';
-  
+
   const timezone = options?.timezone || 'UTC';
   const dayjsDate = dayjs(date).tz(timezone);
-  
+
   if (options?.customFormat) {
     return dayjsDate.format(options.customFormat);
   }
-  
+
   const dateFormat = options?.dateFormat || DEFAULT_DATE_FORMAT;
   const timeFormat = options?.timeFormat || DEFAULT_TIME_FORMAT;
   const format = options?.showTime ? `${dateFormat} ${timeFormat}` : dateFormat;
-    
+
   return dayjsDate.format(format);
 }
 
@@ -73,7 +76,7 @@ export function getBrowserTimezone(): string {
  * @returns Timezone info or undefined
  */
 export function findTimezoneByRegion(region: string) {
-  return TIMEZONES.find(tz => tz.region === region);
+  return TIMEZONES.find((tz) => tz.region === region);
 }
 
 /**

@@ -1,5 +1,5 @@
-import { Color, Mesh, Program, Renderer, Triangle } from "ogl";
-import React, { useEffect, useRef } from "react";
+import { Color, Mesh, Program, Renderer, Triangle } from 'ogl';
+import React, { useEffect, useRef } from 'react';
 
 export interface CommonProps {
   onReady?: () => void;
@@ -132,7 +132,8 @@ void main() {
 `;
 
 export default function Aurora(props: AuroraProps) {
-  const { colorStops = ["#00d8ff", "#7cff67", "#00d8ff"], amplitude = 1.0 } = props;
+  const { colorStops = ['#00d8ff', '#7cff67', '#00d8ff'], amplitude = 1.0 } =
+    props;
 
   const propsRef = useRef(props);
   propsRef.current = props;
@@ -151,11 +152,11 @@ export default function Aurora(props: AuroraProps) {
       if (!ctn) return;
       renderer.setSize(ctn.offsetWidth, ctn.offsetHeight);
     }
-    window.addEventListener("resize", resize);
+    window.addEventListener('resize', resize);
     resize();
 
     const geometry = new Triangle(gl);
-    geometry.addAttribute("uv", {
+    geometry.addAttribute('uv', {
       size: 2,
       data: new Float32Array([0, 0, 2, 0, 0, 2]),
     });
@@ -199,11 +200,11 @@ export default function Aurora(props: AuroraProps) {
 
     return () => {
       cancelAnimationFrame(animateId);
-      window.removeEventListener("resize", resize);
+      window.removeEventListener('resize', resize);
 
       ctn?.removeChild(gl.canvas);
 
-      gl.getExtension("WEBGL_lose_context")?.loseContext();
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
   }, [amplitude, colorStops]);
 

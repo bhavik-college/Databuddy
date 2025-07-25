@@ -1,8 +1,12 @@
-import { initTRPC, TRPCError } from '@trpc/server';
-import { db } from '@databuddy/db';
 import { auth, type User } from '@databuddy/auth';
+import { db } from '@databuddy/db';
+import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
-import { rateLimiters, getRateLimitIdentifier, type RateLimiter } from './utils/rate-limit';
+import {
+  getRateLimitIdentifier,
+  type RateLimiter,
+  rateLimiters,
+} from './utils/rate-limit';
 
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const session = await auth.api.getSession({
@@ -42,7 +46,7 @@ const createRateLimitMiddleware = (rateLimiter: RateLimiter) => {
     if (!success) {
       throw new TRPCError({
         code: 'TOO_MANY_REQUESTS',
-        message: 'Rate limit exceeded. Please try again later.'
+        message: 'Rate limit exceeded. Please try again later.',
       });
     }
 
@@ -51,7 +55,7 @@ const createRateLimitMiddleware = (rateLimiter: RateLimiter) => {
 };
 
 export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
-  if (!ctx.user || !ctx.session) {
+  if (!(ctx.user && ctx.session)) {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
@@ -68,19 +72,21 @@ export const rateLimitedProtectedProcedure = protectedProcedure.use(
   createRateLimitMiddleware(rateLimiters.api)
 );
 
-export const rateLimitedAdminProcedure = protectedProcedure.use(({ ctx, next }) => {
-  if (ctx.user.role !== 'ADMIN') {
-    throw new TRPCError({
-      code: 'FORBIDDEN',
-      message: 'You do not have permission to access this resource',
-    });
-  }
+export const rateLimitedAdminProcedure = protectedProcedure
+  .use(({ ctx, next }) => {
+    if (ctx.user.role !== 'ADMIN') {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You do not have permission to access this resource',
+      });
+    }
 
-  return next({
-    ctx: {
-      ...ctx,
-      session: ctx.session,
-      user: ctx.user,
-    },
-  });
-}).use(createRateLimitMiddleware(rateLimiters.admin));
+    return next({
+      ctx: {
+        ...ctx,
+        session: ctx.session,
+        user: ctx.user,
+      },
+    });
+  })
+  .use(createRateLimitMiddleware(rateLimiters.admin));

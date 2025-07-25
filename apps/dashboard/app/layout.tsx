@@ -1,71 +1,73 @@
-import "./globals.css";
+import './globals.css';
 
-import { Databuddy } from "@databuddy/sdk";
-import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { Toaster } from "sonner";
-import Providers from "./providers";
-import Script from "next/script";
+import { Databuddy } from '@databuddy/sdk';
+import type { Metadata, Viewport } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import Script from 'next/script';
+import { Toaster } from 'sonner';
+import Providers from './providers';
 
 const geist = Geist({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-geist",
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-geist',
 });
 
 const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-geist-mono",
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-geist-mono',
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://app.databuddy.cc"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || 'https://app.databuddy.cc'
+  ),
   title: {
-    template: "%s | Databuddy Dashboard",
-    default: "Databuddy Dashboard",
+    template: '%s | Databuddy Dashboard',
+    default: 'Databuddy Dashboard',
   },
   description:
-    "Powerful analytics dashboard for your websites. Track visitors, monitor performance, and gain insights into your audience.",
+    'Powerful analytics dashboard for your websites. Track visitors, monitor performance, and gain insights into your audience.',
   keywords: [
-    "analytics",
-    "dashboard",
-    "monitoring",
-    "statistics",
-    "web analytics",
-    "tracking",
-    "website insights",
-    "visitor analytics",
-    "performance monitoring",
-    "user behavior",
+    'analytics',
+    'dashboard',
+    'monitoring',
+    'statistics',
+    'web analytics',
+    'tracking',
+    'website insights',
+    'visitor analytics',
+    'performance monitoring',
+    'user behavior',
   ],
-  authors: [{ name: "Databuddy", url: "https://www.databuddy.cc" }],
-  creator: "Databuddy",
-  publisher: "Databuddy",
+  authors: [{ name: 'Databuddy', url: 'https://www.databuddy.cc' }],
+  creator: 'Databuddy',
+  publisher: 'Databuddy',
   openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: "https://app.databuddy.cc",
-    title: "Databuddy Dashboard",
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://app.databuddy.cc',
+    title: 'Databuddy Dashboard',
     description:
-      "Powerful analytics dashboard for your websites. Track visitors, monitor performance, and gain insights into your audience.",
-    siteName: "Databuddy Dashboard",
+      'Powerful analytics dashboard for your websites. Track visitors, monitor performance, and gain insights into your audience.',
+    siteName: 'Databuddy Dashboard',
     images: [
       {
-        url: "/og-image.webp",
+        url: '/og-image.webp',
         width: 1200,
         height: 630,
-        alt: "Databuddy Dashboard Preview",
+        alt: 'Databuddy Dashboard Preview',
       },
     ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: "Databuddy Dashboard",
+    card: 'summary_large_image',
+    title: 'Databuddy Dashboard',
     description:
-      "Powerful analytics dashboard for your websites. Track visitors, monitor performance, and gain insights into your audience.",
-    images: ["/og-image.webp"],
-    creator: "@databuddy",
+      'Powerful analytics dashboard for your websites. Track visitors, monitor performance, and gain insights into your audience.',
+    images: ['/og-image.webp'],
+    creator: '@databuddy',
   },
   robots: {
     index: true,
@@ -73,28 +75,28 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
     },
   },
   alternates: {
-    canonical: "https://app.databuddy.cc",
+    canonical: 'https://app.databuddy.cc',
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
-    other: { rel: "icon", url: "/favicon.ico" },
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+    other: { rel: 'icon', url: '/favicon.ico' },
   },
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "#1a1a1a" },
+    { media: '(prefers-color-scheme: light)', color: 'white' },
+    { media: '(prefers-color-scheme: dark)', color: '#1a1a1a' },
   ],
-  width: "device-width",
+  width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
@@ -105,7 +107,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isLocalhost = process.env.NODE_ENV === "development";
+  const isLocalhost = process.env.NODE_ENV === 'development';
 
   return (
     <html
@@ -114,13 +116,19 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <Databuddy
-        clientId={isLocalhost ? "5ced32e5-0219-4e75-a18a-ad9826f85698" : "3ed1fce1-5a56-4cb6-a977-66864f6d18e3"}
-        apiUrl={isLocalhost ? "http://localhost:4001" : "https://basket.databuddy.cc"}
-        trackWebVitals={true}
+        apiUrl={
+          isLocalhost ? 'http://localhost:4001' : 'https://basket.databuddy.cc'
+        }
+        clientId={
+          isLocalhost
+            ? '5ced32e5-0219-4e75-a18a-ad9826f85698'
+            : '3ed1fce1-5a56-4cb6-a977-66864f6d18e3'
+        }
         trackAttributes={true}
         trackErrors={true}
         trackPerformance={true}
         trackScreenViews={true}
+        trackWebVitals={true}
       />
       <Script
         crossOrigin="anonymous"

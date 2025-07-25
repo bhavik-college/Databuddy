@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import type React from "react";
-import { FaviconImage } from "../analytics/favicon-image";
+import type React from 'react';
+import { FaviconImage } from '../analytics/favicon-image';
 
 // Mirroring the ReferrerItem type from WebsiteOverviewTab.tsx
 // Ideally, this would be a shared type if used in multiple places outside atomic components.
@@ -27,12 +27,14 @@ export const ReferrerSourceCell: React.FC<ReferrerSourceCellProps> = ({
   domain,
   className,
 }) => {
-  const displayName = name || referrer || "Direct";
+  const displayName = name || referrer || 'Direct';
 
-  if (displayName === "Direct" || !domain) {
+  if (displayName === 'Direct' || !domain) {
     return (
       <span
-        className={className ? `${className} font-medium text-sm` : "font-medium text-sm"}
+        className={
+          className ? `${className} font-medium text-sm` : 'font-medium text-sm'
+        }
         id={id}
       >
         {displayName}
@@ -45,11 +47,16 @@ export const ReferrerSourceCell: React.FC<ReferrerSourceCellProps> = ({
       className={
         className
           ? `${className} flex items-center gap-2 font-medium text-sm`
-          : "flex items-center gap-2 font-medium text-sm"
+          : 'flex items-center gap-2 font-medium text-sm'
       }
       id={id}
     >
-      <FaviconImage domain={domain} altText={`${displayName} favicon`} size={16} className="rounded-sm" />
+      <FaviconImage
+        altText={`${displayName} favicon`}
+        className="rounded-sm"
+        domain={domain}
+        size={16}
+      />
       {displayName}
     </span>
   );

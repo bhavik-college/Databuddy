@@ -1,64 +1,73 @@
-"use client";
+'use client';
 
-import { ArrowClockwiseIcon, WarningIcon } from "@phosphor-icons/react";
-import { format, subDays, subHours } from "date-fns";
-import { useAtom } from "jotai";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useQueryState } from "nuqs";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import type { DateRange as DayPickerRange } from "react-day-picker";
-import { toast } from "sonner";
-import { DateRangePicker } from "@/components/date-range-picker";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useWebsite } from "@/hooks/use-websites";
+import { ArrowClockwiseIcon, WarningIcon } from '@phosphor-icons/react';
+import { useQueryClient } from '@tanstack/react-query';
+import { format, subDays, subHours } from 'date-fns';
+import { useAtom } from 'jotai';
+import dynamic from 'next/dynamic';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useQueryState } from 'nuqs';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import type { DateRange as DayPickerRange } from 'react-day-picker';
+import { toast } from 'sonner';
+import { DateRangePicker } from '@/components/date-range-picker';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useWebsite } from '@/hooks/use-websites';
+import { trpc } from '@/lib/trpc';
 import {
   dateRangeAtom,
   formattedDateRangeAtom,
   setDateRangeAndAdjustGranularityAtom,
   timeGranularityAtom,
   timezoneAtom,
-} from "@/stores/jotai/filterAtoms";
-import type { FullTabProps, WebsiteDataTabProps } from "./_components/utils/types";
-import { EmptyState } from "./_components/utils/ui-components";
-import { useQueryClient } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc";
+} from '@/stores/jotai/filterAtoms';
+import type {
+  FullTabProps,
+  WebsiteDataTabProps,
+} from './_components/utils/types';
+import { EmptyState } from './_components/utils/ui-components';
 
 type TabId =
-  | "overview"
-  | "audience"
-  | "performance"
-  | "settings"
-  | "tracking-setup";
+  | 'overview'
+  | 'audience'
+  | 'performance'
+  | 'settings'
+  | 'tracking-setup';
 
 const WebsiteOverviewTab = dynamic(
   () =>
-    import("./_components/tabs/overview-tab").then((mod) => ({ default: mod.WebsiteOverviewTab })),
+    import('./_components/tabs/overview-tab').then((mod) => ({
+      default: mod.WebsiteOverviewTab,
+    })),
   { loading: () => <TabLoadingSkeleton />, ssr: false }
 );
 const WebsiteAudienceTab = dynamic(
   () =>
-    import("./_components/tabs/audience-tab").then((mod) => ({ default: mod.WebsiteAudienceTab })),
+    import('./_components/tabs/audience-tab').then((mod) => ({
+      default: mod.WebsiteAudienceTab,
+    })),
   { loading: () => <TabLoadingSkeleton />, ssr: false }
 );
 const WebsitePerformanceTab = dynamic(
   () =>
-    import("./_components/tabs/performance-tab").then((mod) => ({
+    import('./_components/tabs/performance-tab').then((mod) => ({
       default: mod.WebsitePerformanceTab,
     })),
   { loading: () => <TabLoadingSkeleton />, ssr: false }
 );
 const WebsiteSettingsTab = dynamic(
   () =>
-    import("./_components/tabs/settings-tab").then((mod) => ({ default: mod.WebsiteSettingsTab })),
+    import('./_components/tabs/settings-tab').then((mod) => ({
+      default: mod.WebsiteSettingsTab,
+    })),
   { loading: () => <TabLoadingSkeleton />, ssr: false }
 );
 const WebsiteTrackingSetupTab = dynamic(
   () =>
-    import("./_components/tabs/tracking-setup-tab").then((mod) => ({
+    import('./_components/tabs/tracking-setup-tab').then((mod) => ({
       default: mod.WebsiteTrackingSetupTab,
     })),
   { loading: () => <TabLoadingSkeleton />, ssr: false }
@@ -71,11 +80,14 @@ type TabDefinition = {
 };
 
 function WebsiteDetailsPage() {
-  const [activeTab, setActiveTab] = useQueryState("tab", { defaultValue: "overview" as TabId });
+  const [activeTab, setActiveTab] = useQueryState('tab', {
+    defaultValue: 'overview' as TabId,
+  });
   const { id } = useParams();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [currentDateRange, setCurrentDateRangeState] = useAtom(dateRangeAtom);
-  const [currentGranularity, setCurrentGranularityAtomState] = useAtom(timeGranularityAtom);
+  const [currentGranularity, setCurrentGranularityAtomState] =
+    useAtom(timeGranularityAtom);
   const [, setDateRangeAction] = useAtom(setDateRangeAndAdjustGranularityAtom);
   const [formattedDateRangeState] = useAtom(formattedDateRangeAtom);
   const [timezone] = useAtom(timezoneAtom);
@@ -91,12 +103,12 @@ function WebsiteDetailsPage() {
 
   const quickRanges = useMemo(
     () => [
-      { label: "24h", fullLabel: "Last 24 hours", hours: 24 },
-      { label: "7d", fullLabel: "Last 7 days", days: 7 },
-      { label: "30d", fullLabel: "Last 30 days", days: 30 },
-      { label: "90d", fullLabel: "Last 90 days", days: 90 },
-      { label: "180d", fullLabel: "Last 180 days", days: 180 },
-      { label: "365d", fullLabel: "Last 365 days", days: 365 },
+      { label: '24h', fullLabel: 'Last 24 hours', hours: 24 },
+      { label: '7d', fullLabel: 'Last 7 days', days: 7 },
+      { label: '30d', fullLabel: 'Last 30 days', days: 30 },
+      { label: '90d', fullLabel: 'Last 90 days', days: 90 },
+      { label: '180d', fullLabel: 'Last 180 days', days: 180 },
+      { label: '365d', fullLabel: 'Last 365 days', days: 365 },
     ],
     []
   );
@@ -104,7 +116,9 @@ function WebsiteDetailsPage() {
   const handleQuickRangeSelect = useCallback(
     (range: (typeof quickRanges)[0]) => {
       const now = new Date();
-      const start = range.hours ? subHours(now, range.hours) : subDays(now, range.days || 7);
+      const start = range.hours
+        ? subHours(now, range.hours)
+        : subDays(now, range.days || 7);
       setDateRangeAction({ startDate: start, endDate: now });
     },
     [setDateRangeAction]
@@ -129,30 +143,41 @@ function WebsiteDetailsPage() {
     [setDateRangeAction]
   );
 
-  const { data, isLoading, isError, refetch: refetchWebsiteData } = useWebsite(id as string);
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch: refetchWebsiteData,
+  } = useWebsite(id as string);
 
-  const { data: trackingSetupData, isLoading: isTrackingSetupLoading } = trpc.websites.isTrackingSetup.useQuery({ websiteId: id as string }, { enabled: !!id });
+  const { data: trackingSetupData, isLoading: isTrackingSetupLoading } =
+    trpc.websites.isTrackingSetup.useQuery(
+      { websiteId: id as string },
+      { enabled: !!id }
+    );
   const isTrackingSetup = useMemo(() => {
     if (!data || isTrackingSetupLoading) return null;
     return trackingSetupData?.tracking_setup ?? false;
   }, [data, isTrackingSetupLoading, trackingSetupData?.tracking_setup]);
 
   useEffect(() => {
-    if (isTrackingSetup === false && activeTab === "overview") {
-      setActiveTab("tracking-setup");
-    } else if (isTrackingSetup === true && activeTab === "tracking-setup") {
-      setActiveTab("overview");
+    if (isTrackingSetup === false && activeTab === 'overview') {
+      setActiveTab('tracking-setup');
+    } else if (isTrackingSetup === true && activeTab === 'tracking-setup') {
+      setActiveTab('overview');
     }
   }, [isTrackingSetup, activeTab, setActiveTab]);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ["websites", id] }),
-      queryClient.invalidateQueries({ queryKey: ["websites", "isTrackingSetup", id] }),
+      queryClient.invalidateQueries({ queryKey: ['websites', id] }),
+      queryClient.invalidateQueries({
+        queryKey: ['websites', 'isTrackingSetup', id],
+      }),
     ]);
     setIsRefreshing(false);
-    toast.success("Data refreshed");
+    toast.success('Data refreshed');
   }, [id, queryClient]);
 
   const renderTabContent = useCallback(
@@ -175,15 +200,15 @@ function WebsiteDetailsPage() {
 
       const getTabComponent = () => {
         switch (tabId) {
-          case "overview":
+          case 'overview':
             return <WebsiteOverviewTab {...tabProps} />;
-          case "audience":
+          case 'audience':
             return <WebsiteAudienceTab {...tabProps} />;
-          case "performance":
+          case 'performance':
             return <WebsitePerformanceTab {...tabProps} />;
-          case "settings":
+          case 'settings':
             return <WebsiteSettingsTab {...settingsProps} />;
-          case "tracking-setup":
+          case 'tracking-setup':
             return <WebsiteTrackingSetupTab {...settingsProps} />;
           default:
             return null;
@@ -196,7 +221,14 @@ function WebsiteDetailsPage() {
         </Suspense>
       );
     },
-    [activeTab, id, memoizedDateRangeForTabs, data, isRefreshing, refetchWebsiteData]
+    [
+      activeTab,
+      id,
+      memoizedDateRangeForTabs,
+      data,
+      isRefreshing,
+      refetchWebsiteData,
+    ]
   );
 
   if (isLoading || isTrackingSetup === null) {
@@ -213,7 +245,13 @@ function WebsiteDetailsPage() {
             </Link>
           }
           description="The website you are looking for does not exist or you do not have access."
-          icon={<WarningIcon aria-hidden="true" className="h-10 w-10" weight="duotone" />}
+          icon={
+            <WarningIcon
+              aria-hidden="true"
+              className="h-10 w-10"
+              weight="duotone"
+            />
+          }
           title="Website not found"
         />
       </div>
@@ -222,15 +260,15 @@ function WebsiteDetailsPage() {
 
   const tabs: TabDefinition[] = isTrackingSetup
     ? [
-      { id: "overview", label: "Overview", className: "pt-2 space-y-2" },
-      { id: "audience", label: "Audience" },
-      { id: "performance", label: "Performance" },
-      { id: "settings", label: "Settings" },
-    ]
+        { id: 'overview', label: 'Overview', className: 'pt-2 space-y-2' },
+        { id: 'audience', label: 'Audience' },
+        { id: 'performance', label: 'Performance' },
+        { id: 'settings', label: 'Settings' },
+      ]
     : [
-      { id: "tracking-setup", label: "Setup Tracking" },
-      { id: "settings", label: "Settings" },
-    ];
+        { id: 'tracking-setup', label: 'Setup Tracking' },
+        { id: 'settings', label: 'Settings' },
+      ];
 
   return (
     <div className="mx-auto max-w-[1600px] p-3 sm:p-4 lg:p-6">
@@ -241,8 +279,8 @@ function WebsiteDetailsPage() {
             <div className="flex items-center justify-between gap-3">
               <div className="flex h-8 overflow-hidden rounded-md border bg-background shadow-sm">
                 <Button
-                  className={`h-8 cursor-pointer touch-manipulation rounded-none px-2 text-xs sm:px-3 ${currentGranularity === "daily" ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground"}`}
-                  onClick={() => setCurrentGranularityAtomState("daily")}
+                  className={`h-8 cursor-pointer touch-manipulation rounded-none px-2 text-xs sm:px-3 ${currentGranularity === 'daily' ? 'bg-primary/10 font-medium text-primary' : 'text-muted-foreground'}`}
+                  onClick={() => setCurrentGranularityAtomState('daily')}
                   size="sm"
                   title="View daily aggregated data"
                   variant="ghost"
@@ -250,8 +288,8 @@ function WebsiteDetailsPage() {
                   Daily
                 </Button>
                 <Button
-                  className={`h-8 cursor-pointer touch-manipulation rounded-none px-2 text-xs sm:px-3 ${currentGranularity === "hourly" ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground"}`}
-                  onClick={() => setCurrentGranularityAtomState("hourly")}
+                  className={`h-8 cursor-pointer touch-manipulation rounded-none px-2 text-xs sm:px-3 ${currentGranularity === 'hourly' ? 'bg-primary/10 font-medium text-primary' : 'text-muted-foreground'}`}
+                  onClick={() => setCurrentGranularityAtomState('hourly')}
                   size="sm"
                   title="View hourly data (best for 24h periods)"
                   variant="ghost"
@@ -270,7 +308,7 @@ function WebsiteDetailsPage() {
               >
                 <ArrowClockwiseIcon
                   aria-hidden="true"
-                  className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+                  className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
                 />
               </Button>
             </div>
@@ -285,18 +323,19 @@ function WebsiteDetailsPage() {
                 const isActive =
                   dayPickerCurrentRange?.from &&
                   dayPickerCurrentRange?.to &&
-                  format(dayPickerCurrentRange.from, "yyyy-MM-dd") ===
-                  format(start, "yyyy-MM-dd") &&
-                  format(dayPickerCurrentRange.to, "yyyy-MM-dd") === format(now, "yyyy-MM-dd");
+                  format(dayPickerCurrentRange.from, 'yyyy-MM-dd') ===
+                    format(start, 'yyyy-MM-dd') &&
+                  format(dayPickerCurrentRange.to, 'yyyy-MM-dd') ===
+                    format(now, 'yyyy-MM-dd');
 
                 return (
                   <Button
-                    className={`h-6 cursor-pointer touch-manipulation whitespace-nowrap px-2 text-xs sm:px-2.5 ${isActive ? "shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                    className={`h-6 cursor-pointer touch-manipulation whitespace-nowrap px-2 text-xs sm:px-2.5 ${isActive ? 'shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                     key={range.label}
                     onClick={() => handleQuickRangeSelect(range)}
                     size="sm"
                     title={range.fullLabel}
-                    variant={isActive ? "default" : "ghost"}
+                    variant={isActive ? 'default' : 'ghost'}
                   >
                     <span className="sm:hidden">{range.label}</span>
                     <span className="hidden sm:inline">{range.fullLabel}</span>
@@ -311,7 +350,10 @@ function WebsiteDetailsPage() {
                   minDate={new Date(2020, 0, 1)}
                   onChange={(range) => {
                     if (range?.from && range?.to) {
-                      setDateRangeAction({ startDate: range.from, endDate: range.to });
+                      setDateRangeAction({
+                        startDate: range.from,
+                        endDate: range.to,
+                      });
                     }
                   }}
                   value={dayPickerSelectedRange}
@@ -346,14 +388,14 @@ function WebsiteDetailsPage() {
           </TabsList>
         </div>
         <TabsContent
-          className={`${tabs.find((t) => t.id === activeTab)?.className || ""} animate-fadeIn transition-all duration-200`}
+          className={`${tabs.find((t) => t.id === activeTab)?.className || ''} animate-fadeIn transition-all duration-200`}
           key={activeTab}
           value={activeTab as TabId}
         >
           {renderTabContent(activeTab as TabId)}
         </TabsContent>
-      </Tabs >
-    </div >
+      </Tabs>
+    </div>
   );
 }
 
@@ -363,7 +405,10 @@ function TabLoadingSkeleton() {
       {/* Key metrics cards skeleton */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
         {[1, 2, 3, 4, 5, 6].map((num) => (
-          <div className="rounded-lg border bg-background p-4" key={`metric-skeleton-${num}`}>
+          <div
+            className="rounded-lg border bg-background p-4"
+            key={`metric-skeleton-${num}`}
+          >
             <div className="space-y-2">
               <Skeleton className="h-4 w-20" />
               <Skeleton className="h-8 w-16" />
@@ -394,14 +439,20 @@ function TabLoadingSkeleton() {
       {/* Data tables skeleton */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {[1, 2].map((tableNum) => (
-          <div className="rounded-lg border bg-background" key={`table-skeleton-${tableNum}`}>
+          <div
+            className="rounded-lg border bg-background"
+            key={`table-skeleton-${tableNum}`}
+          >
             <div className="border-b p-4">
               <Skeleton className="h-5 w-24" />
               <Skeleton className="mt-1 h-4 w-32" />
             </div>
             <div className="space-y-3 p-4">
               {[1, 2, 3, 4, 5].map((rowNum) => (
-                <div className="flex items-center justify-between" key={`row-skeleton-${rowNum}`}>
+                <div
+                  className="flex items-center justify-between"
+                  key={`row-skeleton-${rowNum}`}
+                >
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-4 w-4" />
                     <Skeleton className="h-4 w-32" />
@@ -420,7 +471,10 @@ function TabLoadingSkeleton() {
       {/* Technology breakdown skeleton */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {[1, 2, 3].map((techNum) => (
-          <div className="rounded-lg border bg-background" key={`tech-skeleton-${techNum}`}>
+          <div
+            className="rounded-lg border bg-background"
+            key={`tech-skeleton-${techNum}`}
+          >
             <div className="border-b p-4">
               <Skeleton className="h-5 w-20" />
               <Skeleton className="mt-1 h-4 w-28" />

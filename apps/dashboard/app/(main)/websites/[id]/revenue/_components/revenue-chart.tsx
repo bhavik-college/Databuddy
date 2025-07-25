@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { CreditCardIcon, CurrencyDollarIcon } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
+import { CreditCardIcon, CurrencyDollarIcon } from '@phosphor-icons/react';
+import { useMemo, useState } from 'react';
 import {
   Area,
   AreaChart,
@@ -11,25 +11,31 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from "recharts";
-import { SkeletonChart } from "@/components/charts/skeleton-chart";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency } from "@/lib/formatters";
-import { cn } from "@/lib/utils";
+} from 'recharts';
+import { SkeletonChart } from '@/components/charts/skeleton-chart';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { formatCurrency } from '@/lib/formatters';
+import { cn } from '@/lib/utils';
 
 // Enhanced color palette with gradients
 const REVENUE_COLORS = {
   revenue: {
-    primary: "#10b981",
-    secondary: "#059669",
-    light: "#d1fae5",
-    gradient: "from-emerald-500/20 to-emerald-600/5",
+    primary: '#10b981',
+    secondary: '#059669',
+    light: '#d1fae5',
+    gradient: 'from-emerald-500/20 to-emerald-600/5',
   },
   transactions: {
-    primary: "#3b82f6",
-    secondary: "#1d4ed8",
-    light: "#dbeafe",
-    gradient: "from-blue-500/20 to-blue-600/5",
+    primary: '#3b82f6',
+    secondary: '#1d4ed8',
+    light: '#dbeafe',
+    gradient: 'from-blue-500/20 to-blue-600/5',
   },
 };
 
@@ -38,8 +44,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (!(active && payload && payload.length)) return null;
 
   const getMetricIcon = (name: string) => {
-    if (name.toLowerCase().includes("revenue")) return <CurrencyDollarIcon className="h-3 w-3" />;
-    if (name.toLowerCase().includes("transaction")) return <CreditCardIcon className="h-3 w-3" />;
+    if (name.toLowerCase().includes('revenue'))
+      return <CurrencyDollarIcon className="h-3 w-3" />;
+    if (name.toLowerCase().includes('transaction'))
+      return <CreditCardIcon className="h-3 w-3" />;
     return <CurrencyDollarIcon className="h-3 w-3" />;
   };
 
@@ -52,7 +60,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       <div className="space-y-2.5">
         {payload.map((entry: any, index: number) => {
           let displayValue: string;
-          if (entry.name.toLowerCase().includes("revenue")) {
+          if (entry.name.toLowerCase().includes('revenue')) {
             displayValue = formatCurrency(entry.value);
           } else {
             displayValue = entry.value.toLocaleString();
@@ -70,7 +78,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                 />
                 <div className="flex items-center gap-1.5">
                   {getMetricIcon(entry.name)}
-                  <span className="font-medium text-muted-foreground text-xs">{entry.name}</span>
+                  <span className="font-medium text-muted-foreground text-xs">
+                    {entry.name}
+                  </span>
                 </div>
               </div>
               <span className="font-bold text-foreground text-sm transition-colors group-hover:text-primary">
@@ -97,7 +107,12 @@ interface RevenueChartProps {
   className?: string;
 }
 
-export function RevenueChart({ data, isLoading, height = 400, className }: RevenueChartProps) {
+export function RevenueChart({
+  data,
+  isLoading,
+  height = 400,
+  className,
+}: RevenueChartProps) {
   const chartData = useMemo(() => data || [], [data]);
   const [hoveredMetric, setHoveredMetric] = useState<string | null>(null);
 
@@ -119,7 +134,9 @@ export function RevenueChart({ data, isLoading, height = 400, className }: Reven
             <CurrencyDollarIcon className="mx-auto h-16 w-16 text-muted-foreground/20" />
             <div className="absolute inset-0 rounded-full bg-gradient-to-t from-primary/10 to-transparent blur-xl" />
           </div>
-          <p className="mt-6 font-semibold text-foreground text-lg">No revenue data available</p>
+          <p className="mt-6 font-semibold text-foreground text-lg">
+            No revenue data available
+          </p>
           <p className="mx-auto mt-2 max-w-sm text-muted-foreground text-sm">
             Revenue data will appear here as transactions are processed
           </p>
@@ -129,22 +146,46 @@ export function RevenueChart({ data, isLoading, height = 400, className }: Reven
   }
 
   return (
-    <div className={cn("w-full", className)}>
-      <div className="relative" style={{ width: "100%", height: height + 20 }}>
+    <div className={cn('w-full', className)}>
+      <div className="relative" style={{ width: '100%', height: height + 20 }}>
         {/* Background gradient overlay */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-muted/5" />
 
         <ResponsiveContainer height="100%" width="100%">
           <AreaChart
             data={chartData}
-            margin={{ top: 20, right: 30, left: 20, bottom: chartData.length > 5 ? 60 : 20 }}
+            margin={{
+              top: 20,
+              right: 30,
+              left: 20,
+              bottom: chartData.length > 5 ? 60 : 20,
+            }}
           >
             <defs>
               {Object.entries(REVENUE_COLORS).map(([key, colors]) => (
-                <linearGradient id={`gradient-${key}`} key={key} x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor={colors.primary} stopOpacity={0.3} />
-                  <stop offset="50%" stopColor={colors.primary} stopOpacity={0.1} />
-                  <stop offset="100%" stopColor={colors.primary} stopOpacity={0.02} />
+                <linearGradient
+                  id={`gradient-${key}`}
+                  key={key}
+                  x1="0"
+                  x2="0"
+                  y1="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="0%"
+                    stopColor={colors.primary}
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="50%"
+                    stopColor={colors.primary}
+                    stopOpacity={0.1}
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor={colors.primary}
+                    stopOpacity={0.02}
+                  />
                 </linearGradient>
               ))}
 
@@ -169,16 +210,24 @@ export function RevenueChart({ data, isLoading, height = 400, className }: Reven
             />
 
             <XAxis
-              axisLine={{ stroke: "var(--border)", strokeOpacity: 0.5 }}
+              axisLine={{ stroke: 'var(--border)', strokeOpacity: 0.5 }}
               dataKey="date"
               dy={10}
-              tick={{ fontSize: 11, fill: "var(--muted-foreground)", fontWeight: 500 }}
+              tick={{
+                fontSize: 11,
+                fill: 'var(--muted-foreground)',
+                fontWeight: 500,
+              }}
               tickLine={false}
             />
 
             <YAxis
               axisLine={false}
-              tick={{ fontSize: 11, fill: "var(--muted-foreground)", fontWeight: 500 }}
+              tick={{
+                fontSize: 11,
+                fill: 'var(--muted-foreground)',
+                fontWeight: 500,
+              }}
               tickFormatter={valueFormatter}
               tickLine={false}
               width={60}
@@ -188,7 +237,11 @@ export function RevenueChart({ data, isLoading, height = 400, className }: Reven
             <YAxis
               axisLine={false}
               orientation="right"
-              tick={{ fontSize: 11, fill: "var(--muted-foreground)", fontWeight: 500 }}
+              tick={{
+                fontSize: 11,
+                fill: 'var(--muted-foreground)',
+                fontWeight: 500,
+              }}
               tickFormatter={(value) => value.toLocaleString()}
               tickLine={false}
               width={45}
@@ -199,22 +252,22 @@ export function RevenueChart({ data, isLoading, height = 400, className }: Reven
               animationDuration={200}
               content={<CustomTooltip />}
               cursor={{
-                stroke: "var(--primary)",
+                stroke: 'var(--primary)',
                 strokeWidth: 1,
                 strokeOpacity: 0.5,
-                strokeDasharray: "4 4",
+                strokeDasharray: '4 4',
               }}
-              wrapperStyle={{ outline: "none" }}
+              wrapperStyle={{ outline: 'none' }}
             />
 
             <Legend
               formatter={(value, entry: any) => (
                 <span
                   className={cn(
-                    "cursor-pointer font-medium text-xs transition-all duration-200",
+                    'cursor-pointer font-medium text-xs transition-all duration-200',
                     hoveredMetric === value
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? 'text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
                   )}
                   onMouseEnter={() => setHoveredMetric(value)}
                   onMouseLeave={() => setHoveredMetric(null)}
@@ -225,8 +278,8 @@ export function RevenueChart({ data, isLoading, height = 400, className }: Reven
               iconSize={10}
               iconType="circle"
               wrapperStyle={{
-                fontSize: "12px",
-                paddingTop: "20px",
+                fontSize: '12px',
+                paddingTop: '20px',
                 bottom: chartData.length > 5 ? 35 : 5,
                 fontWeight: 500,
               }}
@@ -237,8 +290,8 @@ export function RevenueChart({ data, isLoading, height = 400, className }: Reven
                 r: 6,
                 strokeWidth: 3,
                 stroke: REVENUE_COLORS.revenue.primary,
-                fill: "var(--background)",
-                filter: "url(#glow-revenue)",
+                fill: 'var(--background)',
+                filter: 'url(#glow-revenue)',
               }}
               className="transition-all duration-300"
               dataKey="revenue"
@@ -257,8 +310,8 @@ export function RevenueChart({ data, isLoading, height = 400, className }: Reven
                 r: 6,
                 strokeWidth: 3,
                 stroke: REVENUE_COLORS.transactions.primary,
-                fill: "var(--background)",
-                filter: "url(#glow-transactions)",
+                fill: 'var(--background)',
+                filter: 'url(#glow-transactions)',
               }}
               className="transition-all duration-300"
               dataKey="transactions"

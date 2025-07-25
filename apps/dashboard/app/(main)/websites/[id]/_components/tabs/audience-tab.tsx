@@ -1,6 +1,9 @@
-"use client";
+'use client';
 
-import type { CellContext, ColumnDef } from "@tanstack/react-table";
+import type { CellContext, ColumnDef } from '@tanstack/react-table';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import {
   Clock,
   Globe,
@@ -13,19 +16,20 @@ import {
   Tablet,
   Wifi,
   WifiOff,
-} from "lucide-react";
-import { useCallback, useEffect, useMemo } from "react";
-import { DataTable } from "@/components/analytics/data-table";
-import { BrowserIcon } from "@/components/icon";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useBatchDynamicQuery } from "@/hooks/use-dynamic-query";
-import { PercentageBadge, type TechnologyTableEntry } from "../utils/technology-helpers";
-import type { FullTabProps } from "../utils/types";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
-import { ErrorBoundary } from "@/components/error-boundary";
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo } from 'react';
+import { DataTable } from '@/components/analytics/data-table';
+import { ErrorBoundary } from '@/components/error-boundary';
+import { BrowserIcon } from '@/components/icon';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useBatchDynamicQuery } from '@/hooks/use-dynamic-query';
+import {
+  PercentageBadge,
+  type TechnologyTableEntry,
+} from '../utils/technology-helpers';
+import type { FullTabProps } from '../utils/types';
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -39,7 +43,7 @@ interface GeographicEntry {
 }
 
 interface ConnectionEntry extends TechnologyTableEntry {
-  category: "connection";
+  category: 'connection';
   iconComponent: React.ReactNode;
 }
 
@@ -98,28 +102,39 @@ interface ProcessedData {
 }
 
 const formatNumber = (value: number | null | undefined): string => {
-  if (value == null || Number.isNaN(value)) return "0";
-  return Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(value);
+  if (value == null || Number.isNaN(value)) return '0';
+  return Intl.NumberFormat(undefined, {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(value);
 };
 
 const getConnectionIcon = (connection: string): React.ReactNode => {
   const connectionLower = connection.toLowerCase();
-  if (!connection || connection === "Unknown")
+  if (!connection || connection === 'Unknown')
     return <HelpCircle className="h-4 w-4 text-muted-foreground" />;
-  if (connectionLower.includes("wifi")) return <Wifi className="h-4 w-4 text-green-500" />;
-  if (connectionLower.includes("4g")) return <Smartphone className="h-4 w-4 text-blue-500" />;
-  if (connectionLower.includes("5g")) return <Smartphone className="h-4 w-4 text-purple-500" />;
-  if (connectionLower.includes("3g")) return <Smartphone className="h-4 w-4 text-yellow-500" />;
-  if (connectionLower.includes("2g")) return <Smartphone className="h-4 w-4 text-orange-500" />;
-  if (connectionLower.includes("ethernet")) return <Laptop className="h-4 w-4 text-blue-400" />;
-  if (connectionLower.includes("cellular")) return <Smartphone className="h-4 w-4 text-blue-500" />;
-  if (connectionLower.includes("offline")) return <WifiOff className="h-4 w-4 text-red-500" />;
+  if (connectionLower.includes('wifi'))
+    return <Wifi className="h-4 w-4 text-green-500" />;
+  if (connectionLower.includes('4g'))
+    return <Smartphone className="h-4 w-4 text-blue-500" />;
+  if (connectionLower.includes('5g'))
+    return <Smartphone className="h-4 w-4 text-purple-500" />;
+  if (connectionLower.includes('3g'))
+    return <Smartphone className="h-4 w-4 text-yellow-500" />;
+  if (connectionLower.includes('2g'))
+    return <Smartphone className="h-4 w-4 text-orange-500" />;
+  if (connectionLower.includes('ethernet'))
+    return <Laptop className="h-4 w-4 text-blue-400" />;
+  if (connectionLower.includes('cellular'))
+    return <Smartphone className="h-4 w-4 text-blue-500" />;
+  if (connectionLower.includes('offline'))
+    return <WifiOff className="h-4 w-4 text-red-500" />;
   return <Globe className="h-4 w-4 text-primary" />;
 };
 
 const normalizeData = (data: any[]): GeographicEntry[] =>
   data?.map((item: any) => ({
-    name: item.country_name || item.name || "Unknown",
+    name: item.country_name || item.name || 'Unknown',
     visitors: item.visitors || 0,
     pageviews: item.pageviews || 0,
     percentage: item.percentage || 0,
@@ -136,24 +151,24 @@ export function WebsiteAudienceTab({
   const batchQueries = useMemo(
     () => [
       {
-        id: "geographic-data",
-        parameters: ["country", "region", "city", "timezone", "language"],
+        id: 'geographic-data',
+        parameters: ['country', 'region', 'city', 'timezone', 'language'],
         limit: 100,
       },
       {
-        id: "device-data",
+        id: 'device-data',
         parameters: [
-          "device_type",
-          "browser_name",
-          "os_name",
-          "screen_resolution",
-          "connection_type",
+          'device_type',
+          'browser_name',
+          'os_name',
+          'screen_resolution',
+          'connection_type',
         ],
         limit: 50,
       },
       {
-        id: "browsers-grouped",
-        parameters: ["browsers_grouped"],
+        id: 'browsers-grouped',
+        parameters: ['browsers_grouped'],
         limit: 50,
       },
     ],
@@ -172,7 +187,7 @@ export function WebsiteAudienceTab({
     try {
       await refetchBatch();
     } catch (error) {
-      console.error("Failed to refresh audience data:", error);
+      console.error('Failed to refresh audience data:', error);
     } finally {
       setIsRefreshing(false);
     }
@@ -187,7 +202,13 @@ export function WebsiteAudienceTab({
   const processedData = useMemo((): ProcessedData => {
     if (!batchResults?.length) {
       return {
-        geographic: { countries: [], regions: [], cities: [], timezones: [], languages: [] },
+        geographic: {
+          countries: [],
+          regions: [],
+          cities: [],
+          timezones: [],
+          languages: [],
+        },
         device: {
           device_type: [],
           browser_name: [],
@@ -199,9 +220,13 @@ export function WebsiteAudienceTab({
       };
     }
 
-    const geographicResult = batchResults.find((r) => r.queryId === "geographic-data");
-    const deviceResult = batchResults.find((r) => r.queryId === "device-data");
-    const browsersResult = batchResults.find((r) => r.queryId === "browsers-grouped");
+    const geographicResult = batchResults.find(
+      (r) => r.queryId === 'geographic-data'
+    );
+    const deviceResult = batchResults.find((r) => r.queryId === 'device-data');
+    const browsersResult = batchResults.find(
+      (r) => r.queryId === 'browsers-grouped'
+    );
 
     return {
       geographic: {
@@ -232,24 +257,28 @@ export function WebsiteAudienceTab({
           (browser: RawBrowserData) =>
             ({
               ...browser,
-              name: browser.name || "Unknown",
-              browserName: browser.name || "Unknown",
+              name: browser.name || 'Unknown',
+              browserName: browser.name || 'Unknown',
               visitors: browser.visitors || 0,
               pageviews: browser.pageviews || 0,
               sessions: browser.sessions || 0,
               percentage: browser.percentage || 0,
               versions:
                 browser.versions?.sort(
-                  (a: BrowserVersion, b: BrowserVersion) => (b.visitors || 0) - (a.visitors || 0)
+                  (a: BrowserVersion, b: BrowserVersion) =>
+                    (b.visitors || 0) - (a.visitors || 0)
                 ) || [],
             }) as BrowserEntry
         )
-        .sort((a: BrowserEntry, b: BrowserEntry) => (b.visitors || 0) - (a.visitors || 0));
+        .sort(
+          (a: BrowserEntry, b: BrowserEntry) =>
+            (b.visitors || 0) - (a.visitors || 0)
+        );
     }
 
     const browserGroups: Record<string, BrowserEntry> = rawData.reduce(
       (acc: Record<string, BrowserEntry>, browser: RawBrowserData) => {
-        const browserName = browser.browser_name || "Unknown";
+        const browserName = browser.browser_name || 'Unknown';
         if (!acc[browserName]) {
           acc[browserName] = {
             name: browserName,
@@ -266,7 +295,7 @@ export function WebsiteAudienceTab({
         acc[browserName].pageviews += browser.pageviews || 0;
         acc[browserName].sessions += browser.sessions || 0;
         acc[browserName].versions.push({
-          version: browser.browser_version || "Unknown",
+          version: browser.browser_version || 'Unknown',
           visitors: browser.visitors || 0,
           pageviews: browser.pageviews || 0,
           sessions: browser.sessions || 0,
@@ -286,31 +315,46 @@ export function WebsiteAudienceTab({
     return browserArray
       .map((browser: BrowserEntry) => ({
         ...browser,
-        percentage: totalVisitors > 0 ? Math.round((browser.visitors / totalVisitors) * 100) : 0,
+        percentage:
+          totalVisitors > 0
+            ? Math.round((browser.visitors / totalVisitors) * 100)
+            : 0,
         versions:
           browser.versions?.sort(
-            (a: BrowserVersion, b: BrowserVersion) => (b.visitors || 0) - (a.visitors || 0)
+            (a: BrowserVersion, b: BrowserVersion) =>
+              (b.visitors || 0) - (a.visitors || 0)
           ) || [],
       }))
-      .sort((a: BrowserEntry, b: BrowserEntry) => (b.visitors || 0) - (a.visitors || 0));
+      .sort(
+        (a: BrowserEntry, b: BrowserEntry) =>
+          (b.visitors || 0) - (a.visitors || 0)
+      );
   }, [processedData.browsers]);
 
   const processedConnectionData = useMemo((): ConnectionEntry[] => {
     const connectionData = processedData.device.connection_type;
     if (!connectionData?.length) return [];
 
-    const totalVisitors = connectionData.reduce((sum: number, item: any) => sum + item.visitors, 0);
+    const totalVisitors = connectionData.reduce(
+      (sum: number, item: any) => sum + item.visitors,
+      0
+    );
 
     return connectionData
       .map((item: any) => ({
-        name: item.name || "Unknown",
+        name: item.name || 'Unknown',
         visitors: item.visitors,
         pageviews: item.pageviews || 0,
-        percentage: totalVisitors > 0 ? Math.round((item.visitors / totalVisitors) * 100) : 0,
-        iconComponent: getConnectionIcon(item.name || ""),
-        category: "connection" as const,
+        percentage:
+          totalVisitors > 0
+            ? Math.round((item.visitors / totalVisitors) * 100)
+            : 0,
+        iconComponent: getConnectionIcon(item.name || ''),
+        category: 'connection' as const,
       }))
-      .sort((a: ConnectionEntry, b: ConnectionEntry) => b.visitors - a.visitors);
+      .sort(
+        (a: ConnectionEntry, b: ConnectionEntry) => b.visitors - a.visitors
+      );
   }, [processedData.device.connection_type]);
 
   const isLoading = isBatchLoading || isRefreshing;
@@ -318,9 +362,9 @@ export function WebsiteAudienceTab({
   const browserColumns = useMemo(
     (): ColumnDef<BrowserEntry>[] => [
       {
-        id: "browserName",
-        accessorKey: "browserName",
-        header: "Browser",
+        id: 'browserName',
+        accessorKey: 'browserName',
+        header: 'Browser',
         cell: (info: CellContext<BrowserEntry, any>) => {
           const browserName = info.getValue() as string;
           const row = info.row.original;
@@ -336,7 +380,9 @@ export function WebsiteAudienceTab({
                 size="md"
               />
               <div>
-                <div className="font-semibold text-foreground">{browserName}</div>
+                <div className="font-semibold text-foreground">
+                  {browserName}
+                </div>
                 <div className="text-muted-foreground text-xs">
                   {row.versions?.length || 0} versions detected
                 </div>
@@ -346,9 +392,9 @@ export function WebsiteAudienceTab({
         },
       },
       {
-        id: "visitors",
-        accessorKey: "visitors",
-        header: "Visitors",
+        id: 'visitors',
+        accessorKey: 'visitors',
+        header: 'Visitors',
         cell: (info: CellContext<BrowserEntry, any>) => (
           <div>
             <div className="font-medium">{formatNumber(info.getValue())}</div>
@@ -357,9 +403,9 @@ export function WebsiteAudienceTab({
         ),
       },
       {
-        id: "pageviews",
-        accessorKey: "pageviews",
-        header: "Pageviews",
+        id: 'pageviews',
+        accessorKey: 'pageviews',
+        header: 'Pageviews',
         cell: (info: CellContext<BrowserEntry, any>) => (
           <div>
             <div className="font-medium">{formatNumber(info.getValue())}</div>
@@ -368,9 +414,9 @@ export function WebsiteAudienceTab({
         ),
       },
       {
-        id: "percentage",
-        accessorKey: "percentage",
-        header: "Share",
+        id: 'percentage',
+        accessorKey: 'percentage',
+        header: 'Share',
         cell: (info: CellContext<BrowserEntry, any>) => {
           const percentage = info.getValue() as number;
           return <PercentageBadge percentage={percentage} />;
@@ -383,9 +429,9 @@ export function WebsiteAudienceTab({
   const connectionColumns = useMemo(
     (): ColumnDef<ConnectionEntry>[] => [
       {
-        id: "name",
-        accessorKey: "name",
-        header: "Connection Type",
+        id: 'name',
+        accessorKey: 'name',
+        header: 'Connection Type',
         cell: (info: CellContext<ConnectionEntry, any>) => {
           const entry = info.row.original;
           return (
@@ -397,17 +443,17 @@ export function WebsiteAudienceTab({
         },
       },
       {
-        id: "visitors",
-        accessorKey: "visitors",
-        header: "Visitors",
+        id: 'visitors',
+        accessorKey: 'visitors',
+        header: 'Visitors',
         cell: (info: CellContext<ConnectionEntry, any>) => (
           <span className="font-medium">{formatNumber(info.getValue())}</span>
         ),
       },
       {
-        id: "percentage",
-        accessorKey: "percentage",
-        header: "Share",
+        id: 'percentage',
+        accessorKey: 'percentage',
+        header: 'Share',
         cell: (info: CellContext<ConnectionEntry, any>) => {
           const percentage = info.getValue() as number;
           return <PercentageBadge percentage={percentage} />;
@@ -420,9 +466,9 @@ export function WebsiteAudienceTab({
   const geographicColumns = useMemo(
     (): ColumnDef<GeographicEntry>[] => [
       {
-        id: "name",
-        accessorKey: "name",
-        header: "Location",
+        id: 'name',
+        accessorKey: 'name',
+        header: 'Location',
         cell: (info: CellContext<GeographicEntry, any>) => {
           const name = info.getValue() as string;
           return (
@@ -434,25 +480,25 @@ export function WebsiteAudienceTab({
         },
       },
       {
-        id: "visitors",
-        accessorKey: "visitors",
-        header: "Visitors",
+        id: 'visitors',
+        accessorKey: 'visitors',
+        header: 'Visitors',
         cell: (info: CellContext<GeographicEntry, any>) => (
           <span className="font-medium">{formatNumber(info.getValue())}</span>
         ),
       },
       {
-        id: "pageviews",
-        accessorKey: "pageviews",
-        header: "Pageviews",
+        id: 'pageviews',
+        accessorKey: 'pageviews',
+        header: 'Pageviews',
         cell: (info: CellContext<GeographicEntry, any>) => (
           <span className="font-medium">{formatNumber(info.getValue())}</span>
         ),
       },
       {
-        id: "percentage",
-        accessorKey: "percentage",
-        header: "Share",
+        id: 'percentage',
+        accessorKey: 'percentage',
+        header: 'Share',
         cell: (info: CellContext<GeographicEntry, any>) => {
           const percentage = info.getValue() as number;
           return <PercentageBadge percentage={percentage} />;
@@ -465,23 +511,23 @@ export function WebsiteAudienceTab({
   const countryColumns = useMemo(
     (): ColumnDef<GeographicEntry>[] => [
       {
-        id: "country",
-        accessorKey: "country_name",
-        header: "Country",
+        id: 'country',
+        accessorKey: 'country_name',
+        header: 'Country',
         cell: (info: CellContext<GeographicEntry, any>) => {
           const entry = info.row.original;
           const code = entry.country_code;
-          const name = entry.country_name || entry.name || "Unknown";
+          const name = entry.country_name || entry.name || 'Unknown';
           return (
             <div className="flex items-center gap-2">
-              {code && code !== "Unknown" ? (
+              {code && code !== 'Unknown' ? (
                 <img
                   alt={code}
                   className="h-4 w-5 rounded-sm bg-muted object-cover"
-                  src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${code.toUpperCase()}.svg`}
                   onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
+                    (e.target as HTMLImageElement).style.display = 'none';
                   }}
+                  src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${code.toUpperCase()}.svg`}
                 />
               ) : (
                 <Globe className="h-3 w-3 text-muted-foreground" />
@@ -492,25 +538,25 @@ export function WebsiteAudienceTab({
         },
       },
       {
-        id: "visitors",
-        accessorKey: "visitors",
-        header: "Visitors",
+        id: 'visitors',
+        accessorKey: 'visitors',
+        header: 'Visitors',
         cell: (info: CellContext<GeographicEntry, any>) => (
           <span className="font-medium">{formatNumber(info.getValue())}</span>
         ),
       },
       {
-        id: "pageviews",
-        accessorKey: "pageviews",
-        header: "Pageviews",
+        id: 'pageviews',
+        accessorKey: 'pageviews',
+        header: 'Pageviews',
         cell: (info: CellContext<GeographicEntry, any>) => (
           <span className="font-medium">{formatNumber(info.getValue())}</span>
         ),
       },
       {
-        id: "percentage",
-        accessorKey: "percentage",
-        header: "Share",
+        id: 'percentage',
+        accessorKey: 'percentage',
+        header: 'Share',
         cell: (info: CellContext<GeographicEntry, any>) => {
           const percentage = info.getValue() as number;
           return <PercentageBadge percentage={percentage} />;
@@ -523,9 +569,9 @@ export function WebsiteAudienceTab({
   const timezoneColumns = useMemo(
     (): ColumnDef<GeographicEntry>[] => [
       {
-        id: "name",
-        accessorKey: "name",
-        header: "Timezone",
+        id: 'name',
+        accessorKey: 'name',
+        header: 'Timezone',
         cell: (info: CellContext<GeographicEntry, any>) => {
           const entry = info.row.original;
           const timezoneName = entry.name;
@@ -540,40 +586,40 @@ export function WebsiteAudienceTab({
         },
       },
       {
-        id: "current_time",
-        header: "Current Time",
+        id: 'current_time',
+        header: 'Current Time',
         cell: (info: CellContext<GeographicEntry, any>) => {
           const entry = info.row.original;
           const timezoneName = entry.name;
-          let currentTime = "-";
+          let currentTime = '-';
           try {
             if (timezoneName) {
-              currentTime = dayjs().tz(timezoneName).format("hh:mm A");
+              currentTime = dayjs().tz(timezoneName).format('hh:mm A');
             }
-          } catch { }
+          } catch {}
           return <span className="font-mono text-xs">{currentTime}</span>;
         },
       },
       {
-        id: "visitors",
-        accessorKey: "visitors",
-        header: "Visitors",
+        id: 'visitors',
+        accessorKey: 'visitors',
+        header: 'Visitors',
         cell: (info: CellContext<GeographicEntry, any>) => (
           <span className="font-medium">{formatNumber(info.getValue())}</span>
         ),
       },
       {
-        id: "pageviews",
-        accessorKey: "pageviews",
-        header: "Pageviews",
+        id: 'pageviews',
+        accessorKey: 'pageviews',
+        header: 'Pageviews',
         cell: (info: CellContext<GeographicEntry, any>) => (
           <span className="font-medium">{formatNumber(info.getValue())}</span>
         ),
       },
       {
-        id: "percentage",
-        accessorKey: "percentage",
-        header: "Share",
+        id: 'percentage',
+        accessorKey: 'percentage',
+        header: 'Share',
         cell: (info: CellContext<GeographicEntry, any>) => {
           const percentage = info.getValue() as number;
           return <PercentageBadge percentage={percentage} />;
@@ -585,11 +631,13 @@ export function WebsiteAudienceTab({
 
   // Feature detection for Intl.DisplayNames
   const canUseDisplayNames = useMemo(() => {
-    if (typeof window === "undefined") return false;
+    if (typeof window === 'undefined') return false;
     try {
       // Try to construct and use .of
-      const dn = new Intl.DisplayNames([navigator.language || "en"], { type: "language" });
-      return typeof dn.of === "function" && !!dn.of("en");
+      const dn = new Intl.DisplayNames([navigator.language || 'en'], {
+        type: 'language',
+      });
+      return typeof dn.of === 'function' && !!dn.of('en');
     } catch {
       return false;
     }
@@ -597,8 +645,10 @@ export function WebsiteAudienceTab({
 
   const displayNames = useMemo(
     () =>
-      typeof window !== "undefined"
-        ? new Intl.DisplayNames([navigator.language || "en"], { type: "language" })
+      typeof window !== 'undefined'
+        ? new Intl.DisplayNames([navigator.language || 'en'], {
+            type: 'language',
+          })
         : null,
     []
   );
@@ -606,9 +656,9 @@ export function WebsiteAudienceTab({
   const languageColumns = useMemo(
     (): ColumnDef<GeographicEntry>[] => [
       {
-        id: "name",
-        accessorKey: "name",
-        header: "Language",
+        id: 'name',
+        accessorKey: 'name',
+        header: 'Language',
         cell: (info: CellContext<GeographicEntry, any>) => {
           const entry = info.row.original;
           const language = entry.name;
@@ -633,25 +683,25 @@ export function WebsiteAudienceTab({
         },
       },
       {
-        id: "visitors",
-        accessorKey: "visitors",
-        header: "Visitors",
+        id: 'visitors',
+        accessorKey: 'visitors',
+        header: 'Visitors',
         cell: (info: CellContext<GeographicEntry, any>) => (
           <span className="font-medium">{formatNumber(info.getValue())}</span>
         ),
       },
       {
-        id: "pageviews",
-        accessorKey: "pageviews",
-        header: "Pageviews",
+        id: 'pageviews',
+        accessorKey: 'pageviews',
+        header: 'Pageviews',
         cell: (info: CellContext<GeographicEntry, any>) => (
           <span className="font-medium">{formatNumber(info.getValue())}</span>
         ),
       },
       {
-        id: "percentage",
-        accessorKey: "percentage",
-        header: "Share",
+        id: 'percentage',
+        accessorKey: 'percentage',
+        header: 'Share',
         cell: (info: CellContext<GeographicEntry, any>) => {
           const percentage = info.getValue() as number;
           return <PercentageBadge percentage={percentage} />;
@@ -664,9 +714,9 @@ export function WebsiteAudienceTab({
   const cityColumns = useMemo(
     (): ColumnDef<GeographicEntry>[] => [
       {
-        id: "name",
-        accessorKey: "name",
-        header: "City",
+        id: 'name',
+        accessorKey: 'name',
+        header: 'City',
         cell: (info: CellContext<GeographicEntry, any>) => {
           const name = info.getValue() as string;
           return (
@@ -678,25 +728,25 @@ export function WebsiteAudienceTab({
         },
       },
       {
-        id: "visitors",
-        accessorKey: "visitors",
-        header: "Visitors",
+        id: 'visitors',
+        accessorKey: 'visitors',
+        header: 'Visitors',
         cell: (info: CellContext<GeographicEntry, any>) => (
           <span className="font-medium">{formatNumber(info.getValue())}</span>
         ),
       },
       {
-        id: "pageviews",
-        accessorKey: "pageviews",
-        header: "Pageviews",
+        id: 'pageviews',
+        accessorKey: 'pageviews',
+        header: 'Pageviews',
         cell: (info: CellContext<GeographicEntry, any>) => (
           <span className="font-medium">{formatNumber(info.getValue())}</span>
         ),
       },
       {
-        id: "percentage",
-        accessorKey: "percentage",
-        header: "Share",
+        id: 'percentage',
+        accessorKey: 'percentage',
+        header: 'Share',
         cell: (info: CellContext<GeographicEntry, any>) => {
           const percentage = info.getValue() as number;
           return <PercentageBadge percentage={percentage} />;
@@ -709,8 +759,8 @@ export function WebsiteAudienceTab({
   const geographicTabs = useMemo(
     () => [
       {
-        id: "countries",
-        label: "Countries",
+        id: 'countries',
+        label: 'Countries',
         data: processedData.geographic.countries.map((item, index) => ({
           ...item,
           _uniqueKey: `country-${item.country_code || item.name}-${index}`,
@@ -718,8 +768,8 @@ export function WebsiteAudienceTab({
         columns: countryColumns,
       },
       {
-        id: "regions",
-        label: "Regions",
+        id: 'regions',
+        label: 'Regions',
         data: processedData.geographic.regions.map((item, index) => ({
           ...item,
           _uniqueKey: `region-${item.name}-${index}`,
@@ -727,20 +777,19 @@ export function WebsiteAudienceTab({
         columns: geographicColumns,
       },
       {
-        id: "cities",
-        label: "Cities",
+        id: 'cities',
+        label: 'Cities',
         data: processedData.geographic.cities.map((item, index) => ({
           ...item,
           _uniqueKey: `city-${item.name}-${index}`,
         })),
         columns: cityColumns,
       },
-      ...(
-        canUseDisplayNames
-          ? [
+      ...(canUseDisplayNames
+        ? [
             {
-              id: "languages",
-              label: "Languages",
+              id: 'languages',
+              label: 'Languages',
               data: processedData.geographic.languages.map((item, index) => ({
                 ...item,
                 _uniqueKey: `language-${item.name}-${index}`,
@@ -748,11 +797,10 @@ export function WebsiteAudienceTab({
               columns: languageColumns,
             },
           ]
-          : []
-      ),
+        : []),
       {
-        id: "timezones",
-        label: "Timezones",
+        id: 'timezones',
+        label: 'Timezones',
         data: processedData.geographic.timezones.map((item, index) => ({
           ...item,
           _uniqueKey: `timezone-${item.name}-${index}`,
@@ -800,23 +848,23 @@ export function WebsiteAudienceTab({
             const gradientConfig =
               percentage >= 40
                 ? {
-                  bg: "linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.06) 100%)",
-                  border: "rgba(34, 197, 94, 0.2)",
-                }
+                    bg: 'linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.06) 100%)',
+                    border: 'rgba(34, 197, 94, 0.2)',
+                  }
                 : percentage >= 25
                   ? {
-                    bg: "linear-gradient(90deg, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0.06) 100%)",
-                    border: "rgba(59, 130, 246, 0.2)",
-                  }
+                      bg: 'linear-gradient(90deg, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0.06) 100%)',
+                      border: 'rgba(59, 130, 246, 0.2)',
+                    }
                   : percentage >= 10
                     ? {
-                      bg: "linear-gradient(90deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.06) 100%)",
-                      border: "rgba(245, 158, 11, 0.2)",
-                    }
+                        bg: 'linear-gradient(90deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.06) 100%)',
+                        border: 'rgba(245, 158, 11, 0.2)',
+                      }
                     : {
-                      bg: "linear-gradient(90deg, rgba(107, 114, 128, 0.08) 0%, rgba(107, 114, 128, 0.04) 100%)",
-                      border: "rgba(107, 114, 128, 0.15)",
-                    };
+                        bg: 'linear-gradient(90deg, rgba(107, 114, 128, 0.08) 0%, rgba(107, 114, 128, 0.04) 100%)',
+                        border: 'rgba(107, 114, 128, 0.15)',
+                      };
 
             return (
               <div
@@ -828,10 +876,16 @@ export function WebsiteAudienceTab({
               >
                 <div className="flex items-center gap-1.5">
                   <div className="h-1 w-1 rounded-full bg-muted-foreground/40" />
-                  <span className="font-medium">{subRow.version || "Unknown"}</span>
+                  <span className="font-medium">
+                    {subRow.version || 'Unknown'}
+                  </span>
                 </div>
-                <div className="text-right font-medium">{formatNumber(subRow.visitors)}</div>
-                <div className="text-right font-medium">{formatNumber(subRow.pageviews)}</div>
+                <div className="text-right font-medium">
+                  {formatNumber(subRow.visitors)}
+                </div>
+                <div className="text-right font-medium">
+                  {formatNumber(subRow.pageviews)}
+                </div>
                 <div className="text-right">
                   <PercentageBadge percentage={percentage} />
                 </div>
@@ -872,7 +926,9 @@ export function WebsiteAudienceTab({
         <CardHeader className="px-3 pb-2">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <h3 className="truncate font-semibold text-foreground text-sm">Screen Resolutions</h3>
+              <h3 className="truncate font-semibold text-foreground text-sm">
+                Screen Resolutions
+              </h3>
               <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs">
                 Visitors by screen size and device type
               </p>
@@ -911,32 +967,47 @@ export function WebsiteAudienceTab({
                   .map((item: ScreenResolutionEntry) => {
                     const resolution = item.name;
                     if (!resolution) return null;
-                    const [width, height] = resolution.split("x").map(Number);
-                    const isValid = !(Number.isNaN(width) || Number.isNaN(height));
+                    const [width, height] = resolution.split('x').map(Number);
+                    const isValid = !(
+                      Number.isNaN(width) || Number.isNaN(height)
+                    );
 
                     const totalVisitors =
                       processedData.device.screen_resolution?.reduce(
-                        (sum: number, resItem: ScreenResolutionEntry) => sum + resItem.visitors,
+                        (sum: number, resItem: ScreenResolutionEntry) =>
+                          sum + resItem.visitors,
                         0
                       ) || 1;
-                    const percentage = Math.round((item.visitors / totalVisitors) * 100);
+                    const percentage = Math.round(
+                      (item.visitors / totalVisitors) * 100
+                    );
 
-                    let deviceType = "Unknown";
-                    let deviceIcon = <Monitor className="h-4 w-4 text-muted-foreground" />;
+                    let deviceType = 'Unknown';
+                    let deviceIcon = (
+                      <Monitor className="h-4 w-4 text-muted-foreground" />
+                    );
 
                     if (isValid) {
                       if (width <= 480) {
-                        deviceType = "Mobile";
-                        deviceIcon = <Smartphone className="h-4 w-4 text-blue-500" />;
+                        deviceType = 'Mobile';
+                        deviceIcon = (
+                          <Smartphone className="h-4 w-4 text-blue-500" />
+                        );
                       } else if (width <= 1024) {
-                        deviceType = "Tablet";
-                        deviceIcon = <Tablet className="h-4 w-4 text-purple-500" />;
+                        deviceType = 'Tablet';
+                        deviceIcon = (
+                          <Tablet className="h-4 w-4 text-purple-500" />
+                        );
                       } else if (width <= 1440) {
-                        deviceType = "Laptop";
-                        deviceIcon = <Laptop className="h-4 w-4 text-green-500" />;
+                        deviceType = 'Laptop';
+                        deviceIcon = (
+                          <Laptop className="h-4 w-4 text-green-500" />
+                        );
                       } else {
-                        deviceType = "Desktop";
-                        deviceIcon = <Monitor className="h-4 w-4 text-primary" />;
+                        deviceType = 'Desktop';
+                        deviceIcon = (
+                          <Monitor className="h-4 w-4 text-primary" />
+                        );
                       }
                     }
 
@@ -952,12 +1023,18 @@ export function WebsiteAudienceTab({
                           <div className="flex items-center gap-2">
                             {deviceIcon}
                             <div>
-                              <div className="font-medium text-sm">{resolution}</div>
-                              <div className="text-muted-foreground text-xs">{deviceType}</div>
+                              <div className="font-medium text-sm">
+                                {resolution}
+                              </div>
+                              <div className="text-muted-foreground text-xs">
+                                {deviceType}
+                              </div>
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="font-medium text-sm">{percentage}%</div>
+                            <div className="font-medium text-sm">
+                              {percentage}%
+                            </div>
                           </div>
                         </div>
 
@@ -968,15 +1045,15 @@ export function WebsiteAudienceTab({
                             style={{
                               width: `${Math.min(200, 100 * Math.sqrt(aspectRatio))}px`,
                               height: `${Math.min(160, 100 / Math.sqrt(aspectRatio))}px`,
-                              transformStyle: "preserve-3d",
-                              transform: "rotateY(-8deg) rotateX(3deg)",
-                              margin: "auto",
+                              transformStyle: 'preserve-3d',
+                              transform: 'rotateY(-8deg) rotateX(3deg)',
+                              margin: 'auto',
                             }}
                           >
                             {isValid && (
                               <div
                                 className="transform-gpu font-mono font-semibold text-primary text-xs"
-                                style={{ transform: "translateZ(5px)" }}
+                                style={{ transform: 'translateZ(5px)' }}
                               >
                                 {width} × {height}
                               </div>
@@ -985,21 +1062,21 @@ export function WebsiteAudienceTab({
                             {/* Enhanced Screen content simulation */}
                             <div
                               className="absolute inset-2 rounded bg-background/20"
-                              style={{ transform: "translateZ(2px)" }}
+                              style={{ transform: 'translateZ(2px)' }}
                             />
 
                             {/* Browser-like UI elements */}
                             <div
                               className="absolute top-2 right-2 left-2 h-1.5 rounded-full bg-primary/30"
-                              style={{ transform: "translateZ(3px)" }}
+                              style={{ transform: 'translateZ(3px)' }}
                             />
                             <div
                               className="absolute top-5 left-2 h-1 w-1/2 rounded-full bg-primary/20"
-                              style={{ transform: "translateZ(3px)" }}
+                              style={{ transform: 'translateZ(3px)' }}
                             />
                             <div
                               className="absolute inset-x-2 bottom-4 grid grid-cols-3 gap-1"
-                              style={{ transform: "translateZ(3px)" }}
+                              style={{ transform: 'translateZ(3px)' }}
                             >
                               <div className="h-1 rounded-full bg-primary/15" />
                               <div className="h-1 rounded-full bg-primary/20" />
@@ -1008,13 +1085,14 @@ export function WebsiteAudienceTab({
                           </div>
 
                           {/* Stand or base for desktop/laptop */}
-                          {(deviceType === "Desktop" || deviceType === "Laptop") && (
+                          {(deviceType === 'Desktop' ||
+                            deviceType === 'Laptop') && (
                             <div
                               className="absolute bottom-0 mx-auto h-3 w-1/4 rounded-b-md bg-muted/60"
                               style={{
-                                left: "50%",
-                                transform: "translateX(-50%)",
-                                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                               }}
                             />
                           )}
@@ -1033,7 +1111,9 @@ export function WebsiteAudienceTab({
                             />
                           </div>
                           <div className="flex items-center justify-between text-muted-foreground text-xs">
-                            <span>{formatNumber(item.pageviews)} pageviews</span>
+                            <span>
+                              {formatNumber(item.pageviews)} pageviews
+                            </span>
                             <span>{percentage}% share</span>
                           </div>
                         </div>
@@ -1045,7 +1125,8 @@ export function WebsiteAudienceTab({
               {processedData.device.screen_resolution &&
                 processedData.device.screen_resolution.length > 6 && (
                   <div className="border-border/30 border-t pt-2 text-center text-muted-foreground text-xs">
-                    Showing top 6 of {processedData.device.screen_resolution.length} screen
+                    Showing top 6 of{' '}
+                    {processedData.device.screen_resolution.length} screen
                     resolutions
                   </div>
                 )}
@@ -1064,7 +1145,8 @@ export function WebsiteAudienceTab({
                 No screen resolution data available
               </h4>
               <p className="max-w-[280px] text-muted-foreground text-sm">
-                Resolution data will appear here when visitors start using your website.
+                Resolution data will appear here when visitors start using your
+                website.
               </p>
             </div>
           )}

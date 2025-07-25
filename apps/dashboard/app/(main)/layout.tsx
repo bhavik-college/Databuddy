@@ -1,14 +1,17 @@
-import { auth } from "@databuddy/auth";
+import { auth } from '@databuddy/auth';
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { Sidebar } from '@/components/layout/sidebar';
 
-import { Sidebar } from "@/components/layout/sidebar";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-
-export default async function MainLayout({ children }: { children: React.ReactNode }) {
+export default async function MainLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
-    redirect("/login");
+    redirect('/login');
   }
 
   return (
