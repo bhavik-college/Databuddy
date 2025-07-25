@@ -3,8 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { DataTableView } from '@/components/data-table-view';
-import { TableControls } from '@/components/table-controls';
-import { TablePagination } from '@/components/table-pagination';
 import { TableTabs } from '@/components/table-tabs';
 import { TableTopbar } from '@/components/table-topbar';
 
@@ -26,12 +24,12 @@ interface TableStats {
   uncompressed_size: string;
 }
 
-export default function TableDetail({
+export default async function TableDetail({
   params,
 }: {
-  params: { database: string; table: string };
+  params: Promise<{ database: string; table: string }>;
 }) {
-  const { database, table } = params;
+  const { database, table } = await params;
   const [data, setData] = useState<QueryResult | null>(null);
   const [stats, setStats] = useState<TableStats | null>(null);
   const [loading, setLoading] = useState(false);
