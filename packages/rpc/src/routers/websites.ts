@@ -1,7 +1,7 @@
 import { websitesApi } from '@databuddy/auth';
 import { and, chQuery, eq, isNull, websites } from '@databuddy/db';
 import { createDrizzleCache, redis } from '@databuddy/redis';
-import { discordLogger } from '@databuddy/shared';
+import { logger } from '@databuddy/shared';
 import {
 	createWebsiteSchema,
 	transferWebsiteSchema,
@@ -121,7 +121,7 @@ export const websitesRouter = createTRPCRouter({
 				} as any)
 				.returning();
 
-			discordLogger.success(
+			logger.success(
 				'Website Created',
 				`New website "${website.name}" was created with domain "${website.domain}"`,
 				{
@@ -153,7 +153,7 @@ export const websitesRouter = createTRPCRouter({
 				.where(eq(websites.id, input.id))
 				.returning();
 
-			discordLogger.info(
+			logger.info(
 				'Website Updated',
 				`Website "${originalWebsite.name}" was renamed to "${updatedWebsite.name}"`,
 				{
@@ -184,7 +184,7 @@ export const websitesRouter = createTRPCRouter({
 			await ctx.db.delete(websites).where(eq(websites.id, input.id));
 			await trackWebsiteUsage(customerId, -1);
 
-			discordLogger.warning(
+			logger.warning(
 				'Website Deleted',
 				`Website "${website.name}" with domain "${website.domain}" was deleted`,
 				{
@@ -227,7 +227,7 @@ export const websitesRouter = createTRPCRouter({
 				.where(eq(websites.id, input.websiteId))
 				.returning();
 
-			discordLogger.info(
+			logger.info(
 				'Website Transferred',
 				`Website "${updatedWebsite.name}" was transferred to organization "${input.organizationId}"`,
 				{
