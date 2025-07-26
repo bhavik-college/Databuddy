@@ -222,7 +222,14 @@ export const websitesRouter = createTRPCRouter({
 				.where(eq(websites.id, input.websiteId))
 				.returning();
 
-			logger.info(
+			if (!updatedWebsite) {
+				throw new TRPCError({
+					code: 'NOT_FOUND',
+					message: 'Website not found',
+				});
+			}
+
+			logger.success(
 				'Website Transferred',
 				`Website "${updatedWebsite.name}" was transferred to organization "${input.organizationId}"`,
 				{
@@ -232,9 +239,7 @@ export const websitesRouter = createTRPCRouter({
 				}
 			);
 
-			// Invalidate cache for this user's websites
 			await drizzleCache.invalidateByTables(['websites']);
-			// Invalidate getById cache for this website
 			await drizzleCache.invalidateByKey(`getById:${input.websiteId}`);
 
 			return updatedWebsite;
