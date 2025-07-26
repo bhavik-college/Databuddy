@@ -44,7 +44,9 @@ const sessionIdMap = new Map<string, string>();
 const anonIdMap = new Map<string, string>();
 
 function getOrCreateSessionId(original: string): string {
-	if (!original) return '';
+	if (!original) {
+		return '';
+	}
 	if (!sessionIdMap.has(original)) {
 		sessionIdMap.set(original, `sess_${crypto.randomUUID()}`);
 	}
