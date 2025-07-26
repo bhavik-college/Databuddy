@@ -17,7 +17,11 @@ const getWebsiteById = cacheable(
 				where: eq(websites.id, id),
 			});
 		} catch (error) {
-			logger.error('Error fetching website by ID:', error as Error, { id });
+			logger.error(
+				'Error fetching website by ID:',
+				error instanceof Error ? error.message : String(error),
+				{ id }
+			);
 			return null;
 		}
 	},

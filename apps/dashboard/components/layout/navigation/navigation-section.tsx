@@ -61,7 +61,6 @@ export function NavigationSection({
 							icon={item.icon}
 							isActive={isActive}
 							isExternal={item.external}
-							isHighlighted={item.highlight}
 							isRootLevel={!!item.rootLevel}
 							key={item.name}
 							name={item.name}

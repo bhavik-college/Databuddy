@@ -1,8 +1,7 @@
-import type { ResponseJSON } from '@clickhouse/client';
-import { createClient } from '@clickhouse/client';
+import { createClient, type ResponseJSON } from '@clickhouse/client';
 import type { NodeClickHouseClientConfigOptions } from '@clickhouse/client/dist/config';
 
-export { createClient };
+export { createClient } from '@clickhouse/client';
 
 /**
  * ClickHouse table names used throughout the application

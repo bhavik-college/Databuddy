@@ -78,7 +78,10 @@ export class RateLimiter {
 				reset: resetTime,
 			};
 		} catch (error) {
-			logger.error('[Rate Limiter] Redis error:', error);
+			logger.error(
+				'[Rate Limiter] Redis error:',
+				error instanceof Error ? error.message : String(error)
+			);
 			return {
 				success: true,
 				limit: this.config.limit,
@@ -129,7 +132,10 @@ export class RateLimiter {
 				reset: currentWindowStart + windowSeconds * 1000,
 			};
 		} catch (error) {
-			logger.error('[Rate Limiter] Redis error:', error);
+			logger.error(
+				'[Rate Limiter] Redis error:',
+				error instanceof Error ? error.message : String(error)
+			);
 			return {
 				success: true,
 				limit: this.config.limit,
@@ -154,7 +160,10 @@ export class RateLimiter {
 			pipeline.del(`${key}:${currentWindowStart}`);
 			await pipeline.exec();
 		} catch (error) {
-			logger.error('[Rate Limiter] Reset error:', error);
+			logger.error(
+				'[Rate Limiter] Reset error:',
+				error instanceof Error ? error.message : String(error)
+			);
 		}
 	}
 }

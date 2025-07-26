@@ -319,9 +319,13 @@ export const funnelsRouter = createTRPCRouter({
 
 				return categorized;
 			} catch (error) {
-				logger.error('Failed to fetch autocomplete data', error.message, {
-					websiteId: website.id,
-				});
+				logger.error(
+					'Failed to fetch autocomplete data',
+					error instanceof Error ? error.message : String(error),
+					{
+						websiteId: website.id,
+					}
+				);
 				throw new TRPCError({
 					code: 'INTERNAL_SERVER_ERROR',
 					message: 'Failed to fetch autocomplete data',
@@ -362,9 +366,13 @@ export const funnelsRouter = createTRPCRouter({
 
 				return funnels;
 			} catch (error) {
-				logger.error('Failed to fetch funnels', error.message, {
-					websiteId: website.id,
-				});
+				logger.error(
+					'Failed to fetch funnels',
+					error instanceof Error ? error.message : String(error),
+					{
+						websiteId: website.id,
+					}
+				);
 				throw new TRPCError({
 					code: 'INTERNAL_SERVER_ERROR',
 					message: 'Failed to fetch funnels',
@@ -407,10 +415,14 @@ export const funnelsRouter = createTRPCRouter({
 					throw error;
 				}
 
-				logger.error('Failed to fetch funnel', error.message, {
-					funnelId: input.id,
-					websiteId: website.id,
-				});
+				logger.error(
+					'Failed to fetch funnel',
+					error instanceof Error ? error.message : String(error),
+					{
+						funnelId: input.id,
+						websiteId: website.id,
+					}
+				);
 				throw new TRPCError({
 					code: 'INTERNAL_SERVER_ERROR',
 					message: 'Failed to fetch funnel',
@@ -451,10 +463,14 @@ export const funnelsRouter = createTRPCRouter({
 
 				return newFunnel;
 			} catch (error) {
-				logger.error('Failed to create funnel', error.message, {
-					websiteId: website.id,
-					userId: ctx.user.id,
-				});
+				logger.error(
+					'Failed to create funnel',
+					error instanceof Error ? error.message : String(error),
+					{
+						websiteId: website.id,
+						userId: ctx.user.id,
+					}
+				);
 				throw new TRPCError({
 					code: 'INTERNAL_SERVER_ERROR',
 					message: 'Failed to create funnel',
@@ -504,9 +520,13 @@ export const funnelsRouter = createTRPCRouter({
 
 				return updatedFunnel;
 			} catch (error) {
-				logger.error('Failed to update funnel', error.message, {
-					funnelId: input.id,
-				});
+				logger.error(
+					'Failed to update funnel',
+					error instanceof Error ? error.message : String(error),
+					{
+						funnelId: input.id,
+					}
+				);
 				throw new TRPCError({
 					code: 'INTERNAL_SERVER_ERROR',
 					message: 'Failed to update funnel',
@@ -554,9 +574,13 @@ export const funnelsRouter = createTRPCRouter({
 
 				return { success: true };
 			} catch (error) {
-				logger.error('Failed to delete funnel', error.message, {
-					funnelId: input.id,
-				});
+				logger.error(
+					'Failed to delete funnel',
+					error instanceof Error ? error.message : String(error),
+					{
+						funnelId: input.id,
+					}
+				);
 				throw new TRPCError({
 					code: 'INTERNAL_SERVER_ERROR',
 					message: 'Failed to delete funnel',
@@ -761,10 +785,14 @@ export const funnelsRouter = createTRPCRouter({
 					throw error;
 				}
 
-				logger.error('Failed to fetch funnel analytics', error.message, {
-					funnelId: input.funnelId,
-					websiteId: website.id,
-				});
+				logger.error(
+					'Failed to fetch funnel analytics',
+					error instanceof Error ? error.message : String(error),
+					{
+						funnelId: input.funnelId,
+						websiteId: website.id,
+					}
+				);
 				throw new TRPCError({
 					code: 'INTERNAL_SERVER_ERROR',
 					message: 'Failed to fetch funnel analytics',
@@ -1030,7 +1058,7 @@ export const funnelsRouter = createTRPCRouter({
 
 				logger.error(
 					'Failed to fetch funnel analytics by referrer',
-					error.message,
+					error instanceof Error ? error.message : String(error),
 					{
 						funnelId: input.funnelId,
 						websiteId: website.id,

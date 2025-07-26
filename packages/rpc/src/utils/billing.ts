@@ -21,7 +21,10 @@ export async function checkAndTrackWebsiteCreation(customerId: string) {
 		}
 		return { allowed: true };
 	} catch (error) {
-		logger.error('[Billing Util] Error with autumn checkAndTrack:', { error });
+		logger.error(
+			'Error with autumn checkAndTrack:',
+			error instanceof Error ? error.message : String(error)
+		);
 		return { allowed: true };
 	}
 }
@@ -38,7 +41,10 @@ export async function trackWebsiteUsage(customerId: string, value: number) {
 		});
 		return { success: true };
 	} catch (error) {
-		logger.error('[Billing Util] Error with autumn track:', { error });
+		logger.error(
+			'[Billing Util] Error with autumn track:',
+			error instanceof Error ? error.message : String(error)
+		);
 		return { success: false };
 	}
 }
@@ -61,7 +67,7 @@ async function _getOrganizationOwnerId(
 	} catch (error) {
 		logger.error(
 			'[Billing Util] Error with _getOrganizationOwnerId:',
-			error as Error
+			error instanceof Error ? error.message : String(error)
 		);
 		return null;
 	}

@@ -102,7 +102,9 @@ interface ProcessedData {
 }
 
 const formatNumber = (value: number | null | undefined): string => {
-	if (value == null || Number.isNaN(value)) return '0';
+	if (value == null || Number.isNaN(value)) {
+		return '0';
+	}
 	return Intl.NumberFormat(undefined, {
 		notation: 'compact',
 		maximumFractionDigits: 1,
@@ -141,8 +143,8 @@ const getConnectionIcon = (connection: string): React.ReactNode => {
 	return <Globe className="h-4 w-4 text-primary" />;
 };
 
-const normalizeData = (data: string[]): GeographicEntry[] =>
-	data?.map((item) => ({
+const normalizeData = (data: any[]): GeographicEntry[] =>
+	data?.map((item: any) => ({
 		name: item.country_name || item.name || 'Unknown',
 		visitors: item.visitors || 0,
 		pageviews: item.pageviews || 0,
@@ -191,7 +193,9 @@ export function WebsiteAudienceTab({
 	} = useBatchDynamicQuery(websiteId, dateRange, batchQueries);
 
 	const handleRefresh = useCallback(async () => {
-		if (!isRefreshing) return;
+		if (!isRefreshing) {
+			return;
+		}
 
 		try {
 			await refetchBatch();
@@ -344,10 +348,12 @@ export function WebsiteAudienceTab({
 
 	const processedConnectionData = useMemo((): ConnectionEntry[] => {
 		const connectionData = processedData.device.connection_type;
-		if (!connectionData?.length) return [];
+		if (!connectionData?.length) {
+			return [];
+		}
 
 		const totalVisitors = connectionData.reduce(
-			(sum: number, item: string) => sum + item.visitors,
+			(sum: number, item: any) => sum + item.visitors,
 			0
 		);
 
@@ -642,7 +648,9 @@ export function WebsiteAudienceTab({
 
 	// Feature detection for Intl.DisplayNames
 	const canUseDisplayNames = useMemo(() => {
-		if (typeof window === 'undefined') return false;
+		if (typeof window === 'undefined') {
+			return false;
+		}
 		try {
 			// Try to construct and use .of
 			const dn = new Intl.DisplayNames([navigator.language || 'en'], {
@@ -977,7 +985,9 @@ export function WebsiteAudienceTab({
 									?.slice(0, 6)
 									.map((item: ScreenResolutionEntry) => {
 										const resolution = item.name;
-										if (!resolution) return null;
+										if (!resolution) {
+											return null;
+										}
 										const [width, height] = resolution.split('x').map(Number);
 										const isValid = !(
 											Number.isNaN(width) || Number.isNaN(height)
