@@ -478,7 +478,12 @@ export function WebsiteOverviewTab({
 			pageviews: createChartSeries('pageviews'),
 			pagesPerSession: createChartSeries('pages_per_session'),
 			bounceRate: createChartSeries('bounce_rate'),
-			sessionDuration: createChartSeries('avg_session_duration'),
+			sessionDuration: createChartSeries('avg_session_duration', (value) => {
+				if (value < 60) return Math.round(value);
+				const minutes = Math.floor(value / 60);
+				const seconds = Math.round(value % 60);
+				return minutes * 60 + seconds;
+			}),
 		};
 	})();
 
@@ -925,7 +930,13 @@ export function WebsiteOverviewTab({
 						chartData: miniChartData.sessionDuration,
 						trend: calculateTrends.session_duration,
 						formatValue: (value: number) => {
-							if (value < 60) return `${value.toFixed(1)}s`;
+							if (value < 60) return `${Math.round(value)}s`;
+							const minutes = Math.floor(value / 60);
+							const seconds = Math.round(value % 60);
+							return `${minutes}m ${seconds}s`;
+						},
+						formatChartValue: (value: number) => {
+							if (value < 60) return `${Math.round(value)}s`;
 							const minutes = Math.floor(value / 60);
 							const seconds = Math.round(value % 60);
 							return `${minutes}m ${seconds}s`;
@@ -944,6 +955,7 @@ export function WebsiteOverviewTab({
 									' today'
 								: metric.description
 						}
+						formatChartValue={metric.formatChartValue}
 						formatValue={metric.formatValue}
 						icon={metric.icon}
 						id={metric.id}

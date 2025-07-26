@@ -50,6 +50,7 @@ interface StatCardProps {
 	chartData?: MiniChartDataPoint[];
 	showChart?: boolean;
 	formatValue?: (value: number) => string;
+	formatChartValue?: (value: number) => string;
 }
 
 const formatTrendValue = (
@@ -68,7 +69,15 @@ const formatTrendValue = (
 };
 
 const MiniChart = memo(
-	({ data, id }: { data: MiniChartDataPoint[]; id: string }) => {
+	({
+		data,
+		id,
+		formatChartValue,
+	}: {
+		data: MiniChartDataPoint[];
+		id: string;
+		formatChartValue?: (value: number) => string;
+	}) => {
 		const hasData = data && data.length > 0;
 		const hasVariation = hasData && data.some((d) => d.value !== data[0].value);
 
@@ -137,7 +146,9 @@ const MiniChart = memo(
 											})}
 										</p>
 										<p className="font-semibold text-primary">
-											{formatMetricNumber(payload[0].value)}
+											{formatChartValue
+												? formatChartValue(payload[0].value)
+												: formatMetricNumber(payload[0].value)}
 										</p>
 									</div>
 								) : null
@@ -188,6 +199,7 @@ export function StatCard({
 	chartData,
 	showChart = false,
 	formatValue,
+	formatChartValue,
 }: StatCardProps) {
 	const getVariantClasses = () => {
 		switch (variant) {
@@ -334,7 +346,11 @@ export function StatCard({
 
 					{hasValidChartData && (
 						<div className="-mb-0.5 sm:-mb-1 [--chart-color:theme(colors.primary.DEFAULT)] group-hover:[--chart-color:theme(colors.primary.500)]">
-							<MiniChart data={chartData} id={id || `chart-${Math.random()}`} />
+							<MiniChart
+								data={chartData}
+								formatChartValue={formatChartValue}
+								id={id || `chart-${Math.random()}`}
+							/>
 						</div>
 					)}
 				</div>

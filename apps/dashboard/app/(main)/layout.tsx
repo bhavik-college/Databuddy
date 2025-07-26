@@ -9,7 +9,6 @@ export default async function MainLayout({
 	children: React.ReactNode;
 }) {
 	const session = await auth.api.getSession({ headers: await headers() });
-
 	if (!session) {
 		redirect('/login');
 	}
