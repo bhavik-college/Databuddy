@@ -373,6 +373,10 @@ const validateFilter = (filter: Filter): string | null => {
 	return null;
 };
 
+const escapeSqlWildcards = (value: string): string => {
+	return value.replace(/[%_]/g, '\\$&');
+};
+
 const buildStringCondition = (
 	field: string,
 	operator: AllowedOperator,
@@ -381,7 +385,22 @@ const buildStringCondition = (
 	params: Record<string, unknown>
 ): string => {
 	const paramKey = `${prefix}_${field}_${operator}`;
-	params[paramKey] = value;
+
+	let processedValue = value;
+
+	if (operator === 'contains') {
+		processedValue = `%${escapeSqlWildcards(value)}%`;
+	} else if (operator === 'not_contains') {
+		processedValue = `%${escapeSqlWildcards(value)}%`;
+	} else if (operator === 'starts_with') {
+		processedValue = `${escapeSqlWildcards(value)}%`;
+	} else if (operator === 'ends_with') {
+		processedValue = `%${escapeSqlWildcards(value)}`;
+	} else {
+		processedValue = escapeSqlWildcards(value);
+	}
+
+	params[paramKey] = processedValue;
 
 	const conditions: Record<AllowedOperator, string> = {
 		equals: `${field} = {${paramKey}:String}`,
