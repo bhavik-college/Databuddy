@@ -343,7 +343,7 @@ export function useFunnelPerformance(
 }
 
 export function useAutocompleteData(websiteId: string, enabled = true) {
-	return trpc.funnels.getAutocomplete.useQuery(
+	return trpc.autocomplete.get.useQuery(
 		{
 			websiteId,
 		},

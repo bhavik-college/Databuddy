@@ -1,7 +1,13 @@
-import { chQuery, goals } from '@databuddy/db';
+import { goals } from '@databuddy/db';
 import { TRPCError } from '@trpc/server';
 import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { z } from 'zod';
+import {
+	type AnalyticsStep,
+	getTotalWebsiteUsers,
+	processGoalAnalytics,
+} from '../lib/analytics-utils';
+import { logger } from '../lib/logger';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 import { authorizeWebsiteAccess } from '../utils/auth';
 
@@ -50,133 +56,6 @@ const analyticsDateRangeSchema = z.object({
 	startDate: z.string().optional(),
 	endDate: z.string().optional(),
 });
-
-const ALLOWED_FIELDS = new Set([
-	'id',
-	'client_id',
-	'event_name',
-	'anonymous_id',
-	'time',
-	'session_id',
-	'event_type',
-	'event_id',
-	'session_start_time',
-	'timestamp',
-	'referrer',
-	'url',
-	'path',
-	'title',
-	'ip',
-	'user_agent',
-	'browser_name',
-	'browser_version',
-	'os_name',
-	'os_version',
-	'device_type',
-	'device_brand',
-	'device_model',
-	'country',
-	'region',
-	'city',
-	'screen_resolution',
-	'viewport_size',
-	'language',
-	'timezone',
-	'connection_type',
-	'rtt',
-	'downlink',
-	'time_on_page',
-	'scroll_depth',
-	'interaction_count',
-	'exit_intent',
-	'page_count',
-	'is_bounce',
-	'has_exit_intent',
-	'page_size',
-	'utm_source',
-	'utm_medium',
-	'utm_campaign',
-	'utm_term',
-	'utm_content',
-	'load_time',
-	'dom_ready_time',
-	'dom_interactive',
-	'ttfb',
-	'connection_time',
-	'request_time',
-	'render_time',
-	'redirect_time',
-	'domain_lookup_time',
-	'fcp',
-	'lcp',
-	'cls',
-	'fid',
-	'inp',
-	'href',
-	'text',
-	'value',
-	'error_message',
-	'error_filename',
-	'error_lineno',
-	'error_colno',
-	'error_stack',
-	'error_type',
-	'properties',
-	'created_at',
-]);
-
-const ALLOWED_OPERATORS = new Set([
-	'equals',
-	'contains',
-	'not_equals',
-	'in',
-	'not_in',
-]);
-
-const buildFilterConditions = (
-	filters: Array<{ field: string; operator: string; value: string | string[] }>,
-	paramPrefix: string,
-	params: Record<string, unknown>
-) => {
-	if (!filters || filters.length === 0) {
-		return '';
-	}
-	const filterConditions = filters
-		.map((filter, i) => {
-			if (!ALLOWED_FIELDS.has(filter.field)) {
-				return '';
-			}
-			if (!ALLOWED_OPERATORS.has(filter.operator)) {
-				return '';
-			}
-			const field = filter.field;
-			const value = Array.isArray(filter.value) ? filter.value : [filter.value];
-			const key = `${paramPrefix}_${i}`;
-			switch (filter.operator) {
-				case 'equals':
-					params[key] = value[0];
-					return `${field} = {${key}:String}`;
-				case 'contains':
-					params[key] = `%${value[0]}%`;
-					return `${field} LIKE {${key}:String}`;
-				case 'not_equals':
-					params[key] = value[0];
-					return `${field} != {${key}:String}`;
-				case 'in':
-					params[key] = value;
-					return `${field} IN {${key}:Array(String)}`;
-				case 'not_in':
-					params[key] = value;
-					return `${field} NOT IN {${key}:Array(String)}`;
-				default:
-					return '';
-			}
-		})
-		.filter(Boolean);
-	return filterConditions.length > 0
-		? ` AND ${filterConditions.join(' AND ')}`
-		: '';
-};
 
 const getDefaultDateRange = () => {
 	const endDate = new Date().toISOString().split('T')[0];
@@ -309,9 +188,10 @@ export const goalsRouter = createTRPCRouter({
 				throw new TRPCError({ code: 'NOT_FOUND', message: 'Goal not found' });
 			}
 			const goalData = goal[0];
-			const steps = [
+			const steps: AnalyticsStep[] = [
 				{
-					type: goalData.type,
+					step_number: 1,
+					type: goalData.type as 'PAGE_VIEW' | 'EVENT',
 					target: goalData.target,
 					name: goalData.name,
 				},
@@ -322,124 +202,17 @@ export const goalsRouter = createTRPCRouter({
 					operator: string;
 					value: string | string[];
 				}>) || [];
+			const totalWebsiteUsers = await getTotalWebsiteUsers(
+				input.websiteId,
+				startDate,
+				endDate
+			);
 			const params: Record<string, unknown> = {
 				websiteId: input.websiteId,
 				startDate,
 				endDate: `${endDate} 23:59:59`,
 			};
-			const filterConditions = buildFilterConditions(filters, 'f', params);
-			const totalWebsiteUsersQuery = `
-                SELECT COUNT(DISTINCT session_id) as total_users
-                FROM analytics.events
-                WHERE client_id = {websiteId:String}
-                    AND time >= parseDateTimeBestEffort({startDate:String})
-                    AND time <= parseDateTimeBestEffort({endDate:String})
-            `;
-			const totalWebsiteUsersResult = await chQuery<{ total_users: number }>(
-				totalWebsiteUsersQuery,
-				params
-			);
-			const totalWebsiteUsers = totalWebsiteUsersResult[0]?.total_users || 0;
-			let whereCondition = '';
-			const stepNameKey = 'step_name_0';
-			const targetKey = 'target_0';
-			params[stepNameKey] = steps[0].name;
-			if (steps[0].type === 'PAGE_VIEW') {
-				params[targetKey] = steps[0].target;
-				whereCondition = `event_name = 'screen_view' AND (path = {${targetKey}:String} OR path LIKE {${targetKey}_like:String})`;
-				params[`${targetKey}_like`] = `%${steps[0].target}%`;
-			} else if (steps[0].type === 'EVENT') {
-				params[targetKey] = steps[0].target;
-				whereCondition = `event_name = {${targetKey}:String}`;
-			}
-			const stepQuery = `
-                SELECT 
-                    1 as step_number,
-                    {${stepNameKey}:String} as step_name,
-                    session_id,
-                    MIN(time) as first_occurrence
-                FROM analytics.events
-                WHERE client_id = {websiteId:String}
-                    AND time >= parseDateTimeBestEffort({startDate:String})
-                    AND time <= parseDateTimeBestEffort({endDate:String})
-                    AND ${whereCondition}${filterConditions}
-                GROUP BY session_id`;
-			const analysisQuery = `
-                WITH all_step_events AS (
-                    ${stepQuery}
-                )
-                SELECT 
-                    step_number,
-                    step_name,
-                    session_id,
-                    first_occurrence
-                FROM all_step_events
-                ORDER BY session_id, first_occurrence
-            `;
-			const rawResults = await chQuery<{
-				step_number: number;
-				step_name: string;
-				session_id: string;
-				first_occurrence: number;
-			}>(analysisQuery, params);
-
-			const sessionEvents = new Map<
-				string,
-				Array<{
-					step_number: number;
-					step_name: string;
-					first_occurrence: number;
-				}>
-			>();
-			for (const event of rawResults) {
-				if (!sessionEvents.has(event.session_id)) {
-					sessionEvents.set(event.session_id, []);
-				}
-				sessionEvents.get(event.session_id)?.push({
-					step_number: event.step_number,
-					step_name: event.step_name,
-					first_occurrence: event.first_occurrence,
-				});
-			}
-			const stepCounts = new Map<number, Set<string>>();
-			for (const [sessionId, events] of sessionEvents) {
-				events.sort((a, b) => a.first_occurrence - b.first_occurrence);
-				let currentStep = 1;
-				for (const event of events) {
-					if (event.step_number === currentStep) {
-						if (!stepCounts.has(event.step_number)) {
-							stepCounts.set(event.step_number, new Set());
-						}
-						stepCounts.get(event.step_number)?.add(sessionId);
-						currentStep++;
-					}
-				}
-			}
-			const goalCompletions = stepCounts.get(1)?.size || 0;
-			const conversion_rate =
-				totalWebsiteUsers > 0 ? (goalCompletions / totalWebsiteUsers) * 100 : 0;
-			const dropoffs = 0;
-			const dropoff_rate = 0;
-			const analyticsResults = [
-				{
-					step_number: 1,
-					step_name: steps[0].name,
-					users: goalCompletions,
-					total_users: totalWebsiteUsers,
-					conversion_rate,
-					dropoffs,
-					dropoff_rate,
-					avg_time_to_complete: 0,
-				},
-			];
-			return {
-				overall_conversion_rate: conversion_rate,
-				total_users_entered: totalWebsiteUsers,
-				total_users_completed: goalCompletions,
-				avg_completion_time: 0,
-				avg_completion_time_formatted: '0s',
-				steps_analytics: analyticsResults,
-			};
+			return processGoalAnalytics(steps, filters, params, totalWebsiteUsers);
 		}),
 	bulkAnalytics: protectedProcedure
 		.input(
@@ -469,144 +242,58 @@ export const goalsRouter = createTRPCRouter({
 					)
 				)
 				.orderBy(desc(goals.createdAt));
-			const params: Record<string, unknown> = {
-				websiteId: input.websiteId,
+			const totalWebsiteUsers = await getTotalWebsiteUsers(
+				input.websiteId,
 				startDate,
-				endDate: `${endDate} 23:59:59`,
-			};
-			const totalWebsiteUsersQuery = `
-                SELECT COUNT(DISTINCT session_id) as total_users
-                FROM analytics.events
-                WHERE client_id = {websiteId:String}
-                    AND time >= parseDateTimeBestEffort({startDate:String})
-                    AND time <= parseDateTimeBestEffort({endDate:String})
-            `;
-			const totalWebsiteUsersResult = await chQuery<{ total_users: number }>(
-				totalWebsiteUsersQuery,
-				params
+				endDate
 			);
-			const totalWebsiteUsers = totalWebsiteUsersResult[0]?.total_users || 0;
 
-			const analyticsResults: Record<string, unknown> = {};
-			for (const goalData of goalsList) {
-				const steps = [
+			const analyticsPromises = goalsList.map(async (goalData) => {
+				const steps: AnalyticsStep[] = [
 					{
-						type: goalData.type,
+						step_number: 1,
+						type: goalData.type as 'PAGE_VIEW' | 'EVENT',
 						target: goalData.target,
 						name: goalData.name,
 					},
 				];
-				const localParams = { ...params };
+				const localParams: Record<string, unknown> = {
+					websiteId: input.websiteId,
+					startDate,
+					endDate: `${endDate} 23:59:59`,
+				};
 				const filters =
 					(goalData.filters as Array<{
 						field: string;
 						operator: string;
 						value: string | string[];
 					}>) || [];
-				const filterConditions = buildFilterConditions(
-					filters,
-					'f',
-					localParams
-				);
-				let whereCondition = '';
-				const stepNameKey = 'step_name_0';
-				const targetKey = 'target_0';
-				localParams[stepNameKey] = steps[0].name;
-				if (steps[0].type === 'PAGE_VIEW') {
-					localParams[targetKey] = steps[0].target;
-					whereCondition = `event_name = 'screen_view' AND (path = {${targetKey}:String} OR path LIKE {${targetKey}_like:String})`;
-					localParams[`${targetKey}_like`] = `%${steps[0].target}%`;
-				} else if (steps[0].type === 'EVENT') {
-					localParams[targetKey] = steps[0].target;
-					whereCondition = `event_name = {${targetKey}:String}`;
-				}
-				const stepQuery = `
-                    SELECT 
-                        1 as step_number,
-                        {${stepNameKey}:String} as step_name,
-                        session_id,
-                        MIN(time) as first_occurrence
-                    FROM analytics.events
-                    WHERE client_id = {websiteId:String}
-                        AND time >= parseDateTimeBestEffort({startDate:String})
-                        AND time <= parseDateTimeBestEffort({endDate:String})
-                        AND ${whereCondition}${filterConditions}
-                    GROUP BY session_id`;
-				const analysisQuery = `
-                    WITH all_step_events AS (
-                        ${stepQuery}
-                    )
-                    SELECT 
-                        step_number,
-                        step_name,
-                        session_id,
-                        first_occurrence
-                    FROM all_step_events
-                    ORDER BY session_id, first_occurrence
-                `;
-				const rawResults = await chQuery<{
-					step_number: number;
-					step_name: string;
-					session_id: string;
-					first_occurrence: number;
-				}>(analysisQuery, localParams);
-				const sessionEvents = new Map<
-					string,
-					Array<{
-						step_number: number;
-						step_name: string;
-						first_occurrence: number;
-					}>
-				>();
-				for (const event of rawResults) {
-					if (!sessionEvents.has(event.session_id)) {
-						sessionEvents.set(event.session_id, []);
-					}
-					sessionEvents.get(event.session_id)?.push({
-						step_number: event.step_number,
-						step_name: event.step_name,
-						first_occurrence: event.first_occurrence,
+				try {
+					const processedAnalytics = await processGoalAnalytics(
+						steps,
+						filters,
+						localParams,
+						totalWebsiteUsers
+					);
+					return { id: goalData.id, result: processedAnalytics };
+				} catch (error) {
+					logger.error('Failed to process goal analytics', {
+						goalId: goalData.id,
+						error: error instanceof Error ? error.message : String(error),
 					});
+					return {
+						id: goalData.id,
+						result: {
+							error: `Error processing goal ${goalData.id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+						},
+					};
 				}
-				const stepCounts = new Map<number, Set<string>>();
-				for (const [sessionId, events] of sessionEvents) {
-					events.sort((a, b) => a.first_occurrence - b.first_occurrence);
-					let currentStep = 1;
-					for (const event of events) {
-						if (event.step_number === currentStep) {
-							if (!stepCounts.has(event.step_number)) {
-								stepCounts.set(event.step_number, new Set());
-							}
-							stepCounts.get(event.step_number)?.add(sessionId);
-							currentStep++;
-						}
-					}
-				}
-				const goalCompletions = stepCounts.get(1)?.size || 0;
-				const conversion_rate =
-					totalWebsiteUsers > 0
-						? (goalCompletions / totalWebsiteUsers) * 100
-						: 0;
-				const dropoffs = 0;
-				const dropoff_rate = 0;
-				const analyticsStep = {
-					step_number: 1,
-					step_name: steps[0].name,
-					users: goalCompletions,
-					total_users: totalWebsiteUsers,
-					conversion_rate,
-					dropoffs,
-					dropoff_rate,
-					avg_time_to_complete: 0,
-				};
-				analyticsResults[goalData.id] = {
-					overall_conversion_rate: conversion_rate,
-					total_users_entered: totalWebsiteUsers,
-					total_users_completed: goalCompletions,
-					avg_completion_time: 0,
-					avg_completion_time_formatted: '0s',
-					steps_analytics: [analyticsStep],
-				};
+			});
+
+			const analyticsResultsArray = await Promise.all(analyticsPromises);
+			const analyticsResults: Record<string, unknown> = {};
+			for (const { id, result } of analyticsResultsArray) {
+				analyticsResults[id] = result;
 			}
 			return analyticsResults;
 		}),

@@ -1,3 +1,4 @@
+import { autocompleteRouter } from './routers/autocomplete';
 import { funnelsRouter } from './routers/funnels';
 import { goalsRouter } from './routers/goals';
 import { miniChartsRouter } from './routers/mini-charts';
@@ -11,6 +12,7 @@ export const appRouter = createTRPCRouter({
 	funnels: funnelsRouter,
 	preferences: preferencesRouter,
 	goals: goalsRouter,
+	autocomplete: autocompleteRouter,
 });
 
 export type AppRouter = typeof appRouter;
