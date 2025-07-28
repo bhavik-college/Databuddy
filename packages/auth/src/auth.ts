@@ -20,6 +20,7 @@ import {
 } from 'better-auth/plugins';
 import { Resend } from 'resend';
 import { ac, admin, member, owner, viewer } from './permissions';
+import { performancePlugin } from './plugins';
 
 function isProduction() {
 	return process.env.NODE_ENV === 'production';
@@ -269,6 +270,7 @@ export const auth = betterAuth({
 				});
 			},
 		}),
+		performancePlugin(),
 	],
 });
 
