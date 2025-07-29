@@ -1,6 +1,5 @@
 import { websitesApi } from '@databuddy/auth';
 import { and, chQuery, eq, isNull, websites } from '@databuddy/db';
-import { createDrizzleCache, redis } from '@databuddy/redis';
 import { logger } from '@databuddy/shared';
 import {
 	createWebsiteSchema,
@@ -18,10 +17,6 @@ import {
 	trackWebsiteUsage,
 } from '../utils/billing';
 
-const drizzleCache = createDrizzleCache({ redis, namespace: 'websites' });
-
-const CACHE_TTL = 60;
-
 const buildDomain = (domain: string, subdomain?: string) =>
 	subdomain ? `${subdomain}.${domain}` : domain;
 
@@ -29,36 +24,22 @@ export const websitesRouter = createTRPCRouter({
 	list: protectedProcedure
 		.input(z.object({ organizationId: z.string().optional() }).default({}))
 		.query(({ ctx, input }) => {
-			const cacheKey = `list:${ctx.user.id}:${input.organizationId || ''}`;
-			return drizzleCache.withCache({
-				key: cacheKey,
-				ttl: CACHE_TTL,
-				tables: ['websites'],
-				queryFn: () => {
-					const where = input.organizationId
-						? eq(websites.organizationId, input.organizationId)
-						: and(
-								eq(websites.userId, ctx.user.id),
-								isNull(websites.organizationId)
-							);
-					return ctx.db.query.websites.findMany({
-						where,
-						orderBy: (table, { desc }) => [desc(table.createdAt)],
-					});
-				},
+			const where = input.organizationId
+				? eq(websites.organizationId, input.organizationId)
+				: and(
+						eq(websites.userId, ctx.user.id),
+						isNull(websites.organizationId)
+					);
+			return ctx.db.query.websites.findMany({
+				where,
+				orderBy: (table, { desc }) => [desc(table.createdAt)],
 			});
 		}),
 
 	getById: publicProcedure
 		.input(z.object({ id: z.string() }))
 		.query(({ ctx, input }) => {
-			const cacheKey = `getById:${input.id}`;
-			return drizzleCache.withCache({
-				key: cacheKey,
-				ttl: CACHE_TTL,
-				tables: ['websites'],
-				queryFn: () => authorizeWebsiteAccess(ctx, input.id, 'read'),
-			});
+			return authorizeWebsiteAccess(ctx, input.id, 'read');
 		}),
 
 	create: protectedProcedure
@@ -133,8 +114,6 @@ export const websitesRouter = createTRPCRouter({
 				}
 			);
 
-			await drizzleCache.invalidateByTables(['websites']);
-
 			return website;
 		}),
 
@@ -164,11 +143,6 @@ export const websitesRouter = createTRPCRouter({
 				}
 			);
 
-			await Promise.all([
-				drizzleCache.invalidateByTables(['websites']),
-				drizzleCache.invalidateByKey(`getById:${input.id}`),
-			]);
-
 			return updatedWebsite;
 		}),
 
@@ -196,11 +170,6 @@ export const websitesRouter = createTRPCRouter({
 					userId: ctx.user.id,
 				}
 			);
-
-			await Promise.all([
-				drizzleCache.invalidateByTables(['websites']),
-				drizzleCache.invalidateByKey(`getById:${input.id}`),
-			]);
 
 			return { success: true };
 		}),
@@ -245,11 +214,6 @@ export const websitesRouter = createTRPCRouter({
 					userId: ctx.user.id,
 				}
 			);
-
-			await Promise.all([
-				drizzleCache.invalidateByTables(['websites']),
-				drizzleCache.invalidateByKey(`getById:${input.websiteId}`),
-			]);
 
 			return updatedWebsite;
 		}),
