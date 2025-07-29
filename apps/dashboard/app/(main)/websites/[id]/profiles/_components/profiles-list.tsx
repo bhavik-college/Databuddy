@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2Icon, UserRound } from 'lucide-react';
+import { UsersIcon, SpinnerIcon } from '@phosphor-icons/react';
 import { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useProfilesData } from '@/hooks/use-dynamic-query';
@@ -136,7 +136,7 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
 			<div className="space-y-6">
 				<WebsitePageHeader
 					description="Visitor profiles with session data and behavior patterns"
-					icon={<UserRound className="h-6 w-6 text-primary" />}
+					icon={<UsersIcon className="h-6 w-6 text-primary" />}
 					title="Recent Profiles"
 					variant="minimal"
 					websiteId={websiteId}
@@ -153,7 +153,7 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
 						</div>
 						<div className="flex items-center justify-center pt-4">
 							<div className="flex items-center gap-2 text-muted-foreground">
-								<Loader2Icon className="h-4 w-4 animate-spin" />
+								<SpinnerIcon className="h-4 w-4 animate-spin" />
 								<span className="text-sm">Loading profiles...</span>
 							</div>
 						</div>
@@ -170,7 +170,7 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
 					description="Visitor profiles with session data and behavior patterns"
 					errorMessage={error?.message || 'Failed to load profiles'}
 					hasError={true}
-					icon={<UserRound className="h-6 w-6 text-primary" />}
+					icon={<UsersIcon className="h-6 w-6 text-primary" />}
 					title="Recent Profiles"
 					variant="minimal"
 					websiteId={websiteId}
@@ -184,15 +184,15 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
 			<div className="space-y-6">
 				<WebsitePageHeader
 					description="Visitor profiles with session data and behavior patterns"
-					icon={<UserRound className="h-6 w-6 text-primary" />}
+					icon={<UsersIcon className="h-6 w-6 text-primary" />}
 					title="Recent Profiles"
 					variant="minimal"
 					websiteId={websiteId}
 				/>
 				<Card>
 					<CardContent>
-						<div className="py-12 text-center text-muted-foreground">
-							<UserRound className="mx-auto mb-4 h-12 w-12 opacity-50" />
+						<div className="flex flex-col items-center py-12 text-center text-muted-foreground">
+							<UsersIcon className="mb-4 h-12 w-12 opacity-50" />
 							<p className="mb-2 font-medium text-lg">No profiles found</p>
 							<p className="text-sm">
 								Visitor profiles will appear here once users visit your website
@@ -208,7 +208,7 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
 		<div className="space-y-6">
 			<WebsitePageHeader
 				description="Visitor profiles with session data and behavior patterns"
-				icon={<UserRound className="h-6 w-6 text-primary" />}
+				icon={<UsersIcon className="h-6 w-6 text-primary" />}
 				subtitle={`${allProfiles.length} loaded`}
 				title="Recent Profiles"
 				variant="minimal"
@@ -233,7 +233,7 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
 							<div className="flex justify-center">
 								{isLoading ? (
 									<div className="flex items-center gap-2 text-muted-foreground">
-										<Loader2Icon className="h-4 w-4 animate-spin" />
+										<SpinnerIcon className="h-4 w-4 animate-spin" />
 										<span className="text-sm">Loading more profiles...</span>
 									</div>
 								) : null}
