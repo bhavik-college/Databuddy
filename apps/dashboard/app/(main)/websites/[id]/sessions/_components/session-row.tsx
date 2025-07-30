@@ -1,14 +1,15 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import {
-	AlertTriangleIcon,
-	ChevronDownIcon,
-	ChevronRightIcon,
+	CaretDownIcon,
+	CaretRightIcon,
 	ClockIcon,
-	ExternalLinkIcon,
 	EyeIcon,
-	SparklesIcon,
-} from 'lucide-react';
+	WarningIcon,
+	ArrowSquareOutIcon,
+	SparkleIcon,
+} from '@phosphor-icons/react';
 import React, { useCallback } from 'react';
 import { FaviconImage } from '@/components/analytics/favicon-image';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +18,14 @@ import {
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { SessionEventTimeline } from './session-event-timeline';
+
+const SessionEventTimeline = dynamic(() => import('./session-event-timeline').then(mod => ({ default: mod.SessionEventTimeline })), {
+	loading: () => (
+		<div className="flex items-center justify-center p-4">
+			<div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+		</div>
+	)
+});
 import {
 	getBrowserIconComponent,
 	getCountryFlag,
@@ -98,9 +106,9 @@ function SessionRowInternal({
 						<div className="flex flex-shrink-0 items-center gap-3">
 							<div>
 								{isExpanded ? (
-									<ChevronDownIcon className="h-4 w-4 text-muted-foreground" />
+									<CaretDownIcon className="h-4 w-4 text-muted-foreground" />
 								) : (
-									<ChevronRightIcon className="h-4 w-4 text-muted-foreground" />
+									<CaretRightIcon className="h-4 w-4 text-muted-foreground" />
 								)}
 							</div>
 							<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 font-semibold text-primary text-sm">
@@ -147,7 +155,7 @@ function SessionRowInternal({
 										size={16}
 									/>
 								) : (
-									<ExternalLinkIcon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+									<ArrowSquareOutIcon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
 								)}
 								<span className="truncate text-muted-foreground text-sm">
 									{referrerInfo.name}
@@ -194,7 +202,7 @@ function SessionRowInternal({
                 <div className="flex flex-col items-center gap-1">
                   <div className="font-medium text-violet-600 text-xs">Custom</div>
                   <Badge className="border-0 bg-gradient-to-r from-violet-500 to-purple-500 font-semibold text-white text-xs">
-                    <SparklesIcon className="mr-1 h-3 w-3" />
+                    <SparkleIcon className="mr-1 h-3 w-3" />
                     {customEventCount}
                   </Badge>
                 </div>
@@ -204,7 +212,7 @@ function SessionRowInternal({
 								<div className="flex flex-col items-center gap-1">
 									<div className="font-medium text-red-600 text-xs">Errors</div>
 									<Badge className="border-0 bg-gradient-to-r from-red-500 to-red-600 font-semibold text-white text-xs">
-										<AlertTriangleIcon className="mr-1 h-3 w-3" />
+										<WarningIcon className="mr-1 h-3 w-3" />
 										{errorCount}
 									</Badge>
 								</div>
@@ -265,7 +273,7 @@ function SessionRowInternal({
 										size={16}
 									/>
 								) : (
-									<ExternalLinkIcon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+									<ArrowSquareOutIcon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
 								)}
 								<span className="truncate font-medium text-foreground text-sm">
 									{referrerInfo.name}
@@ -288,7 +296,7 @@ function SessionRowInternal({
 								</div>
 								{customEventCount > 0 && (
 									<div className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-100 to-purple-100 px-3 py-2">
-										<SparklesIcon className="h-4 w-4 text-violet-600" />
+										<SparkleIcon className="h-4 w-4 text-violet-600" />
 										<span className="font-bold text-sm text-violet-800">
 											{customEventCount}
 										</span>
@@ -297,7 +305,7 @@ function SessionRowInternal({
 								)}
 								{errorCount > 0 && (
 									<div className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-red-100 to-red-100 px-3 py-2">
-										<AlertTriangleIcon className="h-4 w-4 text-red-600" />
+										<WarningIcon className="h-4 w-4 text-red-600" />
 										<span className="font-bold text-red-800 text-sm">
 											{errorCount}
 										</span>

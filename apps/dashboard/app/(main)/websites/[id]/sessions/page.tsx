@@ -1,7 +1,17 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
-import { SessionsList } from './_components';
+import { SpinnerIcon } from '@phosphor-icons/react';
+
+const SessionsList = dynamic(() => import('./_components').then(mod => ({ default: mod.SessionsList })), {
+	loading: () => (
+		<div className="flex items-center justify-center p-8">
+			<SpinnerIcon className="h-6 w-6 animate-spin" />
+		</div>
+	),
+	ssr: false
+});
 
 export default function SessionsPage() {
 	const { id: websiteId } = useParams();

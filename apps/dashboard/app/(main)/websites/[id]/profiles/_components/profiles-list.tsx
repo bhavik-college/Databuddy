@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { UsersIcon, SpinnerIcon } from '@phosphor-icons/react';
 import { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -47,8 +48,15 @@ type ProfileData = {
 };
 
 import { WebsitePageHeader } from '../../_components/website-page-header';
-import { ProfileRow } from './profile-row';
 import { getDefaultDateRange } from './profile-utils';
+
+const ProfileRow = dynamic(() => import('./profile-row').then(mod => ({ default: mod.ProfileRow })), {
+	loading: () => (
+		<div className="flex items-center justify-center p-4">
+			<SpinnerIcon className="h-4 w-4 animate-spin" />
+		</div>
+	)
+});
 
 interface ProfilesListProps {
 	websiteId: string;

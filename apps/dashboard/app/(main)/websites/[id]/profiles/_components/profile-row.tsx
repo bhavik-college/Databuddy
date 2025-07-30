@@ -1,14 +1,14 @@
 'use client';
 
-import { format } from 'date-fns';
+import dayjs from 'dayjs';
 import {
-	ChevronDownIcon,
-	ChevronRightIcon,
+	CaretDownIcon,
+	CaretRightIcon,
 	ClockIcon,
-	ExternalLinkIcon,
+	ArrowSquareOutIcon,
 	EyeIcon,
-	Users,
-} from 'lucide-react';
+	UsersIcon,
+} from '@phosphor-icons/react';
 import { FaviconImage } from '@/components/analytics/favicon-image';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -143,9 +143,9 @@ export function ProfileRow({
 						{/* Expand/Collapse and Profile Number */}
 						<div className="flex flex-shrink-0 items-center gap-3">
 							{isExpanded ? (
-								<ChevronDownIcon className="h-4 w-4 text-muted-foreground transition-transform" />
+								<CaretDownIcon className="h-4 w-4 text-muted-foreground transition-transform" />
 							) : (
-								<ChevronRightIcon className="h-4 w-4 text-muted-foreground transition-transform" />
+								<CaretRightIcon className="h-4 w-4 text-muted-foreground transition-transform" />
 							)}
 							<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 font-semibold text-primary text-sm">
 								{index + 1}
@@ -181,7 +181,7 @@ export function ProfileRow({
 											size={16}
 										/>
 									) : (
-										<ExternalLinkIcon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+										<ArrowSquareOutIcon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
 									)}
 									<span className="truncate text-muted-foreground text-sm">
 										{profileReferrerInfo.name}
@@ -196,7 +196,7 @@ export function ProfileRow({
 						{/* Sessions Count */}
 						<div className="hidden min-w-[60px] flex-col items-center gap-1 sm:flex">
 							<div className="flex items-center gap-1 text-muted-foreground text-xs">
-								<Users className="h-3 w-3" />
+								<UsersIcon className="h-3 w-3" />
 								<span>Sessions</span>
 							</div>
 							<span className="font-semibold text-foreground text-sm">
@@ -249,9 +249,9 @@ export function ProfileRow({
 								First Visit
 							</div>
 							<div className="font-medium">
-								{profile.first_visit
-									? format(new Date(profile.first_visit), 'MMM d, yyyy')
-									: 'Unknown'}
+															{profile.first_visit
+								? dayjs(profile.first_visit).format('MMM D, YYYY')
+								: 'Unknown'}
 							</div>
 						</div>
 						<div>
@@ -259,9 +259,9 @@ export function ProfileRow({
 								Last Visit
 							</div>
 							<div className="font-medium">
-								{profile.last_visit
-									? format(new Date(profile.last_visit), 'MMM d, yyyy')
-									: 'Unknown'}
+															{profile.last_visit
+								? dayjs(profile.last_visit).format('MMM D, YYYY')
+								: 'Unknown'}
 							</div>
 						</div>
 						<div>
@@ -305,12 +305,9 @@ export function ProfileRow({
 													{session.session_name}
 												</div>
 												<div className="text-muted-foreground text-xs">
-													{session.first_visit
-														? format(
-																new Date(session.first_visit),
-																'MMM d, HH:mm'
-															)
-														: 'Unknown'}
+																									{session.first_visit
+													? dayjs(session.first_visit).format('MMM D, HH:mm')
+													: 'Unknown'}
 												</div>
 											</div>
 										</div>
