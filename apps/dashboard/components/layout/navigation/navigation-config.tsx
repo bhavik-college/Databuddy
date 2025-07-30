@@ -1,7 +1,6 @@
 import {
 	BugIcon,
 	ChatCircleIcon,
-	UserIcon,
 	CurrencyDollarIcon,
 	FunnelIcon,
 	GearIcon,
@@ -12,6 +11,7 @@ import {
 	RobotIcon,
 	TargetIcon,
 	TestTubeIcon,
+	UserIcon,
 	UsersIcon,
 } from '@phosphor-icons/react';
 import type { NavigationSection } from './types';

@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
 		ignoreBuildErrors: true,
 	},
 	images: {
-		domains: ['cdn.databuddy.cc', 'localhost'],
+		domains: ['cdn.databuddy.cc', 'localhost', 'icons.duckduckgo.com'],
 	},
 	output: 'standalone',
 };
