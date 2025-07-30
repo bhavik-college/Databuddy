@@ -19,6 +19,12 @@ import { WebsiteHeader } from './navigation/website-header';
 import { OrganizationSelector } from './organization-selector';
 import { TopHeader } from './top-header';
 
+type NavigationConfig = {
+	navigation: typeof mainNavigation;
+	header: React.ReactNode;
+	currentWebsiteId?: string | null;
+};
+
 export function Sidebar() {
 	const pathname = usePathname();
 	const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -48,72 +54,38 @@ export function Sidebar() {
 		return () => document.removeEventListener('keydown', handleKeyDown);
 	}, [isMobileOpen, closeSidebar]);
 
-	const renderNavigation = () => {
+	const getNavigationConfig = (): NavigationConfig => {
 		if (isWebsite) {
-			return (
-				<div className="space-y-4">
-					<WebsiteHeader website={currentWebsite} />
-					{websiteNavigation.map((section) => (
-						<NavigationSection
-							currentWebsiteId={websiteId}
-							items={section.items}
-							key={section.title}
-							pathname={pathname}
-							title={section.title}
-						/>
-					))}
-				</div>
-			);
+			return {
+				navigation: websiteNavigation,
+				header: <WebsiteHeader website={currentWebsite} />,
+				currentWebsiteId: websiteId,
+			};
 		}
 
 		if (isDemo) {
-			return (
-				<div className="space-y-4">
-					<WebsiteHeader website={currentWebsite} />
-					{demoNavigation.map((section) => (
-						<NavigationSection
-							currentWebsiteId={websiteId}
-							items={section.items}
-							key={section.title}
-							pathname={pathname}
-							title={section.title}
-						/>
-					))}
-				</div>
-			);
+			return {
+				navigation: demoNavigation,
+				header: <WebsiteHeader website={currentWebsite} />,
+				currentWebsiteId: websiteId,
+			};
 		}
 
 		if (isSandbox) {
-			return (
-				<div className="space-y-4">
-					<SandboxHeader />
-					{sandboxNavigation.map((section) => (
-						<NavigationSection
-							currentWebsiteId="sandbox"
-							items={section.items}
-							key={section.title}
-							pathname={pathname}
-							title={section.title}
-						/>
-					))}
-				</div>
-			);
+			return {
+				navigation: sandboxNavigation,
+				header: <SandboxHeader />,
+				currentWebsiteId: 'sandbox',
+			};
 		}
 
-		return (
-			<div className="space-y-4">
-				<OrganizationSelector />
-				{mainNavigation.map((section) => (
-					<NavigationSection
-						items={section.items}
-						key={section.title}
-						pathname={pathname}
-						title={section.title}
-					/>
-				))}
-			</div>
-		);
+		return {
+			navigation: mainNavigation,
+			header: <OrganizationSelector />,
+		};
 	};
+
+	const { navigation, header, currentWebsiteId } = getNavigationConfig();
 
 	return (
 		<>
@@ -124,6 +96,8 @@ export function Sidebar() {
 					className="fixed inset-0 z-30 bg-black/20 md:hidden"
 					onClick={closeSidebar}
 					onKeyDown={closeSidebar}
+					role="button"
+					tabIndex={0}
 				/>
 			)}
 
@@ -145,7 +119,18 @@ export function Sidebar() {
 				</Button>
 
 				<ScrollArea className="h-[calc(100vh-4rem)]">
-					<div className="select-none space-y-4 p-3">{renderNavigation()}</div>
+					<div className="select-none space-y-4 p-3">
+						{header}
+						{navigation.map((section) => (
+							<NavigationSection
+								currentWebsiteId={currentWebsiteId}
+								items={section.items}
+								key={section.title}
+								pathname={pathname}
+								title={section.title}
+							/>
+						))}
+					</div>
 				</ScrollArea>
 			</div>
 		</>
