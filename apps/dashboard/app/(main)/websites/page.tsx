@@ -170,10 +170,6 @@ export default function WebsitesPage() {
 		refetch();
 	};
 
-	const handleWebsiteCreated = () => {
-		refetch();
-	};
-
 	return (
 		<div className="flex h-full flex-col">
 			{/* Enhanced header */}
@@ -283,7 +279,6 @@ export default function WebsitesPage() {
 			{/* Website Dialog */}
 			<WebsiteDialog
 				onOpenChange={setDialogOpen}
-				onSave={handleWebsiteCreated}
 				open={dialogOpen}
 			/>
 		</div>

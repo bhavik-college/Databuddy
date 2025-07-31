@@ -36,31 +36,19 @@ export function useWebsite(id: string) {
 export function useCreateWebsite() {
 	const utils = trpc.useUtils();
 	return trpc.websites.create.useMutation({
-		onMutate: async (newWebsite) => {
+		onSuccess: (newWebsite, variables) => {
 			const queryKey = {
-				organizationId: newWebsite.organizationId ?? undefined,
+				organizationId: variables.organizationId ?? undefined,
 			};
-			await utils.websites.list.cancel(queryKey);
-			const previousWebsites = utils.websites.list.getData(queryKey);
-
+			
 			utils.websites.list.setData(queryKey, (old) => {
-				const optimisticWebsite = {
-					...newWebsite,
-					id: crypto.randomUUID(),
-					createdAt: new Date().toISOString(),
-				} as Website;
-				return old ? [...old, optimisticWebsite] : [optimisticWebsite];
+				if (!old) return [newWebsite];
+				const exists = old.some(w => w.id === newWebsite.id);
+				return exists ? old : [...old, newWebsite];
 			});
-
-			return { previousWebsites, queryKey };
 		},
-		onError: (_, __, context) => {
-			if (context?.previousWebsites) {
-				utils.websites.list.setData(context.queryKey, context.previousWebsites);
-			}
-		},
-		onSettled: (_, __, ___, context) => {
-			utils.websites.list.invalidate(context?.queryKey);
+		onError: (error) => {
+			console.error('Failed to create website:', error);
 		},
 	});
 }
@@ -68,46 +56,22 @@ export function useCreateWebsite() {
 export function useUpdateWebsite() {
 	const utils = trpc.useUtils();
 	return trpc.websites.update.useMutation({
-		onMutate: async (updatedWebsite) => {
+		onSuccess: (updatedWebsite) => {
 			const getByIdKey = { id: updatedWebsite.id };
-			await utils.websites.getById.cancel(getByIdKey);
-			const previousWebsite = utils.websites.getById.getData(getByIdKey);
-
 			const listKey = {
-				organizationId: previousWebsite?.organizationId ?? undefined,
+				organizationId: updatedWebsite.organizationId ?? undefined,
 			};
-			await utils.websites.list.cancel(listKey);
-			const previousWebsites = utils.websites.list.getData(listKey);
 
 			utils.websites.list.setData(listKey, (old) =>
 				old?.map((website) =>
-					website.id === updatedWebsite.id
-						? { ...website, ...updatedWebsite }
-						: website
-				)
+					website.id === updatedWebsite.id ? updatedWebsite : website
+				) ?? []
 			);
-			utils.websites.getById.setData(getByIdKey, (old) =>
-				old ? { ...old, ...updatedWebsite } : undefined
-			);
-
-			return { previousWebsites, previousWebsite, listKey };
+			
+			utils.websites.getById.setData(getByIdKey, updatedWebsite);
 		},
-		onError: (_, updatedWebsite, context) => {
-			if (context?.previousWebsites && context.listKey) {
-				utils.websites.list.setData(context.listKey, context.previousWebsites);
-			}
-			if (context?.previousWebsite) {
-				utils.websites.getById.setData(
-					{ id: updatedWebsite.id },
-					context.previousWebsite
-				);
-			}
-		},
-		onSettled: (data, __, ___, context) => {
-			utils.websites.list.invalidate(context?.listKey);
-			if (data) {
-				utils.websites.getById.invalidate({ id: data.id });
-			}
+		onError: (error) => {
+			console.error('Failed to update website:', error);
 		},
 	});
 }
@@ -117,12 +81,12 @@ export function useDeleteWebsite() {
 	return trpc.websites.delete.useMutation({
 		onMutate: async ({ id }) => {
 			const getByIdKey = { id };
-			await utils.websites.getById.cancel(getByIdKey);
 			const previousWebsite = utils.websites.getById.getData(getByIdKey);
 
 			const listKey = {
 				organizationId: previousWebsite?.organizationId ?? undefined,
 			};
+
 			await utils.websites.list.cancel(listKey);
 			const previousWebsites = utils.websites.list.getData(listKey);
 
@@ -130,21 +94,16 @@ export function useDeleteWebsite() {
 				listKey,
 				(old) => old?.filter((w) => w.id !== id) ?? []
 			);
-			utils.websites.getById.setData(getByIdKey, undefined);
 
-			return { previousWebsites, previousWebsite, listKey };
+			return { previousWebsites, listKey };
 		},
-		onError: (_, { id }, context) => {
+		onError: (_, __, context) => {
 			if (context?.previousWebsites && context.listKey) {
 				utils.websites.list.setData(context.listKey, context.previousWebsites);
 			}
-			if (context?.previousWebsite) {
-				utils.websites.getById.setData({ id }, context.previousWebsite);
-			}
 		},
-		onSettled: (_, __, { id }, context) => {
-			utils.websites.list.invalidate(context?.listKey);
-			utils.websites.getById.invalidate({ id });
+		onSuccess: (_, { id }) => {
+			utils.websites.getById.setData({ id }, undefined);
 		},
 	});
 }

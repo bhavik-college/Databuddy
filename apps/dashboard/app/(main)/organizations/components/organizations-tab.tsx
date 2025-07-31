@@ -2,13 +2,10 @@
 
 import {
 	ArrowRightIcon,
-	BuildingsIcon,
 	CalendarIcon,
 	CheckIcon,
 	GearIcon,
-	PlusIcon,
 	TrashIcon,
-	UsersIcon,
 } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -29,7 +26,7 @@ import {
 import {
 	type ActiveOrganization,
 	type Organization,
-	useOrganizations,
+useOrganizations,
 } from '@/hooks/use-organizations';
 import { cn, getOrganizationInitials } from '@/lib/utils';
 import { OnboardingCard } from './onboarding-card';
