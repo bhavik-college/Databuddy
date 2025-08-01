@@ -1,4 +1,4 @@
-import { ArrowLeft, Home } from 'lucide-react';
+import { HouseIcon } from '@phosphor-icons/react/ssr';
 import Link from 'next/link';
 import { Logo } from '@/components/layout/logo';
 import { Button } from '@/components/ui/button';
@@ -50,19 +50,8 @@ export default function NotFound() {
 						variant="default"
 					>
 						<Link href="/websites">
-							<Home className="mr-2 h-4 w-4" />
+							<HouseIcon className="mr-2 h-4 w-4" size={16} weight="duotone" />
 							Home
-						</Link>
-					</Button>
-
-					<Button
-						asChild
-						className="flex-1 border-primary/20 hover:bg-primary/5"
-						variant="outline"
-					>
-						<Link href="javascript:history.back()">
-							<ArrowLeft className="mr-2 h-4 w-4" />
-							Go Back
 						</Link>
 					</Button>
 				</div>
