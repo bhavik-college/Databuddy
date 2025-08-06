@@ -22,12 +22,35 @@
 	const noop = () => {};
 	
 	const validateUrl = (url) => {
-		if (!url || url === 'direct') return url;
+ 		if (typeof url !== 'string' || !url) {
+			return null;
+		}
 		try {
 			new URL(url);
 			return url;
 		} catch {
 			return null;
+		}
+	};
+
+	const sanitizeUrl = (url) => {
+		if (typeof url !== 'string' || !url) {
+			return url;
+		}
+
+		try {
+			const urlObj = new URL(url);
+			const sensitiveParams = ['token', 'api_key', 'session', 'auth', 'password', 'secret', 'key', 'access_token', 'refresh_token', 'id_token'];
+			
+			// Remove sensitive query parameters
+			sensitiveParams.forEach(param => {
+				urlObj.searchParams.delete(param);
+			});
+
+			return urlObj.toString();
+		} catch {
+			// If URL parsing fails, return the original URL
+			return url;
 		}
 	};
 	
@@ -59,7 +82,7 @@
 	}
 
 	// HTTP Client
-	const c = class {
+	const HttpClient = class {
 		constructor(config) {
 			this.baseUrl = config.baseUrl;
 			this.staticHeaders = {};
@@ -197,7 +220,7 @@
 				'databuddy-sdk-version': this.options.sdkVersion || '1.0.0',
 			};
 
-			this.api = new c({
+			this.api = new HttpClient({
 				baseUrl: this.options.apiUrl || 'https://basket.databuddy.cc',
 				defaultHeaders: headers,
 				maxRetries: this.options.maxRetries,
@@ -775,17 +798,20 @@
 
 
 
-		getConnectionInfo() {
-			const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-			if (!connection) {
-				return { connection_type: null, rtt: null, downlink: null };
-			}
-			return {
-				connection_type: connection.effectiveType || connection.type || null,
-				rtt: connection.rtt || null,
-				downlink: connection.downlink || null,
-			};
+			getConnectionInfo() {
+		if (typeof navigator === 'undefined') {
+			return { connection_type: null, rtt: null, downlink: null };
 		}
+		const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+		if (!connection) {
+			return { connection_type: null, rtt: null, downlink: null };
+		}
+		return {
+			connection_type: connection.effectiveType || connection.type || null,
+			rtt: connection.rtt || null,
+			downlink: connection.downlink || null,
+		};
+	}
 
 		getBaseContext() {
 			if (this.isServer()) {
@@ -802,8 +828,8 @@
 			const screen_resolution =
 				screenWidth && screenHeight ? `${screenWidth}x${screenHeight}` : null;
 
-			const referrer = validateUrl(this.global?.referrer || document.referrer || 'direct');
-			const path = validateUrl(window.location.href);
+			const referrer = validateUrl(sanitizeUrl(this.global?.referrer || document.referrer || 'direct'));
+			const path = validateUrl(sanitizeUrl(window.location.href));
 
 			return {
 				path,
@@ -955,7 +981,7 @@
 
 			const i = () =>
 				this.debounce(() => {
-					const previous_path = this.lastPath || window.location.href;
+					const previous_path = this.lastPath || sanitizeUrl(window.location.href);
 					this.setGlobalProperties({
 						referrer: previous_path,
 					});
@@ -1014,7 +1040,7 @@
 				i = t;
 				n = r;
 			} else {
-				i = window.location.href;
+				i = sanitizeUrl(window.location.href);
 				n = t;
 			}
 
