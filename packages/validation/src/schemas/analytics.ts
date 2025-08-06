@@ -61,11 +61,14 @@ export const analyticsEventSchema = z.object({
 	sessionId: z.string().nullable().optional(),
 	timestamp: timestampSchema,
 	sessionStartTime: timestampSchema,
-	referrer: z
-		.union([
-			z.url({ protocol: /^https?$/, hostname: z.regexes.domain }),
-			z.literal('direct'),
-		])
+	referrer: (process.env.NODE_ENV === 'development'
+		? z.any()
+		: z
+				.union([
+					z.url({ protocol: /^https?$/, hostname: z.regexes.domain }),
+					z.literal('direct'),
+				])
+	)
 		.nullable()
 		.optional(),
 	path: z.union([

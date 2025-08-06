@@ -117,7 +117,7 @@ export default function RootLayout({
 		>
 			<Databuddy
 				apiUrl={
-					isLocalhost ? 'http://localhost:4001' : 'https://basket.databuddy.cc'
+					isLocalhost ? 'http://localhost:4000' : 'https://basket.databuddy.cc'
 				}
 				clientId={
 					isLocalhost
