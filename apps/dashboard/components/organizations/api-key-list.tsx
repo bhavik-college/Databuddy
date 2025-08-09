@@ -108,7 +108,7 @@ export function ApiKeyList({
 					</div>
 				</div>
 				<Button onClick={onCreateNew} type="button">
-					<PlusIcon className="mr-2 h-4 w-4 not-dark:text-primary" />
+					<PlusIcon className="mr-2 h-4 w-4" />
 					Create Key
 				</Button>
 			</div>

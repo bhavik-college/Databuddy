@@ -36,6 +36,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { type Organization, useOrganizations } from '@/hooks/use-organizations';
 import { trpc } from '@/lib/trpc';
 import { OrganizationLogoUploader } from './organization-logo-uploader';
@@ -122,231 +123,305 @@ export function SettingsTab({ organization }: SettingsTabProps) {
 
 	const hasChanges = name !== organization.name || slug !== organization.slug;
 
+	const [activeTab, setActiveTab] = useState('general');
+
 	return (
 		<div className="space-y-8">
-			{/* Organization Settings */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
-						<GearIcon
-							className="h-5 w-5 not-dark:text-primary"
-							size={16}
-							weight="duotone"
-						/>
-						Organization Settings
-					</CardTitle>
-					<CardDescription>
-						Update your organization's basic information
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-6">
-					{/* Logo Section */}
-					<OrganizationLogoUploader organization={organization} />
-
-					{/* Name */}
-					<div className="space-y-2">
-						<Label htmlFor="org-name">Organization Name</Label>
-						<Input
-							className="rounded"
-							id="org-name"
-							onChange={(e) => setName(e.target.value)}
-							placeholder="My Organization"
-							value={name}
-						/>
+			<Tabs
+				className="space-y-8"
+				defaultValue="general"
+				onValueChange={setActiveTab}
+				value={activeTab}
+			>
+				{/* Enhanced Tab Navigation */}
+				<div className="border-border/50 border-b">
+					<div className="mx-auto max-w-7xl">
+						<TabsList className="h-12 w-full justify-start overflow-x-auto border-0 bg-transparent p-0">
+							<TabsTrigger
+								className="relative h-12 cursor-pointer touch-manipulation whitespace-nowrap rounded-none px-6 font-medium text-sm transition-all duration-200 hover:bg-muted/50 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+								value="general"
+							>
+								<GearIcon className="mr-2 h-4 w-4 not-dark:text-primary" />
+								<span>General</span>
+								{activeTab === 'general' && (
+									<div className="absolute bottom-0 left-0 h-[3px] w-full rounded-t-full bg-gradient-to-r from-primary to-primary/80" />
+								)}
+							</TabsTrigger>
+							<TabsTrigger
+								className="relative h-12 cursor-pointer touch-manipulation whitespace-nowrap rounded-none px-6 font-medium text-sm transition-all duration-200 hover:bg-muted/50 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+								value="websites"
+							>
+								<GlobeIcon className="mr-2 h-4 w-4 not-dark:text-primary" />
+								<span>Websites</span>
+								{activeTab === 'websites' && (
+									<div className="absolute bottom-0 left-0 h-[3px] w-full rounded-t-full bg-gradient-to-r from-primary to-primary/80" />
+								)}
+							</TabsTrigger>
+							<TabsTrigger
+								className="relative h-12 cursor-pointer touch-manipulation whitespace-nowrap rounded-none px-6 font-medium text-sm transition-all duration-200 hover:bg-muted/50 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+								value="apikeys"
+							>
+								<KeyIcon className="mr-2 h-4 w-4 not-dark:text-primary" />
+								<span>API Keys</span>
+								{activeTab === 'apikeys' && (
+									<div className="absolute bottom-0 left-0 h-[3px] w-full rounded-t-full bg-gradient-to-r from-primary to-primary/80" />
+								)}
+							</TabsTrigger>
+							<TabsTrigger
+								className="relative h-12 cursor-pointer touch-manipulation whitespace-nowrap rounded-none px-6 font-medium text-sm transition-all duration-200 hover:bg-muted/50 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+								value="danger"
+							>
+								<WarningIcon
+									className="mr-2 h-4 w-4 text-red-500"
+									weight="duotone"
+								/>
+								<span>Danger Zone</span>
+								{activeTab === 'danger' && (
+									<div className="absolute bottom-0 left-0 h-[3px] w-full rounded-t-full bg-gradient-to-r from-primary to-primary/80" />
+								)}
+							</TabsTrigger>
+						</TabsList>
 					</div>
+				</div>
 
-					{/* Slug */}
-					<div className="space-y-2">
-						<Label htmlFor="org-slug">Organization Slug</Label>
-						<Input
-							className="rounded font-mono"
-							id="org-slug"
-							onChange={(e) => handleSlugChange(e.target.value)}
-							placeholder="my-organization"
-							value={slug}
-						/>
-						<p className="text-muted-foreground text-xs">
-							This will be used in your organization URL: /organizations/
-							{slug || 'your-slug'}
-						</p>
-					</div>
-
-					{/* Save Button */}
-					<div className="flex justify-end pt-4">
-						<Button
-							className="rounded"
-							disabled={!hasChanges || isSaving}
-							onClick={handleSave}
-						>
-							{isSaving ? (
-								<>
-									<div className="mr-2 h-3 w-3 animate-spin rounded-full border border-primary-foreground/30 border-t-primary-foreground" />
-									Saving...
-								</>
-							) : (
-								<>
-									<FloppyDiskIcon className="mr-2 h-4 w-4" size={16} />
-									Save Changes
-								</>
-							)}
-						</Button>
-					</div>
-				</CardContent>
-			</Card>
-
-			{/* Organization Websites */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
-						<GlobeIcon
-							className="h-5 w-5 not-dark:text-primary"
-							size={16}
-							weight="duotone"
-						/>
-						Organization Websites
-					</CardTitle>
-					<CardDescription>
-						Websites that belong to this organization
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					{isLoadingWebsites ? (
-						<div className="space-y-3">
-							{[1, 2, 3].map((i) => (
-								<div
-									className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/50 p-3"
-									key={i}
-								>
-									<Skeleton className="h-10 w-10 rounded-lg" />
-									<div className="flex-1 space-y-2">
-										<Skeleton className="h-4 w-32" />
-										<Skeleton className="h-3 w-24" />
+				{/* Tab Content with improved spacing */}
+				<div className="py-4">
+					<TabsContent className="mt-0" value="general">
+						<Card>
+							<CardHeader>
+								<div className="flex items-center gap-2">
+									<div className="rounded border p-2">
+										<GearIcon
+											className="h-5 w-5 not-dark:text-primary"
+											size={16}
+											weight="duotone"
+										/>
+									</div>
+									<div>
+										<CardTitle>Organization Settings</CardTitle>
+										<CardDescription>
+											Update your organization's basic information
+										</CardDescription>
 									</div>
 								</div>
-							))}
-						</div>
-					) : websites && websites.length > 0 ? (
-						<div className="space-y-3">
-							{websites.map((website) => (
-								<div
-									className="flex items-center justify-between rounded-lg border border-border/50 bg-background/50 p-3"
-									key={website.id}
-								>
-									<div className="flex items-center gap-3">
-										<div className="rounded bg-primary/10 p-2">
-											<GlobeIcon className="h-4 w-4 text-primary" size={16} />
-										</div>
-										<div>
-											<p className="font-medium text-foreground text-sm">
-												{website.name}
-											</p>
-											<p className="text-muted-foreground text-xs">
-												{website.domain}
-											</p>
-										</div>
-									</div>
-									<Badge className="px-2 py-1 text-xs" variant="secondary">
-										{website.status}
-									</Badge>
+							</CardHeader>
+							<CardContent className="space-y-6">
+								<OrganizationLogoUploader organization={organization} />
+								<div className="space-y-2">
+									<Label htmlFor="org-name">Organization Name</Label>
+									<Input
+										className="rounded"
+										id="org-name"
+										onChange={(e) => setName(e.target.value)}
+										placeholder="My Organization"
+										value={name}
+									/>
 								</div>
-							))}
-						</div>
-					) : (
-						<div className="mx-auto py-8 text-center">
-							<GlobeIcon
-								className="mx-auto mb-2 h-8 w-8 not-dark:text-primary"
-								size={32}
-								weight="duotone"
-							/>
-							<p className="mx-auto text-muted-foreground text-sm">
-								No websites in this organization
-							</p>
-							<p className="mx-auto mt-1 text-muted-foreground text-xs">
-								Transfer websites from your personal account or create new ones
-							</p>
-						</div>
-					)}
-				</CardContent>
-			</Card>
+								<div className="space-y-2">
+									<Label htmlFor="org-slug">Organization Slug</Label>
+									<Input
+										className="rounded font-mono"
+										id="org-slug"
+										onChange={(e) => handleSlugChange(e.target.value)}
+										placeholder="my-organization"
+										value={slug}
+									/>
+									<p className="text-muted-foreground text-xs">
+										This will be used in your organization URL: /organizations/
+										{slug || 'your-slug'}
+									</p>
+								</div>
+								<div className="flex justify-end pt-4">
+									<Button
+										className="rounded"
+										disabled={!hasChanges || isSaving}
+										onClick={handleSave}
+									>
+										{isSaving ? (
+											<>
+												<div className="mr-2 h-3 w-3 animate-spin rounded-full border border-primary-foreground/30 border-t-primary-foreground" />
+												Saving...
+											</>
+										) : (
+											<>
+												<FloppyDiskIcon className="mr-2 h-4 w-4" size={16} />
+												Save Changes
+											</>
+										)}
+									</Button>
+								</div>
+							</CardContent>
+						</Card>
+					</TabsContent>
 
-			{/* API Keys */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
-						<KeyIcon
-							className="h-5 w-5 not-dark:text-primary"
-							size={16}
-							weight="duotone"
-						/>
-						API Keys
-					</CardTitle>
-					<CardDescription>
-						Create and manage API keys for this organization
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<ApiKeyList
-						onCreateNew={() => setShowCreateKey(true)}
-						onSelect={(id) => {
-							setSelectedKeyId(id);
-							setShowKeyDetail(true);
-						}}
-						organizationId={organization.id}
-					/>
-				</CardContent>
-			</Card>
+					<TabsContent className="mt-0" value="websites">
+						<Card>
+							<CardHeader>
+								<div className="flex items-center gap-2">
+									<div className="rounded border p-2">
+										<GlobeIcon
+											className="h-5 w-5 not-dark:text-primary"
+											size={16}
+											weight="duotone"
+										/>
+									</div>
+									<div>
+										<CardTitle>Organization Websites</CardTitle>
+										<CardDescription>
+											Websites that belong to this organization
+										</CardDescription>
+									</div>
+								</div>
+							</CardHeader>
+							<CardContent>
+								{isLoadingWebsites ? (
+									<div className="space-y-3">
+										{[1, 2, 3].map((i) => (
+											<div
+												className="flex items-center gap-3 rounded border border-border/50 bg-background/50 p-3"
+												key={i}
+											>
+												<Skeleton className="h-10 w-10 rounded" />
+												<div className="flex-1 space-y-2">
+													<Skeleton className="h-4 w-32" />
+													<Skeleton className="h-3 w-24" />
+												</div>
+											</div>
+										))}
+									</div>
+								) : websites && websites.length > 0 ? (
+									<div className="space-y-3">
+										{websites.map((website) => (
+											<div
+												className="flex items-center justify-between rounded border border-border/50 bg-background/50 p-3"
+												key={website.id}
+											>
+												<div className="flex items-center gap-3">
+													<div className="rounded bg-primary/10 p-2">
+														<GlobeIcon
+															className="h-4 w-4 text-primary"
+															size={16}
+														/>
+													</div>
+													<div>
+														<p className="font-medium text-foreground text-sm">
+															{website.name}
+														</p>
+														<p className="text-muted-foreground text-xs">
+															{website.domain}
+														</p>
+													</div>
+												</div>
+												<Badge
+													className="px-2 py-1 text-xs"
+													variant="secondary"
+												>
+													{website.status}
+												</Badge>
+											</div>
+										))}
+									</div>
+								) : (
+									<div className="mx-auto py-8 text-center">
+										<GlobeIcon
+											className="mx-auto mb-2 h-8 w-8 not-dark:text-primary"
+											size={32}
+											weight="duotone"
+										/>
+										<p className="mx-auto text-muted-foreground text-sm">
+											No websites in this organization
+										</p>
+										<p className="mx-auto mt-1 text-muted-foreground text-xs">
+											Transfer websites from your personal account or create new
+											ones
+										</p>
+									</div>
+								)}
+							</CardContent>
+						</Card>
+					</TabsContent>
 
-			{/* Danger Zone */}
-			<Card className="border-destructive/20 bg-destructive/5">
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2 text-destructive">
-						<WarningIcon className="h-5 w-5" size={16} weight="duotone" />
-						Danger Zone
-					</CardTitle>
-					<CardDescription className="text-destructive/70">
-						Irreversible actions that will permanently affect your organization
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-6">
-					<TransferAssets organizationId={organization.id} />
+					<TabsContent className="mt-0" value="apikeys">
+						<Card>
+							<CardContent>
+								<ApiKeyList
+									onCreateNew={() => setShowCreateKey(true)}
+									onSelect={(id) => {
+										setSelectedKeyId(id);
+										setShowKeyDetail(true);
+									}}
+									organizationId={organization.id}
+								/>
+							</CardContent>
+						</Card>
+					</TabsContent>
 
-					<div className="space-y-3">
-						<div>
-							<h4 className="mb-2 font-medium text-foreground">
-								Delete Organization
-							</h4>
-							<p className="text-muted-foreground text-sm">
-								Permanently delete this organization and all associated data.
-								This action cannot be undone. All team members will lose access
-								and any shared resources will be removed.
-							</p>
-						</div>
+					<TabsContent className="mt-0" value="danger">
+						<Card className="border-destructive/20 bg-destructive/5">
+							<CardHeader>
+								<div className="flex items-center gap-2">
+									<div className="rounded border p-2">
+										<WarningIcon
+											className="h-5 w-5 text-red-500"
+											size={16}
+											weight="duotone"
+										/>
+									</div>
+									<div>
+										<CardTitle className="text-destructive">
+											Danger Zone
+										</CardTitle>
+										<CardDescription className="text-destructive/70">
+											Irreversible actions that will permanently affect your
+											organization
+										</CardDescription>
+									</div>
+								</div>
+							</CardHeader>
+							<CardContent className="space-y-6">
+								<TransferAssets organizationId={organization.id} />
+								<div className="space-y-3">
+									<div>
+										<h4 className="mb-2 font-medium text-foreground">
+											Delete Organization
+										</h4>
+										<p className="text-muted-foreground text-sm">
+											Permanently delete this organization and all associated
+											data. This action cannot be undone. All team members will
+											lose access and any shared resources will be removed.
+										</p>
+									</div>
+									<Button
+										className="rounded"
+										onClick={() => setShowDeleteDialog(true)}
+										variant="destructive"
+									>
+										<TrashIcon className="mr-2 h-4 w-4" size={16} />
+										Delete Organization
+									</Button>
+								</div>
+							</CardContent>
+						</Card>
+					</TabsContent>
+				</div>
+			</Tabs>
 
-						{/* API Key Dialogs */}
-						<ApiKeyCreateDialog
-							onOpenChange={setShowCreateKey}
-							open={showCreateKey}
-							organizationId={organization.id}
-						/>
-						<ApiKeyDetailDialog
-							keyId={selectedKeyId}
-							onOpenChange={(open) => {
-								setShowKeyDetail(open);
-								if (!open) setSelectedKeyId(null);
-							}}
-							open={showKeyDetail}
-						/>
-						<Button
-							className="rounded-lg"
-							onClick={() => setShowDeleteDialog(true)}
-							variant="destructive"
-						>
-							<TrashIcon className="mr-2 h-4 w-4" size={16} />
-							Delete Organization
-						</Button>
-					</div>
-				</CardContent>
-			</Card>
+			{/* API Key Dialogs */}
+			<ApiKeyCreateDialog
+				onOpenChange={setShowCreateKey}
+				open={showCreateKey}
+				organizationId={organization.id}
+			/>
+			<ApiKeyDetailDialog
+				keyId={selectedKeyId}
+				onOpenChange={(open) => {
+					setShowKeyDetail(open);
+					if (!open) {
+						setSelectedKeyId(null);
+					}
+				}}
+				open={showKeyDetail}
+			/>
 
 			{/* Delete Confirmation Dialog */}
 			<AlertDialog onOpenChange={setShowDeleteDialog} open={showDeleteDialog}>

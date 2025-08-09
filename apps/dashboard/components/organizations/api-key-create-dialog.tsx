@@ -322,7 +322,7 @@ export function ApiKeyCreateDialog({
 												onClick={addWebsite}
 												type="button"
 											>
-												<PlusIcon className="mr-2 h-4 w-4 not-dark:text-primary" />
+												<PlusIcon className="mr-2 h-4 w-4" />
 												Add
 											</Button>
 										</div>
