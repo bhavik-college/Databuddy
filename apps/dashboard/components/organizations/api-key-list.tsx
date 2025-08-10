@@ -121,7 +121,6 @@ export function ApiKeyList({
 							<TableRow>
 								<TableHead>Name</TableHead>
 								<TableHead>Prefix</TableHead>
-								<TableHead>Type</TableHead>
 								<TableHead>Status</TableHead>
 								<TableHead>Created</TableHead>
 								<TableHead>Updated</TableHead>
@@ -150,11 +149,6 @@ export function ApiKeyList({
 										<code className="rounded-md bg-muted/50 px-2 py-1 font-mono text-muted-foreground text-xs transition-colors group-hover:bg-muted/70">
 											{k.prefix}_{k.start}
 										</code>
-									</TableCell>
-									<TableCell className="px-6 py-4">
-										<div className="inline-flex items-center rounded-full bg-secondary/50 px-2 py-1 font-medium text-secondary-foreground text-xs capitalize">
-											{k.type}
-										</div>
 									</TableCell>
 									<TableCell className="px-6 py-4">
 										{k.enabled && !k.revokedAt ? (

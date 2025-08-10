@@ -1,3 +1,5 @@
+const UNAUTHORIZED_RE = /unauthorized/i;
+const FORBIDDEN_RE = /forbidden/i;
 import './polyfills/compression';
 import { auth } from '@databuddy/auth';
 import { appRouter, createTRPCContext } from '@databuddy/rpc';
@@ -6,7 +8,6 @@ import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import { autumnHandler } from 'autumn-js/elysia';
 import { Elysia } from 'elysia';
 import { logger } from './lib/logger';
-import { createAuthMiddleware } from './middleware/auth';
 import { assistant } from './routes/assistant';
 import { health } from './routes/health';
 import { query } from './routes/query';
@@ -23,7 +24,6 @@ const app = new Elysia()
 			],
 		})
 	)
-	.use(createAuthMiddleware())
 	.use(
 		autumnHandler({
 			identify: async ({ request }) => {
@@ -57,7 +57,10 @@ const app = new Elysia()
 		const errorMessage = error instanceof Error ? error.message : String(error);
 		logger.error(errorMessage, { error });
 
-		if (error instanceof Error && error.message === 'Unauthorized') {
+		if (
+			error instanceof Error &&
+			(UNAUTHORIZED_RE.test(error.message) || error.message === 'Unauthorized')
+		) {
 			return new Response(
 				JSON.stringify({
 					success: false,
@@ -71,7 +74,45 @@ const app = new Elysia()
 			);
 		}
 
-		return { success: false, code };
+		if (
+			error instanceof Error &&
+			(FORBIDDEN_RE.test(error.message) || error.message === 'Forbidden')
+		) {
+			return new Response(
+				JSON.stringify({
+					success: false,
+					error: 'Insufficient permissions',
+					code: 'FORBIDDEN',
+				}),
+				{
+					status: 403,
+					headers: { 'Content-Type': 'application/json' },
+				}
+			);
+		}
+
+		if (error instanceof Error && error.message === 'Website not found') {
+			return new Response(
+				JSON.stringify({
+					success: false,
+					error: 'Website not found',
+					code: 'NOT_FOUND',
+				}),
+				{
+					status: 404,
+					headers: { 'Content-Type': 'application/json' },
+				}
+			);
+		}
+
+		return new Response(
+			JSON.stringify({
+				success: false,
+				error: errorMessage,
+				code: code ?? 'INTERNAL_SERVER_ERROR',
+			}),
+			{ status: 500, headers: { 'Content-Type': 'application/json' } }
+		);
 	});
 
 export default {

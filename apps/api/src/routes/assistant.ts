@@ -1,4 +1,4 @@
-import { auth, type User } from '@databuddy/auth';
+import type { User } from '@databuddy/auth';
 import { Elysia } from 'elysia';
 import type { StreamingUpdate } from '../agent';
 import {
@@ -9,7 +9,8 @@ import {
 } from '../agent';
 import { validateWebsite } from '../lib/website-utils';
 import { createRateLimitMiddleware } from '../middleware/rate-limit';
-import { AssistantRequestSchema } from '../schemas';
+import { websiteAuth } from '../middleware/website-auth';
+import { AssistantRequestSchema, type AssistantRequestType } from '../schemas';
 
 // biome-ignore lint/suspicious/useAwait: async generator function doesn't need await
 async function* createErrorResponse(
@@ -20,16 +21,10 @@ async function* createErrorResponse(
 
 export const assistant = new Elysia({ prefix: '/v1/assistant' })
 	.use(createRateLimitMiddleware({ type: 'expensive' }))
-	.derive(async ({ request }) => {
-		const session = await auth.api.getSession({ headers: request.headers });
-		if (!session?.user) {
-			throw new Error('Unauthorized');
-		}
-		return { user: session.user as User, session };
-	})
+	.use(websiteAuth())
 	.post(
 		'/stream',
-		async ({ body, user }) => {
+		async ({ body, user }: { body: AssistantRequestType; user: User }) => {
 			const { message, website_id, model, context } = body;
 
 			try {
@@ -58,7 +53,7 @@ export const assistant = new Elysia({ prefix: '/v1/assistant' })
 				};
 
 				const assistantContext: AssistantContext = {
-					user,
+					user: (user ?? null) as unknown as AssistantContext['user'],
 					website,
 					debugInfo: {},
 				};
