@@ -50,12 +50,17 @@ const getCachedAccessEntries = cacheable(
 export async function getApiKeyFromHeader(
 	headers: Headers
 ): Promise<ApiKeyRow | null> {
-	const xApiKey = headers.get('x-api-key');
+	const xApiKey = headers.get('x-api-key')?.trim();
 	const auth = headers.get('authorization');
-	const bearer = auth?.toLowerCase().startsWith('bearer ')
+	const bearer = auth?.toLowerCase()?.startsWith('bearer ')
 		? auth.slice(7).trim()
 		: null;
-	const secret = xApiKey ?? bearer ?? null;
+	const secret =
+		xApiKey && xApiKey.length > 0
+			? xApiKey
+			: bearer && bearer.length > 0
+				? bearer
+				: null;
 	if (!secret) {
 		return null;
 	}

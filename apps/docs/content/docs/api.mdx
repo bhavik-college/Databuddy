@@ -9,14 +9,21 @@ Access your analytics data programmatically with Databuddy's REST API. All endpo
 
 ## 🔐 Authentication
 
-All API requests require authentication using your API key:
+All API requests require authentication using your API key. You can use either header:
 
 ```bash
 curl -H "Authorization: Bearer YOUR_API_KEY" \
   https://api.databuddy.cc/v1/analytics
 ```
 
-Get your API key from your [dashboard settings](https://app.databuddy.cc/settings/api).
+Or:
+
+```bash
+curl -H "x-api-key: YOUR_API_KEY" \
+  https://api.databuddy.cc/v1/analytics
+```
+
+Get your API key from your [dashboard settings](https://app.databuddy.cc/settings/api). Learn more about scopes and resource access on the [API Keys](../api-keys) page.
 
 ## 📊 Analytics Endpoints
 
@@ -29,6 +36,7 @@ GET /v1/websites/{website_id}/analytics
 ```
 
 **Parameters:**
+
 - `website_id` (required) - Your website ID
 - `start_date` (optional) - Start date (ISO 8601)
 - `end_date` (optional) - End date (ISO 8601)
@@ -36,12 +44,14 @@ GET /v1/websites/{website_id}/analytics
 - `metrics` (optional) - Comma-separated metrics to include
 
 **Example:**
+
 ```bash
 curl -H "Authorization: Bearer YOUR_API_KEY" \
   "https://api.databuddy.cc/v1/websites/web_123/analytics?start_date=2024-01-01&end_date=2024-01-31&granularity=day"
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -103,7 +113,9 @@ curl -H "Authorization: Bearer YOUR_API_KEY" \
 ### Get Real-time Analytics
 
 <div className="flex items-center gap-2 mb-4">
-  <span className="bg-amber-600/20 text-amber-400 py-1 px-2 rounded text-sm font-medium">Coming Soon</span>
+  <span className="bg-amber-600/20 text-amber-400 py-1 px-2 rounded text-sm font-medium">
+    Coming Soon
+  </span>
 </div>
 
 Get current active visitors and real-time metrics.
@@ -123,11 +135,13 @@ GET /v1/websites/{website_id}/events
 ```
 
 **Parameters:**
+
 - `event_name` (optional) - Filter by specific event name
 - `start_date` (optional) - Start date (ISO 8601)
 - `end_date` (optional) - End date (ISO 8601)
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -166,6 +180,7 @@ GET /v1/websites
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -190,6 +205,7 @@ GET /v1/websites/{website_id}
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -216,6 +232,7 @@ POST /v1/websites/{website_id}/assistant/chat
 ```
 
 **Request:**
+
 ```json
 {
   "message": "Show me the top pages by pageviews last week",
@@ -229,6 +246,7 @@ POST /v1/websites/{website_id}/assistant/chat
 ```
 
 **Response (Streaming):**
+
 ```json
 {
   "type": "complete",
@@ -260,6 +278,7 @@ POST /v1/track
 ```
 
 **Request:**
+
 ```json
 {
   "client_id": "your_tracking_id",
@@ -282,10 +301,11 @@ POST /v1/track
 All API endpoints are rate-limited:
 
 - **Analytics endpoints**: 100 requests per minute
-- **Real-time endpoints**: 60 requests per minute  
+- **Real-time endpoints**: 60 requests per minute
 - **Event tracking**: 1000 requests per minute
 
 Rate limit headers are included in responses:
+
 ```http
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
@@ -308,6 +328,7 @@ All errors follow a consistent format:
 ```
 
 **Common Error Codes:**
+
 - `AUTHENTICATION_FAILED` - Invalid or missing API key
 - `RATE_LIMIT_EXCEEDED` - Too many requests
 - `INVALID_WEBSITE_ID` - Website not found or no access
@@ -324,4 +345,4 @@ All errors follow a consistent format:
 ## 🔗 Base URLs
 
 - **Production**: `https://api.databuddy.cc/v1`
-- **Sandbox**: `https://api-sandbox.databuddy.cc/v1` 
+- **Sandbox**: `https://api-sandbox.databuddy.cc/v1`
