@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Footer } from '@/components/footer';
+import Section from '@/components/landing/section';
 import { Spotlight } from '@/components/landing/spotlight';
 import ActivityStats from './activity-stats';
 import CommitActivityChart from './commit-activity-chart';
@@ -246,35 +247,62 @@ export default async function ContributorsPage() {
 	const data = await fetchGitHubData();
 
 	return (
-		<div className="relative flex min-h-screen w-full flex-col overflow-hidden">
+		<div className="overflow-hidden">
 			<Spotlight transform="translateX(-60%) translateY(-50%)" />
 
 			{/* Hero Section */}
-			<ContributorsHero
-				contributors={data.stats.totalContributors}
-				forks={data.repo.forks_count}
-				issues={data.repo.open_issues_count}
-				stars={data.repo.stargazers_count}
-			/>
+			<Section
+				className="overflow-hidden"
+				customPaddings
+				id="contributors-hero"
+			>
+				<ContributorsHero
+					contributors={data.stats.totalContributors}
+					forks={data.repo.forks_count}
+					issues={data.repo.open_issues_count}
+					stars={data.repo.stargazers_count}
+				/>
+			</Section>
 
-			{/* Main Content */}
-			<div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-				{/* Contributors Grid */}
-				<section className="py-16 sm:py-20 lg:py-24">
+			{/* Contributors Grid Section */}
+			<Section
+				className="border-border border-t border-b bg-background/50"
+				id="contributors-grid"
+			>
+				<div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
 					<ContributorsGrid contributors={data.contributors} />
-				</section>
+				</div>
+			</Section>
 
-				{/* Commit Activity Chart */}
-				<section className="py-16 sm:py-20 lg:py-24">
+			{/* Commit Activity Section */}
+			<Section
+				className="border-border border-b bg-background/30"
+				id="commit-activity"
+			>
+				<div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
 					<CommitActivityChart data={data.commitActivity} />
-				</section>
+				</div>
+			</Section>
 
-				{/* Activity Stats */}
-				<section className="py-16 sm:py-20 lg:py-24">
+			{/* Activity Stats Section */}
+			<Section className="bg-background/50" id="activity-stats">
+				<div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
 					<ActivityStats languages={data.languages} stats={data.stats} />
-				</section>
+				</div>
+			</Section>
+
+			{/* Gradient Divider */}
+			<div className="w-full">
+				<div className="mx-auto h-px max-w-6xl bg-gradient-to-r from-transparent via-border/30 to-transparent" />
 			</div>
+
+			{/* Footer Section */}
 			<Footer />
+
+			{/* Final Gradient Divider */}
+			<div className="w-full">
+				<div className="mx-auto h-px max-w-6xl bg-gradient-to-r from-transparent via-border/30 to-transparent" />
+			</div>
 		</div>
 	);
 }
