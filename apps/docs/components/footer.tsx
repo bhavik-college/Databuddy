@@ -156,41 +156,6 @@ export function Footer() {
 						© {new Date().getFullYear()} Databuddy
 					</p>
 					<div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
-						<a
-							className="transition-opacity hover:opacity-80"
-							href="https://twelve.tools"
-							rel="noopener"
-							target="_blank"
-						>
-							<span className="sr-only">Featured on Twelve Tools</span>
-							<svg
-								aria-hidden
-								className="h-8 w-auto sm:h-10"
-								role="img"
-								viewBox="0 0 300 80"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<title>Featured on Twelve Tools</title>
-								<rect
-									fill="currentColor"
-									height="80"
-									opacity="0.1"
-									rx="8"
-									width="300"
-								/>
-								<text
-									dominantBaseline="middle"
-									fill="currentColor"
-									fontFamily="system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
-									fontSize="16"
-									textAnchor="middle"
-									x="50%"
-									y="50%"
-								>
-									Featured on Twelve Tools
-								</text>
-							</svg>
-						</a>
 						<p className="text-muted-foreground text-sm sm:text-base">
 							Privacy-first analytics
 						</p>

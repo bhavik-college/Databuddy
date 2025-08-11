@@ -35,9 +35,13 @@ export default function Hero() {
 					{/* Text Content */}
 					<div className="order-2 flex flex-col items-center gap-6 text-center lg:order-1 lg:items-start lg:gap-8 lg:text-left">
 						<h1 className="text-balance font-semibold text-3xl leading-tight tracking-tight sm:text-5xl md:text-6xl lg:text-7xl xl:text-[72px]">
-							Privacy <span className="text-muted-foreground">first</span>
-							<br />
-							Analytics for <span className="text-muted-foreground">devs</span>
+							<span className="block whitespace-normal">
+								Privacy <span className="text-muted-foreground">first</span>
+							</span>
+							<span className="block whitespace-normal">
+								Analytics for{' '}
+								<span className="text-muted-foreground">devs</span>
+							</span>
 						</h1>
 
 						<p className="max-w-prose text-balance font-medium text-muted-foreground text-sm leading-relaxed tracking-tight sm:text-base lg:text-lg">

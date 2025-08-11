@@ -16,9 +16,15 @@ interface LogoColumnProps {
 	logos: Logo[];
 	columnIndex: number;
 	currentTime: number;
+	isLast: boolean;
 }
 
-function LogoColumn({ logos, columnIndex, currentTime }: LogoColumnProps) {
+function LogoColumn({
+	logos,
+	columnIndex,
+	currentTime,
+	isLast,
+}: LogoColumnProps) {
 	const CYCLE_DURATION = 2000;
 	const columnDelay = columnIndex * 200;
 	const adjustedTime =
@@ -46,7 +52,7 @@ function LogoColumn({ logos, columnIndex, currentTime }: LogoColumnProps) {
 	return (
 		<motion.div
 			animate={{ opacity: 1, y: 0 }}
-			className="relative h-16 w-40 overflow-hidden border-r sm:h-20 md:h-24 md:w-64 lg:w-72"
+			className={`relative h-16 w-40 overflow-hidden ${isLast ? '' : 'border-r'} sm:h-20 md:h-24 md:w-64 lg:w-72`}
 			initial={{ opacity: 0, y: 20 }}
 			transition={{
 				delay: columnIndex * 0.1,
@@ -143,6 +149,7 @@ export function LogoCarousel({ columns = 2, logos }: LogoCarouselProps) {
 				<LogoColumn
 					columnIndex={index}
 					currentTime={time}
+					isLast={index === logoColumns.length - 1}
 					key={`${index}-${columnLogos.map((logo) => logo.id).join('-')}`}
 					logos={columnLogos}
 				/>
