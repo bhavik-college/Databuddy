@@ -141,16 +141,16 @@ export default function CodeChurnChart({ data }: Props) {
 	if (!chartData.length) {
 		return (
 			<div>
-				<div className="mb-8">
-					<h3 className="mb-2 font-semibold text-2xl sm:text-3xl lg:text-4xl">
+				<div className="mb-6 sm:mb-8">
+					<h3 className="mb-2 font-semibold text-xl sm:text-2xl lg:text-3xl xl:text-4xl">
 						Code Churn Activity
 					</h3>
 					<p className="text-muted-foreground text-sm sm:text-base lg:text-lg">
 						Weekly code additions and deletions over time
 					</p>
 				</div>
-				<div className="group relative rounded border border-border bg-card/50 p-8 backdrop-blur-sm">
-					<div className="py-8 text-center text-muted-foreground">
+				<div className="group relative rounded border border-border bg-card/50 p-6 backdrop-blur-sm sm:p-8">
+					<div className="py-6 text-center text-muted-foreground text-sm sm:py-8 sm:text-base">
 						No code frequency data available
 					</div>
 
@@ -180,23 +180,27 @@ export default function CodeChurnChart({ data }: Props) {
 
 	return (
 		<div>
-			<div className="mb-8">
-				<h3 className="mb-2 font-semibold text-2xl sm:text-3xl lg:text-4xl">
+			<div className="mb-6 sm:mb-8">
+				<h3 className="mb-2 font-semibold text-xl sm:text-2xl lg:text-3xl xl:text-4xl">
 					Code Churn Activity
 				</h3>
 				<p className="text-muted-foreground text-sm sm:text-base lg:text-lg">
 					Weekly code additions and deletions over the last 6 months •{' '}
-					{insights.totalAdditions.toLocaleString()} lines added
+					<span className="font-medium">
+						{insights.totalAdditions.toLocaleString()} lines added
+					</span>
 				</p>
 			</div>
 
 			{/* Insights Cards */}
-			<div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-				<div className="group relative rounded border border-border bg-card/50 p-6 backdrop-blur-sm transition-all duration-300 hover:border-border/80 hover:bg-card/70">
-					<div className="font-bold text-2xl text-green-600">
+			<div className="mb-6 grid grid-cols-2 gap-3 sm:mb-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+				<div className="group relative rounded border border-border bg-card/50 p-4 backdrop-blur-sm transition-all duration-300 hover:border-border/80 hover:bg-card/70 sm:p-6">
+					<div className="font-bold text-green-600 text-lg sm:text-2xl">
 						+{insights.totalAdditions.toLocaleString()}
 					</div>
-					<div className="text-muted-foreground text-sm">Total Added</div>
+					<div className="text-muted-foreground text-xs sm:text-sm">
+						Total Added
+					</div>
 
 					{/* Sci-fi corners */}
 					<div className="pointer-events-none absolute inset-0">
@@ -219,11 +223,13 @@ export default function CodeChurnChart({ data }: Props) {
 					</div>
 				</div>
 
-				<div className="group relative rounded border border-border bg-card/50 p-6 backdrop-blur-sm transition-all duration-300 hover:border-border/80 hover:bg-card/70">
-					<div className="font-bold text-2xl text-red-600">
+				<div className="group relative rounded border border-border bg-card/50 p-4 backdrop-blur-sm transition-all duration-300 hover:border-border/80 hover:bg-card/70 sm:p-6">
+					<div className="font-bold text-lg text-red-600 sm:text-2xl">
 						-{insights.totalDeletions.toLocaleString()}
 					</div>
-					<div className="text-muted-foreground text-sm">Total Removed</div>
+					<div className="text-muted-foreground text-xs sm:text-sm">
+						Total Removed
+					</div>
 
 					{/* Sci-fi corners */}
 					<div className="pointer-events-none absolute inset-0">
@@ -246,14 +252,16 @@ export default function CodeChurnChart({ data }: Props) {
 					</div>
 				</div>
 
-				<div className="group relative rounded border border-border bg-card/50 p-6 backdrop-blur-sm transition-all duration-300 hover:border-border/80 hover:bg-card/70">
+				<div className="group relative rounded border border-border bg-card/50 p-4 backdrop-blur-sm transition-all duration-300 hover:border-border/80 hover:bg-card/70 sm:p-6">
 					<div
-						className={`font-bold text-2xl ${insights.netGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}
+						className={`font-bold text-lg sm:text-2xl ${insights.netGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}
 					>
 						{insights.netGrowth >= 0 ? '+' : ''}
 						{insights.netGrowth.toLocaleString()}
 					</div>
-					<div className="text-muted-foreground text-sm">Net Growth</div>
+					<div className="text-muted-foreground text-xs sm:text-sm">
+						Net Growth
+					</div>
 
 					{/* Sci-fi corners */}
 					<div className="pointer-events-none absolute inset-0">

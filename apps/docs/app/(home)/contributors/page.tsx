@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { cache } from 'react';
 import { Footer } from '@/components/footer';
 import Section from '@/components/landing/section';
 import { Spotlight } from '@/components/landing/spotlight';
@@ -125,59 +126,75 @@ function fetchWithRetry(
 	return attemptFetch(1);
 }
 
-async function fetchBasicRepoData(requestInit: RequestInit) {
+function fetchBasicRepoData(requestInit: RequestInit): Promise<GitHubRepo> {
 	// Fetch repository info
-	const repoResponse = await fetch(
-		'https://api.github.com/repos/databuddy-analytics/Databuddy',
-		requestInit
-	);
-	if (!repoResponse.ok) {
-		throw new Error(`Failed to fetch repo: ${repoResponse.status}`);
-	}
-	return await repoResponse.json();
-}
-
-async function fetchContributorsData(requestInit: RequestInit) {
-	const contributorsResponse = await fetch(
-		'https://api.github.com/repos/databuddy-analytics/Databuddy/contributors?per_page=100',
-		requestInit
-	);
-	if (!contributorsResponse.ok) {
-		throw new Error(
-			`Failed to fetch contributors: ${contributorsResponse.status}`
+	const cachedRepoResponse = cache(async () => {
+		const repoResponse = await fetch(
+			'https://api.github.com/repos/databuddy-analytics/Databuddy',
+			requestInit
 		);
-	}
-	const contributorsData = await contributorsResponse.json();
-	return Array.isArray(contributorsData) ? contributorsData : [];
+		if (!repoResponse.ok) {
+			throw new Error(`Failed to fetch repo: ${repoResponse.status}`);
+		}
+		return await repoResponse.json();
+	});
+	return cachedRepoResponse();
 }
 
-async function fetchLanguagesData(requestInit: RequestInit) {
-	const languagesResponse = await fetch(
-		'https://api.github.com/repos/databuddy-analytics/Databuddy/languages',
-		requestInit
-	);
-	if (!languagesResponse.ok) {
-		throw new Error(`Failed to fetch languages: ${languagesResponse.status}`);
-	}
-	return await languagesResponse.json();
+function fetchContributorsData(
+	requestInit: RequestInit
+): Promise<GitHubContributor[]> {
+	const cachedContributorsResponse = cache(async () => {
+		const contributorsResponse = await fetch(
+			'https://api.github.com/repos/databuddy-analytics/Databuddy/contributors?per_page=100',
+			requestInit
+		);
+		if (!contributorsResponse.ok) {
+			throw new Error(
+				`Failed to fetch contributors: ${contributorsResponse.status}`
+			);
+		}
+		return await contributorsResponse.json();
+	});
+	return cachedContributorsResponse();
 }
 
-async function fetchPullRequestsData(requestInit: RequestInit) {
-	const prsResponse = await fetch(
-		'https://api.github.com/repos/databuddy-analytics/Databuddy/pulls?state=all&per_page=100',
-		requestInit
-	);
-	if (!prsResponse.ok) {
-		throw new Error(`Failed to fetch PRs: ${prsResponse.status}`);
-	}
-	const prsData = await prsResponse.json();
-	return Array.isArray(prsData) ? prsData : [];
+function fetchLanguagesData(
+	requestInit: RequestInit
+): Promise<GitHubLanguages> {
+	const cachedLanguagesResponse = cache(async () => {
+		const languagesResponse = await fetch(
+			'https://api.github.com/repos/databuddy-analytics/Databuddy/languages',
+			requestInit
+		);
+		if (!languagesResponse.ok) {
+			throw new Error(`Failed to fetch languages: ${languagesResponse.status}`);
+		}
+		return await languagesResponse.json();
+	});
+	return cachedLanguagesResponse();
 }
 
-async function fetchCommitActivity(
+function fetchPullRequestsData(
+	requestInit: RequestInit
+): Promise<GitHubPullRequest[]> {
+	const cachedPrsResponse = cache(async () => {
+		const prsResponse = await fetch(
+			'https://api.github.com/repos/databuddy-analytics/Databuddy/pulls?state=all&per_page=100',
+			requestInit
+		);
+		if (!prsResponse.ok) {
+			throw new Error(`Failed to fetch PRs: ${prsResponse.status}`);
+		}
+		return await prsResponse.json();
+	});
+	return cachedPrsResponse();
+}
+
+function fetchCommitActivity(
 	statsRequestInit: RequestInit
 ): Promise<ProcessedCommitActivity[]> {
-	try {
+	const cachedCommitActivityResponse = cache(async () => {
 		const response = await fetchWithRetry(
 			'https://api.github.com/repos/databuddy-analytics/Databuddy/stats/commit_activity',
 			statsRequestInit
@@ -211,17 +228,15 @@ async function fetchCommitActivity(
 				`GitHub API returned ${response.status} for commit activity`
 			);
 		}
-	} catch (error) {
-		console.error('Failed to fetch commit activity:', error);
-	}
-
-	return statsCache.commitActivity || [];
+		return [];
+	});
+	return cachedCommitActivityResponse();
 }
 
-async function fetchCodeFrequency(
+function fetchCodeFrequency(
 	statsRequestInit: RequestInit
 ): Promise<ProcessedCodeFrequency[]> {
-	try {
+	const cachedCodeFrequencyResponse = cache(async () => {
 		const response = await fetchWithRetry(
 			'https://api.github.com/repos/databuddy-analytics/Databuddy/stats/code_frequency',
 			statsRequestInit
@@ -247,17 +262,16 @@ async function fetchCodeFrequency(
 		} else {
 			console.warn(`GitHub API returned ${response.status} for code frequency`);
 		}
-	} catch (error) {
-		console.error('Failed to fetch code frequency:', error);
-	}
+		return [];
+	});
 
-	return statsCache.codeFrequency || [];
+	return cachedCodeFrequencyResponse();
 }
 
-async function fetchPunchCard(
+function fetchPunchCard(
 	statsRequestInit: RequestInit
 ): Promise<ProcessedPunchCard[]> {
-	try {
+	const cachedPunchCardResponse = cache(async () => {
 		const response = await fetchWithRetry(
 			'https://api.github.com/repos/databuddy-analytics/Databuddy/stats/punch_card',
 			statsRequestInit
@@ -284,18 +298,13 @@ async function fetchPunchCard(
 		} else {
 			console.warn(`GitHub API returned ${response.status} for punch card`);
 		}
-	} catch (error) {
-		console.error('Failed to fetch punch card:', error);
-	}
-
-	// Return cached data if available, otherwise empty array
-	return statsCache.punchCard || [];
+		return [];
+	});
+	return cachedPunchCardResponse();
 }
 
-async function fetchReleases(
-	requestInit: RequestInit
-): Promise<ProcessedRelease[]> {
-	try {
+function fetchReleases(requestInit: RequestInit): Promise<ProcessedRelease[]> {
+	const cachedReleasesResponse = cache(async () => {
 		const response = await fetch(
 			'https://api.github.com/repos/databuddy-analytics/Databuddy/releases?per_page=20',
 			requestInit
@@ -316,10 +325,9 @@ async function fetchReleases(
 					.slice(0, 10); // Latest 10 releases
 			}
 		}
-	} catch (error) {
-		console.error('Failed to fetch releases:', error);
-	}
-	return [];
+		return [];
+	});
+	return cachedReleasesResponse();
 }
 
 async function fetchGitHubData() {
