@@ -69,7 +69,7 @@ A comprehensive analytics and data management platform built with Next.js, TypeS
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/databuddy/databuddy.git
+git clone https://github.com/databuddy-analytics/Databuddy.git
 cd databuddy
 ```
 
