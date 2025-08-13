@@ -106,7 +106,7 @@ export default function FunnelsPage() {
 	const [, setDateRangeAction] = useAtom(setDateRangeAndAdjustGranularityAtom);
 	const [formattedDateRangeState] = useAtom(formattedDateRangeAtom);
 
-	const { isTrackingSetup } = useTrackingSetup(websiteId);
+	const { isTrackingSetup, refetchTrackingSetup } = useTrackingSetup(websiteId);
 
 	// Date picker helpers
 	const dayPickerSelectedRange: DayPickerRange | undefined = useMemo(
@@ -200,6 +200,7 @@ export default function FunnelsPage() {
 			const promises: Promise<unknown>[] = [
 				refetchFunnels(),
 				autocompleteQuery.refetch(),
+				refetchTrackingSetup(),
 			];
 			if (expandedFunnelId) {
 				promises.push(refetchAnalytics(), refetchReferrerAnalytics());
@@ -215,6 +216,7 @@ export default function FunnelsPage() {
 		refetchAnalytics,
 		refetchReferrerAnalytics,
 		autocompleteQuery.refetch,
+		refetchTrackingSetup,
 		expandedFunnelId,
 	]);
 
