@@ -209,7 +209,7 @@ function WebsiteDetailsPage() {
 	return (
 		<div>
 			<Tabs
-				className="space-y-4"
+				className="space-y-4 mt-6"
 				defaultValue="overview"
 				onValueChange={(value) => setActiveTab(value as TabId)}
 				value={activeTab}

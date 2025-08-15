@@ -30,7 +30,7 @@ export function WebsiteHeader({ website }: WebsiteHeaderProps) {
 			</Button>
 
 			{/* Website info card */}
-			<div className="rounded-lg border bg-card p-3">
+			<div className="rounded-lg border bg-card p-3 py-2">
 				<div className="flex items-center gap-3">
 					<FaviconImage
 						altText={`${website?.name || website?.domain || 'Website'} favicon`}
@@ -51,10 +51,14 @@ export function WebsiteHeader({ website }: WebsiteHeaderProps) {
 								<Skeleton className="h-4 w-32" />
 							)}
 						</h2>
-						{website?.domain && (
+						{website?.domain ? (
 							<p className="truncate text-muted-foreground text-xs">
 								{website.domain}
 							</p>
+						) : (
+							<div className="h-3 w-24">
+								<Skeleton className="h-3 w-24" />
+							</div>
 						)}
 					</div>
 				</div>
