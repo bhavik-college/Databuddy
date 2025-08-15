@@ -9,6 +9,13 @@ import { FilterOperators } from './types';
 import { applyPlugins } from './utils';
 import { mapScreenResolutionToDeviceType, type DeviceType } from './screen-resolution-to-device-type';
 
+// Constants for special filter fields to prevent typos
+const SPECIAL_FILTER_FIELDS = {
+	PATH: 'path',
+	REFERRER: 'referrer',
+	DEVICE_TYPE: 'device_type',
+} as const;
+
 export class SimpleQueryBuilder {
 	private config: SimpleQueryConfig;
 	private request: QueryRequest;
@@ -43,9 +50,9 @@ export class SimpleQueryBuilder {
 			.map(([resolution, _]) => `'${resolution}'`)
 			.join(', ');
 
-		// SQL for parsing resolution dimensions
-		const widthExpr = "toFloat64(substring(screen_resolution, 1, position(screen_resolution, 'x') - 1))";
-		const heightExpr = "toFloat64(substring(screen_resolution, position(screen_resolution, 'x') + 1))";
+		// SQL for parsing resolution dimensions with error handling
+		const widthExpr = "toFloat64(if(position(screen_resolution, 'x') > 0, substring(screen_resolution, 1, position(screen_resolution, 'x') - 1), NULL))";
+		const heightExpr = "toFloat64(if(position(screen_resolution, 'x') > 0, substring(screen_resolution, position(screen_resolution, 'x') + 1), NULL))";
 		const longSideExpr = `greatest(${widthExpr}, ${heightExpr})`;
 		const shortSideExpr = `least(${widthExpr}, ${heightExpr})`;
 		const aspectExpr = `${longSideExpr} / ${shortSideExpr}`;
@@ -54,17 +61,17 @@ export class SimpleQueryBuilder {
 		const heuristicCondition = (() => {
 			switch (deviceType) {
 				case 'mobile':
-					return `(${shortSideExpr} <= 480)`;
+					return `(${shortSideExpr} <= 480 AND ${shortSideExpr} IS NOT NULL)`;
 				case 'tablet':
-					return `(${shortSideExpr} <= 900 AND ${shortSideExpr} > 480)`;
+					return `(${shortSideExpr} <= 900 AND ${shortSideExpr} > 480 AND ${shortSideExpr} IS NOT NULL)`;
 				case 'laptop':
-					return `(${longSideExpr} <= 1600 AND ${shortSideExpr} > 900)`;
+					return `(${longSideExpr} <= 1600 AND ${shortSideExpr} > 900 AND ${longSideExpr} IS NOT NULL)`;
 				case 'desktop':
-					return `(${longSideExpr} <= 3000 AND ${longSideExpr} > 1600)`;
+					return `(${longSideExpr} <= 3000 AND ${longSideExpr} > 1600 AND ${longSideExpr} IS NOT NULL)`;
 				case 'ultrawide':
-					return `(${aspectExpr} >= 2.0 AND ${longSideExpr} >= 2560)`;
+					return `(${aspectExpr} >= 2.0 AND ${longSideExpr} >= 2560 AND ${longSideExpr} IS NOT NULL)`;
 				case 'watch':
-					return `(${longSideExpr} <= 400 AND ${aspectExpr} >= 0.85 AND ${aspectExpr} <= 1.15)`;
+					return `(${longSideExpr} <= 400 AND ${aspectExpr} >= 0.85 AND ${aspectExpr} <= 1.15 AND ${longSideExpr} IS NOT NULL)`;
 				case 'unknown':
 				default:
 					return '1 = 0'; // Never matches
@@ -89,7 +96,7 @@ export class SimpleQueryBuilder {
 		const operator = FilterOperators[filter.op];
 
 		// Special handling for path filters - apply same normalization as used in queries
-		if (filter.field === 'path') {
+		if (filter.field === SPECIAL_FILTER_FIELDS.PATH) {
 			const normalizedPathExpression = "CASE WHEN trimRight(path(path), '/') = '' THEN '/' ELSE trimRight(path(path), '/') END";
 			
 			if (filter.op === 'like') {
@@ -116,7 +123,7 @@ export class SimpleQueryBuilder {
 		}
 
 		// Special handling for referrer filters - apply same normalization as used in queries
-		if (filter.field === 'referrer') {
+		if (filter.field === SPECIAL_FILTER_FIELDS.REFERRER) {
 			const normalizedReferrerExpression = 
 				'CASE ' +
 				"WHEN domain(referrer) LIKE '%.google.com%' OR domain(referrer) LIKE 'google.com%' THEN 'https://google.com' " +
@@ -150,7 +157,7 @@ export class SimpleQueryBuilder {
 		}
 
 		// Special handling for device_type filters - convert to screen_resolution filters
-		if (filter.field === 'device_type' && typeof filter.value === 'string') {
+		if (filter.field === SPECIAL_FILTER_FIELDS.DEVICE_TYPE && typeof filter.value === 'string') {
 			const deviceType = filter.value as DeviceType;
 			const condition = this.getDeviceTypeFilterCondition(deviceType);
 			
@@ -301,12 +308,40 @@ export class SimpleQueryBuilder {
 
 	private buildGroupByClause(): string {
 		const groupBy = this.request.groupBy || this.config.groupBy;
-		return groupBy?.length ? ` GROUP BY ${groupBy.join(', ')}` : '';
+		if (!groupBy?.length) {
+			return '';
+		}
+
+		// Security validation - only block dangerous SQL keywords
+		const dangerousKeywords = ['DROP', 'DELETE', 'INSERT', 'UPDATE', 'CREATE', 'ALTER', 'TRUNCATE', 'EXEC', 'EXECUTE'];
+		for (const field of groupBy) {
+			const upperField = field.toUpperCase();
+			for (const keyword of dangerousKeywords) {
+				if (upperField.includes(keyword)) {
+					throw new Error(`Grouping by field '${field}' contains dangerous keyword: ${keyword}`);
+				}
+			}
+		}
+
+		return ` GROUP BY ${groupBy.join(', ')}`;
 	}
 
 	private buildOrderByClause(): string {
 		const orderBy = this.request.orderBy || this.config.orderBy;
-		return orderBy ? ` ORDER BY ${orderBy}` : '';
+		if (!orderBy) {
+			return '';
+		}
+
+		// Security validation - only block dangerous SQL keywords
+		const dangerousKeywords = ['DROP', 'DELETE', 'INSERT', 'UPDATE', 'CREATE', 'ALTER', 'TRUNCATE', 'EXEC', 'EXECUTE'];
+		const upperOrderBy = orderBy.toUpperCase();
+		for (const keyword of dangerousKeywords) {
+			if (upperOrderBy.includes(keyword)) {
+				throw new Error(`Ordering by field '${orderBy}' contains dangerous keyword: ${keyword}`);
+			}
+		}
+
+		return ` ORDER BY ${orderBy}`;
 	}
 
 	private buildLimitClause(): string {
