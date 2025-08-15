@@ -6,6 +6,7 @@ import Head from 'next/head';
 import Script from 'next/script';
 import { ThemeProvider } from 'next-themes';
 import type { ReactNode } from 'react';
+import { Toaster } from '@/components/ui/sonner';
 import { SITE_URL } from './util/constants';
 
 const geist = Geist({
@@ -111,6 +112,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 				<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 					<RootProvider>
 						<main>{children}</main>
+						<Toaster closeButton duration={1500} position="top-center" richColors />
 					</RootProvider>
 				</ThemeProvider>
 			</body>

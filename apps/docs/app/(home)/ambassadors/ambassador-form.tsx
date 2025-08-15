@@ -2,6 +2,7 @@
 
 import { CheckIcon, PaperPlaneIcon, SpinnerIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { SciFiButton } from '@/components/landing/scifi-btn';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,11 +35,13 @@ function FormField({
 	required = false,
 	children,
 	description,
+	error,
 }: {
 	label: string;
 	required?: boolean;
 	children: React.ReactNode;
 	description?: string;
+	error?: string;
 }) {
 	return (
 		<div className="space-y-2">
@@ -47,7 +50,10 @@ function FormField({
 				{required && <span className="ml-1 text-destructive">*</span>}
 			</Label>
 			{children}
-			{description && (
+			{error && (
+				<p className="text-destructive text-xs">{error}</p>
+			)}
+			{description && !error && (
 				<p className="text-muted-foreground text-xs">{description}</p>
 			)}
 		</div>
@@ -58,37 +64,138 @@ export default function AmbassadorForm() {
 	const [formData, setFormData] = useState<FormData>(initialFormData);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isSubmitted, setIsSubmitted] = useState(false);
+	const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+
+	const validateForm = (): boolean => {
+		const newErrors: Partial<Record<keyof FormData, string>> = {};
+
+		// Required field validations
+		if (!formData.name.trim()) {
+			newErrors.name = 'Name is required';
+		} else if (formData.name.trim().length < 2) {
+			newErrors.name = 'Name must be at least 2 characters';
+		}
+
+		if (!formData.email.trim()) {
+			newErrors.email = 'Email is required';
+		} else if (!formData.email.includes('@') || !formData.email.includes('.')) {
+			newErrors.email = 'Please enter a valid email address';
+		}
+
+		if (!formData.whyAmbassador.trim()) {
+			newErrors.whyAmbassador = 'Please explain why you want to be an ambassador';
+		} else if (formData.whyAmbassador.trim().length < 10) {
+			newErrors.whyAmbassador = 'Please provide more details (minimum 10 characters)';
+		}
+
+		// Optional field validations
+		if (formData.xHandle && (formData.xHandle.includes('@') || formData.xHandle.includes('http'))) {
+			newErrors.xHandle = 'X handle should not include @ or URLs';
+		}
+
+		if (formData.website && formData.website.trim()) {
+			try {
+				new URL(formData.website);
+			} catch {
+				newErrors.website = 'Please enter a valid URL';
+			}
+		}
+
+		setErrors(newErrors);
+		return Object.keys(newErrors).length === 0;
+	};
 
 	const handleInputChange = (
 		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
 	) => {
 		const { name, value } = e.target;
 		setFormData((prev) => ({ ...prev, [name]: value }));
+		
+		// Clear error when user starts typing
+		if (errors[name as keyof FormData]) {
+			setErrors((prev) => ({ ...prev, [name]: undefined }));
+		}
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		
+		// Client-side validation
+		if (!validateForm()) {
+			toast.error('Please fix the validation errors before submitting.');
+			return;
+		}
+		
 		setIsSubmitting(true);
 
 		try {
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
 			const response = await fetch('/api/ambassador/submit', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify(formData),
+				signal: controller.signal,
 			});
 
-			const data = await response.json();
+			clearTimeout(timeoutId);
 
-			if (!response.ok) {
-				throw new Error(data.error || 'Submission failed');
+			let data;
+			try {
+				data = await response.json();
+			} catch (parseError) {
+				throw new Error('Invalid response from server. Please try again.');
 			}
 
+			if (!response.ok) {
+				// Handle specific error cases
+				if (response.status === 429) {
+					const resetTime = data.resetTime ? new Date(data.resetTime).toLocaleTimeString() : 'soon';
+					throw new Error(`Too many submissions. Please try again after ${resetTime}.`);
+				}
+
+				if (response.status === 400 && data.details) {
+					// Show validation errors
+					const errorMessage = Array.isArray(data.details) 
+						? data.details.join('\n• ') 
+						: data.error || 'Validation failed';
+					throw new Error(`Please fix the following issues:\n• ${errorMessage}`);
+				}
+
+				throw new Error(data.error || 'Submission failed. Please try again.');
+			}
+
+			toast.success('Application submitted successfully!', {
+				description: 'We\'ll review your application and get back to you within 3-5 business days.',
+				duration: 5000,
+			});
 			setIsSubmitted(true);
 		} catch (error) {
 			console.error('Form submission error:', error);
-			alert('Failed to submit application. Please try again.');
+			
+			if (error instanceof Error) {
+				// Handle specific error types
+				if (error.name === 'AbortError') {
+					toast.error('Request timed out. Please check your connection and try again.');
+				} else {
+					// Handle multi-line error messages
+					const errorLines = error.message.split('\n');
+					if (errorLines.length > 1) {
+						// For validation errors with multiple lines, show as error toast
+						toast.error(errorLines[0], {
+							description: errorLines.slice(1).join('\n'),
+							duration: 5000,
+						});
+					} else {
+						toast.error(error.message);
+					}
+				}
+			} else {
+				toast.error('Failed to submit application. Please try again.');
+			}
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -155,8 +262,13 @@ export default function AmbassadorForm() {
 					<form className="space-y-6" onSubmit={handleSubmit}>
 						{/* Personal Information */}
 						<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-							<FormField label="Full Name" required>
+							<FormField 
+								error={errors.name}
+								label="Full Name" 
+								required
+							>
 								<Input
+									className={errors.name ? 'border-destructive' : ''}
 									maxLength={100}
 									name="name"
 									onChange={handleInputChange}
@@ -167,8 +279,13 @@ export default function AmbassadorForm() {
 								/>
 							</FormField>
 
-							<FormField label="Email Address" required>
+							<FormField 
+								error={errors.email}
+								label="Email Address" 
+								required
+							>
 								<Input
+									className={errors.email ? 'border-destructive' : ''}
 									maxLength={255}
 									name="email"
 									onChange={handleInputChange}
@@ -184,9 +301,11 @@ export default function AmbassadorForm() {
 						<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 							<FormField
 								description="Enter your X (Twitter) handle without the @"
+								error={errors.xHandle}
 								label="X (Twitter) Handle"
 							>
 								<Input
+									className={errors.xHandle ? 'border-destructive' : ''}
 									maxLength={50}
 									name="xHandle"
 									onChange={handleInputChange}
@@ -198,9 +317,11 @@ export default function AmbassadorForm() {
 
 							<FormField
 								description="Your personal website, blog, or portfolio"
+								error={errors.website}
 								label="Website"
 							>
 								<Input
+									className={errors.website ? 'border-destructive' : ''}
 									maxLength={500}
 									name="website"
 									onChange={handleInputChange}
@@ -232,10 +353,12 @@ export default function AmbassadorForm() {
 						{/* Motivation */}
 						<FormField
 							description="Required field (max 1000 characters)"
+							error={errors.whyAmbassador}
 							label="Why do you want to be a Databuddy ambassador?"
 							required
 						>
 							<Textarea
+								className={errors.whyAmbassador ? 'border-destructive' : ''}
 								maxLength={1000}
 								name="whyAmbassador"
 								onChange={handleInputChange}
