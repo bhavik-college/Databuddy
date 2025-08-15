@@ -214,7 +214,7 @@ export default function WebsiteRevenuePage() {
 	}
 
 	return (
-		<div className="mx-auto max-w-[1600px] space-y-4 p-3 sm:p-4 lg:p-6">
+		<div className="mx-auto max-w-[1600px] mt-6">
 			<WebsitePageHeader
 				description="Track revenue and transaction data for this website"
 				errorMessage={revenueError?.message}

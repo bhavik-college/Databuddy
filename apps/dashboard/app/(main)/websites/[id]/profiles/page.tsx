@@ -20,7 +20,7 @@ export default function ProfilesPage() {
 	const { id: websiteId } = useParams();
 
 	return (
-		<div className="p-3 sm:p-4 lg:p-6">
+		<div className="mt-6">
 			<ProfilesList websiteId={websiteId as string} />
 		</div>
 	);

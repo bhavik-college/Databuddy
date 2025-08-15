@@ -1,10 +1,16 @@
 'use client';
 
 import { SpinnerIcon, UsersIcon } from '@phosphor-icons/react';
+import { useAtom } from 'jotai';
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useProfilesData } from '@/hooks/use-dynamic-query';
+import {
+	dynamicQueryFiltersAtom,
+	formattedDateRangeAtom,
+	timeGranularityAtom,
+} from '@/stores/jotai/filterAtoms';
 
 // Type adapter for the new profile data structure
 type ProfileData = {
@@ -47,8 +53,7 @@ type ProfileData = {
 	}>;
 };
 
-import { WebsitePageHeader } from '../../_components/website-page-header';
-import { getDefaultDateRange } from './profile-utils';
+
 
 const ProfileRow = dynamic(
 	() => import('./profile-row').then((mod) => ({ default: mod.ProfileRow })),
@@ -66,7 +71,20 @@ interface ProfilesListProps {
 }
 
 export function ProfilesList({ websiteId }: ProfilesListProps) {
-	const [dateRange] = useState(() => getDefaultDateRange());
+	// Use shared state atoms for consistency
+	const [formattedDateRangeState] = useAtom(formattedDateRangeAtom);
+	const [currentGranularity] = useAtom(timeGranularityAtom);
+	const [filters] = useAtom(dynamicQueryFiltersAtom);
+
+	const dateRange = useMemo(
+		() => ({
+			start_date: formattedDateRangeState.startDate,
+			end_date: formattedDateRangeState.endDate,
+			granularity: currentGranularity,
+		}),
+		[formattedDateRangeState, currentGranularity]
+	);
+
 	const [expandedProfileId, setExpandedProfileId] = useState<string | null>(
 		null
 	);
@@ -80,8 +98,16 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
 		websiteId,
 		dateRange,
 		25,
-		page
+		page,
+		filters
 	);
+
+	// Reset page and profiles when dateRange or filters change
+	useEffect(() => {
+		setPage(1);
+		setAllProfiles([]);
+		setIsInitialLoad(true);
+	}, [dateRange.start_date, dateRange.end_date, dateRange.granularity, JSON.stringify(filters)]);
 
 	const toggleProfile = useCallback((profileId: string) => {
 		setExpandedProfileId((currentId) =>
@@ -144,121 +170,93 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
 
 	if (isLoading && isInitialLoad) {
 		return (
-			<div className="space-y-6">
-				<WebsitePageHeader
-					description="Visitor profiles with session data and behavior patterns"
-					icon={<UsersIcon className="h-6 w-6 text-primary" />}
-					title="Recent Profiles"
-					variant="minimal"
-					websiteId={websiteId}
-				/>
-				<Card>
-					<CardContent>
-						<div className="space-y-3">
-							{[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-								<div
-									className="h-16 animate-pulse rounded bg-muted/20"
-									key={i}
-								/>
-							))}
+			<Card>
+				<CardContent>
+					<div className="space-y-3">
+						{[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+							<div
+								className="h-16 animate-pulse rounded bg-muted/20"
+								key={i}
+							/>
+						))}
+					</div>
+					<div className="flex items-center justify-center pt-4">
+						<div className="flex items-center gap-2 text-muted-foreground">
+							<SpinnerIcon className="h-4 w-4 animate-spin" />
+							<span className="text-sm">Loading profiles...</span>
 						</div>
-						<div className="flex items-center justify-center pt-4">
-							<div className="flex items-center gap-2 text-muted-foreground">
-								<SpinnerIcon className="h-4 w-4 animate-spin" />
-								<span className="text-sm">Loading profiles...</span>
-							</div>
-						</div>
-					</CardContent>
-				</Card>
-			</div>
+					</div>
+				</CardContent>
+			</Card>
 		);
 	}
 
 	if (isError) {
 		return (
-			<div className="space-y-6">
-				<WebsitePageHeader
-					description="Visitor profiles with session data and behavior patterns"
-					errorMessage={error?.message || 'Failed to load profiles'}
-					hasError={true}
-					icon={<UsersIcon className="h-6 w-6 text-primary" />}
-					title="Recent Profiles"
-					variant="minimal"
-					websiteId={websiteId}
-				/>
-			</div>
+			<Card>
+				<CardContent>
+					<div className="flex flex-col items-center py-12 text-center text-muted-foreground">
+						<UsersIcon className="mb-4 h-12 w-12 opacity-50" />
+						<p className="mb-2 font-medium text-lg">Failed to load profiles</p>
+						<p className="text-sm">
+							{error?.message || 'There was an error loading the profiles'}
+						</p>
+					</div>
+				</CardContent>
+			</Card>
 		);
 	}
 
 	if (!allProfiles || allProfiles.length === 0) {
 		return (
-			<div className="space-y-6">
-				<WebsitePageHeader
-					description="Visitor profiles with session data and behavior patterns"
-					icon={<UsersIcon className="h-6 w-6 text-primary" />}
-					title="Recent Profiles"
-					variant="minimal"
-					websiteId={websiteId}
-				/>
-				<Card>
-					<CardContent>
-						<div className="flex flex-col items-center py-12 text-center text-muted-foreground">
-							<UsersIcon className="mb-4 h-12 w-12 opacity-50" />
-							<p className="mb-2 font-medium text-lg">No profiles found</p>
-							<p className="text-sm">
-								Visitor profiles will appear here once users visit your website
-							</p>
-						</div>
-					</CardContent>
-				</Card>
-			</div>
+			<Card>
+				<CardContent>
+					<div className="flex flex-col items-center py-12 text-center text-muted-foreground">
+						<UsersIcon className="mb-4 h-12 w-12 opacity-50" />
+						<p className="mb-2 font-medium text-lg">No profiles found</p>
+						<p className="text-sm">
+							Visitor profiles will appear here once users visit your website
+						</p>
+					</div>
+				</CardContent>
+			</Card>
 		);
 	}
 
 	return (
-		<div className="space-y-6">
-			<WebsitePageHeader
-				description="Visitor profiles with session data and behavior patterns"
-				icon={<UsersIcon className="h-6 w-6 text-primary" />}
-				subtitle={`${allProfiles.length} loaded`}
-				title="Recent Profiles"
-				variant="minimal"
-				websiteId={websiteId}
-			/>
-			<Card>
-				<CardContent className="p-0">
-					<div className="divide-y divide-border">
-						{allProfiles.map((profile, index) => (
-							<ProfileRow
-								index={index}
-								isExpanded={expandedProfileId === profile.visitor_id}
-								key={`${profile.visitor_id}-${index}`}
-								onToggle={() => toggleProfile(profile.visitor_id)}
-								profile={profile}
-							/>
-						))}
-					</div>
+		<Card>
+			<CardContent className="p-0">
+				<div className="divide-y divide-border">
+					{allProfiles.map((profile, index) => (
+						<ProfileRow
+							index={index}
+							isExpanded={expandedProfileId === profile.visitor_id}
+							key={`${profile.visitor_id}-${index}`}
+							onToggle={() => toggleProfile(profile.visitor_id)}
+							profile={profile}
+						/>
+					))}
+				</div>
 
-					<div className="border-t p-4" ref={setLoadMoreRef}>
-						{pagination.hasNext ? (
-							<div className="flex justify-center">
-								{isLoading ? (
-									<div className="flex items-center gap-2 text-muted-foreground">
-										<SpinnerIcon className="h-4 w-4 animate-spin" />
-										<span className="text-sm">Loading more profiles...</span>
-									</div>
-								) : null}
-							</div>
-						) : (
-							<div className="text-center text-muted-foreground text-sm">
-								{allProfiles.length > 0
-									? 'All profiles loaded'
-									: 'No more profiles'}
-							</div>
-						)}
-					</div>
-				</CardContent>
-			</Card>
-		</div>
+				<div className="border-t p-4" ref={setLoadMoreRef}>
+					{pagination.hasNext ? (
+						<div className="flex justify-center">
+							{isLoading ? (
+								<div className="flex items-center gap-2 text-muted-foreground">
+									<SpinnerIcon className="h-4 w-4 animate-spin" />
+									<span className="text-sm">Loading more profiles...</span>
+								</div>
+							) : null}
+						</div>
+					) : (
+						<div className="text-center text-muted-foreground text-sm">
+							{allProfiles.length > 0
+								? 'All profiles loaded'
+								: 'No more profiles'}
+						</div>
+					)}
+				</div>
+			</CardContent>
+		</Card>
 	);
 }

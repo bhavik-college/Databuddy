@@ -257,7 +257,7 @@ export default function FunnelsPage() {
 
 	return (
 		<div
-			className="mx-auto max-w-[1600px] space-y-4 p-3 sm:p-4 lg:p-6"
+			className="mx-auto max-w-[1600px] space-y-4 mt-6"
 			ref={pageRef}
 		>
 			<WebsitePageHeader

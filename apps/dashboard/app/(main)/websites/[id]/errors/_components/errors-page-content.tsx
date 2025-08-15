@@ -314,7 +314,7 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
 	}
 
 	return (
-		<div className="mx-auto max-w-[1600px] space-y-6 p-3 sm:p-4 lg:p-6">
+		<div className="mx-auto max-w-[1600px] space-y-6 mt-6">
 			<WebsitePageHeader
 				description="Monitor and analyze application errors to improve user experience"
 				icon={

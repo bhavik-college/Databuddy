@@ -77,7 +77,7 @@ export default function AssistantPage() {
 
 	return (
 		<div className="fixed inset-0 flex flex-col bg-gradient-to-br from-background to-muted/20 pt-16 md:pl-72">
-			<div className="flex flex-1 overflow-hidden p-3 sm:p-4 lg:p-6">
+			<div className="flex flex-1 overflow-hidden mt-6">
 				{isLoading || !websiteData ? (
 					<AIAssistantLoadingSkeleton />
 				) : (

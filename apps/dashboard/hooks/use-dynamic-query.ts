@@ -499,6 +499,7 @@ export function useEnhancedGeographicData(
 export function useMapLocationData(
 	websiteId: string,
 	dateRange: DateRange,
+	filters?: DynamicQueryFilter[],
 	options?: Partial<UseQueryOptions<BatchQueryResponse>>
 ) {
 	const queries: DynamicQueryRequest[] = [
@@ -506,11 +507,13 @@ export function useMapLocationData(
 			id: 'map-countries',
 			parameters: ['country'],
 			limit: 100,
+			filters,
 		},
 		{
 			id: 'map-regions',
 			parameters: ['region'],
 			limit: 100,
+			filters,
 		},
 	];
 
@@ -880,6 +883,7 @@ export function useProfilesData(
 	dateRange: DateRange,
 	limit = 50,
 	page = 1,
+	filters?: DynamicQueryFilter[],
 	options?: Partial<UseQueryOptions<DynamicQueryResponse>>
 ) {
 	const queryResult = useDynamicQuery(
@@ -890,6 +894,7 @@ export function useProfilesData(
 			parameters: ['profile_list'],
 			limit,
 			page,
+			filters,
 		},
 		{
 			...options,
