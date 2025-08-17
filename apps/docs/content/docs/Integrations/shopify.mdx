@@ -3,6 +3,8 @@ title: Shopify
 description: Add privacy-first analytics to your Shopify store
 ---
 
+import { CodeBlock } from "@/components/docs";
+
 Add Databuddy's privacy-first analytics to your Shopify store to track customer behavior, e-commerce events, and improve conversion rates while maintaining GDPR compliance.
 
 ## Installation Methods
@@ -16,16 +18,18 @@ Add Databuddy directly to your Shopify theme:
 3. Open `theme.liquid` in the Layout folder
 4. Add your Databuddy script before the closing `</head>` tag:
 
-```html
-<script
+<CodeBlock 
+  language="html"
+  filename="theme.liquid"
+  code={`<script
   src="https://cdn.databuddy.cc/databuddy.js"
   data-client-id="YOUR_SITE_ID"
   data-track-screen-views="true"
   data-track-attributes="true"
   data-track-outgoing-links="true"
   async
-></script>
-```
+></script>`}
+/>
 
 ### Method 2: Google Tag Manager
 
@@ -34,8 +38,10 @@ If you're using Google Tag Manager:
 1. In GTM, create a new **Custom HTML** tag
 2. Add the Databuddy script:
 
-```html
-<script>
+<CodeBlock 
+  language="html"
+  filename="GTM Custom HTML Tag"
+  code={`<script>
   (function() {
     var script = document.createElement('script');
     script.src = 'https://cdn.databuddy.cc/databuddy.js';
@@ -45,8 +51,8 @@ If you're using Google Tag Manager:
     script.async = true;
     document.head.appendChild(script);
   })();
-</script>
-```
+</script>`}
+/>
 
 3. Set trigger to **All Pages**
 4. Publish the container
