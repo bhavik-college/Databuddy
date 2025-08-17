@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { isIP } from 'node:net';
 import type { City } from '@maxmind/geoip2-node';
 import {
 	AddressNotFoundError,
@@ -78,25 +79,28 @@ function loadDatabase() {
 
 const ignore = ['127.0.0.1', '::1'];
 
-const ipv4Regex =
-	/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+export function getIpType(ip: string): 'ipv4' | 'ipv6' | null {
+	if (!ip) {
+		return null;
+	}
 
-const ipv6Regex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
+	// Use Node.js built-in isIP function which is much more reliable
+	// Returns 4 for IPv4, 6 for IPv6, 0 for invalid
+	const ipVersion = isIP(ip);
+
+	if (ipVersion === 4) {
+		return 'ipv4';
+	}
+
+	if (ipVersion === 6) {
+		return 'ipv6';
+	}
+
+	return null;
+}
 
 function isValidIp(ip: string): boolean {
-	if (!ip) {
-		return false;
-	}
-
-	if (ipv4Regex.test(ip)) {
-		return true;
-	}
-
-	if (ipv6Regex.test(ip)) {
-		return true;
-	}
-
-	return false;
+	return getIpType(ip) !== null;
 }
 
 export async function getGeoLocation(ip: string) {
