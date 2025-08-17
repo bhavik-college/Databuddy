@@ -3,7 +3,7 @@ title: Next.js
 description: Add privacy-first analytics to your Next.js application
 ---
 
-# Next.js Integration
+import { CodeBlock } from "@/components/docs";
 
 Integrate Databuddy with your Next.js application for server-side rendering support, automatic page tracking, and optimal performance.
 
@@ -11,23 +11,26 @@ Integrate Databuddy with your Next.js application for server-side rendering supp
 
 Install the Databuddy SDK:
 
-```bash
-npm install @databuddy/sdk
-```
+<CodeBlock 
+  language="bash"
+  code="npm install @databuddy/sdk"
+/>
 
 or with yarn:
 
-```bash
-yarn add @databuddy/sdk
-```
+<CodeBlock 
+  language="bash"
+  code="yarn add @databuddy/sdk"
+/>
 
 ## App Router Setup (Next.js 13+)
 
 ### 1. Add Script Component to Layout
 
-```tsx
-// app/layout.tsx
-import { Databuddy } from '@databuddy/sdk';
+<CodeBlock 
+  language="tsx"
+  filename="app/layout.tsx"
+  code={`import { Databuddy } from '@databuddy/sdk';
 
 export default function RootLayout({
   children,
@@ -47,16 +50,17 @@ export default function RootLayout({
       </body>
     </html>
   );
-}
-```
+}`}
+/>
 
 ### 2. Track Route Changes (Optional)
 
 If you need custom route tracking:
 
-```tsx
-// app/analytics.tsx
-'use client';
+<CodeBlock 
+  language="tsx"
+  filename="app/analytics.tsx"
+  code={`'use client';
 
 import { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -76,14 +80,15 @@ export function Analytics() {
   }, [pathname, searchParams]);
 
   return null;
-}
-```
+}`}
+/>
 
 Then add to your root layout:
 
-```tsx
-// app/layout.tsx
-import { Databuddy } from '@databuddy/sdk';
+<CodeBlock 
+  language="tsx"
+  filename="app/layout.tsx"
+  code={`import { Databuddy } from '@databuddy/sdk';
 import { Analytics } from './analytics';
 
 export default function RootLayout({
@@ -103,16 +108,17 @@ export default function RootLayout({
       </body>
     </html>
   );
-}
-```
+}`}
+/>
 
 ## Pages Router Setup (Next.js 12 and below)
 
 ### 1. Add to _app.tsx
 
-```tsx
-// pages/_app.tsx
-import type { AppProps } from 'next/app';
+<CodeBlock 
+  language="tsx"
+  filename="pages/_app.tsx"
+  code={`import type { AppProps } from 'next/app';
 import { Databuddy } from '@databuddy/sdk';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
@@ -147,8 +153,8 @@ function MyApp({ Component, pageProps }: AppProps) {
   );
 }
 
-export default MyApp;
-```
+export default MyApp;`}
+/>
 
 ### Alternative: Manual Script in _document.tsx
 
@@ -182,15 +188,19 @@ export default function Document() {
 
 Add to your `.env.local`:
 
-```tsx
-NEXT_PUBLIC_DATABUDDY_CLIENT_ID=your_client_id_here
-```
+<CodeBlock 
+  language="bash"
+  filename=".env.local"
+  code="NEXT_PUBLIC_DATABUDDY_CLIENT_ID=your_client_id_here"
+/>
 
 For production, add to your deployment environment:
 
-```tsx
-NEXT_PUBLIC_DATABUDDY_CLIENT_ID=your_production_client_id
-```
+<CodeBlock 
+  language="bash"
+  filename="Production Environment"
+  code="NEXT_PUBLIC_DATABUDDY_CLIENT_ID=your_production_client_id"
+/>
 
 ## Tracking Events
 

@@ -3,7 +3,7 @@ title: Framer
 description: Add privacy-first analytics to your Framer site
 ---
 
-# Framer Integration
+import { CodeBlock } from "@/components/docs";
 
 Databuddy enables you to gather privacy-first analytics on user behavior, capture custom events, track performance metrics, and more within your Framer site - all while maintaining GDPR compliance without cookies.
 
@@ -15,8 +15,10 @@ Databuddy enables you to gather privacy-first analytics on user behavior, captur
 
 Navigate to your [Databuddy dashboard](https://app.databuddy.cc) and copy your tracking code snippet:
 
-```html
-<script>
+<CodeBlock 
+  language="html"
+  filename="Databuddy Tracking Script"
+  code={`<script>
   (function () {
     var script = document.createElement("script");
     script.async = true;
@@ -27,8 +29,8 @@ Navigate to your [Databuddy dashboard](https://app.databuddy.cc) and copy your t
     script.setAttribute("data-track-errors", "true");
     document.head.appendChild(script);
   })();
-</script>
-```
+</script>`}
+/>
 
 ### 2. Add the Script to Your Framer Project
 
@@ -53,22 +55,26 @@ Once published, you can verify that Databuddy is working by:
 
 Track custom interactions in your Framer components using data attributes:
 
-```html
-<!-- Track button clicks -->
+<CodeBlock 
+  language="html"
+  filename="Custom Event Tracking"
+  code={`<!-- Track button clicks -->
 <button data-track="cta_clicked" data-button-type="primary">Get Started</button>
 
 <!-- Track form submissions -->
 <form data-track="newsletter_signup" data-form-location="header">
   <!-- form content -->
-</form>
-```
+</form>`}
+/>
 
 ### Performance Monitoring
 
 Enable performance tracking by updating your script configuration:
 
-```html
-<script>
+<CodeBlock 
+  language="html"
+  filename="Performance Tracking Script"
+  code={`<script>
   (function () {
     var script = document.createElement("script");
     script.async = true;
@@ -80,8 +86,8 @@ Enable performance tracking by updating your script configuration:
     script.setAttribute("data-track-errors", "true");
     document.head.appendChild(script);
   })();
-</script>
-```
+</script>`}
+/>
 
 ## Benefits for Framer Sites
 

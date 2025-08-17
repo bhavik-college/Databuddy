@@ -3,7 +3,7 @@ title: Google Tag Manager
 description: Add Databuddy analytics through Google Tag Manager
 ---
 
-# Google Tag Manager Integration
+import { CodeBlock } from "@/components/docs";
 
 Integrate Databuddy with Google Tag Manager for centralized tag management while maintaining privacy-first analytics. Perfect for teams managing multiple tracking tools.
 
@@ -27,8 +27,10 @@ Integrate Databuddy with Google Tag Manager for centralized tag management while
 
 > **Important**: GTM sanitizes HTML and removes non-standard attributes like `data-client-id`. Always use `createElement()` and `setAttribute()` as shown below:
 
-```html
-<script>
+<CodeBlock 
+  language="html"
+  filename="GTM Custom HTML Tag"
+  code={`<script>
   (function () {
     var el = document.createElement("script");
     el.src = "https://cdn.databuddy.cc/databuddy.js";
@@ -39,8 +41,8 @@ Integrate Databuddy with Google Tag Manager for centralized tag management while
     el.setAttribute("data-track-errors", "true");
     document.head.appendChild(el);
   })();
-</script>
-```
+</script>`}
+/>
 
 4. Name your tag "Databuddy - Analytics Script"
 
