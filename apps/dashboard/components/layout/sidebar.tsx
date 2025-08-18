@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAccordionStates } from '@/hooks/use-persistent-state';
 import { useWebsites } from '@/hooks/use-websites';
 import { cn } from '@/lib/utils';
 import { CategorySidebar } from './category-sidebar';
@@ -30,6 +31,7 @@ export function Sidebar() {
 	const [isMobileOpen, setIsMobileOpen] = useState(false);
 	const [selectedCategory, setSelectedCategory] = useState<string>();
 	const { websites, isLoading: isLoadingWebsites } = useWebsites();
+	const accordionStates = useAccordionStates();
 	const sidebarRef = useRef<HTMLDivElement>(null);
 	const previousFocusRef = useRef<HTMLElement | null>(null);
 
@@ -228,6 +230,7 @@ export function Sidebar() {
 						<nav aria-label="Main navigation" className="flex flex-col">
 							{navigation.map((section) => (
 								<NavigationSection
+									accordionStates={accordionStates}
 									currentWebsiteId={currentWebsiteId}
 									icon={section.icon}
 									items={section.items}

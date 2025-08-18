@@ -1,7 +1,8 @@
 import { CaretDownIcon } from '@phosphor-icons/react';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
-import { memo, useState } from 'react';
+import { memo } from 'react';
+import { useAccordionStates } from '@/hooks/use-persistent-state';
 import { NavigationItem } from './navigation-item';
 import type { NavigationSection as NavigationSectionType } from './types';
 
@@ -11,6 +12,7 @@ interface NavigationSectionProps {
 	items: NavigationSectionType['items'];
 	pathname: string;
 	currentWebsiteId?: string | null;
+	accordionStates: ReturnType<typeof useAccordionStates>;
 }
 
 const buildCurrentUrl = (
@@ -90,8 +92,10 @@ export const NavigationSection = memo(function NavigationSectionComponent({
 	items,
 	pathname,
 	currentWebsiteId,
+	accordionStates,
 }: NavigationSectionProps) {
-	const [isExpanded, setIsExpanded] = useState(true);
+	const { getAccordionState, toggleAccordion } = accordionStates;
+	const isExpanded = getAccordionState(title, true); // Default to expanded
 	const searchParams = useSearchParams();
 
 	const visibleItems = items.filter((item) => {
@@ -109,7 +113,7 @@ export const NavigationSection = memo(function NavigationSectionComponent({
 		<div className="border-muted-foreground/20 border-b border-dotted last:border-b-0">
 			<button
 				className="flex w-full items-center gap-3 px-3 py-2.5 text-left font-medium text-foreground text-sm transition-colors hover:bg-muted/50 focus:outline-none"
-				onClick={() => setIsExpanded(!isExpanded)}
+				onClick={() => toggleAccordion(title, true)}
 				type="button"
 			>
 				<Icon className="size-5 flex-shrink-0 text-foreground" weight="fill" />
