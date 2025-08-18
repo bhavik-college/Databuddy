@@ -14,8 +14,19 @@ import {
 import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+	PromptInput,
+	PromptInputTextarea,
+	PromptInputSubmit,
+	PromptInputToolbar,
+} from '@/components/ai-elements/prompt-input';
+import {
+	Conversation,
+	ConversationContent,
+	ConversationScrollButton,
+} from '@/components/ai-elements/conversation';
+import { Suggestions, Suggestion } from '@/components/ai-elements/suggestion';
 import { cn } from '@/lib/utils';
 import {
 	inputValueAtom,
@@ -81,7 +92,7 @@ export default function ChatSection() {
 	const [selectedModel] = useAtom(modelAtom);
 	const [websiteData] = useAtom(websiteDataAtom);
 
-	const inputRef = useRef<HTMLInputElement>(null);
+	const inputRef = useRef<HTMLTextAreaElement>(null);
 	const bottomRef = useRef<HTMLDivElement>(null);
 	const { sendMessage, handleKeyPress, scrollToBottom, resetChat } = useChat();
 	const [showChatHistory, setShowChatHistory] = useState(false);
@@ -201,12 +212,9 @@ export default function ChatSection() {
 			</div>
 
 			{/* Messages Area */}
-			<div
-				className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
-				ref={scrollAreaRef}
-			>
-				{/* Welcome State */}
-				<div className="min-h-full px-4 py-3">
+			<Conversation className="min-h-0 flex-1">
+				<ConversationContent className="min-h-full">
+					<ConversationScrollButton />
 					{!(hasMessages || isLoading) && (
 						<div className="fade-in-0 slide-in-from-bottom-4 h-full animate-in space-y-6 duration-500">
 							<div className="flex h-full flex-col justify-between">
@@ -232,37 +240,24 @@ export default function ChatSection() {
 										<LightningIcon className="h-4 w-4" weight="duotone" />
 										<span>Try these examples:</span>
 									</div>
-									<div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-										{quickQuestions.map((question, index) => (
-											<Button
-												className={cn(
-													'h-auto px-4 py-3 text-left font-normal text-sm',
-													'hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5',
-													'border-dashed transition-all duration-300 hover:border-solid',
-													'fade-in-0 slide-in-from-left-2 animate-in'
-												)}
-												disabled={isLoading || isRateLimited}
+									<Suggestions>
+										{quickQuestions.map((question) => (
+											<Suggestion
 												key={question.text}
-												onClick={() => {
+												suggestion={question.text}
+												disabled={isLoading || isRateLimited}
+												onClick={(suggestion) => {
 													if (!(isLoading || isRateLimited)) {
-														sendMessage(question.text);
+														sendMessage(suggestion);
 														scrollToBottom();
 													}
 												}}
-												size="sm"
-												style={{ animationDelay: `${index * 100}ms` }}
-												variant="outline"
 											>
-												<question.icon className="mr-3 h-4 w-4 flex-shrink-0 text-primary/70" />
-												<div className="flex-1">
-													<div className="font-medium">{question.text}</div>
-													<div className="text-muted-foreground text-xs capitalize">
-														{question.type} response
-													</div>
-												</div>
-											</Button>
+												<question.icon className="mr-2 h-4 w-4 text-primary/70" />
+												{question.text}
+											</Suggestion>
 										))}
-									</div>
+									</Suggestions>
 								</div>
 							</div>
 						</div>
@@ -274,33 +269,23 @@ export default function ChatSection() {
 							{messages.map((message) => (
 								<MessageBubble key={message.id} message={message} />
 							))}
-							<div ref={bottomRef} />
 						</div>
 					)}
-				</div>
-			</div>
+				</ConversationContent>
+			</Conversation>
 
 			{/* Enhanced Input Area */}
 			<div className="flex-shrink-0 border-t bg-gradient-to-r from-muted/10 to-muted/5 p-4">
 				<div className="relative">
-					<div className={cn('flex gap-3')}>
-						<Input
-							className={cn(
-								'h-11 flex-1 rounded-xl border-2 bg-background/50 backdrop-blur-sm',
-								'placeholder:text-muted-foreground/60',
-								'focus:border-primary/30 focus:bg-background/80',
-								'transition-all duration-200'
-							)}
+					<PromptInput
+						onSubmit={(e) => {
+							e.preventDefault();
+							handleSend();
+						}}
+					>
+						<PromptInputTextarea
 							disabled={isLoading || isRateLimited}
 							onChange={(e) => setInputValue(e.target.value)}
-							onKeyDown={(e) => {
-								if (e.key === 'Enter' && !e.shiftKey) {
-									e.preventDefault();
-									handleSend();
-								} else {
-									handleKeyPress(e);
-								}
-							}}
 							placeholder={
 								isLoading
 									? 'Databunny is thinking...'
@@ -310,34 +295,17 @@ export default function ChatSection() {
 							}
 							ref={inputRef}
 							value={inputValue}
+							minHeight={44}
+							maxHeight={120}
 						/>
-						<Button
-							className={cn(
-								'h-11 w-11 flex-shrink-0 rounded-xl',
-								'bg-gradient-to-r from-primary to-primary/80',
-								'hover:from-primary/90 hover:to-primary/70',
-								'shadow-lg transition-all duration-200',
-								(!inputValue.trim() || isRateLimited) &&
-									!isLoading &&
-									'opacity-50'
-							)}
-							disabled={!inputValue.trim() || isLoading || isRateLimited}
-							onClick={handleSend}
-							size="icon"
-							title="Send message"
-						>
-							<PaperPlaneRightIcon
-								className={cn(
-									'h-4 w-4',
-									inputValue.trim() &&
-										!isLoading &&
-										!isRateLimited &&
-										'scale-110'
-								)}
-								weight="duotone"
+						<PromptInputToolbar>
+							<div />
+							<PromptInputSubmit
+								disabled={!inputValue.trim() || isLoading || isRateLimited}
+								status={isLoading ? 'submitted' : undefined}
 							/>
-						</Button>
-					</div>
+						</PromptInputToolbar>
+					</PromptInput>
 
 					{/* Helper text */}
 					<div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
