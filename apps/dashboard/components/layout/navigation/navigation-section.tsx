@@ -2,7 +2,7 @@ import { CaretDownIcon } from '@phosphor-icons/react';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { memo } from 'react';
-import { useAccordionStates } from '@/hooks/use-persistent-state';
+import type { useAccordionStates } from '@/hooks/use-persistent-state';
 import { NavigationItem } from './navigation-item';
 import type { NavigationSection as NavigationSectionType } from './types';
 
