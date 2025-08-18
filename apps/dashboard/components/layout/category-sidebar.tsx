@@ -3,6 +3,7 @@
 import { InfoIcon } from '@phosphor-icons/react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { NotificationsPopover } from '@/components/notifications/notifications-popover';
@@ -58,7 +59,10 @@ export function CategorySidebar({
 			<div className="flex h-full flex-col">
 				{/* Logo */}
 				<div className="flex h-16 items-center justify-center border-border border-b">
-					<div className="relative flex-shrink-0">
+					<Link 
+						className="relative flex-shrink-0 transition-opacity hover:opacity-80"
+						href="/websites"
+					>
 						<Image
 							alt="DataBuddy Logo"
 							className="drop-shadow-sm invert dark:invert-0"
@@ -67,7 +71,7 @@ export function CategorySidebar({
 							src="/logo.svg"
 							width={32}
 						/>
-					</div>
+					</Link>
 				</div>
 				{categories.map((category) => {
 					const Icon = category.icon;

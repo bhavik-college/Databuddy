@@ -262,7 +262,7 @@ function FilterForm({
 				{Array.from({ length: Math.min(numberOfFilters, 5) }, (_, index) => (
 					<Skeleton
 						className="h-8 w-full"
-						key={`filter-skeleton-${index}-${numberOfFilters}`}
+						key={`filter-skeleton-${index}`}
 					/>
 				))}
 			</div>

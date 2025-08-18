@@ -247,7 +247,7 @@ export const websiteNavigation: NavigationSection[] = [
 		icon: UsersIcon,
 		items: [
 			{
-				name: 'User Profiles',
+				name: 'Profiles',
 				icon: UserCircleIcon,
 				href: '/profiles',
 			},

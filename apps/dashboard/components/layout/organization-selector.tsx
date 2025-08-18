@@ -190,15 +190,18 @@ export function OrganizationSelector() {
 
 	if (isLoading) {
 		return (
-			<div className="border-border border-b bg-accent/20 px-5 py-3">
-				<div className="flex items-center gap-3">
-					<div className="rounded-lg bg-background/80 p-1.5 shadow-sm ring-1 ring-border/50">
-						<Skeleton className="h-5 w-5 rounded" />
+			<div className="flex h-16 w-full items-center border-border border-b bg-accent/20 px-5 py-3">
+				<div className="flex w-full items-center justify-between">
+					<div className="flex items-center gap-3">
+						<div className="rounded-lg bg-background/80 p-1.5 shadow-sm ring-1 ring-border/50">
+							<Skeleton className="h-5 w-5 rounded" />
+						</div>
+						<div className="flex min-w-0 flex-1 flex-col items-start">
+							<Skeleton className="h-4 w-24 rounded" />
+							<Skeleton className="mt-1 h-3 w-16 rounded" />
+						</div>
 					</div>
-					<div className="space-y-1">
-						<Skeleton className="h-4 w-24 rounded" />
-						<Skeleton className="h-3 w-16 rounded" />
-					</div>
+					<Skeleton className="h-4 w-4 rounded" />
 				</div>
 			</div>
 		);

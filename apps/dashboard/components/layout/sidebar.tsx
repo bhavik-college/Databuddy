@@ -2,6 +2,7 @@
 
 import { ListIcon, XIcon } from '@phosphor-icons/react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -160,7 +161,10 @@ export function Sidebar() {
 							<ListIcon className="h-5 w-5" weight="duotone" />
 						</Button>
 
-						<div className="flex items-center gap-2">
+						<Link 
+							className="flex items-center gap-2 transition-opacity hover:opacity-80"
+							href="/websites"
+						>
 							<div className="flex h-8 w-8 items-center justify-center">
 								<Image
 									alt="Databuddy Logo"
@@ -172,7 +176,7 @@ export function Sidebar() {
 								/>
 							</div>
 							<span className="font-semibold text-lg">Databuddy</span>
-						</div>
+						</Link>
 					</div>
 				</div>
 			</header>

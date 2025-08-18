@@ -65,7 +65,7 @@ export function FiltersSection({
 					return (
 						<div
 							className="inline-flex items-center gap-1 rounded bg-muted/50 px-2 py-1 text-sm transition-colors hover:bg-muted/70"
-							key={`filter-${index}-${filter.field}-${filter.operator}`}
+							key={`filter-${filter.field}-${filter.operator}-${Array.isArray(filter.value) ? filter.value.join('-') : filter.value}-${index}`}
 						>
 							<span
 								className="truncate font-medium text-foreground"
