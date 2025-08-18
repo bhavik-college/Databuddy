@@ -48,11 +48,10 @@ export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
 
 	return (
 		<div className="mx-auto max-w-[1600px] p-3 sm:p-4 lg:p-6">
-			{/* Analytics toolbar and filters shared across all website pages */}
 			{isTrackingSetup && (
 				<div className="space-y-4">
-					<AnalyticsToolbar
-						isRefreshing={isRefreshing}
+						<AnalyticsToolbar
+							isRefreshing={isRefreshing}
 						onRefresh={handleRefresh}
 					/>
 					<FiltersSection
@@ -62,8 +61,8 @@ export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
 				</div>
 			)}
 
-			{/* Page content */}
 			{children}
+
 		</div>
 	);
 }

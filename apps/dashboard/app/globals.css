@@ -175,10 +175,10 @@
   --info: oklch(0.6 0.2 220);
   --info-foreground: oklch(0.99 0 0);
 
-  --scrollbar-size: 6px;
-  --scrollbar-track: #e8e8ec;
-  --scrollbar-thumb: rgba(100, 100, 120, 0.4);
-  --scrollbar-thumb-hover: rgba(80, 80, 100, 0.7);
+  --scrollbar-size: 3px;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: hsl(var(--border));
+  --scrollbar-thumb-hover: hsl(var(--muted-foreground) / 0.4);
 
   --focus-ring: 0 0 0 2px var(--ring);
   --focus-ring-offset: 2px;
@@ -252,6 +252,11 @@
   --shadow-xl:
     0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+
+  --scrollbar-size: 2px;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: hsl(var(--border));
+  --scrollbar-thumb-hover: hsl(var(--muted-foreground) / 0.3);
 }
 
 /* ==========================================================================
@@ -260,7 +265,7 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
 
   *,
@@ -361,17 +366,23 @@
 
 ::-webkit-scrollbar-track {
   background: var(--scrollbar-track);
-  border-radius: var(--radius-md);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
-  border-radius: var(--radius-md);
-  transition: background 0.2s var(--ease-smooth);
+  border-radius: calc(var(--scrollbar-size) / 2);
+  transition: all 0.2s var(--ease-smooth);
+  min-height: 20px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover);
+  transform: scaleX(1.2);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: hsl(var(--muted-foreground) / 0.7);
+  transform: scaleX(1.4);
 }
 
 ::-webkit-scrollbar-corner {
@@ -382,6 +393,21 @@
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* Enhanced scrollbar for specific containers */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
 
 /* ==========================================================================

@@ -116,6 +116,24 @@ interface EventProperty {
 	count: number;
 }
 
+interface OutboundLinkData {
+	href: string;
+	text: string;
+	total_clicks: number;
+	unique_users: number;
+	unique_sessions: number;
+	percentage: number;
+	last_clicked: string;
+}
+
+interface OutboundDomainData {
+	domain: string;
+	total_clicks: number;
+	unique_users: number;
+	unique_links: number;
+	percentage: number;
+}
+
 // Constants
 const MIN_PREVIOUS_SESSIONS_FOR_TREND = 5;
 const MIN_PREVIOUS_VISITORS_FOR_TREND = 5;
@@ -133,8 +151,8 @@ const QUERY_CONFIG = {
 			'utm_mediums',
 			'utm_campaigns',
 		] as string[],
-		tech: ['device_types', 'browsers', 'operating_systems'] as string[], // <-- add 'operating_systems' here
-		customEvents: ['custom_events', 'custom_event_properties'] as string[],
+		tech: ['device_types', 'browsers', 'operating_systems'] as string[],
+		customEvents: ['custom_events', 'custom_event_properties', 'outbound_links', 'outbound_domains'] as string[],
 	},
 } as const;
 
@@ -254,6 +272,10 @@ export function WebsiteOverviewTab({
 		custom_event_properties:
 			getDataForQuery('overview-custom-events', 'custom_event_properties') ||
 			[],
+		outbound_links:
+			getDataForQuery('overview-custom-events', 'outbound_links') || [],
+		outbound_domains:
+			getDataForQuery('overview-custom-events', 'outbound_domains') || [],
 	};
 
 	const loading = {
@@ -767,6 +789,106 @@ export function WebsiteOverviewTab({
 		},
 	];
 
+	const outboundLinksColumns = [
+		{
+			id: 'href',
+			accessorKey: 'href',
+			header: 'Destination URL',
+			cell: (info: CellInfo) => {
+				const href = info.getValue() as string;
+				const domain = new URL(href).hostname;
+				return (
+					<div className="flex flex-col gap-1">
+						<a
+							href={href}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="font-medium text-primary hover:underline truncate max-w-[300px]"
+							title={href}
+						>
+							{domain}
+						</a>
+						<span className="text-muted-foreground text-xs truncate max-w-[300px]" title={href}>
+							{href}
+						</span>
+					</div>
+				);
+			},
+		},
+		{
+			id: 'text',
+			accessorKey: 'text',
+			header: 'Link Text',
+			cell: (info: CellInfo) => {
+				const text = info.getValue() as string;
+				return (
+					<span className="font-medium truncate max-w-[200px]" title={text}>
+						{text || '(no text)'}
+					</span>
+				);
+			},
+		},
+		{
+			id: 'total_clicks',
+			accessorKey: 'total_clicks',
+			header: 'Clicks',
+			cell: createMetricCell('total'),
+		},
+		{
+			id: 'unique_users',
+			accessorKey: 'unique_users',
+			header: 'Users',
+			cell: createMetricCell('unique'),
+		},
+		{
+			id: 'percentage',
+			accessorKey: 'percentage',
+			header: 'Share',
+			cell: createPercentageCell(),
+		},
+	];
+
+	const outboundDomainsColumns = [
+		{
+			id: 'domain',
+			accessorKey: 'domain',
+			header: 'Domain',
+			cell: (info: CellInfo) => {
+				const domain = info.getValue() as string;
+				return (
+					<div className="flex items-center gap-3">
+						<div className="h-2 w-2 flex-shrink-0 rounded-full bg-blue-500" />
+						<span className="font-medium text-foreground">{domain}</span>
+					</div>
+				);
+			},
+		},
+		{
+			id: 'total_clicks',
+			accessorKey: 'total_clicks',
+			header: 'Clicks',
+			cell: createMetricCell('total'),
+		},
+		{
+			id: 'unique_users',
+			accessorKey: 'unique_users',
+			header: 'Users',
+			cell: createMetricCell('unique'),
+		},
+		{
+			id: 'unique_links',
+			accessorKey: 'unique_links',
+			header: 'Links',
+			cell: createMetricCell('unique'),
+		},
+		{
+			id: 'percentage',
+			accessorKey: 'percentage',
+			header: 'Share',
+			cell: createPercentageCell(),
+		},
+	];
+
 	const userTimezone = getUserTimezone();
 	dayjs.extend(utc);
 	dayjs.extend(timezone);
@@ -1114,18 +1236,14 @@ export function WebsiteOverviewTab({
 
 			{/* Custom Events Table */}
 			<DataTable
-				columns={customEventsColumns}
-				data={processedCustomEventsData}
-				description="User-defined events and interactions with property breakdowns"
-				emptyMessage="No custom events tracked yet"
+				description="User-defined events, interactions, and outbound link tracking"
+				isLoading={isLoading}
+				minHeight={350}
+				onAddFilter={onAddFilter}
 				expandable={true}
 				getSubRows={(row: CustomEventData) =>
 					row.propertyCategories as unknown as CustomEventData[]
 				}
-				initialPageSize={8}
-				isLoading={isLoading}
-				minHeight={350}
-				onAddFilter={onAddFilter}
 				renderSubRow={(subRow: CustomEventData, parentRow: CustomEventData) => {
 					const typedSubRow = subRow as unknown as PropertyCategory;
 					const propertyKey = typedSubRow.key;
@@ -1200,7 +1318,35 @@ export function WebsiteOverviewTab({
 						</div>
 					);
 				}}
-				title="Custom Events"
+				tabs={[
+					{
+						id: 'custom_events',
+						label: 'Custom Events',
+						data: processedCustomEventsData,
+						columns: customEventsColumns,
+					},
+					{
+						id: 'outbound_links',
+						label: 'Outbound Links',
+						data: customEventsData.outbound_links,
+						columns: outboundLinksColumns,
+						getFilter: (row: any) => ({
+							field: 'href',
+							value: row.href,
+						}),
+					},
+					{
+						id: 'outbound_domains',
+						label: 'Outbound Domains',
+						data: customEventsData.outbound_domains,
+						columns: outboundDomainsColumns,
+						getFilter: (row: any) => ({
+							field: 'href',
+							value: `*${row.domain}*`,
+						}),
+					},
+				]}
+				title="Events & Links"
 			/>
 
 			{/* Technology */}

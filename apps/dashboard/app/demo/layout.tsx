@@ -271,12 +271,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
 			<main className="relative h-screen pt-16 md:pl-64">
 				<div className="h-[calc(100vh-4rem)] overflow-y-scroll">
 					<div className="mx-auto max-w-[1600px] p-3 sm:p-4 lg:p-6">
-						{/* Analytics toolbar for demo */}
 						<AnalyticsToolbar
 							isRefreshing={isRefreshing}
-							onFiltersChange={setSelectedFilters}
 							onRefresh={handleRefresh}
-							selectedFilters={selectedFilters}
 						/>
 
 						{children}
