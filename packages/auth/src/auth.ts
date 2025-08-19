@@ -177,6 +177,8 @@ export const auth = betterAuth({
 		},
 		expiresIn: 60 * 60 * 24 * 30, // 30 days
 		updateAge: 60 * 60 * 24 * 3, // 1 day (every 1 day the session expiration is updated)
+		storeSessionInDatabase: true, // Store session in database when secondary storage is provided
+		preserveSessionInDatabase: false, // Preserve session records in database when deleted from secondary storage
 	},
 	secondaryStorage: {
 		get: async (key) => {
