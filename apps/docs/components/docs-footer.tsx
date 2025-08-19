@@ -67,7 +67,7 @@ export function DocsFooter() {
 							<li>
 								<Link
 									className="text-muted-foreground hover:text-foreground"
-									href="/docs/integrations"
+									href="/docs/Integrations"
 								>
 									Integrations
 								</Link>

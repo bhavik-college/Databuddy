@@ -84,37 +84,37 @@ export const contents: SidebarSection[] = [
 		list: [
 			{
 				title: 'React',
-				href: '/docs/integrations/react',
+				href: '/docs/Integrations/react',
 				icon: AtomIcon,
 			},
 			{
 				title: 'Next.js',
-				href: '/docs/integrations/nextjs',
+				href: '/docs/Integrations/nextjs',
 				icon: LightningIcon,
 			},
 			{
 				title: 'WordPress',
-				href: '/docs/integrations/wordpress',
+				href: '/docs/Integrations/wordpress',
 				icon: GlobeIcon,
 			},
 			{
 				title: 'Shopify',
-				href: '/docs/integrations/shopify',
+				href: '/docs/Integrations/shopify',
 				icon: ShoppingCartIcon,
 			},
 			{
 				title: 'Stripe',
-				href: '/docs/integrations/stripe',
+				href: '/docs/Integrations/stripe',
 				icon: CreditCardIcon,
 			},
 			{
 				title: 'Framer',
-				href: '/docs/integrations/framer',
+				href: '/docs/Integrations/framer',
 				icon: PaletteIcon,
 			},
 			{
 				title: 'Google Tag Manager',
-				href: '/docs/integrations/gtm',
+				href: '/docs/Integrations/gtm',
 				icon: GoogleLogoIcon,
 			},
 		],
