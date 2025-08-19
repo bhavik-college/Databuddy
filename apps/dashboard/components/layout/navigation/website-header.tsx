@@ -50,7 +50,7 @@ export function WebsiteHeader({ website }: WebsiteHeaderProps) {
 
 			{/* Back navigation - aligned with category buttons */}
 			<button
-				className="group flex w-full cursor-pointer items-center justify-start px-3 py-2 transition-colors hover:bg-sidebar-accent/60"
+				className="group flex w-full cursor-pointer items-center justify-start px-3 py-2.5 transition-colors hover:bg-sidebar-accent/60"
 				type="button"
 			>
 				<Link className="flex items-center gap-2" href="/websites">
