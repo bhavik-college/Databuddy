@@ -126,94 +126,96 @@ export function WebsiteSettings({ organization }: WebsiteSettingsProps) {
 		});
 
 	return (
-		<div className="space-y-6">
-			{/* Website count indicator */}
-			{!isLoadingWebsites && websites && websites.length > 0 && (
-				<div className="flex items-center gap-2 rounded-lg border border-muted bg-muted/30 px-3 py-2 text-muted-foreground text-sm">
-					<GlobeIcon
-						aria-hidden="true"
-						className="h-4 w-4 flex-shrink-0"
-						size={16}
-						weight="duotone"
-					/>
-					<span>
-						Managing{' '}
-						<span className="font-medium text-foreground">
-							{websites.length}
-						</span>{' '}
-						website{websites.length !== 1 ? 's' : ''}
-					</span>
-				</div>
-			)}
+		<div className="h-full p-6">
+			<div className="space-y-6">
+				{/* Website count indicator */}
+				{!isLoadingWebsites && websites && websites.length > 0 && (
+					<div className="flex items-center gap-2 rounded-lg border border-muted bg-muted/30 px-3 py-2 text-muted-foreground text-sm">
+						<GlobeIcon
+							aria-hidden="true"
+							className="h-4 w-4 flex-shrink-0"
+							size={16}
+							weight="duotone"
+						/>
+						<span>
+							Managing{' '}
+							<span className="font-medium text-foreground">
+								{websites.length}
+							</span>{' '}
+							website{websites.length !== 1 ? 's' : ''}
+						</span>
+					</div>
+				)}
 
-			{/* Loading state */}
-			{isLoadingWebsites && <WebsiteLoadingSkeleton />}
+				{/* Loading state */}
+				{isLoadingWebsites && <WebsiteLoadingSkeleton />}
 
-			{/* Empty state */}
-			{!isLoadingWebsites && websites && websites.length === 0 && (
-				<EnhancedEmptyState />
-			)}
+				{/* Empty state */}
+				{!isLoadingWebsites && websites && websites.length === 0 && (
+					<EnhancedEmptyState />
+				)}
 
-			{/* Website grid */}
-			{!isLoadingWebsites && websites && websites.length > 0 && (
-				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-					{websites.map((website) => (
-						<Link
-							aria-label={`View ${website.name} settings`}
-							className="group block rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-							href={`/websites/${website.id}`}
-							key={website.id}
-						>
-							<Card className="h-full overflow-hidden transition-all duration-300 ease-in-out group-hover:border-primary/50 group-hover:shadow-lg group-hover:shadow-primary/5">
-								<CardHeader className="pb-3">
-									<div className="flex items-center justify-between gap-2">
-										<div className="flex min-w-0 flex-1 items-center gap-3">
-											<FaviconImage
-												altText={`${website.name} favicon`}
-												className="flex-shrink-0 rounded"
-												domain={website.domain}
-												fallbackIcon={
-													<div className="rounded bg-primary/10 p-1">
-														<GlobeIcon
-															className="h-4 w-4 text-primary"
-															size={16}
-															weight="duotone"
-														/>
-													</div>
-												}
-												size={24}
-											/>
-											<div className="min-w-0 flex-1">
-												<h4 className="truncate font-semibold text-foreground text-sm transition-colors group-hover:text-primary">
-													{website.name}
-												</h4>
-												<p className="truncate text-muted-foreground text-xs">
-													{website.domain}
-												</p>
+				{/* Website grid */}
+				{!isLoadingWebsites && websites && websites.length > 0 && (
+					<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+						{websites.map((website) => (
+							<Link
+								aria-label={`View ${website.name} settings`}
+								className="group block rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+								href={`/websites/${website.id}`}
+								key={website.id}
+							>
+								<Card className="h-full overflow-hidden transition-all duration-300 ease-in-out group-hover:border-primary/50 group-hover:shadow-lg group-hover:shadow-primary/5">
+									<CardHeader className="pb-3">
+										<div className="flex items-center justify-between gap-2">
+											<div className="flex min-w-0 flex-1 items-center gap-3">
+												<FaviconImage
+													altText={`${website.name} favicon`}
+													className="flex-shrink-0 rounded"
+													domain={website.domain}
+													fallbackIcon={
+														<div className="rounded bg-primary/10 p-1">
+															<GlobeIcon
+																className="h-4 w-4 text-primary"
+																size={16}
+																weight="duotone"
+															/>
+														</div>
+													}
+													size={24}
+												/>
+												<div className="min-w-0 flex-1">
+													<h4 className="truncate font-semibold text-foreground text-sm transition-colors group-hover:text-primary">
+														{website.name}
+													</h4>
+													<p className="truncate text-muted-foreground text-xs">
+														{website.domain}
+													</p>
+												</div>
 											</div>
+											<ArrowRightIcon
+												aria-hidden="true"
+												className="h-4 w-4 flex-shrink-0 text-muted-foreground transition-all duration-200 group-hover:translate-x-1 group-hover:text-primary"
+												weight="fill"
+											/>
 										</div>
-										<ArrowRightIcon
-											aria-hidden="true"
-											className="h-4 w-4 flex-shrink-0 text-muted-foreground transition-all duration-200 group-hover:translate-x-1 group-hover:text-primary"
-											weight="fill"
-										/>
-									</div>
-								</CardHeader>
-								<CardContent className="pt-0 pb-4">
-									<div className="flex items-center justify-between">
-										<Badge
-											className="border-primary/20 bg-primary/10 text-primary"
-											variant="secondary"
-										>
-											Active
-										</Badge>
-									</div>
-								</CardContent>
-							</Card>
-						</Link>
-					))}
-				</div>
-			)}
+									</CardHeader>
+									<CardContent className="pt-0 pb-4">
+										<div className="flex items-center justify-between">
+											<Badge
+												className="border-primary/20 bg-primary/10 text-primary"
+												variant="secondary"
+											>
+												Active
+											</Badge>
+										</div>
+									</CardContent>
+								</Card>
+							</Link>
+						))}
+					</div>
+				)}
+			</div>
 		</div>
 	);
 }
