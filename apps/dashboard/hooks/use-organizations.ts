@@ -284,12 +284,7 @@ export function useOrganizationMembers(organizationId: string) {
 			},
 			'Member invited successfully',
 			'Failed to invite member',
-			() => {
-				invalidateMembers();
-				queryClient.invalidateQueries({
-					queryKey: QUERY_KEYS.organizationInvitations(organizationId),
-				});
-			}
+			invalidateMembers
 		)
 	);
 
@@ -352,63 +347,7 @@ export function useOrganizationMembers(organizationId: string) {
 	};
 }
 
-export function useOrganizationInvitations(organizationId: string) {
-	const queryClient = useQueryClient();
-
-	const {
-		data: invitations = [],
-		isLoading,
-		error,
-		refetch,
-	} = useQuery({
-		queryKey: QUERY_KEYS.organizationInvitations(organizationId),
-		queryFn: async () => {
-			const { data, error: apiError } =
-				await authClient.organization.listInvitations({
-					query: { organizationId },
-				});
-			if (apiError) {
-				throw new Error(apiError.message || 'Failed to fetch invitations');
-			}
-			return data || [];
-		},
-		enabled: !!organizationId,
-	});
-
-	const cancelInvitationMutation = useMutation(
-		createMutation(
-			async (invitationId: string) => {
-				const { data: result, error: apiError } =
-					await authClient.organization.cancelInvitation({
-						invitationId,
-					});
-				if (apiError) {
-					throw new Error(apiError.message || 'Failed to cancel invitation');
-				}
-				return result;
-			},
-			'Invitation cancelled successfully',
-			'Failed to cancel invitation',
-			() =>
-				queryClient.invalidateQueries({
-					queryKey: QUERY_KEYS.organizationInvitations(organizationId),
-				})
-		)
-	);
-
-	return {
-		invitations,
-		isLoading,
-		error,
-		hasError: !!error,
-		refetch,
-
-		cancelInvitation: cancelInvitationMutation.mutate,
-		cancelInvitationAsync: cancelInvitationMutation.mutateAsync,
-
-		isCancellingInvitation: cancelInvitationMutation.isPending,
-	};
-}
+// useOrganizationInvitations has been moved to @/hooks/use-organization-invitations for simplified state management
 
 export function useUserInvitations() {
 	const queryClient = useQueryClient();
@@ -422,7 +361,7 @@ export function useUserInvitations() {
 		queryKey: QUERY_KEYS.userInvitations,
 		queryFn: async () => {
 			const { data, error: apiError } =
-				await authClient.organization.listInvitations();
+				await authClient.organization.listUserInvitations();
 			if (apiError) {
 				throw new Error(apiError.message || 'Failed to fetch user invitations');
 			}
@@ -503,10 +442,7 @@ export type OrganizationMember = ReturnType<
 	typeof useOrganizationMembers
 >['members'][number];
 
-export type Invitation = ReturnType<
-	typeof useOrganizationInvitations
->['invitations'][number];
+// Invitation types are now in @/stores/jotai/organizationAtoms
+export type { Invitation } from '@/stores/jotai/organizationAtoms';
 
-export type CancelInvitation = ReturnType<
-	typeof useOrganizationInvitations
->['cancelInvitation'];
+export type CancelInvitation = (invitationId: string) => Promise<void>;

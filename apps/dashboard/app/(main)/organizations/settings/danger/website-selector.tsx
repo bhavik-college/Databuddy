@@ -16,19 +16,19 @@ function WebsiteCard({
 	return (
 		<button
 			className={cn(
-				'flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-all duration-200',
+				'flex w-full items-center gap-3 rounded border p-2 text-left transition-all duration-200',
 				selected
-					? 'border-primary/30 bg-primary/10 shadow-sm ring-2 ring-primary/20'
-					: 'border-border/50 bg-background/50 hover:border-border/70 hover:bg-muted/80'
+					? 'border-primary/30 bg-primary/10 shadow-sm ring-1 ring-primary/20'
+					: 'border-border/30 bg-background/50 hover:border-border/60 hover:bg-muted/60'
 			)}
 			onClick={onClick}
 			type="button"
 		>
-			<div className="flex-shrink-0 rounded bg-primary/10 p-1.5">
-				<GlobeIcon className="h-3.5 w-3.5 not-dark:text-primary" size={14} />
+			<div className="flex-shrink-0 rounded bg-primary/10 p-1">
+				<GlobeIcon className="h-3 w-3 text-primary" size={12} />
 			</div>
 			<div className="min-w-0 flex-1">
-				<p className="truncate font-medium text-foreground text-sm">
+				<p className="truncate font-medium text-foreground text-xs">
 					{website.name}
 				</p>
 				<p className="truncate text-muted-foreground text-xs">
@@ -49,7 +49,7 @@ export function WebsiteSelector({
 	onSelectWebsite: (id: string | null) => void;
 }) {
 	return (
-		<div className="max-h-60 space-y-2 overflow-y-auto p-1">
+		<div className="max-h-48 space-y-1 overflow-y-auto p-1">
 			{websites.length > 0 ? (
 				websites.map((website) => (
 					<WebsiteCard
@@ -64,13 +64,13 @@ export function WebsiteSelector({
 					/>
 				))
 			) : (
-				<div className="py-8 text-center">
+				<div className="py-6 text-center">
 					<GlobeIcon
-						className="mx-auto mb-2 h-8 w-8 not-dark:text-primary"
-						size={32}
+						className="mx-auto mb-2 h-6 w-6 text-primary"
+						size={24}
 						weight="duotone"
 					/>
-					<p className="text-muted-foreground text-sm">No websites found</p>
+					<p className="text-muted-foreground text-xs">No websites found</p>
 				</div>
 			)}
 		</div>

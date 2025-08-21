@@ -25,6 +25,7 @@ import {
 	UserIcon,
 	UsersIcon,
 	UsersThreeIcon,
+	WarningIcon,
 } from '@phosphor-icons/react';
 import type { NavigationSection } from './types';
 
@@ -152,12 +153,6 @@ export const organizationNavigation: NavigationSection[] = [
 				href: '/organizations',
 				rootLevel: true,
 			},
-			{
-				name: 'Overview',
-				icon: ChartBarIcon,
-				href: '/organizations?tab=organizations',
-				rootLevel: true,
-			},
 		],
 	},
 	{
@@ -167,13 +162,13 @@ export const organizationNavigation: NavigationSection[] = [
 			{
 				name: 'Members',
 				icon: UserIcon,
-				href: '/organizations?view=members',
+				href: '/organizations/members',
 				rootLevel: true,
 			},
 			{
 				name: 'Invitations',
 				icon: ClockIcon,
-				href: '/organizations?view=invitations',
+				href: '/organizations/invitations',
 				rootLevel: true,
 			},
 		],
@@ -185,19 +180,25 @@ export const organizationNavigation: NavigationSection[] = [
 			{
 				name: 'General',
 				icon: GearIcon,
-				href: '/organizations?settings=general',
+				href: '/organizations/settings',
 				rootLevel: true,
 			},
 			{
 				name: 'Website Access',
 				icon: GlobeIcon,
-				href: '/organizations?settings=websites',
+				href: '/organizations/settings/websites',
 				rootLevel: true,
 			},
 			{
 				name: 'API Keys',
 				icon: KeyIcon,
-				href: '/organizations?settings=apikeys',
+				href: '/organizations/settings/api-keys',
+				rootLevel: true,
+			},
+			{
+				name: 'Danger Zone',
+				icon: WarningIcon,
+				href: '/organizations/settings/danger',
 				rootLevel: true,
 			},
 		],

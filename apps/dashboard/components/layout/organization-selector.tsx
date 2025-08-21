@@ -79,20 +79,18 @@ function OrganizationSelectorTrigger({
 		>
 			<div className="flex w-full items-center justify-between">
 				<div className="flex items-center gap-3">
-					<div className="rounded-lg bg-sidebar/80 p-1.5 shadow-sm ring-1 ring-sidebar-border/50">
+					<div className="rounded shadow-sm">
 						<Avatar className="h-5 w-5">
 							<AvatarImage
 								alt={activeOrganization?.name || 'Personal'}
+								className="rounded"
 								src={activeOrganization?.logo || undefined}
 							/>
 							<AvatarFallback className="bg-transparent font-medium text-xs">
 								{activeOrganization?.name ? (
 									getOrganizationInitials(activeOrganization.name)
 								) : (
-									<UserIcon
-										className="text-sidebar-ring"
-										weight="duotone"
-									/>
+									<UserIcon className="text-sidebar-ring" weight="duotone" />
 								)}
 							</AvatarFallback>
 						</Avatar>
@@ -248,12 +246,16 @@ export function OrganizationSelector() {
 					<DropdownMenuItem
 						className={cn(
 							'flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sm transition-colors',
-							'hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground text-sidebar-foreground/70',
-							!activeOrganization && 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+							'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
+							!activeOrganization &&
+								'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
 						)}
 						onClick={() => handleSelectOrganization(null)}
 					>
-						<UserIcon className="h-5 w-5 not-dark:text-primary" weight="duotone" />
+						<UserIcon
+							className="h-5 w-5 not-dark:text-primary"
+							weight="duotone"
+						/>
 						<div className="flex min-w-0 flex-1 flex-col items-start text-left">
 							<span className="text-left font-medium text-sm">Personal</span>
 							<span className="text-left text-sidebar-foreground/70 text-xs">
@@ -275,9 +277,9 @@ export function OrganizationSelector() {
 								<DropdownMenuItem
 									className={cn(
 										'flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sm transition-colors',
-										'hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground text-sidebar-foreground/70',
+										'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
 										activeOrganization?.id === org.id &&
-											'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+											'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
 									)}
 									key={org.id}
 									onClick={() => handleSelectOrganization(org.id)}
@@ -315,7 +317,7 @@ export function OrganizationSelector() {
 
 					<DropdownMenuSeparator className="my-1 bg-sidebar-border" />
 					<DropdownMenuItem
-						className="flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground text-sidebar-foreground/70"
+						className="flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sidebar-foreground/70 text-sm transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
 						onClick={handleCreateOrganization}
 					>
 						<PlusIcon className="h-5 w-5 not-dark:text-primary" />

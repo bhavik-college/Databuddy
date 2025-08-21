@@ -43,3 +43,8 @@ export const uploadOrganizationLogoSchema = z.object({
 export const deleteOrganizationSchema = z.object({
 	id: z.string().min(1, 'Organization ID is required'),
 });
+
+export const getPendingInvitationsSchema = z.object({
+	organizationId: z.string().min(1, 'Organization ID is required'),
+	includeExpired: z.boolean().optional(),
+});

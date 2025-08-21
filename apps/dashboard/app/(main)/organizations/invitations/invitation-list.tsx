@@ -14,7 +14,6 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { CancelInvitation, Invitation } from '@/hooks/use-organizations';
 
@@ -27,11 +26,11 @@ interface InvitationToCancel {
 
 export function InvitationList({
 	invitations,
-	onCancelInvitation,
+	onCancelInvitationAction,
 	isCancellingInvitation,
 }: {
 	invitations: Invitation[];
-	onCancelInvitation: CancelInvitation;
+	onCancelInvitationAction: CancelInvitation;
 	isCancellingInvitation: boolean;
 }) {
 	const [invitationToCancel, setInvitationToCancel] =
@@ -41,7 +40,7 @@ export function InvitationList({
 		if (!invitationToCancel) {
 			return;
 		}
-		await onCancelInvitation(invitationToCancel.id);
+		await onCancelInvitationAction(invitationToCancel.id);
 		setInvitationToCancel(null);
 	};
 
@@ -50,55 +49,65 @@ export function InvitationList({
 	}
 
 	return (
-		<div className="space-y-4">
-			<div className="flex items-center justify-between">
-				<h3 className="flex items-center gap-2 font-semibold text-lg">
-					<EnvelopeIcon className="h-5 w-5" size={16} weight="duotone" />
-					Pending Invitations
-				</h3>
-				<Badge className="px-2 py-1" variant="outline">
-					{invitations.length} pending
-				</Badge>
-			</div>
-			<div className="space-y-3">
+		<>
+			<div className="space-y-2">
 				{invitations.map((invitation) => (
 					<div
-						className="flex items-center justify-between rounded border border-border/50 bg-muted/30 p-4"
+						className="flex items-center justify-between rounded border border-border/30 bg-muted/20 p-3"
 						key={invitation.id}
 					>
 						<div className="flex items-center gap-3">
-							<div className="rounded-full border border-border/50 bg-accent p-3">
+							<div className="flex-shrink-0 rounded-full border border-border/30 bg-accent p-2">
 								<EnvelopeIcon
-									className="h-4 w-4 text-muted-foreground"
-									size={16}
+									className="h-3 w-3 text-muted-foreground"
+									size={12}
 								/>
 							</div>
-							<div>
-								<p className="font-medium">{invitation.email}</p>
-								<p className="text-muted-foreground text-sm">
-									Invited as {invitation.role} • {invitation.status}
+							<div className="min-w-0 flex-1">
+								<p className="truncate font-medium text-sm">
+									{invitation.email}
 								</p>
+								<div className="flex items-center gap-2">
+									<p className="text-muted-foreground text-xs">
+										Invited as {invitation.role || 'member'}
+									</p>
+									<span
+										className={`inline-flex rounded-full px-2 py-0.5 font-medium text-xs ${
+											invitation.status === 'pending'
+												? 'bg-yellow-100 text-yellow-800'
+												: invitation.status === 'accepted'
+													? 'bg-green-100 text-green-800'
+													: 'bg-gray-100 text-gray-800'
+										}`}
+									>
+										{invitation.status}
+									</span>
+								</div>
 								<p className="mt-1 flex items-center gap-1 text-muted-foreground text-xs">
-									<ClockIcon className="h-3 w-3" size={16} />
-									Expires {dayjs(invitation.expiresAt).fromNow()}
+									<ClockIcon className="h-3 w-3 flex-shrink-0" size={12} />
+									{invitation.status === 'pending' ? 'Expires' : 'Expired'}{' '}
+									{dayjs(invitation.expiresAt).fromNow()}
 								</p>
 							</div>
 						</div>
-						<div className="flex items-center gap-2">
-							<Button
-								className="rounded hover:border-destructive/20 hover:bg-destructive/10 hover:text-destructive"
-								disabled={isCancellingInvitation}
-								onClick={() =>
-									setInvitationToCancel({
-										id: invitation.id,
-										email: invitation.email,
-									})
-								}
-								size="sm"
-								variant="outline"
-							>
-								<TrashIcon className="h-3 w-3" size={16} />
-							</Button>
+						<div className="flex flex-shrink-0 items-center gap-2">
+							{invitation.status === 'pending' &&
+								dayjs(invitation.expiresAt).isAfter(dayjs()) && (
+									<Button
+										className="h-7 w-7 rounded p-0 hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+										disabled={isCancellingInvitation}
+										onClick={() =>
+											setInvitationToCancel({
+												id: invitation.id,
+												email: invitation.email,
+											})
+										}
+										size="sm"
+										variant="outline"
+									>
+										<TrashIcon className="h-3 w-3" size={12} />
+									</Button>
+								)}
 						</div>
 					</div>
 				))}
@@ -125,6 +134,6 @@ export function InvitationList({
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</div>
+		</>
 	);
 }

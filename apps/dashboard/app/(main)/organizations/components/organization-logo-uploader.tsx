@@ -159,11 +159,11 @@ export function OrganizationLogoUploader({
 
 	return (
 		<div className="space-y-3">
-			<div className="flex items-center gap-4">
+			<div className="flex items-center gap-3">
 				<div className="group relative">
-					<Avatar className="h-20 w-20 border-2 border-border/50 shadow-sm">
+					<Avatar className="h-16 w-16 border border-border/30 shadow-sm">
 						<AvatarImage alt={organization.name} src={preview || undefined} />
-						<AvatarFallback className="bg-accent font-medium text-lg">
+						<AvatarFallback className="bg-accent font-medium text-sm">
 							{getOrganizationInitials(organization.name)}
 						</AvatarFallback>
 					</Avatar>
@@ -173,17 +173,19 @@ export function OrganizationLogoUploader({
 						onClick={() => fileInputRef.current?.click()}
 						type="button"
 					>
-						<UploadSimpleIcon className="text-white" size={24} />
+						<UploadSimpleIcon className="text-white" size={20} />
 					</button>
 				</div>
 				<div className="space-y-2">
-					<p className="font-medium text-foreground">Update your logo</p>
-					<p className="text-muted-foreground text-sm">
+					<p className="font-medium text-foreground text-sm">
+						Update your logo
+					</p>
+					<p className="text-muted-foreground text-xs">
 						Click the image to upload a new one.
 					</p>
 					{preview && (
 						<Button
-							className="rounded"
+							className="h-7 rounded text-xs"
 							disabled={isDeletingOrganizationLogo}
 							onClick={handleDeleteLogo}
 							size="sm"
@@ -196,7 +198,7 @@ export function OrganizationLogoUploader({
 								</>
 							) : (
 								<>
-									<TrashIcon className="mr-2 h-4 w-4" size={16} />
+									<TrashIcon className="mr-2 h-3 w-3" size={12} />
 									Remove Logo
 								</>
 							)}

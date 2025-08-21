@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react';
 import { useOrganizations } from '@/hooks/use-organizations';
-import { OrganizationsList } from './components/organizations-list';
+import { MembersView } from './members-view';
 
 const ComponentSkeleton = () => (
 	<div className="space-y-4">
@@ -11,16 +11,16 @@ const ComponentSkeleton = () => (
 	</div>
 );
 
-export default function Organizations2Page() {
-	const { organizations, activeOrganization, isLoading } = useOrganizations();
+export default function MembersPage() {
+	const { activeOrganization } = useOrganizations();
+
+	if (!activeOrganization) {
+		return null;
+	}
 
 	return (
 		<Suspense fallback={<ComponentSkeleton />}>
-			<OrganizationsList
-				activeOrganization={activeOrganization}
-				isLoading={isLoading}
-				organizations={organizations}
-			/>
+			<MembersView organization={activeOrganization} />
 		</Suspense>
 	);
 }

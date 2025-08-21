@@ -53,7 +53,7 @@ export function NavigationItem({
 		<>
 			{domain ? (
 				<FaviconImage
-					className="rounded-sm"
+					className="rounded"
 					domain={domain}
 					fallbackIcon={
 						<Icon
@@ -77,12 +77,12 @@ export function NavigationItem({
 
 	if (disabled) {
 		return (
-					<div
-			aria-disabled="true"
-			className={cn(
-				'group flex items-center gap-3 px-4 py-2.5 text-sm transition-colors',
-				'cursor-not-allowed text-sidebar-foreground/30'
-			)}
+			<div
+				aria-disabled="true"
+				className={cn(
+					'group flex items-center gap-3 px-4 py-2.5 text-sm transition-colors',
+					'cursor-not-allowed text-sidebar-foreground/30'
+				)}
 			>
 				{content}
 			</div>
@@ -97,7 +97,7 @@ export function NavigationItem({
 			className={cn(
 				'group flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
 				isActive
-					? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium border-r-2 border-sidebar-ring'
+					? 'border-sidebar-ring border-r-2 bg-sidebar-accent font-medium text-sidebar-accent-foreground'
 					: 'text-sidebar-foreground/70'
 			)}
 			data-is-external={isExternal ? 'true' : 'false'}
@@ -110,7 +110,9 @@ export function NavigationItem({
 			{content}
 			<div className="flex items-center gap-1.5">
 				{alpha && (
-					<span className="font-mono text-sidebar-foreground/50 text-xs">ALPHA</span>
+					<span className="font-mono text-sidebar-foreground/50 text-xs">
+						ALPHA
+					</span>
 				)}
 				{isExternal && (
 					<ArrowSquareOutIcon

@@ -87,8 +87,8 @@ function RoleSelector({
 			}
 			value={member.role}
 		>
-			<SelectTrigger className="w-32 rounded">
-				<SelectValue placeholder="Select a role" />
+			<SelectTrigger className="h-7 w-24 rounded text-xs">
+				<SelectValue placeholder="Role" />
 			</SelectTrigger>
 			<SelectContent>
 				<SelectItem value="admin">Admin</SelectItem>
@@ -119,51 +119,56 @@ export function MemberList({
 	};
 
 	return (
-		<div className="space-y-4">
+		<div className="space-y-3">
 			<div className="flex items-center justify-between">
-				<h3 className="flex items-center gap-2 font-semibold text-lg">
-					<UsersIcon className="h-5 w-5" size={16} weight="duotone" />
+				<h3 className="flex items-center gap-2 font-medium text-sm">
+					<UsersIcon className="h-4 w-4" size={16} weight="duotone" />
 					Team Members
 				</h3>
-				<Badge className="px-2 py-1" variant="outline">
+				<Badge className="px-2 py-1 text-xs" variant="outline">
 					{members?.length || 0} active
 				</Badge>
 			</div>
 
 			{members && members.length > 0 ? (
-				<div className="space-y-3">
+				<div className="space-y-2">
 					{members.map((member) => (
 						<div
-							className="flex items-center justify-between rounded border border-border/50 bg-muted/30 p-4"
+							className="flex items-center justify-between rounded border border-border/30 bg-muted/20 p-3"
 							key={member.id}
 						>
 							<div className="flex items-center gap-3">
-								<Avatar className="h-12 w-12 border border-border/50">
+								<Avatar className="h-8 w-8 flex-shrink-0 border border-border/30">
 									<AvatarImage
 										alt={member.user.name}
 										src={member.user.image || undefined}
 									/>
-									<AvatarFallback className="bg-accent font-medium text-sm">
+									<AvatarFallback className="bg-accent font-medium text-xs">
 										{member.user.name.charAt(0).toUpperCase()}
 									</AvatarFallback>
 								</Avatar>
-								<div>
+								<div className="min-w-0 flex-1">
 									<div className="flex items-center gap-2">
-										<p className="font-medium">{member.user.name}</p>
+										<p className="truncate font-medium text-sm">
+											{member.user.name}
+										</p>
 										{member.role === 'owner' && (
-											<CrownIcon className="h-4 w-4 text-amber-500" size={16} />
+											<CrownIcon
+												className="h-3 w-3 flex-shrink-0 text-amber-500"
+												size={12}
+											/>
 										)}
 									</div>
-									<p className="text-muted-foreground text-sm">
+									<p className="truncate text-muted-foreground text-xs">
 										{member.user.email}
 									</p>
 									<p className="mt-1 flex items-center gap-1 text-muted-foreground text-xs">
-										<ClockIcon className="h-3 w-3" size={16} />
+										<ClockIcon className="h-3 w-3 flex-shrink-0" size={12} />
 										Joined {dayjs(member.createdAt).fromNow()}
 									</p>
 								</div>
 							</div>
-							<div className="flex items-center gap-2">
+							<div className="flex flex-shrink-0 items-center gap-2">
 								<RoleSelector
 									isUpdatingMember={isUpdatingMember}
 									member={member}
@@ -172,7 +177,7 @@ export function MemberList({
 								/>
 								{member.role !== 'owner' && (
 									<Button
-										className="rounded hover:border-destructive/20 hover:bg-destructive/10 hover:text-destructive"
+										className="h-7 w-7 rounded p-0 hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
 										disabled={isRemovingMember}
 										onClick={() =>
 											setMemberToRemove({
@@ -183,7 +188,7 @@ export function MemberList({
 										size="sm"
 										variant="outline"
 									>
-										<TrashIcon className="h-3 w-3" size={16} />
+										<TrashIcon className="h-3 w-3" size={12} />
 									</Button>
 								)}
 							</div>
@@ -191,10 +196,10 @@ export function MemberList({
 					))}
 				</div>
 			) : (
-				<div className="rounded border border-border/50 bg-muted/30 py-8 text-center">
+				<div className="rounded border border-border/30 bg-muted/20 py-6 text-center">
 					<UserIcon
-						className="mx-auto mb-2 h-8 w-8 text-muted-foreground"
-						size={32}
+						className="mx-auto mb-2 h-6 w-6 text-muted-foreground"
+						size={24}
 						weight="duotone"
 					/>
 					<p className="text-muted-foreground text-sm">No team members yet</p>

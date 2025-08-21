@@ -1,4 +1,3 @@
-// Helper function to format numbers with metric prefixes (K, M, B)
 export const formatMetricNumber = (num: number | undefined | null): string => {
 	if (num === undefined || num === null) {
 		return '0';
@@ -45,5 +44,3 @@ export const formatNumber = (num: number | undefined | null): string => {
 
 	return new Intl.NumberFormat('en-US').format(num);
 };
-
-// You can add other shared formatting functions here in the future
