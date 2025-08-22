@@ -6,15 +6,16 @@ import utc from 'dayjs/plugin/utc';
 import { Elysia, t } from 'elysia';
 import { type ExportRequest, processExport } from '../lib/export';
 import { logger } from '../lib/logger';
-import { createRateLimitMiddleware } from '../middleware/rate-limit';
+
+// import { createRateLimitMiddleware } from '../middleware/rate-limit';
 
 dayjs.extend(utc);
 
 // Rate limiting for exports - use expensive rate limit (stricter limits)
-const exportRateLimit = createRateLimitMiddleware({
-	type: 'expensive',
-	skipAuth: false,
-});
+// const exportRateLimit = createRateLimitMiddleware({
+// 	type: 'expensive',
+// 	skipAuth: false,
+// });
 
 // Cached website lookup (same as in RPC utils)
 const getWebsiteById = cacheable(
@@ -89,7 +90,7 @@ async function authorizeWebsiteAccess(
 }
 
 export const exportRoute = new Elysia({ prefix: '/v1/export' })
-	.use(exportRateLimit)
+	// .use(exportRateLimit)
 	.post(
 		'/data',
 		async ({ body, request }) => {
@@ -107,8 +108,7 @@ export const exportRoute = new Elysia({ prefix: '/v1/export' })
 					);
 				}
 
-				// Use the same authorization pattern as RPC routers
-				const website = await authorizeWebsiteAccess(
+				const _website = await authorizeWebsiteAccess(
 					request.headers,
 					websiteId,
 					'read'
