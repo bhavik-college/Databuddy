@@ -121,7 +121,7 @@ export const exportRoute = new Elysia({ prefix: '/v1/export' })
 				);
 
 				if (dateError) {
-					logger.warn('Export request with invalid dates', {
+					await logger.warn('Export request with invalid dates', {
 						requestId,
 						websiteId,
 						startDate: body.start_date,
@@ -134,7 +134,7 @@ export const exportRoute = new Elysia({ prefix: '/v1/export' })
 				// Validate export format
 				const format = body.format || 'json';
 				if (!['csv', 'json', 'txt', 'proto'].includes(format)) {
-					logger.warn('Export request with invalid format', {
+					await logger.warn('Export request with invalid format', {
 						requestId,
 						websiteId,
 						format,
@@ -147,7 +147,7 @@ export const exportRoute = new Elysia({ prefix: '/v1/export' })
 				}
 
 				// Log export initiation for audit trail
-				logger.info('Data export initiated', {
+				await logger.info('Data export initiated', {
 					requestId,
 					websiteId,
 					startDate: validatedDates.startDate,

@@ -54,7 +54,7 @@ const app = new Elysia()
 	})
 	.onError(({ error, code }) => {
 		const errorMessage = error instanceof Error ? error.message : String(error);
-		logger.error(errorMessage, { error });
+		logger.errorSync(errorMessage, { error });
 
 		return new Response(
 			JSON.stringify({
@@ -72,11 +72,11 @@ export default {
 };
 
 process.on('SIGINT', () => {
-	logger.info('SIGINT signal received, shutting down...');
+	logger.infoSync('SIGINT signal received, shutting down...');
 	process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-	logger.info('SIGTERM signal received, shutting down...');
+	logger.infoSync('SIGTERM signal received, shutting down...');
 	process.exit(0);
 });

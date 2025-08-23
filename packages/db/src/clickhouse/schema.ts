@@ -2,6 +2,7 @@ import { clickHouse } from './client';
 
 // Define the analytics database schema with tables for events, sessions, and aggregated data
 const ANALYTICS_DATABASE = 'analytics';
+const OBSERVABILITY_DATABASE = 'observability';
 
 // SQL statements for creating the analytics database and tables
 const CREATE_DATABASE = `
@@ -310,6 +311,45 @@ ORDER BY (domain, event_time)
 SETTINGS index_granularity = 8192
 `;
 
+const CREATE_OBSERVABILITY_EVENTS_TABLE = `
+CREATE TABLE IF NOT EXISTS ${OBSERVABILITY_DATABASE}.events (
+    id UUID DEFAULT generateUUIDv4(),
+
+    service String,
+    environment LowCardinality(String),
+    version Nullable(String),
+    host Nullable(String),
+    region Nullable(String),
+    instance_id Nullable(String),
+
+    trace_id Nullable(String),
+    span_id Nullable(String),
+    parent_span_id Nullable(String),
+    span_kind LowCardinality(String),       
+    status_code LowCardinality(String),     
+    status_message Nullable(String),
+
+    start_time DateTime64(3, 'UTC') DEFAULT now(),
+    end_time DateTime64(3, 'UTC') DEFAULT now(),
+    duration_ms Nullable(UInt32) AS (toUInt32(dateDiff('millisecond', start_time, end_time))),
+
+    level LowCardinality(String),
+    category LowCardinality(String),
+    request_id Nullable(String),
+    correlation_id Nullable(String),
+
+    user_id Nullable(String),
+    tenant_id Nullable(String),
+
+    attributes JSON,
+    events JSON
+
+) ENGINE = MergeTree
+PARTITION BY toYYYYMM(start_time)
+ORDER BY (service, environment, category, level, start_time)
+SETTINGS index_granularity = 8192
+`;
+
 export interface ErrorEvent {
 	id: string;
 	client_id: string;
@@ -373,7 +413,7 @@ export interface StripePaymentIntent {
 	amount_received: number;
 	amount_capturable: number;
 	livemode: number;
-	metadata: Record<string, unknown>;
+	metadata: JSON;
 	payment_method_types: string[];
 	failure_reason?: string;
 	canceled_at?: number;
@@ -417,7 +457,7 @@ export interface StripeRefund {
 	currency: string;
 	charge_id: string;
 	payment_intent_id?: string;
-	metadata: Record<string, unknown>;
+	metadata: JSON;
 	session_id?: string;
 }
 
@@ -457,7 +497,34 @@ export interface EmailEvent {
 	event_time: number;
 	received_at: number;
 	ingestion_time: number;
-	metadata_json: Record<string, unknown>;
+	metadata_json: JSON;
+}
+
+export interface ObservabilityEvent {
+	id: string;
+	service: string;
+	environment: string;
+	version?: string;
+	host?: string;
+	region?: string;
+	instance_id?: string;
+	trace_id?: string;
+	span_id?: string;
+	parent_span_id?: string;
+	span_kind?: string;
+	status_code?: string;
+	status_message?: string;
+	start_time: number;
+	end_time: number;
+	duration_ms?: number;
+	level: string;
+	category: string;
+	request_id?: string;
+	correlation_id?: string;
+	user_id?: string;
+	tenant_id?: string;
+	attributes: JSON;
+	events: JSON;
 }
 
 // TypeScript interface that matches the ClickHouse schema
@@ -557,6 +624,12 @@ export async function initClickHouseSchema() {
 		});
 		console.info(`Created database: ${ANALYTICS_DATABASE}`);
 
+		// Create the observability database
+		await clickHouse.command({
+			query: `CREATE DATABASE IF NOT EXISTS ${OBSERVABILITY_DATABASE}`,
+		});
+		console.info(`Created database: ${OBSERVABILITY_DATABASE}`);
+
 		// Create tables
 		const tables = [
 			{ name: 'events', query: CREATE_EVENTS_TABLE },
@@ -570,6 +643,10 @@ export async function initClickHouseSchema() {
 			{ name: 'stripe_refunds', query: CREATE_STRIPE_REFUNDS_TABLE },
 			{ name: 'blocked_traffic', query: CREATE_BLOCKED_TRAFFIC_TABLE },
 			{ name: 'email_events', query: CREATE_EMAIL_EVENTS_TABLE },
+			{
+				name: 'observability_events',
+				query: CREATE_OBSERVABILITY_EVENTS_TABLE,
+			},
 		];
 
 		await Promise.all(

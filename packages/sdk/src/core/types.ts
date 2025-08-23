@@ -124,6 +124,43 @@ export interface DatabuddyConfig {
 	 */
 	trackErrors?: boolean;
 
+	// --- Observability ---
+
+	/**
+	 * Enable observability features (logging, error tracking, tracing) (default: false).
+	 */
+	enableObservability?: boolean;
+
+	/**
+	 * Service name for observability events.
+	 */
+	observabilityService?: string;
+
+	/**
+	 * Environment for observability events.
+	 */
+	observabilityEnvironment?: string;
+
+	/**
+	 * Service version for observability events.
+	 */
+	observabilityVersion?: string;
+
+	/**
+	 * Enable structured logging (default: false).
+	 */
+	enableLogging?: boolean;
+
+	/**
+	 * Enable distributed tracing (default: false).
+	 */
+	enableTracing?: boolean;
+
+	/**
+	 * Enable error tracking (default: false).
+	 */
+	enableErrorTracking?: boolean;
+
 	// --- Optimization ---
 
 	/**

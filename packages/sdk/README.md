@@ -16,6 +16,7 @@
 - 🧩 **Drop-in React/Next.js component: `<Databuddy />`**
 - 🛡️ **Privacy-first: anonymized by default, sampling, batching, and more**
 - 🛠️ **Type-safe config and autocompletion**
+- 📋 **Observability: logging, error tracking, and distributed tracing**
 
 ---
 
