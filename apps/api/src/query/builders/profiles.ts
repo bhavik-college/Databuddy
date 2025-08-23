@@ -67,10 +67,8 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig> = {
             e.time,
             e.event_name,
             e.path,
-            e.error_message,
-            e.error_type,
             CASE 
-              WHEN e.event_name NOT IN ('screen_view', 'page_exit', 'error', 'web_vitals', 'link_out') 
+              WHEN e.event_name NOT IN ('screen_view', 'page_exit', 'web_vitals', 'link_out') 
                 AND e.properties IS NOT NULL 
                 AND e.properties != '{}' 
               THEN CAST(e.properties AS String)
