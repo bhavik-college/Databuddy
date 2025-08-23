@@ -146,10 +146,8 @@ export const SessionsBuilders: Record<string, SimpleQueryConfig> = {
             e.time,
             e.event_name,
             e.path,
-            e.error_message,
-            e.error_type,
             CASE 
-              WHEN e.event_name NOT IN ('screen_view', 'page_exit', 'error', 'web_vitals', 'link_out') 
+              WHEN e.event_name NOT IN ('screen_view', 'page_exit', 'web_vitals', 'link_out') 
                 AND e.properties IS NOT NULL 
                 AND e.properties != '{}' 
               THEN CAST(e.properties AS String)
@@ -204,8 +202,6 @@ export const SessionsBuilders: Record<string, SimpleQueryConfig> = {
 			'time',
 			'event_name',
 			'path',
-			'error_message',
-			'error_type',
 			'properties',
 			'device_type',
 			'browser_name',
