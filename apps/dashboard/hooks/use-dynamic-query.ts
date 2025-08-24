@@ -458,6 +458,43 @@ export function useEnhancedPerformanceData(
 			limit: 100,
 			filters,
 		},
+		// Core Web Vitals queries
+		{
+			id: 'web_vitals_time_series',
+			parameters: ['web_vitals_time_series'],
+			limit: 365, // More data points for time series
+			filters,
+		},
+		{
+			id: 'web_vitals_by_page',
+			parameters: ['web_vitals_by_page'],
+			limit: 100,
+			filters,
+		},
+		{
+			id: 'web_vitals_by_browser',
+			parameters: ['web_vitals_by_browser'],
+			limit: 100,
+			filters,
+		},
+		{
+			id: 'web_vitals_by_country',
+			parameters: ['web_vitals_by_country'],
+			limit: 100,
+			filters,
+		},
+		{
+			id: 'web_vitals_by_os',
+			parameters: ['web_vitals_by_os'],
+			limit: 100,
+			filters,
+		},
+		{
+			id: 'web_vitals_by_region',
+			parameters: ['web_vitals_by_region'],
+			limit: 100,
+			filters,
+		},
 	];
 
 	return useBatchDynamicQuery(websiteId, dateRange, queries, options);

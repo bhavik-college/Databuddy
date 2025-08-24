@@ -49,7 +49,7 @@ import type { FullTabProps, MetricPoint } from '../utils/types';
 import { MetricToggles } from '../utils/ui-components';
 
 const CustomEventsSection = lazy(() =>
-	import('./sections/custom-events-section').then((mod) => ({
+	import('./overview/_components/custom-events-section').then((mod) => ({
 		default: mod.CustomEventsSection,
 	}))
 );

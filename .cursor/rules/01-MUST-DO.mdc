@@ -40,7 +40,7 @@ use console properly, like console.error, console.time, console.json, console.ta
 
 Use Dayjs NEVER date-fns, and Tanstack query for hooks, NEVER SWR
 
-use Icon at the end of phosphor react icons, like CaretIcon not Caret
+use Icon at the end of phosphor react icons, like CaretIcon not Caret AND THATS THE DEFAULT IMPORT, NOT AS
 
 use json.stringify() when adding debugging
 
