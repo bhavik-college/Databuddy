@@ -13,8 +13,7 @@ import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { useAtom } from 'jotai';
-
-import { useCallback, useMemo } from 'react';
+import { lazy, useCallback, useMemo } from 'react';
 import {
 	DataTable,
 	DeviceTypeCell,
@@ -28,11 +27,9 @@ import {
 	type ReferrerSourceCellData,
 } from '@/components/atomic/ReferrerSourceCell';
 import { MetricsChart } from '@/components/charts/metrics-chart';
-
 import { useBatchDynamicQuery } from '@/hooks/use-dynamic-query';
 import { useTableTabs } from '@/lib/table-tabs';
 import { getUserTimezone } from '@/lib/timezone';
-
 import {
 	metricVisibilityAtom,
 	toggleMetricAtom,
@@ -50,7 +47,12 @@ import {
 } from '../utils/technology-helpers';
 import type { FullTabProps, MetricPoint } from '../utils/types';
 import { MetricToggles } from '../utils/ui-components';
-import { CustomEventsSection } from './sections/custom-events-section';
+
+const CustomEventsSection = lazy(() =>
+	import('./sections/custom-events-section').then((mod) => ({
+		default: mod.CustomEventsSection,
+	}))
+);
 
 interface ChartDataPoint {
 	date: string;
