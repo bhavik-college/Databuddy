@@ -8,9 +8,11 @@ import {
 	createUser,
 	deleteUser,
 	getAvailableExtensions,
+	getConnectionUrl,
 	getDatabaseStats,
 	getExtensions,
 	getTableStats,
+	listDatabuddyUsers,
 	parsePostgresUrl,
 	resetExtensionStats,
 	safeDropExtension,
@@ -148,11 +150,20 @@ export const dbConnectionsRouter = createTRPCRouter({
 				}
 			}
 
-			// Test connection and create user
+			// Test connection and get connection URL (creates user for non-Neon databases)
+			console.log(
+				`[DEBUG] create db connection: name=${input.name}, type=${input.type}, permissionLevel=${input.permissionLevel}`
+			);
+			console.log('[DEBUG] create db connection: testing connection first');
 			await testConnection(input.url);
-			const { connectionUrl } = await createUser(
+
+			console.log('[DEBUG] create db connection: getting connection URL');
+			const { connectionUrl } = await getConnectionUrl(
 				input.url,
 				input.permissionLevel
+			);
+			console.log(
+				'[DEBUG] create db connection: got connection URL, storing in database'
 			);
 
 			const [connection] = await ctx.db
@@ -244,10 +255,20 @@ export const dbConnectionsRouter = createTRPCRouter({
 				});
 			}
 
-			try {
-				await deleteUser(connectionUrl, username);
-			} catch {
-				// Log but don't fail - user cleanup is not critical for the API operation.
+			// Attempt to clean up the database user
+			// Only try to delete if it's a databuddy-created user (has our prefix)
+			if (username.startsWith('databuddy_')) {
+				try {
+					await deleteUser(connectionUrl, username);
+					console.log(`Successfully deleted database user: ${username}`);
+				} catch (error) {
+					// Log the error but don't fail the API operation
+					console.error(
+						`Failed to delete database user ${username}:`,
+						error.message
+					);
+					// In production, you might want to queue this for retry or manual cleanup
+				}
 			}
 
 			return { success: true };
@@ -576,6 +597,36 @@ export const dbConnectionsRouter = createTRPCRouter({
 				throw new TRPCError({
 					code: 'INTERNAL_SERVER_ERROR',
 					message: `Failed to drop extension: ${error.message}`,
+				});
+			}
+		}),
+
+	// Debug/maintenance endpoints
+	listDatabuddyUsers: protectedProcedure
+		.input(z.object({ id: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const connection = await authorizeDbConnectionAccess(
+				ctx,
+				input.id,
+				'read'
+			);
+
+			// Only admin connections can list users
+			if (connection.permissionLevel !== 'admin') {
+				throw new TRPCError({
+					code: 'FORBIDDEN',
+					message: 'Listing database users requires admin access.',
+				});
+			}
+
+			try {
+				const decryptedUrl = decryptConnectionUrl(connection.url);
+				const users = await listDatabuddyUsers(decryptedUrl);
+				return { users };
+			} catch (error) {
+				throw new TRPCError({
+					code: 'INTERNAL_SERVER_ERROR',
+					message: `Failed to list users: ${error instanceof Error ? error.message : 'Unknown error'}`,
 				});
 			}
 		}),

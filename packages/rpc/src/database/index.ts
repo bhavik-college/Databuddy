@@ -1,10 +1,7 @@
 export {
-	type AvailableExtension,
 	checkExtensionSafety,
 	type DatabaseStats,
-	type ExtensionDependency,
 	type ExtensionInfo,
-	type ExtensionSafetyCheck,
 	getAvailableExtensions,
 	getDatabaseStats,
 	getExtensions,
@@ -15,6 +12,15 @@ export {
 	type TableStats,
 	updateExtension,
 } from './monitoring';
+
+export {
+	checkPgStatStatementsEnabled,
+	getCurrentUserInfo,
+	getPerformanceMetrics,
+	getPerformanceStatements,
+	resetPerformanceStats,
+} from './performance';
+
 export {
 	buildPostgresUrl,
 	type CreateUserResult,
@@ -22,6 +28,9 @@ export {
 	createReadonlyUser,
 	createUser,
 	deleteUser,
+	getConnectionUrl,
+	isNeonDatabase,
+	listDatabuddyUsers,
 	type PermissionLevel,
 	type PostgresConnectionInfo,
 	parsePostgresUrl,

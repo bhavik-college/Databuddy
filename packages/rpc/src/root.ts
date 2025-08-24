@@ -7,6 +7,7 @@ import { funnelsRouter } from './routers/funnels';
 import { goalsRouter } from './routers/goals';
 import { miniChartsRouter } from './routers/mini-charts';
 import { organizationsRouter } from './routers/organizations';
+import { performanceRouter } from './routers/performance';
 import { preferencesRouter } from './routers/preferences';
 import { websitesRouter } from './routers/websites';
 import { createTRPCRouter } from './trpc';
@@ -23,6 +24,7 @@ export const appRouter = createTRPCRouter({
 	assistant: assistantRouter,
 	organizations: organizationsRouter,
 	dbConnections: dbConnectionsRouter,
+	performance: performanceRouter,
 });
 
 export type AppRouter = typeof appRouter;

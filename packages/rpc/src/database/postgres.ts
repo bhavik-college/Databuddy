@@ -18,9 +18,6 @@ export interface CreateUserResult {
 
 export type PermissionLevel = 'readonly' | 'admin';
 
-/**
- * Parse PostgreSQL connection URL into components
- */
 export function parsePostgresUrl(url: string): PostgresConnectionInfo {
 	try {
 		const urlObj = new URL(url);
@@ -37,9 +34,6 @@ export function parsePostgresUrl(url: string): PostgresConnectionInfo {
 	}
 }
 
-/**
- * Build PostgreSQL connection URL from components
- */
 export function buildPostgresUrl(info: PostgresConnectionInfo): string {
 	const url = new URL('postgresql://');
 	url.hostname = info.host;
@@ -55,9 +49,6 @@ export function buildPostgresUrl(info: PostgresConnectionInfo): string {
 	return url.toString();
 }
 
-/**
- * Test database connection
- */
 export async function testConnection(url: string): Promise<void> {
 	const client = new Client({
 		connectionString: url,
@@ -75,14 +66,55 @@ export async function testConnection(url: string): Promise<void> {
 	}
 }
 
-/**
- * Create a database user with specified permission level
- */
-export async function createUser(
+function isManagedDatabase(connectionInfo: PostgresConnectionInfo): boolean {
+	const managedIndicators = [
+		'neon.tech',
+		'amazonaws.com',
+		'supabase.co',
+		'render.com',
+		'railway.app',
+	];
+
+	const hostAndUser =
+		`${connectionInfo.host} ${connectionInfo.username}`.toLowerCase();
+	return managedIndicators.some((indicator) => hostAndUser.includes(indicator));
+}
+
+export function isNeonDatabase(url: string): boolean {
+	try {
+		const connectionInfo = parsePostgresUrl(url);
+		const isNeon =
+			connectionInfo.host.includes('neon.tech') ||
+			connectionInfo.host.includes('neondb.net');
+		return isNeon;
+	} catch {
+		return false;
+	}
+}
+
+export async function getConnectionUrl(
 	adminUrl: string,
 	permissionLevel: PermissionLevel = 'readonly'
 ): Promise<CreateUserResult> {
-	const connectionInfo = parsePostgresUrl(adminUrl);
+	// For Neon databases, use the original URL directly
+	if (isNeonDatabase(adminUrl)) {
+		const connectionInfo = parsePostgresUrl(adminUrl);
+		const result = {
+			connectionUrl: adminUrl,
+			username: connectionInfo.username,
+			password: connectionInfo.password,
+		};
+		return result;
+	}
+
+	// For other databases, create a new user
+	const result = await createUser(adminUrl, permissionLevel);
+	return result;
+}
+
+async function createClient(
+	connectionInfo: PostgresConnectionInfo
+): Promise<Client> {
 	const client = new Client({
 		host: connectionInfo.host,
 		port: connectionInfo.port,
@@ -94,6 +126,147 @@ export async function createUser(
 		query_timeout: 30_000,
 	});
 
+	await client.connect();
+	return client;
+}
+
+async function checkUserPrivileges(
+	client: Client,
+	username: string
+): Promise<{
+	isSuperuser: boolean;
+	canCreateRole: boolean;
+	canCreateDb: boolean;
+}> {
+	const result = await client.query(
+		`SELECT rolsuper, rolcreatedb, rolcreaterole 
+		 FROM pg_roles WHERE rolname = $1`,
+		[username]
+	);
+
+	if (result.rows.length === 0) {
+		throw new Error('Unable to verify user privileges');
+	}
+
+	const row = result.rows[0];
+	return {
+		isSuperuser: row.rolsuper,
+		canCreateRole: row.rolcreaterole,
+		canCreateDb: row.rolcreatedb,
+	};
+}
+
+async function grantReadonlyPermissions(
+	client: Client,
+	username: string,
+	connectionInfo: PostgresConnectionInfo
+): Promise<void> {
+	// Basic schema access
+	await client.query(`GRANT USAGE ON SCHEMA public TO "${username}"`);
+	await client.query(
+		`GRANT SELECT ON ALL TABLES IN SCHEMA public TO "${username}"`
+	);
+	await client.query(
+		`ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO "${username}"`
+	);
+
+	// Monitoring permissions
+	const monitoringTables = [
+		'pg_stat_database',
+		'pg_stat_user_tables',
+		'pg_stat_user_indexes',
+	];
+
+	// Grant monitoring permissions in parallel
+	const monitoringPromises = monitoringTables.map(async (table) => {
+		try {
+			await client.query(`GRANT SELECT ON ${table} TO "${username}"`);
+		} catch {
+			// Ignore errors for missing tables
+		}
+	});
+	await Promise.all(monitoringPromises);
+
+	// Try to grant stats permissions
+	if (
+		isManagedDatabase(connectionInfo) &&
+		connectionInfo.host.includes('neon')
+	) {
+		try {
+			await client.query(`GRANT pg_read_all_data TO "${username}"`);
+		} catch {
+			// Ignore if can't grant
+		}
+	} else {
+		try {
+			await client.query(`GRANT pg_read_all_stats TO "${username}"`);
+		} catch {
+			// Fallback to basic stats
+			try {
+				await client.query(
+					`GRANT SELECT ON pg_stat_statements TO "${username}"`
+				);
+			} catch {
+				// Ignore if not available
+			}
+		}
+	}
+}
+
+async function grantAdminPermissions(
+	client: Client,
+	username: string,
+	connectionInfo: PostgresConnectionInfo,
+	userPrivs: { isSuperuser: boolean }
+): Promise<void> {
+	// Full schema privileges
+	await client.query(`GRANT ALL PRIVILEGES ON SCHEMA public TO "${username}"`);
+	await client.query(
+		`GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "${username}"`
+	);
+	await client.query(
+		`ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO "${username}"`
+	);
+
+	// System catalog access
+	await client.query(
+		`GRANT SELECT ON ALL TABLES IN SCHEMA information_schema TO "${username}"`
+	);
+	await client.query(
+		`GRANT SELECT ON ALL TABLES IN SCHEMA pg_catalog TO "${username}"`
+	);
+
+	// Superuser privileges if possible
+	if (userPrivs.isSuperuser) {
+		await client.query(`ALTER USER "${username}" WITH SUPERUSER`);
+	}
+
+	// Stats permissions (same as readonly)
+	if (
+		isManagedDatabase(connectionInfo) &&
+		connectionInfo.host.includes('neon')
+	) {
+		try {
+			await client.query(`GRANT pg_read_all_data TO "${username}"`);
+		} catch {
+			// Ignore if can't grant
+		}
+	} else {
+		try {
+			await client.query(`GRANT pg_read_all_stats TO "${username}"`);
+		} catch {
+			// Ignore if can't grant
+		}
+	}
+}
+
+export async function createUser(
+	adminUrl: string,
+	permissionLevel: PermissionLevel = 'readonly'
+): Promise<CreateUserResult> {
+	const connectionInfo = parsePostgresUrl(adminUrl);
+	const client = await createClient(connectionInfo);
+
 	const userPrefix = permissionLevel === 'admin' ? 'admin' : 'readonly';
 	const username = `databuddy_${userPrefix}_${nanoid(8)
 		.toLowerCase()
@@ -101,150 +274,43 @@ export async function createUser(
 	const password = nanoid(32).replace(/[^a-zA-Z0-9]/g, '');
 
 	try {
-		await client.connect();
-
-		const privilegeCheck = await client.query(
-			`
-			SELECT 
-				rolsuper as usesuper,
-				rolcreatedb as usecreatedb,
-				rolcreaterole as usecreaterole
-			FROM pg_roles 
-			WHERE rolname = $1
-		`,
-			[connectionInfo.username]
+		// Check admin privileges
+		const userPrivs = await checkUserPrivileges(
+			client,
+			connectionInfo.username
 		);
 
-		if (privilegeCheck.rows.length === 0) {
-			throw new Error('Unable to verify user privileges');
+		if (
+			permissionLevel === 'admin' &&
+			!userPrivs.isSuperuser &&
+			!(userPrivs.canCreateDb && userPrivs.canCreateRole)
+		) {
+			throw new Error('Insufficient privileges to create admin user');
 		}
 
-		const userPrivs = privilegeCheck.rows[0];
-
-		// Check required privileges based on permission level
-		if (permissionLevel === 'admin') {
-			if (
-				!(
-					userPrivs.usesuper ||
-					(userPrivs.usecreatedb && userPrivs.usecreaterole)
-				)
-			) {
-				throw new Error(
-					'Insufficient privileges to create admin user. User must have SUPERUSER or both CREATEDB and CREATEROLE privileges.'
-				);
-			}
-		} else if (!(userPrivs.usesuper || userPrivs.usecreatedb)) {
-			throw new Error(
-				'Insufficient privileges to create user. User must have SUPERUSER or CREATEDB privileges.'
-			);
+		if (
+			permissionLevel === 'readonly' &&
+			!userPrivs.isSuperuser &&
+			!userPrivs.canCreateDb
+		) {
+			throw new Error('Insufficient privileges to create user');
 		}
 
-		// Create user with appropriate base privileges
-		let createUserQuery = `CREATE USER "${username}" WITH PASSWORD '${password.replace(/'/g, "''")}'`;
-
-		if (permissionLevel === 'admin') {
-			createUserQuery +=
-				' CREATEDB CREATEROLE INHERIT LOGIN CONNECTION LIMIT 5';
-		} else {
-			createUserQuery += ' CONNECTION LIMIT 5';
-		}
+		// Create user
+		const createUserQuery = `CREATE USER "${username}" WITH PASSWORD '${password.replace(/'/g, "''")}'${
+			permissionLevel === 'admin' ? ' CREATEDB CREATEROLE' : ''
+		} CONNECTION LIMIT 5`;
 
 		await client.query(createUserQuery);
+		await client.query(
+			`GRANT CONNECT ON DATABASE "${connectionInfo.database}" TO "${username}"`
+		);
 
-		// Grant database connection privileges
-		await client.query(`
-			GRANT CONNECT ON DATABASE "${connectionInfo.database}" TO "${username}"
-		`);
-
+		// Grant permissions
 		if (permissionLevel === 'admin') {
-			// Grant comprehensive admin privileges
-			await client.query(`
-				GRANT ALL PRIVILEGES ON SCHEMA public TO "${username}"
-			`);
-
-			await client.query(`
-				GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "${username}"
-			`);
-
-			await client.query(`
-				ALTER DEFAULT PRIVILEGES IN SCHEMA public 
-				GRANT ALL ON TABLES TO "${username}"
-			`);
-
-			await client.query(`
-				GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO "${username}"
-			`);
-
-			await client.query(`
-				ALTER DEFAULT PRIVILEGES IN SCHEMA public 
-				GRANT ALL ON SEQUENCES TO "${username}"
-			`);
-
-			await client.query(`
-				GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO "${username}"
-			`);
-
-			await client.query(`
-				ALTER DEFAULT PRIVILEGES IN SCHEMA public 
-				GRANT ALL ON FUNCTIONS TO "${username}"
-			`);
-
-			// Grant system catalog privileges for monitoring and extensions
-			await client.query(`
-				GRANT SELECT ON ALL TABLES IN SCHEMA information_schema TO "${username}"
-			`);
-
-			await client.query(`
-				GRANT SELECT ON ALL TABLES IN SCHEMA pg_catalog TO "${username}"
-			`);
-
-			// Allow extension management (requires SUPERUSER or specific grants)
-			if (userPrivs.usesuper) {
-				await client.query(`
-					ALTER USER "${username}" WITH SUPERUSER
-				`);
-			} else {
-				// Grant specific privileges for extension management
-				await client.query(`
-					GRANT "${connectionInfo.username}" TO "${username}"
-				`);
-			}
+			await grantAdminPermissions(client, username, connectionInfo, userPrivs);
 		} else {
-			// Grant readonly privileges
-			await client.query(`
-				GRANT USAGE ON SCHEMA public TO "${username}"
-			`);
-
-			await client.query(`
-				GRANT SELECT ON ALL TABLES IN SCHEMA public TO "${username}"
-			`);
-
-			await client.query(`
-				ALTER DEFAULT PRIVILEGES IN SCHEMA public 
-				GRANT SELECT ON TABLES TO "${username}"
-			`);
-
-			await client.query(`
-				GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO "${username}"
-			`);
-
-			await client.query(`
-				ALTER DEFAULT PRIVILEGES IN SCHEMA public 
-				GRANT USAGE ON SEQUENCES TO "${username}"
-			`);
-
-			// Grant monitoring privileges
-			await client.query(`
-				GRANT SELECT ON pg_stat_database TO "${username}"
-			`);
-
-			await client.query(`
-				GRANT SELECT ON pg_stat_user_tables TO "${username}"
-			`);
-
-			await client.query(`
-				GRANT SELECT ON pg_stat_user_indexes TO "${username}"
-			`);
+			await grantReadonlyPermissions(client, username, connectionInfo);
 		}
 
 		const newConnectionInfo: PostgresConnectionInfo = {
@@ -254,22 +320,16 @@ export async function createUser(
 		};
 
 		const connectionUrl = buildPostgresUrl(newConnectionInfo);
-
-		// Test the new connection
 		await testConnection(connectionUrl);
 
-		return {
-			connectionUrl,
-			username,
-			password,
-		};
+		return { connectionUrl, username, password };
 	} catch (error) {
+		// Cleanup on error
 		try {
 			await client.query(`DROP USER IF EXISTS "${username}"`);
 		} catch {
-			// Ignore errors
+			// Ignore cleanup errors
 		}
-
 		throw new Error(
 			`Failed to create ${permissionLevel} user: ${error.message}`
 		);
@@ -278,68 +338,54 @@ export async function createUser(
 	}
 }
 
-/**
- * Create a readonly user for monitoring purposes (backward compatibility)
- * @deprecated Use createUser with permissionLevel='readonly' instead
- */
-export async function createReadonlyUser(
-	adminUrl: string
-): Promise<CreateUserResult> {
-	const result = await createUser(adminUrl, 'readonly');
-	return {
-		connectionUrl: result.connectionUrl,
-		username: result.username,
-		password: result.password,
-	};
-}
-
-/**
- * Create an admin user with full database privileges (backward compatibility)
- * @deprecated Use createUser with permissionLevel='admin' instead
- */
-export async function createAdminUser(
-	adminUrl: string
-): Promise<CreateUserResult> {
-	const result = await createUser(adminUrl, 'admin');
-	return {
-		connectionUrl: result.connectionUrl,
-		username: result.username,
-		password: result.password,
-	};
-}
-
-/**
- * Delete a database user
- */
 export async function deleteUser(
 	adminUrl: string,
 	username: string
 ): Promise<void> {
 	const connectionInfo = parsePostgresUrl(adminUrl);
-	const client = new Client({
-		host: connectionInfo.host,
-		port: connectionInfo.port,
-		database: connectionInfo.database,
-		user: connectionInfo.username,
-		password: connectionInfo.password,
-		ssl: connectionInfo.ssl ? { rejectUnauthorized: false } : false,
-		connectionTimeoutMillis: 30_000,
-		query_timeout: 30_000,
-	});
+	const client = await createClient(connectionInfo);
 
 	try {
-		await client.connect();
-		await client.query(`DROP USER IF EXISTS "${username}"`);
-	} catch (error) {
-		throw new Error(`Failed to delete user ${username}: ${error.message}`);
+		// Check if user exists
+		const userCheck = await client.query(
+			'SELECT 1 FROM pg_roles WHERE rolname = $1',
+			[username]
+		);
+		if (userCheck.rows.length === 0) {
+			return;
+		}
+
+		// Terminate connections
+		try {
+			await client.query(
+				`SELECT pg_terminate_backend(pid) FROM pg_stat_activity 
+				 WHERE usename = $1 AND pid <> pg_backend_pid()`,
+				[username]
+			);
+		} catch {
+			// Ignore termination errors
+		}
+
+		await client.query(`DROP USER "${username}"`);
 	} finally {
 		await client.end();
 	}
 }
 
-/**
- * Validate that a connection is readonly
- */
+export async function listDatabuddyUsers(adminUrl: string): Promise<string[]> {
+	const connectionInfo = parsePostgresUrl(adminUrl);
+	const client = await createClient(connectionInfo);
+
+	try {
+		const result = await client.query(
+			`SELECT rolname FROM pg_roles WHERE rolname LIKE 'databuddy_%' ORDER BY rolname`
+		);
+		return result.rows.map((row) => row.rolname);
+	} finally {
+		await client.end();
+	}
+}
+
 export async function validateReadonlyAccess(url: string): Promise<boolean> {
 	const client = new Client({
 		connectionString: url,
@@ -352,13 +398,17 @@ export async function validateReadonlyAccess(url: string): Promise<boolean> {
 		try {
 			await client.query('CREATE TEMP TABLE readonly_test (id INTEGER)');
 			await client.query('DROP TABLE readonly_test');
-			return false;
+			return false; // Can write, not readonly
 		} catch {
-			return true;
+			return true; // Cannot write, is readonly
 		}
-	} catch (error) {
-		throw new Error(`Failed to validate readonly access: ${error.message}`);
 	} finally {
 		await client.end();
 	}
 }
+
+// Backward compatibility
+export const createReadonlyUser = (adminUrl: string) =>
+	createUser(adminUrl, 'readonly');
+export const createAdminUser = (adminUrl: string) =>
+	createUser(adminUrl, 'admin');

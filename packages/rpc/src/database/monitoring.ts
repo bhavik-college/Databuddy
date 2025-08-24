@@ -1,23 +1,16 @@
 import { Client } from 'pg';
 
 export interface DatabaseStats {
-	// Database info
 	databaseName: string;
 	databaseSize: string;
-
-	// Connection info
 	maxConnections: number;
 	activeConnections: number;
-
-	// Activity stats
 	totalQueries: number;
 	totalInserts: number;
 	totalUpdates: number;
 	totalDeletes: number;
-
-	// Performance metrics
-	hitRatio: number; // Cache hit ratio percentage
-	indexUsage: number; // Index usage percentage
+	hitRatio: number;
+	indexUsage: number;
 }
 
 export interface TableStats {
@@ -41,111 +34,46 @@ export interface ExtensionInfo {
 	installed: boolean;
 	availableVersion?: string;
 	needsUpdate: boolean;
-	hasStatefulData: boolean;
-	requiresRestart: boolean;
-	dependencies: string[];
 }
 
-export interface AvailableExtension {
-	name: string;
-	defaultVersion: string;
-	description: string;
-	comment: string;
-	requiresRestart: boolean;
-	category: string;
-}
-
-export interface ExtensionDependency {
-	name: string;
-	type: 'view' | 'function' | 'table' | 'trigger' | 'other';
-	schema: string;
-	dependentObject: string;
-}
-
-export interface ExtensionSafetyCheck {
-	canSafelyDrop: boolean;
-	canSafelyUpdate: boolean;
-	warnings: string[];
-	dependencies: ExtensionDependency[];
-	hasStatefulData: boolean;
-	requiresRestart: boolean;
-	suggestedAction: 'update' | 'reset' | 'drop_cascade' | 'manual_review';
-}
-
-/**
- * Get basic database statistics using a readonly connection
- */
-export async function getDatabaseStats(
-	connectionUrl: string
-): Promise<DatabaseStats> {
+async function createClient(connectionUrl: string): Promise<Client> {
 	const client = new Client({
 		connectionString: connectionUrl,
 		connectionTimeoutMillis: 10_000,
 		query_timeout: 30_000,
 	});
+	await client.connect();
+	return client;
+}
+
+export async function getDatabaseStats(
+	connectionUrl: string
+): Promise<DatabaseStats> {
+	const client = await createClient(connectionUrl);
 
 	try {
-		await client.connect();
+		const queries = [
+			// Database info
+			'SELECT current_database() as database_name, pg_size_pretty(pg_database_size(current_database())) as database_size',
+			// Connection info
+			"SELECT setting as max_connections FROM pg_settings WHERE name = 'max_connections'",
+			"SELECT count(*) as active_connections FROM pg_stat_activity WHERE state = 'active'",
+			// Activity stats
+			'SELECT SUM(xact_commit + xact_rollback) as total_queries, SUM(tup_inserted) as total_inserts, SUM(tup_updated) as total_updates, SUM(tup_deleted) as total_deletes FROM pg_stat_database WHERE datname = current_database()',
+			// Performance metrics
+			'SELECT ROUND(100.0 * SUM(blks_hit) / NULLIF(SUM(blks_hit + blks_read), 0), 2) as hit_ratio FROM pg_stat_database WHERE datname = current_database()',
+			'SELECT ROUND(100.0 * SUM(idx_scan) / NULLIF(SUM(seq_scan + idx_scan), 0), 2) as index_usage FROM pg_stat_user_tables',
+		];
 
-		// Get database basic info
-		const dbInfoResult = await client.query(`
-			SELECT 
-				current_database() as database_name,
-				pg_size_pretty(pg_database_size(current_database())) as database_size
-		`);
-
-		// Get connection stats
-		const connectionResult = await client.query(`
-			SELECT 
-				setting as max_connections
-			FROM pg_settings 
-			WHERE name = 'max_connections'
-		`);
-
-		const activeConnectionsResult = await client.query(`
-			SELECT count(*) as active_connections
-			FROM pg_stat_activity
-			WHERE state = 'active'
-		`);
-
-		// Get database activity stats
-		const activityResult = await client.query(`
-			SELECT 
-				SUM(xact_commit + xact_rollback) as total_queries,
-				SUM(tup_inserted) as total_inserts,
-				SUM(tup_updated) as total_updates,
-				SUM(tup_deleted) as total_deletes
-			FROM pg_stat_database
-			WHERE datname = current_database()
-		`);
-
-		// Get cache hit ratio
-		const hitRatioResult = await client.query(`
-			SELECT 
-				ROUND(
-					100.0 * SUM(blks_hit) / NULLIF(SUM(blks_hit + blks_read), 0), 
-					2
-				) as hit_ratio
-			FROM pg_stat_database
-			WHERE datname = current_database()
-		`);
-
-		// Get index usage ratio
-		const indexUsageResult = await client.query(`
-			SELECT 
-				ROUND(
-					100.0 * SUM(idx_scan) / NULLIF(SUM(seq_scan + idx_scan), 0), 
-					2
-				) as index_usage
-			FROM pg_stat_user_tables
-		`);
-
-		const dbInfo = dbInfoResult.rows[0];
-		const connectionInfo = connectionResult.rows[0];
-		const activeConnections = activeConnectionsResult.rows[0];
-		const activity = activityResult.rows[0];
-		const hitRatio = hitRatioResult.rows[0];
-		const indexUsage = indexUsageResult.rows[0];
+		const results = await Promise.all(queries.map((q) => client.query(q)));
+		const [
+			dbInfo,
+			connectionInfo,
+			activeConnections,
+			activity,
+			hitRatio,
+			indexUsage,
+		] = results.map((r) => r.rows[0]);
 
 		return {
 			databaseName: dbInfo.database_name,
@@ -167,22 +95,13 @@ export async function getDatabaseStats(
 	}
 }
 
-/**
- * Get table statistics using a readonly connection
- */
 export async function getTableStats(
 	connectionUrl: string,
 	limit?: number
 ): Promise<TableStats[]> {
-	const client = new Client({
-		connectionString: connectionUrl,
-		connectionTimeoutMillis: 10_000,
-		query_timeout: 30_000,
-	});
+	const client = await createClient(connectionUrl);
 
 	try {
-		await client.connect();
-
 		const query = `
 			SELECT 
 				schemaname as schema_name,
@@ -225,342 +144,74 @@ export async function getTableStats(
 	}
 }
 
-/**
- * Get PostgreSQL extensions information
- */
 export async function getExtensions(
 	connectionUrl: string
 ): Promise<ExtensionInfo[]> {
-	const client = new Client({
-		connectionString: connectionUrl,
-		connectionTimeoutMillis: 10_000,
-		query_timeout: 30_000,
-	});
+	const client = await createClient(connectionUrl);
 
 	try {
-		await client.connect();
-
-		const result = await client.query(`
-			SELECT 
-				e.extname as name,
-				e.extversion as version,
-				n.nspname as schema,
-				COALESCE(c.description, 'No description available') as description,
-				true as installed
-			FROM pg_extension e
-			LEFT JOIN pg_namespace n ON n.oid = e.extnamespace
-			LEFT JOIN pg_description c ON c.objoid = e.oid AND c.classoid = 'pg_extension'::regclass
-			ORDER BY e.extname
-		`);
-
-		// Get available versions for update checking
-		const availableResult = await client.query(
-			`
-			SELECT name, default_version 
-			FROM pg_available_extensions 
-			WHERE name = ANY($1)
-		`,
-			[result.rows.map((row) => row.name)]
-		);
-
-		const availableVersions = new Map();
-		for (const row of availableResult.rows) {
-			availableVersions.set(row.name, row.default_version);
-		}
-
-		return result.rows.map((row) => ({
-			name: row.name,
-			version: row.version,
-			schema: row.schema,
-			description: row.description,
-			installed: row.installed,
-			availableVersion: availableVersions.get(row.name),
-			needsUpdate:
-				availableVersions.get(row.name) &&
-				availableVersions.get(row.name) !== row.version,
-			hasStatefulData: isStatefulExtension(row.name),
-			requiresRestart: requiresRestartExtension(row.name),
-			dependencies: [], // Will be populated by separate query if needed
-		}));
-	} finally {
-		await client.end();
-	}
-}
-
-/**
- * Helper function to determine if extension has stateful data
- */
-function isStatefulExtension(extensionName: string): boolean {
-	const statefulExtensions = [
-		'pg_stat_statements',
-		'pg_stat_monitor',
-		'pg_buffercache',
-		'pg_prewarm',
-		'pg_cron',
-		'pglogical',
-		'timescaledb',
-	];
-	return statefulExtensions.includes(extensionName.toLowerCase());
-}
-
-/**
- * Helper function to determine if extension requires PostgreSQL restart
- */
-function requiresRestartExtension(extensionName: string): boolean {
-	const restartExtensions = [
-		'pg_stat_statements',
-		'pg_stat_monitor',
-		'pg_cron',
-		'pglogical',
-		'timescaledb',
-		'pg_audit',
-		'auto_explain',
-	];
-	return restartExtensions.includes(extensionName.toLowerCase());
-}
-
-/**
- * Get extension category for organization
- */
-function getExtensionCategory(extensionName: string): string {
-	const categoryMap: Record<string, string> = {
-		pg_stat_statements: 'Monitoring',
-		pg_stat_monitor: 'Monitoring',
-		pg_buffercache: 'Monitoring',
-		'uuid-ossp': 'Data Types',
-		pgcrypto: 'Security',
-		hstore: 'Data Types',
-		ltree: 'Data Types',
-		pg_trgm: 'Search',
-		fuzzystrmatch: 'Search',
-		unaccent: 'Search',
-		postgis: 'GIS',
-		timescaledb: 'Time Series',
-		pg_cron: 'Scheduling',
-		plpgsql: 'Languages',
-		plpython3u: 'Languages',
-		tablefunc: 'Utilities',
-		dblink: 'Connectivity',
-		postgres_fdw: 'Connectivity',
-	};
-	return categoryMap[extensionName.toLowerCase()] || 'Other';
-}
-
-/**
- * Check extension dependencies and safety for operations
- */
-export async function checkExtensionSafety(
-	connectionUrl: string,
-	extensionName: string
-): Promise<ExtensionSafetyCheck> {
-	const client = new Client({
-		connectionString: connectionUrl,
-		connectionTimeoutMillis: 10_000,
-		query_timeout: 30_000,
-	});
-
-	try {
-		await client.connect();
-
-		// Check for dependent objects
-		const dependencyResult = await client.query(
-			`
-			WITH extension_objects AS (
-				SELECT 
-					d.objid,
-					d.classid,
-					pg_describe_object(d.classid, d.objid, d.objsubid) as object_name
-				FROM pg_depend d
-				JOIN pg_extension e ON d.refobjid = e.oid
-				WHERE e.extname = $1
-				AND d.deptype = 'e'
+		const [extensionsResult, availableResult] = await Promise.all([
+			client.query(
+				"SELECT e.extname as name, e.extversion as version, n.nspname as schema, COALESCE(c.description, 'No description available') as description FROM pg_extension e LEFT JOIN pg_namespace n ON n.oid = e.extnamespace LEFT JOIN pg_description c ON c.objoid = e.oid AND c.classoid = 'pg_extension'::regclass ORDER BY e.extname"
 			),
-			dependents AS (
-				SELECT DISTINCT
-					pg_describe_object(d.classid, d.objid, d.objsubid) as dependent_object,
-					CASE 
-						WHEN c.relkind = 'v' THEN 'view'
-						WHEN c.relkind = 'r' THEN 'table'
-						WHEN p.proname IS NOT NULL THEN 'function'
-						WHEN t.tgname IS NOT NULL THEN 'trigger'
-						ELSE 'other'
-					END as object_type,
-					COALESCE(n.nspname, '') as schema_name
-				FROM pg_depend d
-				JOIN extension_objects eo ON d.refobjid = eo.objid
-				LEFT JOIN pg_class c ON d.classid = c.tableoid AND d.objid = c.oid
-				LEFT JOIN pg_proc p ON d.classid = p.tableoid AND d.objid = p.oid
-				LEFT JOIN pg_trigger t ON d.classid = t.tableoid AND d.objid = t.oid
-				LEFT JOIN pg_namespace n ON c.relnamespace = n.oid OR p.pronamespace = n.oid
-				WHERE d.deptype IN ('n', 'a')  -- normal or auto dependency
-				AND d.classid != (SELECT oid FROM pg_class WHERE relname = 'pg_extension')
-			)
-			SELECT * FROM dependents
-			WHERE dependent_object IS NOT NULL
-			LIMIT 10
-		`,
-			[extensionName]
+			client.query('SELECT name, default_version FROM pg_available_extensions'),
+		]);
+
+		const availableVersions = new Map(
+			availableResult.rows.map((row) => [row.name, row.default_version])
 		);
 
-		const dependencies: ExtensionDependency[] = dependencyResult.rows.map(
-			(row) => ({
-				name: extensionName,
-				type: row.object_type,
-				schema: row.schema_name,
-				dependentObject: row.dependent_object,
-			})
-		);
-
-		const hasStatefulData = isStatefulExtension(extensionName);
-		const requiresRestart = requiresRestartExtension(extensionName);
-		const canSafelyDrop = dependencies.length === 0;
-		const canSafelyUpdate = true; // Updates are generally safe
-
-		const warnings: string[] = [];
-		let suggestedAction: ExtensionSafetyCheck['suggestedAction'] = 'update';
-
-		if (hasStatefulData) {
-			warnings.push(
-				'Extension contains stateful data that will be lost if dropped'
-			);
-			if (extensionName === 'pg_stat_statements') {
-				warnings.push(
-					'Consider using pg_stat_statements_reset() instead of dropping'
-				);
-				suggestedAction = 'reset';
-			}
-		}
-
-		if (requiresRestart) {
-			warnings.push(
-				'Extension requires PostgreSQL restart and shared_preload_libraries configuration'
-			);
-		}
-
-		if (dependencies.length > 0) {
-			warnings.push(
-				`${dependencies.length} dependent objects will be affected`
-			);
-			suggestedAction =
-				dependencies.length > 5 ? 'manual_review' : 'drop_cascade';
-		}
-
-		return {
-			canSafelyDrop,
-			canSafelyUpdate,
-			warnings,
-			dependencies,
-			hasStatefulData,
-			requiresRestart,
-			suggestedAction,
-		};
+		return extensionsResult.rows.map((row) => {
+			const availableVersion = availableVersions.get(row.name);
+			return {
+				name: row.name,
+				version: row.version,
+				schema: row.schema,
+				description: row.description,
+				installed: true,
+				availableVersion,
+				needsUpdate: availableVersion && availableVersion !== row.version,
+			};
+		});
 	} finally {
 		await client.end();
 	}
 }
 
-/**
- * Get available PostgreSQL extensions that can be installed
- */
-export async function getAvailableExtensions(
-	connectionUrl: string
-): Promise<AvailableExtension[]> {
-	const client = new Client({
-		connectionString: connectionUrl,
-		connectionTimeoutMillis: 10_000,
-		query_timeout: 30_000,
-	});
-
-	try {
-		await client.connect();
-
-		const result = await client.query(`
-			SELECT 
-				name,
-				default_version,
-				comment
-			FROM pg_available_extensions
-			WHERE name NOT IN (
-				SELECT extname FROM pg_extension
-			)
-			ORDER BY name
-		`);
-
-		return result.rows.map((row) => ({
-			name: row.name,
-			defaultVersion: row.default_version,
-			description: row.comment || 'No description available',
-			comment: row.comment || '',
-			requiresRestart: requiresRestartExtension(row.name),
-			category: getExtensionCategory(row.name),
-		}));
-	} finally {
-		await client.end();
-	}
-}
-
-/**
- * Reset extension statistics (safe alternative to drop/recreate)
- */
 export async function resetExtensionStats(
 	connectionUrl: string,
 	extensionName: string
 ): Promise<void> {
-	const client = new Client({
-		connectionString: connectionUrl,
-		connectionTimeoutMillis: 10_000,
-		query_timeout: 30_000,
-	});
+	const client = await createClient(connectionUrl);
 
 	try {
-		await client.connect();
-
 		switch (extensionName) {
-			case 'pg_stat_statements': {
+			case 'pg_stat_statements':
 				await client.query('SELECT pg_stat_statements_reset()');
 				break;
-			}
-			case 'pg_stat_monitor': {
+			case 'pg_stat_monitor':
 				await client.query('SELECT pg_stat_monitor_reset()');
 				break;
-			}
-			default: {
+			default:
 				throw new Error(
 					`Stats reset not supported for extension: ${extensionName}`
 				);
-			}
 		}
 	} finally {
 		await client.end();
 	}
 }
 
-/**
- * Update an extension to the latest version (safe operation)
- */
 export async function updateExtension(
 	connectionUrl: string,
 	extensionName: string
 ): Promise<void> {
-	const client = new Client({
-		connectionString: connectionUrl,
-		connectionTimeoutMillis: 10_000,
-		query_timeout: 30_000,
-	});
+	const client = await createClient(connectionUrl);
 
 	try {
-		await client.connect();
-
 		// Check if extension exists and needs updating
 		const versionCheck = await client.query(
-			`
-			SELECT 
-				e.extversion as current_version,
-				av.default_version as available_version
-			FROM pg_extension e
-			JOIN pg_available_extensions av ON e.extname = av.name
-			WHERE e.extname = $1
-		`,
+			'SELECT e.extversion as current_version, av.default_version as available_version FROM pg_extension e JOIN pg_available_extensions av ON e.extname = av.name WHERE e.extname = $1',
 			[extensionName]
 		);
 
@@ -570,125 +221,158 @@ export async function updateExtension(
 
 		const { current_version, available_version } = versionCheck.rows[0];
 		if (current_version === available_version) {
-			return; // Already up to date
+			return;
 		}
 
-		// Use ALTER EXTENSION UPDATE instead of DROP/CREATE
 		await client.query(`ALTER EXTENSION "${extensionName}" UPDATE`);
 	} finally {
 		await client.end();
 	}
 }
 
-/**
- * Safely install a PostgreSQL extension with pre-flight checks
- */
 export async function safeInstallExtension(
 	connectionUrl: string,
 	extensionName: string,
 	schema?: string,
 	force = false
 ): Promise<{ success: boolean; warnings: string[] }> {
-	const client = new Client({
-		connectionString: connectionUrl,
-		connectionTimeoutMillis: 10_000,
-		query_timeout: 30_000,
-	});
-
+	const client = await createClient(connectionUrl);
 	const warnings: string[] = [];
 
 	try {
-		await client.connect();
-
-		// Check if extension is available
+		// Check if available
 		const availableCheck = await client.query(
-			`
-			SELECT name, default_version, comment
-			FROM pg_available_extensions 
-			WHERE name = $1
-		`,
+			'SELECT name FROM pg_available_extensions WHERE name = $1',
 			[extensionName]
 		);
 
 		if (availableCheck.rows.length === 0) {
 			return {
 				success: false,
-				warnings: [
-					`Extension ${extensionName} is not available in this PostgreSQL installation`,
-				],
+				warnings: [`Extension ${extensionName} is not available`],
 			};
 		}
 
 		// Check if already installed
 		const installedCheck = await client.query(
-			`
-			SELECT extversion, nspname
-			FROM pg_extension e
-			JOIN pg_namespace n ON e.extnamespace = n.oid
-			WHERE e.extname = $1
-		`,
+			'SELECT extversion FROM pg_extension WHERE extname = $1',
 			[extensionName]
 		);
 
 		if (installedCheck.rows.length > 0) {
 			return {
 				success: false,
-				warnings: [
-					`Extension ${extensionName} is already installed (version ${installedCheck.rows[0].extversion})`,
-				],
+				warnings: [`Extension ${extensionName} is already installed`],
 			};
 		}
 
-		// Add warnings for special extensions
-		if (requiresRestartExtension(extensionName)) {
-			warnings.push(
-				`Extension ${extensionName} requires adding to shared_preload_libraries and PostgreSQL restart`
-			);
-			if (!force) {
-				return { success: false, warnings };
-			}
-		}
-
-		// Install the extension
+		// Install
 		let query = `CREATE EXTENSION "${extensionName}"`;
 		if (schema) {
 			query += ` WITH SCHEMA "${schema}"`;
 		}
 
-		await client.query(query);
+		if (force) {
+			query += ' WITH FORCE';
+		}
 
+		await client.query(query);
 		return { success: true, warnings };
 	} finally {
 		await client.end();
 	}
 }
 
-/**
- * Safely drop a PostgreSQL extension with dependency checking
- */
+export async function getAvailableExtensions(connectionUrl: string): Promise<
+	{
+		name: string;
+		defaultVersion: string;
+		description: string;
+	}[]
+> {
+	const client = await createClient(connectionUrl);
+
+	try {
+		const result = await client.query(`
+			SELECT name, default_version, comment
+			FROM pg_available_extensions
+			WHERE name NOT IN (SELECT extname FROM pg_extension)
+			ORDER BY name
+		`);
+
+		return result.rows.map((row) => ({
+			name: row.name,
+			defaultVersion: row.default_version,
+			description: row.comment || 'No description available',
+		}));
+	} finally {
+		await client.end();
+	}
+}
+
+export async function checkExtensionSafety(
+	connectionUrl: string,
+	extensionName: string
+): Promise<{
+	canSafelyDrop: boolean;
+	canSafelyUpdate: boolean;
+	warnings: string[];
+	hasStatefulData: boolean;
+}> {
+	const client = await createClient(connectionUrl);
+
+	try {
+		// Check for dependent objects
+		const dependencyResult = await client.query(
+			`SELECT COUNT(*) as dependency_count FROM pg_depend d
+			 JOIN pg_extension e ON d.refobjid = e.oid
+			 WHERE e.extname = $1 AND d.deptype IN ('n', 'a')`,
+			[extensionName]
+		);
+
+		const dependencyCount = Number.parseInt(
+			dependencyResult.rows[0].dependency_count,
+			10
+		);
+		const hasStatefulData = ['pg_stat_statements', 'pg_stat_monitor'].includes(
+			extensionName
+		);
+		const canSafelyDrop = dependencyCount === 0;
+		const canSafelyUpdate = true;
+
+		const warnings: string[] = [];
+		if (hasStatefulData) {
+			warnings.push(
+				'Extension contains stateful data that will be lost if dropped'
+			);
+		}
+		if (dependencyCount > 0) {
+			warnings.push(`${dependencyCount} dependent objects will be affected`);
+		}
+
+		return {
+			canSafelyDrop,
+			canSafelyUpdate,
+			warnings,
+			hasStatefulData,
+		};
+	} finally {
+		await client.end();
+	}
+}
+
 export async function safeDropExtension(
 	connectionUrl: string,
 	extensionName: string,
 	cascade = false
 ): Promise<{ success: boolean; warnings: string[] }> {
-	const client = new Client({
-		connectionString: connectionUrl,
-		connectionTimeoutMillis: 10_000,
-		query_timeout: 30_000,
-	});
-
+	const client = await createClient(connectionUrl);
 	const warnings: string[] = [];
 
 	try {
-		await client.connect();
-
-		// Check if extension exists
+		// Check if exists
 		const extensionCheck = await client.query(
-			`
-			SELECT extname, extversion
-			FROM pg_extension 
-			WHERE extname = $1
-		`,
+			'SELECT extname FROM pg_extension WHERE extname = $1',
 			[extensionName]
 		);
 
@@ -699,40 +383,14 @@ export async function safeDropExtension(
 			};
 		}
 
-		// Get safety information
-		const safetyCheck = await checkExtensionSafety(
-			connectionUrl,
-			extensionName
-		);
-
-		if (safetyCheck.hasStatefulData) {
-			warnings.push('Extension contains stateful data that will be lost');
-		}
-
-		if (safetyCheck.dependencies.length > 0 && !cascade) {
-			warnings.push(
-				`Cannot drop extension: ${safetyCheck.dependencies.length} dependent objects exist. Use CASCADE to force removal.`
-			);
-			return { success: false, warnings };
-		}
-
-		if (safetyCheck.requiresRestart) {
-			warnings.push(
-				'Extension may require PostgreSQL configuration changes after removal'
-			);
-		}
-
-		// Drop the extension
+		// Drop
 		let query = `DROP EXTENSION "${extensionName}"`;
-		if (cascade && safetyCheck.dependencies.length > 0) {
+		if (cascade) {
 			query += ' CASCADE';
-			warnings.push(
-				`Dropping ${safetyCheck.dependencies.length} dependent objects`
-			);
+			warnings.push('Using CASCADE to drop dependent objects');
 		}
 
 		await client.query(query);
-
 		return { success: true, warnings };
 	} finally {
 		await client.end();
