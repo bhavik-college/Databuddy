@@ -168,7 +168,7 @@ export default function DatabasePage() {
 
 	if (error) {
 		return (
-			<div className="mx-auto max-w-[1600px] p-3 sm:p-4 lg:p-6">
+			<div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
 				<Card className="rounded border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
 					<CardContent className="pt-6">
 						<div className="flex items-center gap-2">
@@ -190,7 +190,7 @@ export default function DatabasePage() {
 
 	return (
 		<div
-			className="mx-auto mt-6 max-w-[1600px] space-y-4 p-3 sm:p-4 lg:p-6"
+			className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8"
 			ref={pageRef}
 		>
 			<DatabasePageHeader

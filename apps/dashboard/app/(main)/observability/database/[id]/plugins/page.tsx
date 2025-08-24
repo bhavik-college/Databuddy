@@ -45,7 +45,7 @@ interface ExtensionsPageProps {
 
 function LoadingState() {
 	return (
-		<div className="mx-auto max-w-6xl space-y-6 p-6">
+		<div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
 			<Skeleton className="h-8 w-64" />
 			<div className="grid gap-4 md:grid-cols-4">
 				{Array.from({ length: 4 }).map((_, i) => (
@@ -846,7 +846,6 @@ export default function ExtensionsPage({ params }: ExtensionsPageProps) {
 		installed: extensions.length,
 		available: availableExtensions.length,
 		updates: extensions.filter((ext) => ext.needsUpdate).length,
-		restart: extensions.filter((ext) => ext.requiresRestart).length,
 	};
 
 	const handleInstall = (name: string, schema?: string) => {
@@ -866,7 +865,7 @@ export default function ExtensionsPage({ params }: ExtensionsPageProps) {
 	};
 
 	return (
-		<div className="mx-auto max-w-6xl space-y-6 p-6">
+		<div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
 			{/* Header */}
 			<div className="space-y-2">
 				<div className="flex items-center gap-2">
@@ -931,11 +930,6 @@ export default function ExtensionsPage({ params }: ExtensionsPageProps) {
 					icon={<ArrowClockwiseIcon className="h-5 w-5 text-amber-600" />}
 					title="Updates"
 					value={stats.updates}
-				/>
-				<StatsCard
-					icon={<WarningIcon className="h-5 w-5 text-red-600" />}
-					title="Need Restart"
-					value={stats.restart}
 				/>
 			</div>
 

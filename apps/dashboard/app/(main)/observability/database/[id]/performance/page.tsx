@@ -65,7 +65,7 @@ const CHART_COLORS = [
 
 function LoadingState() {
 	return (
-		<div className="space-y-6">
+		<div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
 			<div className="space-y-2">
 				<Skeleton className="h-8 w-64" />
 				<Skeleton className="h-4 w-96" />
@@ -98,7 +98,7 @@ function LoadingState() {
 
 function ExtensionNotEnabledState({ connectionId }: { connectionId: string }) {
 	return (
-		<div className="space-y-6">
+		<div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
 			<div className="space-y-2">
 				<div className="flex items-center gap-2">
 					<ChartLineIcon
@@ -533,17 +533,19 @@ export default function PerformancePage({ params }: PerformancePageProps) {
 
 	if (!metrics) {
 		return (
-			<Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20">
-				<WarningIcon className="h-4 w-4 text-red-600" />
-				<AlertDescription className="text-red-800 dark:text-red-200">
-					Failed to load performance metrics. Please try again.
-				</AlertDescription>
-			</Alert>
+			<div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
+				<Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20">
+					<WarningIcon className="h-4 w-4 text-red-600" />
+					<AlertDescription className="text-red-800 dark:text-red-200">
+						Failed to load performance metrics. Please try again.
+					</AlertDescription>
+				</Alert>
+			</div>
 		);
 	}
 
 	return (
-		<div className="space-y-6 p-3 sm:p-4 lg:p-6">
+		<div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
 			{/* Header */}
 			<div className="flex items-center justify-between">
 				<div>

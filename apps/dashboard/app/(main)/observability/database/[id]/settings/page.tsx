@@ -41,7 +41,7 @@ interface ConnectionSettingsPageProps {
 
 function LoadingState() {
 	return (
-		<div className="mx-auto max-w-4xl space-y-6 p-6">
+		<div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
 			<div className="space-y-2">
 				<div className="h-8 w-64 animate-pulse rounded bg-muted" />
 				<div className="h-4 w-96 animate-pulse rounded bg-muted" />
@@ -314,7 +314,6 @@ export default function ConnectionSettingsPage({
 	const [upgradeDialog, setUpgradeDialog] = useState(false);
 	const [deleteDialog, setDeleteDialog] = useState(false);
 	const [success, setSuccess] = useState<string | null>(null);
-	const [debugUsers, setDebugUsers] = useState<string[]>([]);
 
 	const resolvedParams = use(params);
 	const connectionId = resolvedParams.id;
@@ -331,43 +330,7 @@ export default function ConnectionSettingsPage({
 		setTimeout(() => setSuccess(null), 5000);
 	};
 
-	// Debug functionality
-	const cleanupUsersMutation =
-		trpc.dbConnections.cleanupOrphanedUsers.useMutation({
-			onSuccess: (data) => {
-				handleSuccess(data.summary);
-				// Refresh the user list after cleanup
-				handleListUsers();
-			},
-			onError: (error) => {
-				console.error('Failed to cleanup users:', error);
-			},
-		});
-
-	const grantPermissionMutation =
-		trpc.dbConnections.grantReadAllStatsPermission.useMutation({
-			onSuccess: (data) => {
-				handleSuccess(data.message);
-			},
-			onError: (error) => {
-				console.error('Failed to grant permission:', error);
-			},
-		});
-
-	const handleListUsers = async () => {
-		try {
-			const result = await utils.dbConnections.listDatabuddyUsers.fetch({
-				id: connectionId,
-			});
-			setDebugUsers(result.users);
-			handleSuccess(`Found ${result.users.length} databuddy users`);
-		} catch (error) {
-			console.error('Failed to list users:', error);
-		}
-	};
-
 	const handleDeleteSuccess = () => {
-		// Redirect to connections list after deletion
 		window.location.href = '/observability/database';
 	};
 
@@ -377,7 +340,7 @@ export default function ConnectionSettingsPage({
 
 	if (!connection) {
 		return (
-			<div className="mx-auto max-w-4xl p-6">
+			<div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
 				<Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20">
 					<WarningIcon className="h-4 w-4 text-red-600" />
 					<AlertDescription className="text-red-800 dark:text-red-200">
@@ -391,7 +354,7 @@ export default function ConnectionSettingsPage({
 	const isAdmin = connection.permissionLevel === 'admin';
 
 	return (
-		<div className="mx-auto max-w-4xl space-y-6 p-6">
+		<div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
 			{/* Header */}
 			<div className="space-y-2">
 				<div className="flex items-center gap-2">
@@ -655,85 +618,6 @@ export default function ConnectionSettingsPage({
 			</Card>
 
 			<Separator />
-
-			{/* Debug Section - Only show for admin connections */}
-			{isAdmin && (
-				<>
-					<Card>
-						<CardHeader>
-							<CardTitle className="flex items-center gap-2">
-								<GearIcon className="h-5 w-5" />
-								Database User Management
-							</CardTitle>
-							<CardDescription>
-								Debug and manage database users created by Databuddy
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<div className="flex gap-2">
-								<Button onClick={handleListUsers} size="sm" variant="outline">
-									List Users
-								</Button>
-								<Button
-									disabled={cleanupUsersMutation.isPending}
-									onClick={() =>
-										cleanupUsersMutation.mutate({ id: connectionId })
-									}
-									size="sm"
-									variant="outline"
-								>
-									{cleanupUsersMutation.isPending
-										? 'Cleaning...'
-										: 'Cleanup Orphaned Users'}
-								</Button>
-							</div>
-
-							{debugUsers.length > 0 && (
-								<div className="rounded border p-3">
-									<h4 className="mb-2 font-medium text-sm">
-										Databuddy Users ({debugUsers.length})
-									</h4>
-									<div className="space-y-2">
-										{debugUsers.map((username) => (
-											<div
-												className="flex items-center justify-between rounded border p-2 text-sm"
-												key={username}
-											>
-												<div className="flex items-center gap-2">
-													<code className="rounded bg-muted px-2 py-1 text-xs">
-														{username}
-													</code>
-													<Badge className="text-xs" variant="secondary">
-														{username.includes('admin') ? 'Admin' : 'Readonly'}
-													</Badge>
-												</div>
-												<Button
-													className="text-xs"
-													disabled={grantPermissionMutation.isPending}
-													onClick={() =>
-														grantPermissionMutation.mutate({
-															id: connectionId,
-															username,
-														})
-													}
-													size="sm"
-													variant="outline"
-												>
-													{grantPermissionMutation.isPending
-														? 'Granting...'
-														: 'Grant pg_read_all_stats'}
-												</Button>
-											</div>
-										))}
-									</div>
-								</div>
-							)}
-						</CardContent>
-					</Card>
-
-					<Separator />
-				</>
-			)}
 
 			{/* Danger Zone */}
 			<Card className="border-red-200 dark:border-red-800">
