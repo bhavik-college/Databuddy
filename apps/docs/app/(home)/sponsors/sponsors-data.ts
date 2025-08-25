@@ -21,7 +21,6 @@ export interface HonorableMention {
 		| 'Educational';
 }
 
-// Sample sponsors data - replace with real data
 export const sponsors: Sponsor[] = [
 	{
 		id: 'neon',
