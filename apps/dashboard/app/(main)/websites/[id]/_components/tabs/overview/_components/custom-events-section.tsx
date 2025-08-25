@@ -265,6 +265,9 @@ export function CustomEventsSection({
 			description="User-defined events, interactions, and outbound link tracking"
 			expandable
 			getSubRows={(row: ProcessedCustomEvent): any[] => {
+				if (!row.properties || typeof row.properties !== 'object') {
+					return [];
+				}
 				const propertyKeys = Object.keys(row.properties);
 				return propertyKeys.map(
 					(key): PropertySubRow => ({
@@ -367,10 +370,12 @@ export function CustomEventsSection({
 				{
 					id: 'outbound_links',
 					label: 'Outbound Links',
-					data: (customEventsData.outbound_links || []).map((link) => ({
-						...link,
-						name: link.href,
-					})),
+					data: (customEventsData.outbound_links || [])
+						.filter((link) => link && typeof link === 'object' && link.href)
+						.map((link) => ({
+							...link,
+							name: link.href,
+						})),
 					columns: outboundLinksColumns,
 					getFilter: (row: OutboundLinkData) => ({
 						field: 'href',
@@ -380,10 +385,14 @@ export function CustomEventsSection({
 				{
 					id: 'outbound_domains',
 					label: 'Outbound Domains',
-					data: (customEventsData.outbound_domains || []).map((domain) => ({
-						...domain,
-						name: domain.domain,
-					})),
+					data: (customEventsData.outbound_domains || [])
+						.filter(
+							(domain) => domain && typeof domain === 'object' && domain.domain
+						)
+						.map((domain) => ({
+							...domain,
+							name: domain.domain,
+						})),
 					columns: outboundDomainsColumns,
 					getFilter: (row: OutboundDomainData) => ({
 						field: 'href',
