@@ -73,7 +73,9 @@ export default function RootLayout({
       <body>
         <Databuddy
           clientId={process.env.NEXT_PUBLIC_DATABUDDY_CLIENT_ID!}
-          trackWebVitals={true} // Recommended for performance monitoring
+          trackWebVitals // Recommended for performance monitoring
+          trackErrors
+          enableBatching
         />
         {children}
       </body>
@@ -86,21 +88,19 @@ export default function RootLayout({
 <Tab value="Vue">
 
 ```vue title="App.vue"
-<template>
-  <div id="app">
-    <Databuddy
-      :client-id="clientId"
-      :track-web-vitals="true"
-    />
-    <!-- Your app content -->
-  </div>
-</template>
-
 <script setup>
 import { Databuddy } from "@databuddy/sdk/vue";
 
 const clientId = import.meta.env.VITE_DATABUDDY_CLIENT_ID;
 </script>
+
+<template>
+  <Databuddy
+    :client-id="clientId"
+    track-web-vitals
+  />
+  <!-- Your app content -->
+</template>
 ```
 
 </Tab>
@@ -147,14 +147,14 @@ import { Databuddy } from "@databuddy/sdk/react";
 <Tab value="Vue">
 
 ```vue
-<template>
-  <Databuddy :client-id="clientId" />
-</template>
-
 <script setup>
 import { Databuddy } from "@databuddy/sdk/vue";
 const clientId = "your-client-id";
 </script>
+
+<template>
+  <Databuddy :client-id="clientId" />
+</template>
 ```
 
 </Tab>
@@ -204,9 +204,14 @@ import { Databuddy } from "@databuddy/sdk/react";
 
 <Databuddy
   clientId="your-client-id"
-  trackWebVitals={true}
-  trackErrors={true}
-  trackOutgoingLinks={true}
+  trackWebVitals
+  trackErrors
+  trackOutgoingLinks
+  trackScrollDepth
+  trackEngagement
+  enableBatching
+  batchSize={20}
+  batchTimeout={5000}
   disabled={process.env.NODE_ENV === "development"}
 />
 ```
@@ -215,19 +220,24 @@ import { Databuddy } from "@databuddy/sdk/react";
 <Tab value="Vue">
 
 ```vue
-<template>
-  <Databuddy
-    :client-id="clientId"
-    :track-web-vitals="true"
-    :track-errors="true"
-    :track-outgoing-links="true"
-  />
-</template>
-
 <script setup>
 import { Databuddy } from "@databuddy/sdk/vue";
 const clientId = import.meta.env.VITE_DATABUDDY_CLIENT_ID;
 </script>
+
+<template>
+  <Databuddy
+    :client-id="clientId"
+    :track-web-vitals
+    :track-errors
+    :track-outgoing-links
+    :track-scroll-depth
+    :track-engagement
+    :enable-batching
+    :batch-size="20"
+    :batch-timeout="5000"
+  />
+</template>
 ```
 
 </Tab>
@@ -240,6 +250,11 @@ const clientId = import.meta.env.VITE_DATABUDDY_CLIENT_ID;
   data-track-web-vitals="true"
   data-track-errors="true"
   data-track-outgoing-links="true"
+  data-track-scroll-depth="true"
+  data-track-engagement="true"
+  data-enable-batching="true"
+  data-batch-size="20"
+  data-batch-timeout="5000"
 ></script>
 ```
 
@@ -255,28 +270,71 @@ const clientId = import.meta.env.VITE_DATABUDDY_CLIENT_ID;
 | `batchTimeout` | `2000` | Batch timeout in ms (100-30000) |
 | `enableRetries` | `true` | Retry failed requests |
 | `maxRetries` | `3` | Maximum retry attempts |
+| `initialRetryDelay` | `500` | Initial retry delay in ms |
 | `samplingRate` | `1.0` | Event sampling rate (0.0-1.0) |
 
 ### Advanced Options
 
 | Option | Description |
 |--------|-------------|
-| `apiUrl` | Custom API endpoint (default: `basket.databuddy.cc`) |
-| `scriptUrl` | Custom script URL (default: `cdn.databuddy.cc/databuddy.js`) |
+| `apiUrl` | Custom API endpoint (default: `https://basket.databuddy.cc`) |
+| `scriptUrl` | Custom script URL (default: `https://cdn.databuddy.cc/databuddy.js`) |
 | `disabled` | Disable all tracking (useful for development) |
 | `waitForProfile` | Wait for user profile before sending events |
+| `clientSecret` | Client secret for server-side operations (advanced) |
+| `sdk` | SDK name (default: `web`) |
+| `sdkVersion` | SDK version (auto-detected from package.json) |
+
+### Observability Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `enableObservability` | `false` | Enable observability features |
+| `observabilityService` | — | Service name for observability events |
+| `observabilityEnvironment` | — | Environment for observability events |
+| `observabilityVersion` | — | Service version for observability events |
+| `enableLogging` | `false` | Enable structured logging |
+| `enableTracing` | `false` | Enable distributed tracing |
+| `enableErrorTracking` | `false` | Enable error tracking |
 
 ## SDK Methods
 
-Access these methods via `window.databuddy` or `window.db` after the SDK loads:
+Import and use these methods directly in your code:
+
+### Core Tracking Functions
+
+```javascript
+import { track, clear, flush, trackError } from "@databuddy/sdk";
+
+// Track custom events
+await track("product_viewed", {
+  product_id: "P12345",
+  category: "Electronics",
+  price: 299.99
+});
+
+// Track errors
+await trackError("API request failed", {
+  endpoint: "/api/products",
+  error_type: "network_error"
+});
+
+// Clear session data
+clear();
+
+// Flush queued events
+flush();
+```
 
 ### `track(eventName, properties)`
 
 Track custom events with optional properties:
 
 ```javascript
+import { track } from "@databuddy/sdk";
+
 // Track a product view
-window.db?.track("product_viewed", {
+await track("product_viewed", {
   product_id: "P12345",
   category: "Electronics",
   price: 299.99,
@@ -284,7 +342,7 @@ window.db?.track("product_viewed", {
 });
 
 // Track a button click
-window.db?.track("button_click", {
+await track("button_click", {
   button_text: "Add to Cart",
   button_id: "add-to-cart-btn"
 });
@@ -295,7 +353,10 @@ window.db?.track("button_click", {
 Manually track page views (useful for SPAs):
 
 ```javascript
-window.db?.screenView("/dashboard", {
+import { getTracker } from "@databuddy/sdk";
+
+const tracker = getTracker();
+tracker?.screenView("/dashboard", {
   section: "analytics"
 });
 ```
@@ -305,10 +366,27 @@ window.db?.screenView("/dashboard", {
 Set properties that attach to all future events:
 
 ```javascript
+import { getTracker } from "@databuddy/sdk";
+
 // After user login
-window.db?.setGlobalProperties({
+const tracker = getTracker();
+tracker?.setGlobalProperties({
   user_id: "user-123",
   plan: "premium"
+});
+```
+
+### `trackError(message, properties)`
+
+Track error events with additional context:
+
+```javascript
+import { trackError } from "@databuddy/sdk";
+
+await trackError("API request failed", {
+  filename: "api.js",
+  lineno: 42,
+  error_type: "network_error"
 });
 ```
 
@@ -317,7 +395,9 @@ window.db?.setGlobalProperties({
 Clear session and global properties (e.g., on logout):
 
 ```javascript
-window.db?.clear();
+import { clear } from "@databuddy/sdk";
+
+clear();
 ```
 
 ### `flush()`
@@ -325,7 +405,9 @@ window.db?.clear();
 Force immediate sending of queued events:
 
 ```javascript
-window.db?.flush();
+import { flush } from "@databuddy/sdk";
+
+flush();
 ```
 
 ## Standard Events
@@ -334,27 +416,30 @@ The SDK automatically tracks these events when enabled:
 
 | Event | Trigger | Key Properties |
 |-------|---------|----------------|
-| `screen_view` | `trackScreenViews={true}` | `time_on_page`, `scroll_depth`, `interaction_count` |
-| `button_click` | `trackInteractions={true}` | `button_text`, `button_id`, `button_type` |
-| `form_submit` | `trackInteractions={true}` | `form_id`, `form_type`, `success` |
+| `screen_view` | `trackScreenViews={true}` | `time_on_page`, `scroll_depth`, `interaction_count`, `has_exit_intent`, `is_bounce` |
+| `page_exit` | Automatic on page unload | `time_on_page`, `scroll_depth`, `interaction_count`, `has_exit_intent`, `page_count`, `is_bounce` |
+| `button_click` | `trackInteractions={true}` | `button_text`, `button_id`, `button_type`, `element_class` |
+| `form_submit` | `trackInteractions={true}` | `form_id`, `form_name`, `form_type`, `success` |
 | `link_out` | `trackOutgoingLinks={true}` | `href`, `text`, `target_domain` |
-| `web_vitals` | `trackWebVitals={true}` | `fcp`, `lcp`, `cls`, `fid`, `ttfb` |
-| `error` | `trackErrors={true}` | `message`, `filename`, `stack`, `error_type` |
+| `web_vitals` | `trackWebVitals={true}` | `fcp`, `lcp`, `cls`, `fid`, `ttfb`, `load_time`, `dom_ready_time`, `render_time`, `request_time` |
+| `error` | `trackErrors={true}` | `message`, `filename`, `lineno`, `colno`, `stack`, `error_type` |
 
 ## Custom Event Tracking
 
 Track business-specific events with rich properties:
 
 ```javascript
+import { track } from "@databuddy/sdk";
+
 // E-commerce events
-window.db?.track("product_viewed", {
+await track("product_viewed", {
   product_id: "P12345",
   category: "Electronics",
   price: 299.99,
   currency: "USD"
 });
 
-window.db?.track("purchase_completed", {
+await track("purchase_completed", {
   order_id: "ORD-789",
   revenue: 299.99,
   currency: "USD",
@@ -362,14 +447,14 @@ window.db?.track("purchase_completed", {
 });
 
 // User engagement
-window.db?.track("feature_used", {
+await track("feature_used", {
   feature: "export_data",
   user_tier: "premium",
   page: window.location.pathname
 });
 
 // Content interaction
-window.db?.track("video_engagement", {
+await track("video_engagement", {
   video_id: "intro-video",
   action: "completed", // play, pause, complete
   duration: 120,
@@ -384,8 +469,10 @@ window.db?.track("video_engagement", {
 - **Consistency**: Use consistent property names across events for better analysis
 
 ```javascript
+import { track } from "@databuddy/sdk";
+
 // ✅ Good
-window.db?.track("purchase_completed", {
+await track("purchase_completed", {
   product_category: "software",
   payment_method: "credit_card",
   value: 299.99,
@@ -393,7 +480,7 @@ window.db?.track("purchase_completed", {
 });
 
 // ❌ Avoid
-window.db?.track("purchase", {
+await track("purchase", {
   email: "user@example.com", // PII violation
   productCat: "software",    // Inconsistent naming
   Price: 299.99             // Inconsistent capitalization
@@ -444,18 +531,18 @@ Disable tracking during development:
 <Tab value="Vue">
 
 ```vue
+<script setup>
+import { Databuddy } from "@databuddy/sdk/vue";
+const clientId = import.meta.env.VITE_DATABUDDY_CLIENT_ID;
+const isDevelopment = import.meta.env.DEV;
+</script>
+
 <template>
   <Databuddy
     :client-id="clientId"
     :disabled="isDevelopment"
   />
 </template>
-
-<script setup>
-import { Databuddy } from "@databuddy/sdk/vue";
-const clientId = import.meta.env.VITE_DATABUDDY_CLIENT_ID;
-const isDevelopment = import.meta.env.DEV;
-</script>
 ```
 
 </Tab>
@@ -475,14 +562,20 @@ const isDevelopment = import.meta.env.DEV;
 ### Console Testing
 
 ```javascript
-// Test if SDK is loaded
-console.log(window.databuddy ? "SDK loaded ✅" : "SDK not loaded ❌");
+import { track, isTrackerAvailable } from "@databuddy/sdk";
 
-// Send test event
-window.db?.track("test_event", { source: "console" });
+// Test if SDK tracker is available
+console.log(isTrackerAvailable() ? "Tracker available ✅" : "Tracker not available ❌");
+
+// Send test event using SDK
+await track("test_event", { source: "console" });
 
 // Check network requests in DevTools Network tab
 // Look for requests to basket.databuddy.cc
+
+// Test error tracking
+import { trackError } from "@databuddy/sdk";
+await trackError("Test error", { context: "debugging" });
 ```
 
 ### Troubleshooting
@@ -492,6 +585,64 @@ window.db?.track("test_event", { source: "console" });
 | Events not appearing | Check client ID, network requests, domain verification |
 | TypeScript errors | Ensure `@databuddy/sdk` is installed, TypeScript 4.5+ |
 | Script loading issues | Verify CDN URL, check CSP rules, disable ad blockers |
+
+## TypeScript Support
+
+The SDK is fully typed and provides excellent TypeScript support:
+
+```typescript
+import { track, getTracker, type DatabuddyTracker, type EventName, type PropertiesForEvent } from "@databuddy/sdk";
+
+// Type-safe event tracking with SDK imports
+await track("product_viewed", {
+  product_id: "P12345", // ✅ Type-safe
+  category: "Electronics",
+  price: 299.99
+});
+
+// Custom event with proper typing
+await track("feature_used", {
+  feature: "export_data",
+  user_tier: "premium"
+});
+
+// Access tracker instance for advanced operations
+const tracker: DatabuddyTracker | null = getTracker();
+if (tracker) {
+  tracker.setGlobalProperties({ plan: "premium" });
+}
+
+// Type-safe custom events
+type CustomEventName = "signup_completed" | "feature_used" | "purchase_completed";
+
+await track<CustomEventName>("signup_completed", {
+  method: "email",
+  source: "landing_page"
+});
+```
+
+### Data Attributes for Automatic Tracking
+
+Use `data-track` attributes for automatic event tracking:
+
+```html
+<!-- Automatically tracks button_click event -->
+<button data-track="signup_clicked" data-plan="premium">
+  Sign Up
+</button>
+
+<!-- Tracks with additional properties -->
+<a 
+  href="/pricing" 
+  data-track="pricing_link_clicked"
+  data-source="header"
+  data-user-type="visitor"
+>
+  View Pricing
+</a>
+```
+
+When `trackAttributes={true}` is enabled, these elements will automatically send events with the specified properties.
 
 ## Related Documentation
 
