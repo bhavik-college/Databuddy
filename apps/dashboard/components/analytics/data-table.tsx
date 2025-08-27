@@ -5,6 +5,7 @@ import {
 	ArrowUpIcon,
 	DatabaseIcon,
 	MagnifyingGlassIcon,
+	SpinnerIcon,
 	XIcon,
 } from '@phosphor-icons/react';
 import {
@@ -37,6 +38,27 @@ import {
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 
+// Constants to reduce magic numbers and improve maintainability
+const DEFAULT_MIN_HEIGHT = 200;
+const FULLSCREEN_HEIGHT = '92vh';
+const FULLSCREEN_WIDTH = '92vw';
+const DEFAULT_PAGE_SIZE = 50;
+const TAB_TRANSITION_DELAY = 150;
+
+// Row percentage thresholds for gradient colors
+const PERCENTAGE_THRESHOLDS = {
+	HIGH: 50,
+	MEDIUM: 25,
+	LOW: 10,
+} as const;
+
+// Default column sizes
+const COLUMN_SIZES = {
+	DEFAULT: 150,
+	MIN_WIDTH: 80,
+	MAX_WIDTH: 300,
+} as const;
+
 interface TabConfig<TData> {
 	id: string;
 	label: string;
@@ -52,6 +74,7 @@ interface DataTableProps<TData extends { name: string | number }, TValue> {
 	title: string;
 	description?: string;
 	isLoading?: boolean;
+	tabLoadingStates?: Record<string, boolean> | undefined;
 	initialPageSize?: number;
 	emptyMessage?: string;
 	className?: string;
@@ -70,23 +93,95 @@ interface DataTableProps<TData extends { name: string | number }, TValue> {
 	renderTooltipContent?: (row: TData) => React.ReactNode;
 }
 
-function getRowPercentage(row: any): number {
-	if (row.marketShare !== undefined) {
-		return Number.parseFloat(row.marketShare) || 0;
-	}
-	if (row.percentage !== undefined) {
-		return Number.parseFloat(row.percentage) || 0;
-	}
-	if (row.percentage_of_sessions !== undefined) {
-		return Number.parseFloat(row.percentage_of_sessions) || 0;
-	}
-	if (row.percent !== undefined) {
-		return Number.parseFloat(row.percent) || 0;
-	}
-	if (row.share !== undefined) {
-		return Number.parseFloat(row.share) || 0;
+interface PercentageRow {
+	marketShare?: string | number;
+	percentage?: string | number;
+	percentage_of_sessions?: string | number;
+	percent?: string | number;
+	share?: string | number;
+}
+
+function getRowPercentage(row: PercentageRow): number {
+	const percentageFields: (keyof PercentageRow)[] = [
+		'marketShare',
+		'percentage',
+		'percentage_of_sessions',
+		'percent',
+		'share',
+	];
+
+	for (const field of percentageFields) {
+		if (row[field] !== undefined) {
+			return Number.parseFloat(String(row[field])) || 0;
+		}
 	}
 	return 0;
+}
+
+// Color schemes for different percentage ranges
+const GRADIENT_COLORS = {
+	high: {
+		rgb: '34, 197, 94',
+		opacity: {
+			background: 0.08,
+			hover: 0.12,
+			border: 0.3,
+			accent: 0.8,
+			glow: 0.2,
+		},
+	},
+	medium: {
+		rgb: '59, 130, 246',
+		opacity: {
+			background: 0.08,
+			hover: 0.12,
+			border: 0.3,
+			accent: 0.8,
+			glow: 0.2,
+		},
+	},
+	low: {
+		rgb: '245, 158, 11',
+		opacity: {
+			background: 0.08,
+			hover: 0.12,
+			border: 0.3,
+			accent: 0.8,
+			glow: 0.2,
+		},
+	},
+	default: {
+		rgb: '107, 114, 128',
+		opacity: {
+			background: 0.06,
+			hover: 0.1,
+			border: 0.2,
+			accent: 0.7,
+			glow: 0.15,
+		},
+	},
+} as const;
+
+function createGradient(
+	rgb: string,
+	opacity: typeof GRADIENT_COLORS.high.opacity,
+	percentage: number
+) {
+	const {
+		background: bgOpacity,
+		hover: hoverOpacity,
+		border: borderOpacity,
+		accent: accentOpacity,
+		glow: glowOpacity,
+	} = opacity;
+
+	return {
+		background: `linear-gradient(90deg, rgba(${rgb}, ${bgOpacity}) 0%, rgba(${rgb}, ${bgOpacity + 0.07}) ${percentage * 0.8}%, rgba(${rgb}, ${bgOpacity + 0.04}) ${percentage}%, rgba(${rgb}, ${bgOpacity - 0.06}) ${percentage + 5}%, transparent 100%)`,
+		hoverBackground: `linear-gradient(90deg, rgba(${rgb}, ${hoverOpacity}) 0%, rgba(${rgb}, ${hoverOpacity + 0.1}) ${percentage * 0.8}%, rgba(${rgb}, ${hoverOpacity + 0.06}) ${percentage}%, rgba(${rgb}, ${hoverOpacity - 0.08}) ${percentage + 5}%, transparent 100%)`,
+		borderColor: `rgba(${rgb}, ${borderOpacity})`,
+		accentColor: `rgba(${rgb}, ${accentOpacity})`,
+		glowColor: `rgba(${rgb}, ${glowOpacity})`,
+	};
 }
 
 function getPercentageGradient(percentage: number): {
@@ -96,41 +191,114 @@ function getPercentageGradient(percentage: number): {
 	accentColor: string;
 	glowColor: string;
 } {
-	if (percentage >= 50) {
-		return {
-			background: `linear-gradient(90deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.15) ${percentage * 0.8}%, rgba(34, 197, 94, 0.12) ${percentage}%, rgba(34, 197, 94, 0.02) ${percentage + 5}%, transparent 100%)`,
-			hoverBackground: `linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.22) ${percentage * 0.8}%, rgba(34, 197, 94, 0.18) ${percentage}%, rgba(34, 197, 94, 0.04) ${percentage + 5}%, transparent 100%)`,
-			borderColor: 'rgba(34, 197, 94, 0.3)',
-			accentColor: 'rgba(34, 197, 94, 0.8)',
-			glowColor: 'rgba(34, 197, 94, 0.2)',
-		};
+	if (percentage >= PERCENTAGE_THRESHOLDS.HIGH) {
+		return createGradient(
+			GRADIENT_COLORS.high.rgb,
+			GRADIENT_COLORS.high.opacity,
+			percentage
+		);
 	}
-	if (percentage >= 25) {
-		return {
-			background: `linear-gradient(90deg, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.15) ${percentage * 0.8}%, rgba(59, 130, 246, 0.12) ${percentage}%, rgba(59, 130, 246, 0.02) ${percentage + 5}%, transparent 100%)`,
-			hoverBackground: `linear-gradient(90deg, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0.22) ${percentage * 0.8}%, rgba(59, 130, 246, 0.18) ${percentage}%, rgba(59, 130, 246, 0.04) ${percentage + 5}%, transparent 100%)`,
-			borderColor: 'rgba(59, 130, 246, 0.3)',
-			accentColor: 'rgba(59, 130, 246, 0.8)',
-			glowColor: 'rgba(59, 130, 246, 0.2)',
-		};
+	if (percentage >= PERCENTAGE_THRESHOLDS.MEDIUM) {
+		return createGradient(
+			GRADIENT_COLORS.medium.rgb,
+			GRADIENT_COLORS.medium.opacity,
+			percentage
+		);
 	}
-	if (percentage >= 10) {
-		return {
-			background: `linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.15) ${percentage * 0.8}%, rgba(245, 158, 11, 0.12) ${percentage}%, rgba(245, 158, 11, 0.02) ${percentage + 5}%, transparent 100%)`,
-			hoverBackground: `linear-gradient(90deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.22) ${percentage * 0.8}%, rgba(245, 158, 11, 0.18) ${percentage}%, rgba(245, 158, 11, 0.04) ${percentage + 5}%, transparent 100%)`,
-			borderColor: 'rgba(245, 158, 11, 0.3)',
-			accentColor: 'rgba(245, 158, 11, 0.8)',
-			glowColor: 'rgba(245, 158, 11, 0.2)',
-		};
+	if (percentage >= PERCENTAGE_THRESHOLDS.LOW) {
+		return createGradient(
+			GRADIENT_COLORS.low.rgb,
+			GRADIENT_COLORS.low.opacity,
+			percentage
+		);
 	}
-	return {
-		background: `linear-gradient(90deg, rgba(107, 114, 128, 0.06) 0%, rgba(107, 114, 128, 0.12) ${percentage * 0.8}%, rgba(107, 114, 128, 0.1) ${percentage}%, rgba(107, 114, 128, 0.02) ${percentage + 5}%, transparent 100%)`,
-		hoverBackground: `linear-gradient(90deg, rgba(107, 114, 128, 0.1) 0%, rgba(107, 114, 128, 0.18) ${percentage * 0.8}%, rgba(107, 114, 128, 0.15) ${percentage}%, rgba(107, 114, 128, 0.03) ${percentage + 5}%, transparent 100%)`,
-		borderColor: 'rgba(107, 114, 128, 0.2)',
-		accentColor: 'rgba(107, 114, 128, 0.7)',
-		glowColor: 'rgba(107, 114, 128, 0.15)',
-	};
+	return createGradient(
+		GRADIENT_COLORS.default.rgb,
+		GRADIENT_COLORS.default.opacity,
+		percentage
+	);
 }
+
+// Component for individual tab button to reduce complexity
+interface TabButtonProps {
+	tab: TabConfig<any>;
+	isActive: boolean;
+	itemCount: number;
+	isTabLoading?: boolean;
+	isTransitioning: boolean;
+	onTabChange: (tabId: string) => void;
+}
+
+const TabButton = ({
+	tab,
+	isActive,
+	itemCount,
+	isTabLoading = false,
+	isTransitioning,
+	onTabChange,
+}: TabButtonProps) => (
+	<button
+		aria-controls={`tabpanel-${tab.id}`}
+		aria-selected={isActive}
+		className={cn(
+			'relative flex items-center gap-2 rounded-md px-3 py-2 font-medium text-sm transition-all duration-200',
+			'disabled:cursor-not-allowed disabled:opacity-60',
+			'group overflow-hidden',
+			isActive
+				? 'scale-[1.02] transform bg-sidebar text-sidebar-foreground shadow-md'
+				: 'text-sidebar-foreground/70 hover:scale-[1.01] hover:transform hover:bg-sidebar-accent/40 hover:text-sidebar-foreground hover:shadow-sm',
+			isTabLoading && 'cursor-wait opacity-75'
+		)}
+		disabled={isTransitioning || isTabLoading}
+		onClick={() => onTabChange(tab.id)}
+		role="tab"
+		tabIndex={isActive ? 0 : -1}
+		type="button"
+	>
+		{/* Active indicator */}
+		{isActive && (
+			<div className="absolute inset-0 animate-pulse rounded-md bg-gradient-to-r from-primary/20 to-primary/5" />
+		)}
+
+		{/* Tab content */}
+		<div className="relative z-10 flex items-center gap-2">
+			{/* Loading spinner */}
+			{isTabLoading && (
+				<SpinnerIcon className="h-3.5 w-3.5 animate-spin text-sidebar-foreground/60" />
+			)}
+
+			<span
+				className={cn(
+					'transition-colors duration-200',
+					isActive
+						? 'text-sidebar-foreground'
+						: 'text-sidebar-foreground/80 group-hover:text-sidebar-foreground'
+				)}
+			>
+				{tab.label}
+			</span>
+
+			{/* Count badge */}
+			{itemCount > 0 && !isTabLoading && (
+				<span
+					className={cn(
+						'inline-flex h-5 min-w-[18px] items-center justify-center rounded-full px-1.5 font-semibold text-[10px] transition-all duration-200',
+						isActive
+							? 'border border-primary/30 bg-primary/20 text-primary shadow-sm'
+							: 'border border-transparent bg-sidebar-foreground/20 text-sidebar-foreground/70 group-hover:bg-sidebar-foreground/30 group-hover:text-sidebar-foreground'
+					)}
+				>
+					{itemCount > 999 ? '999+' : itemCount > 99 ? '99+' : itemCount}
+				</span>
+			)}
+		</div>
+
+		{/* Hover effect */}
+		{!(isActive || isTabLoading) && (
+			<div className="absolute inset-0 rounded-md bg-gradient-to-r from-transparent via-sidebar-accent/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+		)}
+	</button>
+);
 
 const EnhancedSkeleton = ({ minHeight }: { minHeight: string | number }) => (
 	<div className="animate-pulse space-y-3" style={{ minHeight }}>
@@ -168,7 +336,7 @@ function FullScreenTable<TData extends { name: string | number }>({
 	columns,
 	search,
 	onClose,
-	initialPageSize = 50,
+	initialPageSize = DEFAULT_PAGE_SIZE,
 	expandable = false,
 	getSubRows,
 	renderSubRow,
@@ -218,19 +386,6 @@ function FullScreenTable<TData extends { name: string | number }>({
 		getSortedRowModel: getSortedRowModel(),
 	});
 	// Tooltip for truncated cell
-	const [tooltip, setTooltip] = useState<{
-		value: string;
-		x: number;
-		y: number;
-	} | null>(null);
-	const handleCellMouseEnter = (e: React.MouseEvent, value: string) => {
-		const target = e.currentTarget as HTMLElement;
-		if (target.scrollWidth > target.clientWidth) {
-			const rect = target.getBoundingClientRect();
-			setTooltip({ value, x: rect.left + rect.width / 2, y: rect.top });
-		}
-	};
-	const handleCellMouseLeave = () => setTooltip(null);
 	const toggleRowExpansion = (rowId: string) => {
 		setExpandedRow((prev) => (prev === rowId ? null : rowId));
 	};
@@ -285,7 +440,7 @@ function FullScreenTable<TData extends { name: string | number }>({
 				</div>
 				<button
 					aria-label="Close full screen"
-					className="ml-2 flex items-center justify-center rounded bg-sidebar-accent/60 p-2 text-sidebar-foreground transition-colors hover:bg-sidebar-accent focus:outline-none focus:ring-2 focus:ring-sidebar-ring/50"
+					className="ml-2 flex items-center justify-center rounded bg-sidebar-accent/60 p-2 text-sidebar-foreground transition-colors hover:bg-sidebar-accent"
 					onClick={onClose}
 					style={{ minWidth: 40, minHeight: 40 }}
 					tabIndex={0}
@@ -298,55 +453,37 @@ function FullScreenTable<TData extends { name: string | number }>({
 			{/* Tab bar, consistent with main DataTable */}
 			{tabs && tabs.length > 1 && (
 				<div className="mt-2 px-3">
-					<nav
-						aria-label="Data view options"
-						className="inline-flex gap-0.5 rounded bg-sidebar-accent/30 p-0.5"
-						role="tablist"
-					>
+					<div className="flex gap-0.5 rounded-lg bg-sidebar-accent/20 p-1 backdrop-blur-sm">
 						{tabs.map((tab, idx) => {
 							const isActive = activeTab === tab.id;
 							const itemCount = tab?.data?.length || 0;
+							const isTabLoading = tabLoadingStates?.[tab.id];
+
 							return (
-								<button
-									aria-controls={`tabpanel-${tab.id}`}
-									aria-current={isActive ? 'page' : undefined}
-									aria-selected={isActive}
-									className={cn(
-										'flex items-center gap-1.5 rounded px-3 py-2 font-medium text-xs transition-colors',
-										'focus:outline-none focus:ring-2 focus:ring-sidebar-ring/50',
-										'disabled:opacity-60',
-										isActive
-											? 'bg-sidebar text-sidebar-foreground shadow-sm'
-											: 'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
-									)}
-									disabled={isTransitioning}
+								<div
 									key={tab.id}
-									onClick={() => onTabChange?.(tab.id)}
-									onKeyDown={(e) => handleTabKeyDown(e, idx)}
 									ref={(el) => {
 										tabRefs.current[idx] = el;
 									}}
-									role="tab"
-									tabIndex={isActive ? 0 : -1}
-									type="button"
 								>
-									<span>{tab.label}</span>
-									{itemCount > 0 && (
-										<span
-											className={cn(
-												'inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 font-semibold text-[10px]',
-												isActive
-													? 'bg-sidebar-ring/20 text-sidebar-ring'
-													: 'bg-sidebar-foreground/20 text-sidebar-foreground/70'
-											)}
-										>
-											{itemCount > 99 ? '99+' : itemCount}
-										</span>
-									)}
-								</button>
+									<TabButton
+										isActive={isActive}
+										isTabLoading={isTabLoading}
+										isTransitioning={isTransitioning}
+										itemCount={itemCount}
+										onTabChange={(tabId) => {
+											handleTabKeyDown(
+												{ key: 'Enter' } as React.KeyboardEvent,
+												idx
+											);
+											onTabChange?.(tabId);
+										}}
+										tab={tab}
+									/>
+								</div>
 							);
 						})}
-					</nav>
+					</div>
 				</div>
 			)}
 			{/* Search bar, consistent with main DataTable */}
@@ -355,7 +492,7 @@ function FullScreenTable<TData extends { name: string | number }>({
 					<div className="relative w-full max-w-xs">
 						<Input
 							aria-label="Search table"
-							className="h-8 w-full border-sidebar-border bg-sidebar-accent/30 pr-2 pl-7 text-sidebar-foreground text-xs focus:bg-sidebar focus:ring-1 focus:ring-sidebar-ring/50"
+							className="h-8 w-full border-sidebar-border bg-sidebar-accent/30 pr-2 pl-7 text-sidebar-foreground text-xs"
 							onChange={(event) => setGlobalFilter(event.target.value)}
 							placeholder="Filter data..."
 							value={globalFilter ?? ''}
@@ -364,7 +501,7 @@ function FullScreenTable<TData extends { name: string | number }>({
 						{globalFilter && (
 							<button
 								aria-label="Clear search"
-								className="-translate-y-1/2 absolute top-1/2 right-2 rounded p-1 hover:bg-sidebar-accent/60 focus:outline-none"
+								className="-translate-y-1/2 absolute top-1/2 right-2 rounded p-1 hover:bg-sidebar-accent/60"
 								onClick={() => setGlobalFilter('')}
 								type="button"
 							>
@@ -598,10 +735,11 @@ export function DataTable<TData extends { name: string | number }, TValue>({
 	title,
 	description,
 	isLoading = false,
+	tabLoadingStates,
 	emptyMessage = 'No data available',
 	className,
 	onRowClick,
-	minHeight = 200,
+	minHeight = DEFAULT_MIN_HEIGHT,
 	showSearch = true,
 	getSubRows,
 	renderSubRow,
@@ -673,7 +811,8 @@ export function DataTable<TData extends { name: string | number }, TValue>({
 		[currentTabData?.data, data]
 	);
 	const tableColumns = React.useMemo(
-		() => currentTabData?.columns || columns || [],
+		() =>
+			(currentTabData?.columns || columns || []) as ColumnDef<TData, TValue>[],
 		[currentTabData?.columns, columns]
 	);
 
@@ -748,7 +887,7 @@ export function DataTable<TData extends { name: string | number }, TValue>({
 				setGlobalFilter('');
 				setExpandedRow(null);
 				setIsTransitioning(false);
-			}, 150);
+			}, TAB_TRANSITION_DELAY);
 		},
 		[activeTab]
 	);
@@ -812,7 +951,7 @@ export function DataTable<TData extends { name: string | number }, TValue>({
 								<MagnifyingGlassIcon className="-translate-y-1/2 absolute top-1/2 left-2 h-3 w-3 transform text-sidebar-foreground/50" />
 								<Input
 									aria-label={`Search ${title}`}
-									className="h-8 w-full border-sidebar-border bg-sidebar-accent/30 pr-2 pl-7 text-sidebar-foreground text-xs focus:bg-sidebar focus:ring-1 focus:ring-sidebar-ring/50 sm:w-36"
+									className="h-8 w-full border-sidebar-border bg-sidebar-accent/30 pr-2 pl-7 text-sidebar-foreground text-xs sm:w-36"
 									onChange={(event) => setGlobalFilter(event.target.value)}
 									placeholder="Filter data..."
 									value={globalFilter ?? ''}
@@ -822,7 +961,7 @@ export function DataTable<TData extends { name: string | number }, TValue>({
 						{!fullScreen && (
 							<button
 								aria-label="Full screen"
-								className="flex h-8 w-8 items-center justify-center rounded border-sidebar-border bg-sidebar-accent/30 text-sidebar-foreground transition-colors hover:bg-sidebar-accent/60 focus:outline-none focus:ring-2 focus:ring-sidebar-ring/50"
+								className="flex h-8 w-8 items-center justify-center rounded border-sidebar-border bg-sidebar-accent/30 text-sidebar-foreground transition-colors hover:bg-sidebar-accent/60"
 								onClick={() => setFullScreen(true)}
 								title="Full screen"
 								type="button"
@@ -835,51 +974,24 @@ export function DataTable<TData extends { name: string | number }, TValue>({
 
 				{tabs && tabs.length > 1 && (
 					<div className="mt-3 overflow-hidden">
-						<div className="-mb-1 overflow-x-auto pb-1">
-							<nav
-								aria-label="Data view options"
-								className="inline-flex gap-0.5 rounded bg-sidebar-accent/30 p-0.5"
-							>
-								{tabs.map((tab) => {
-									const isActive = activeTab === tab.id;
-									const itemCount = tab?.data?.length || 0;
+						<div className="flex gap-0.5 rounded-lg bg-sidebar-accent/20 p-1 backdrop-blur-sm">
+							{tabs.map((tab) => {
+								const isActive = activeTab === tab.id;
+								const itemCount = tab?.data?.length || 0;
+								const isTabLoading = tabLoadingStates?.[tab.id];
 
-									return (
-										<button
-											aria-controls={`tabpanel-${tab.id}`}
-											aria-selected={isActive}
-											className={cn(
-												'flex items-center gap-1.5 rounded px-3 py-2 font-medium text-xs transition-colors',
-												'focus:outline-none focus:ring-2 focus:ring-sidebar-ring/50',
-												'disabled:opacity-60',
-												isActive
-													? 'bg-sidebar text-sidebar-foreground shadow-sm'
-													: 'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
-											)}
-											disabled={isTransitioning}
-											key={tab.id}
-											onClick={() => handleTabChange(tab.id)}
-											role="tab"
-											tabIndex={isActive ? 0 : -1}
-											type="button"
-										>
-											<span>{tab.label}</span>
-											{itemCount > 0 && (
-												<span
-													className={cn(
-														'inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 font-semibold text-[10px]',
-														isActive
-															? 'bg-sidebar-ring/20 text-sidebar-ring'
-															: 'bg-sidebar-foreground/20 text-sidebar-foreground/70'
-													)}
-												>
-													{itemCount > 99 ? '99+' : itemCount}
-												</span>
-											)}
-										</button>
-									);
-								})}
-							</nav>
+								return (
+									<TabButton
+										isActive={isActive}
+										isTabLoading={isTabLoading}
+										isTransitioning={isTransitioning}
+										itemCount={itemCount}
+										key={tab.id}
+										onTabChange={handleTabChange}
+										tab={tab}
+									/>
+								);
+							})}
 						</div>
 					</div>
 				)}
@@ -1231,7 +1343,13 @@ export function DataTable<TData extends { name: string | number }, TValue>({
 						{/* Backdrop */}
 						<div className="absolute inset-0 animate-fadein bg-black/70 backdrop-blur-[3px] transition-opacity" />
 						{/* Modal */}
-						<div className="relative flex h-[92vh] w-[92vw] scale-100 animate-scalein flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl">
+						<div
+							className={cn(
+								'relative flex scale-100 animate-scalein flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl',
+								FULLSCREEN_HEIGHT,
+								FULLSCREEN_WIDTH
+							)}
+						>
 							<FullScreenTable
 								activeTab={activeTab}
 								columns={tableColumns}

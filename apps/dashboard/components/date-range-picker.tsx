@@ -10,7 +10,11 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from '@/components/ui/popover';
-import { formatDateOnly, formatDateRange } from '@/lib/formatters';
+import {
+	formatDateOnly,
+	formatDateRange,
+	formatMonthDay,
+} from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 
 interface DateRangePickerProps {
@@ -79,10 +83,18 @@ export function DateRangePicker({
 				return formatDateOnly(appliedRange.from);
 			}
 
-			if (appliedRange.from.getFullYear() !== appliedRange.to.getFullYear()) {
-				return formatDateRange(appliedRange.from, appliedRange.to);
+			const currentYear = new Date().getFullYear();
+			const startYear = appliedRange.from.getFullYear();
+			const endYear = appliedRange.to.getFullYear();
+
+			// If both dates are in the current year, don't show the year
+			if (startYear === currentYear && endYear === currentYear) {
+				const startMonthDay = formatMonthDay(appliedRange.from);
+				const endMonthDay = formatMonthDay(appliedRange.to);
+				return `${startMonthDay} - ${endMonthDay}`;
 			}
 
+			// If dates span different years or are not in current year, show full format
 			return formatDateRange(appliedRange.from, appliedRange.to);
 		}
 
@@ -119,7 +131,21 @@ export function DateRangePicker({
 						<div className="text-muted-foreground text-sm">
 							{tempRange?.from && tempRange?.to ? (
 								<span className="font-medium text-foreground">
-									{formatDateRange(tempRange.from, tempRange.to)}
+									{(() => {
+										const currentYear = new Date().getFullYear();
+										const startYear = tempRange.from.getFullYear();
+										const endYear = tempRange.to.getFullYear();
+
+										// If both dates are in the current year, don't show the year
+										if (startYear === currentYear && endYear === currentYear) {
+											const startMonthDay = formatMonthDay(tempRange.from);
+											const endMonthDay = formatMonthDay(tempRange.to);
+											return `${startMonthDay} - ${endMonthDay}`;
+										}
+
+										// Otherwise show full format
+										return formatDateRange(tempRange.from, tempRange.to);
+									})()}
 								</span>
 							) : tempRange?.from ? (
 								<span>

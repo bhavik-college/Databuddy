@@ -292,9 +292,11 @@ function FilterForm({
 export function AddFilterForm({
 	addFilter,
 	buttonText = 'Filter',
+	className,
 }: {
 	addFilter: (filter: DynamicQueryFilter) => void;
 	buttonText?: string;
+	className?: string;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -311,7 +313,7 @@ export function AddFilterForm({
 					aria-expanded={isOpen}
 					aria-haspopup="menu"
 					aria-label="Add filter"
-					className="h-8"
+					className={className || 'h-8'}
 					onClick={() => setIsOpen(!isOpen)}
 					variant="outline"
 				>

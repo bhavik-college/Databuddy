@@ -936,7 +936,7 @@ export function WebsiteOverviewTab({
 			</div>
 
 			{/* Chart */}
-			<div className="rounded border border-sidebar-border bg-sidebar shadow-sm">
+			<div className="rounded border border-sidebar-border border-b-0 bg-sidebar shadow-sm">
 				<div className="flex flex-col items-start justify-between gap-3 border-sidebar-border border-b px-4 py-3 sm:flex-row">
 					<div>
 						<h2 className="font-semibold text-lg text-sidebar-foreground tracking-tight">

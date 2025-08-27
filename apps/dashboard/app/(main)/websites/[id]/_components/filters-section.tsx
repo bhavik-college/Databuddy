@@ -1,27 +1,21 @@
 'use client';
 
 import { type DynamicQueryFilter, filterOptions } from '@databuddy/shared';
-import {
-	FloppyDiskIcon,
-	FunnelIcon,
-	PencilIcon,
-	XIcon,
-} from '@phosphor-icons/react';
+import { FloppyDiskIcon, PencilIcon, XIcon } from '@phosphor-icons/react';
+import { useAtom } from 'jotai';
 import { useParams } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useFilters } from '@/hooks/use-filters';
+
 import { useSavedFilters } from '@/hooks/use-saved-filters';
+import {
+	dynamicQueryFiltersAtom,
+	removeDynamicFilterAtom,
+} from '@/stores/jotai/filterAtoms';
 import { DeleteAllDialog } from './delete-all-dialog';
 import { DeleteFilterDialog } from './delete-filter-dialog';
 import { SaveFilterDialog } from './save-filter-dialog';
 import { SavedFiltersMenu } from './saved-filters-menu';
-import { AddFilterForm } from './utils/add-filters';
-
-interface FiltersSectionProps {
-	selectedFilters: DynamicQueryFilter[];
-	onFiltersChange: (filters: DynamicQueryFilter[]) => void;
-}
 
 function getOperatorSymbol(operator: string): string {
 	const operatorToSymbolMap: Record<string, string> = {
@@ -38,14 +32,25 @@ function getOperatorSymbol(operator: string): string {
 	return operatorToSymbolMap[operator] || operator;
 }
 
-export function FiltersSection({
-	selectedFilters,
-	onFiltersChange,
-}: FiltersSectionProps) {
-	const { addFilter, removeFilter } = useFilters({
-		filters: selectedFilters,
-		onFiltersChange,
-	});
+export function FiltersSection() {
+	const [selectedFilters, setSelectedFilters] = useAtom(
+		dynamicQueryFiltersAtom
+	);
+	const [, removeFilter] = useAtom(removeDynamicFilterAtom);
+
+	const handleRemoveFilter = useCallback(
+		(index: number) => {
+			if (selectedFilters[index]) {
+				const filterToRemove = selectedFilters[index];
+				removeFilter({
+					field: filterToRemove.field,
+					operator: filterToRemove.operator,
+					value: filterToRemove.value,
+				});
+			}
+		},
+		[selectedFilters, removeFilter]
+	);
 
 	const { id } = useParams();
 	const websiteId = id as string;
@@ -82,8 +87,8 @@ export function FiltersSection({
 	const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false);
 
 	const clearAllFilters = useCallback(() => {
-		onFiltersChange([]);
-	}, [onFiltersChange]);
+		setSelectedFilters([]);
+	}, [setSelectedFilters]);
 
 	const handleSaveFilter = useCallback(
 		(name: string) => {
@@ -116,9 +121,9 @@ export function FiltersSection({
 
 	const handleApplyFilter = useCallback(
 		(filters: DynamicQueryFilter[]) => {
-			onFiltersChange(filters);
+			setSelectedFilters(filters);
 		},
-		[onFiltersChange]
+		[setSelectedFilters]
 	);
 
 	const handleDeleteSavedFilter = useCallback(
@@ -164,7 +169,7 @@ export function FiltersSection({
 			}
 
 			// Apply the filter's configuration to current filters
-			onFiltersChange(filterToEdit.filters);
+			setSelectedFilters(filterToEdit.filters);
 
 			// Set up editing mode with original filters stored
 			setEditingFilter({
@@ -173,16 +178,16 @@ export function FiltersSection({
 				originalFilters: [...filterToEdit.filters], // Store original state
 			});
 		},
-		[savedFilters, onFiltersChange]
+		[savedFilters, setSelectedFilters]
 	);
 
 	const handleCancelEdit = useCallback(() => {
 		if (editingFilter) {
 			// Restore original filters
-			onFiltersChange(editingFilter.originalFilters);
+			setSelectedFilters(editingFilter.originalFilters);
 		}
 		setEditingFilter(null);
-	}, [editingFilter, onFiltersChange]);
+	}, [editingFilter, setSelectedFilters]);
 
 	const handleSaveEdit = useCallback(() => {
 		if (!editingFilter || selectedFilters.length === 0) {
@@ -215,8 +220,12 @@ export function FiltersSection({
 		setIsDeletingAll(false);
 	}, [deleteAllFilters]);
 
+	if (selectedFilters.length === 0) {
+		return null;
+	}
+
 	return (
-		<div className="overflow-hidden rounded-lg border bg-card shadow-sm">
+		<div className="slide-in-from-top-2 animate-in overflow-hidden rounded-lg border bg-card shadow-sm duration-300">
 			{editingFilter && (
 				<div className="border-amber-200/50 border-b bg-gradient-to-r from-amber-50/80 to-amber-50/40 px-4 py-3 text-amber-900 text-sm">
 					<div className="flex items-center justify-between">
@@ -235,7 +244,7 @@ export function FiltersSection({
 						</div>
 						<div className="flex shrink-0 gap-2">
 							<Button
-								className="h-7 font-medium text-xs"
+								className="h-8 font-medium text-sm"
 								data-filter-id={editingFilter.id}
 								data-total-filters={selectedFilters.length}
 								data-track="filter_edit_completed"
@@ -247,7 +256,7 @@ export function FiltersSection({
 								{isSaving ? 'Saving...' : 'Save Changes'}
 							</Button>
 							<Button
-								className="h-7 text-xs"
+								className="h-8 text-sm"
 								disabled={isSaving}
 								onClick={handleCancelEdit}
 								size="sm"
@@ -256,7 +265,7 @@ export function FiltersSection({
 								Cancel
 							</Button>
 							<Button
-								className="h-7 text-xs"
+								className="h-8 text-sm"
 								onClick={() => {
 									setIsSaveDialogOpen(true);
 								}}
@@ -269,21 +278,7 @@ export function FiltersSection({
 					</div>
 				</div>
 			)}
-			<div className="flex min-h-[52px] flex-wrap items-center gap-3 p-4">
-				<div className="flex items-center gap-3">
-					<div className="flex items-center gap-2">
-						<FunnelIcon className="h-4 w-4 text-primary" weight="duotone" />
-						<h3 className="font-semibold text-foreground text-sm">
-							{editingFilter ? 'Edit Filters' : 'Filters'}
-						</h3>
-					</div>
-					{selectedFilters.length > 0 && (
-						<span className="text-muted-foreground text-xs">
-							({selectedFilters.length})
-						</span>
-					)}
-				</div>
-
+			<div className="flex min-h-[52px] flex-wrap items-center gap-2 p-4">
 				<div className="flex flex-wrap items-center gap-2">
 					{selectedFilters.map((filter, index) => {
 						const fieldLabel = filterOptions.find(
@@ -313,7 +308,7 @@ export function FiltersSection({
 								<button
 									aria-label={`Remove filter ${fieldLabel} ${operatorSymbol} ${valueLabel}`}
 									className="rounded-full p-0.5 text-muted-foreground opacity-60 transition-all hover:bg-destructive/10 hover:text-destructive hover:opacity-100 group-hover:opacity-80"
-									onClick={() => removeFilter(index)}
+									onClick={() => handleRemoveFilter(index)}
 									type="button"
 								>
 									<XIcon className="h-3 w-3" weight="bold" />
@@ -368,8 +363,6 @@ export function FiltersSection({
 							</span>
 						</div>
 					)}
-
-					<AddFilterForm addFilter={addFilter} buttonText="Add filter" />
 				</div>
 			</div>
 

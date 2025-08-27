@@ -2,11 +2,14 @@
 
 import { ArrowClockwiseIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
+import { useAtom } from 'jotai';
 import { useCallback, useMemo } from 'react';
 import type { DateRange as DayPickerRange } from 'react-day-picker';
 import { DateRangePicker } from '@/components/date-range-picker';
 import { Button } from '@/components/ui/button';
 import { useDateFilters } from '@/hooks/use-date-filters';
+import { addDynamicFilterAtom } from '@/stores/jotai/filterAtoms';
+import { AddFilterForm } from './utils/add-filters';
 
 interface AnalyticsToolbarProps {
 	isRefreshing: boolean;
@@ -23,6 +26,8 @@ export function AnalyticsToolbar({
 		setCurrentGranularityAtomState,
 		setDateRangeAction,
 	} = useDateFilters();
+
+	const [, addFilter] = useAtom(addDynamicFilterAtom);
 
 	const dayPickerSelectedRange: DayPickerRange | undefined = useMemo(
 		() => ({
@@ -58,11 +63,11 @@ export function AnalyticsToolbar({
 	);
 
 	return (
-		<div className="mt-3 flex flex-col gap-3 rounded border bg-card p-4 shadow-sm">
+		<div className="mt-3 flex flex-col gap-2 rounded border bg-card p-3 shadow-sm">
 			<div className="flex items-center justify-between gap-3">
-				<div className="flex h-8 overflow-hidden rounded-md border bg-background shadow-sm">
+				<div className="flex h-8 overflow-hidden rounded border bg-background shadow-sm">
 					<Button
-						className={`h-8 cursor-pointer touch-manipulation rounded-none px-2 text-xs sm:px-3 ${currentGranularity === 'daily' ? 'bg-primary/10 font-medium text-primary' : 'text-muted-foreground'}`}
+						className={`h-8 cursor-pointer touch-manipulation rounded-none px-3 text-sm ${currentGranularity === 'daily' ? 'bg-primary/10 font-medium text-primary' : 'text-muted-foreground'}`}
 						onClick={() => setCurrentGranularityAtomState('daily')}
 						size="sm"
 						title="View daily aggregated data"
@@ -71,7 +76,7 @@ export function AnalyticsToolbar({
 						Daily
 					</Button>
 					<Button
-						className={`h-8 cursor-pointer touch-manipulation rounded-none px-2 text-xs sm:px-3 ${currentGranularity === 'hourly' ? 'bg-primary/10 font-medium text-primary' : 'text-muted-foreground'}`}
+						className={`h-8 cursor-pointer touch-manipulation rounded-none px-3 text-sm ${currentGranularity === 'hourly' ? 'bg-primary/10 font-medium text-primary' : 'text-muted-foreground'}`}
 						onClick={() => setCurrentGranularityAtomState('hourly')}
 						size="sm"
 						title="View hourly data (best for 24h periods)"
@@ -81,22 +86,25 @@ export function AnalyticsToolbar({
 					</Button>
 				</div>
 
-				<Button
-					aria-label="Refresh data"
-					className="h-8 w-8"
-					disabled={isRefreshing}
-					onClick={onRefresh}
-					size="icon"
-					variant="outline"
-				>
-					<ArrowClockwiseIcon
-						aria-hidden="true"
-						className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
-					/>
-				</Button>
+				<div className="flex items-center gap-2">
+					<AddFilterForm addFilter={addFilter} buttonText="Filter" />
+					<Button
+						aria-label="Refresh data"
+						className="h-8 w-8"
+						disabled={isRefreshing}
+						onClick={onRefresh}
+						size="icon"
+						variant="outline"
+					>
+						<ArrowClockwiseIcon
+							aria-hidden="true"
+							className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
+						/>
+					</Button>
+				</div>
 			</div>
 
-			<div className="flex items-center gap-2 overflow-x-auto rounded-md border bg-background p-1 shadow-sm">
+			<div className="flex items-center gap-1 overflow-x-auto rounded border bg-background p-1 shadow-sm">
 				{quickRanges.map((range) => {
 					const now = new Date();
 					const start = range.hours
@@ -115,20 +123,19 @@ export function AnalyticsToolbar({
 
 					return (
 						<Button
-							className={`h-6 cursor-pointer touch-manipulation whitespace-nowrap px-2 text-xs sm:px-2.5 ${isActive ? 'shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+							className={`h-8 cursor-pointer touch-manipulation whitespace-nowrap px-2 font-medium text-xs ${isActive ? 'bg-primary/10 text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
 							key={range.label}
 							onClick={() => handleQuickRangeSelect(range)}
 							size="sm"
 							title={range.fullLabel}
-							variant={isActive ? 'default' : 'ghost'}
+							variant={isActive ? 'secondary' : 'ghost'}
 						>
-							<span className="sm:hidden">{range.label}</span>
-							<span className="hidden sm:inline">{range.fullLabel}</span>
+							{range.label}
 						</Button>
 					);
 				})}
 
-				<div className="ml-1 border-border/50 border-l pl-2 sm:pl-3">
+				<div className="ml-1 border-border/50 border-l pl-2">
 					<DateRangePicker
 						className="w-auto"
 						maxDate={new Date()}

@@ -4,11 +4,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAtom } from 'jotai';
 import { useParams, usePathname } from 'next/navigation';
 import { toast } from 'sonner';
+
 import { useTrackingSetup } from '@/hooks/use-tracking-setup';
-import {
-	dynamicQueryFiltersAtom,
-	isAnalyticsRefreshingAtom,
-} from '@/stores/jotai/filterAtoms';
+import { isAnalyticsRefreshingAtom } from '@/stores/jotai/filterAtoms';
 import { AnalyticsToolbar } from './_components/analytics-toolbar';
 import { FiltersSection } from './_components/filters-section';
 
@@ -22,9 +20,6 @@ export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
 	const queryClient = useQueryClient();
 	const { isTrackingSetup } = useTrackingSetup(id as string);
 	const [isRefreshing, setIsRefreshing] = useAtom(isAnalyticsRefreshingAtom);
-	const [selectedFilters, setSelectedFilters] = useAtom(
-		dynamicQueryFiltersAtom
-	);
 
 	const isAssistantPage =
 		pathname.includes('/assistant') || pathname.includes('/map');
@@ -58,10 +53,7 @@ export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
 						isRefreshing={isRefreshing}
 						onRefresh={handleRefresh}
 					/>
-					<FiltersSection
-						onFiltersChange={setSelectedFilters}
-						selectedFilters={selectedFilters}
-					/>
+					<FiltersSection />
 				</div>
 			)}
 

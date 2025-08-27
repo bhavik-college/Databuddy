@@ -227,6 +227,126 @@ export function OSIcon({
 	);
 }
 
+// Country code mapping for local flags
+const COUNTRY_CODE_MAP: Record<string, string> = {
+	// Common country names to ISO 3166-1 alpha-2 codes
+	'United States': 'us',
+	'United Kingdom': 'gb',
+	'Great Britain': 'gb',
+	'England': 'gb',
+	'Canada': 'ca',
+	'Australia': 'au',
+	'Germany': 'de',
+	'France': 'fr',
+	'Italy': 'it',
+	'Spain': 'es',
+	'Netherlands': 'nl',
+	'Belgium': 'be',
+	'Switzerland': 'ch',
+	'Austria': 'at',
+	'Sweden': 'se',
+	'Norway': 'no',
+	'Denmark': 'dk',
+	'Finland': 'fi',
+	'Portugal': 'pt',
+	'Ireland': 'ie',
+	'Poland': 'pl',
+	'Czech Republic': 'cz',
+	'Hungary': 'hu',
+	'Slovakia': 'sk',
+	'Slovenia': 'si',
+	'Croatia': 'hr',
+	'Bosnia and Herzegovina': 'ba',
+	'Serbia': 'rs',
+	'Montenegro': 'me',
+	'Kosovo': 'xk',
+	'Albania': 'al',
+	'Greece': 'gr',
+	'Bulgaria': 'bg',
+	'Romania': 'ro',
+	'Estonia': 'ee',
+	'Latvia': 'lv',
+	'Lithuania': 'lt',
+	'Russia': 'ru',
+	'Ukraine': 'ua',
+	'Belarus': 'by',
+	'Moldova': 'md',
+	'Turkey': 'tr',
+	'Japan': 'jp',
+	'China': 'cn',
+	'South Korea': 'kr',
+	'India': 'in',
+	'Brazil': 'br',
+	'Mexico': 'mx',
+	'Argentina': 'ar',
+	'Colombia': 'co',
+	'Chile': 'cl',
+	'Peru': 'pe',
+	'Venezuela': 've',
+	'Ecuador': 'ec',
+	'Bolivia': 'bo',
+	'Paraguay': 'py',
+	'Uruguay': 'uy',
+	'South Africa': 'za',
+	'Egypt': 'eg',
+	'Nigeria': 'ng',
+	'Kenya': 'ke',
+	'Morocco': 'ma',
+	'Tunisia': 'tn',
+	'Algeria': 'dz',
+	'Israel': 'il',
+	'Saudi Arabia': 'sa',
+	'UAE': 'ae',
+	'United Arab Emirates': 'ae',
+	'Iran': 'ir',
+	'Iraq': 'iq',
+	'Jordan': 'jo',
+	'Lebanon': 'lb',
+	'Syria': 'sy',
+	'Yemen': 'ye',
+	'Oman': 'om',
+	'Kuwait': 'kw',
+	'Qatar': 'qa',
+	'Bahrain': 'bh',
+	'Thailand': 'th',
+	'Vietnam': 'vn',
+	'Indonesia': 'id',
+	'Malaysia': 'my',
+	'Singapore': 'sg',
+	'Philippines': 'ph',
+	'Australia': 'au',
+	'New Zealand': 'nz',
+};
+
+function getCountryCode(countryName: string): string {
+	// First try direct mapping
+	const direct = COUNTRY_CODE_MAP[countryName];
+	if (direct) return direct;
+
+	// Try case-insensitive match
+	const lowerName = countryName.toLowerCase();
+	for (const [name, code] of Object.entries(COUNTRY_CODE_MAP)) {
+		if (name.toLowerCase() === lowerName) {
+			return code;
+		}
+	}
+
+	// Try partial match
+	for (const [name, code] of Object.entries(COUNTRY_CODE_MAP)) {
+		if (name.toLowerCase().includes(lowerName) || lowerName.includes(name.toLowerCase())) {
+			return code;
+		}
+	}
+
+	// If no match found, try to use the first 2 characters as country code
+	const twoCharCode = countryName.toLowerCase().slice(0, 2);
+	if (twoCharCode.length === 2) {
+		return twoCharCode;
+	}
+
+	return '';
+}
+
 interface CountryFlagProps {
 	country: string;
 	size?: 'sm' | 'md' | 'lg' | number;
@@ -254,6 +374,20 @@ export function CountryFlag({
 		);
 	}
 
+	const countryCode = getCountryCode(country);
+
+	if (!countryCode) {
+		return (
+			fallback || (
+				<div
+					className={cn('flex h-4 w-6 items-center justify-center', className)}
+				>
+					<div className="h-4 w-4 text-muted-foreground">?</div>
+				</div>
+			)
+		);
+	}
+
 	return (
 		<Image
 			alt={`${country} flag`}
@@ -263,7 +397,7 @@ export function CountryFlag({
 				const img = e.target as HTMLImageElement;
 				img.style.display = 'none';
 			}}
-			src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${country.toUpperCase()}.svg`}
+			src={`/flags/${countryCode}.svg`}
 			width={24}
 		/>
 	);
