@@ -114,6 +114,22 @@ const FORBIDDEN_OPERATIONS = [
 	'TRIGGER',
 	'EVENT',
 	'ROUTINE',
+	// ClickHouse-specific dangerous functions
+	'HOSTNAME',
+	'FQDN',
+	'VERSION',
+	'UPTIME',
+	'GETOSKERNEL',
+	'GETCPUCOUNT',
+	'GETMEMORYSIZE',
+	'READFILE',
+	'WRITEFILE',
+	'FILESYSTEM',
+	'DICTGET',
+	'REMOTE',
+	'CLUSTER',
+	'SHARD',
+	'REPLICA',
 ];
 
 const FORBIDDEN_PATTERNS = [
@@ -129,6 +145,20 @@ const FORBIDDEN_PATTERNS = [
 	/\bINTO\s+(?:OUTFILE|DUMPFILE)\b/gi,
 	/\bEXTRACTVALUE\s*\(/gi,
 	/\bUPDATEXML\s*\(/gi,
+	// ClickHouse system table access patterns
+	/\bFROM\s+system\./gi,
+	/\bJOIN\s+system\./gi,
+	/\binformation_schema\./gi,
+	/\bdefault\./gi,
+	// Dangerous ClickHouse functions
+	/\burl\s*\(/gi,
+	/\bfile\s*\(/gi,
+	/\bs3\s*\(/gi,
+	/\bhdfs\s*\(/gi,
+	/\bmysql\s*\(/gi,
+	/\bpostgresql\s*\(/gi,
+	/\bremote\s*\(/gi,
+	/\bcluster\s*\(/gi,
 ];
 
 const ALLOWED_TABLES = [
@@ -595,7 +625,6 @@ export const customSQL = new Elysia({ prefix: '/v1/custom-sql' })
 						executionTime: result.execution_time || null,
 						rowsRead: result.rows_read || null,
 						clientId: body.clientId,
-						apiKeyId: apiKey.id,
 					},
 				};
 			} catch (error) {
@@ -614,7 +643,7 @@ export const customSQL = new Elysia({ prefix: '/v1/custom-sql' })
 				return {
 					success: false,
 					error:
-						error instanceof Error ? error.message : 'Query execution failed',
+						'Query execution failed. Please check your query syntax and try again.',
 					code: 'EXECUTION_ERROR',
 				};
 			}
