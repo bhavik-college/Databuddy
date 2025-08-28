@@ -129,6 +129,25 @@ async function validateRequest(body: any, query: any, request: Request) {
 			request.headers.get('user-agent'),
 			VALIDATION_LIMITS.STRING_MAX_LENGTH
 		) || '';
+
+	const ip = extractIpFromRequest(request);
+
+	return {
+		success: true,
+		clientId,
+		userAgent,
+		ip,
+		ownerId: website.ownerId,
+	};
+}
+
+async function checkForBot(
+	request: Request,
+	body: any,
+	query: any,
+	clientId: string,
+	userAgent: string
+): Promise<{ error?: { status: string } } | null> {
 	const botCheck = detectBot(userAgent, request);
 	if (botCheck.isBot) {
 		await logBlockedTraffic(
@@ -142,16 +161,7 @@ async function validateRequest(body: any, query: any, request: Request) {
 		);
 		return { error: { status: 'ignored' } };
 	}
-
-	const ip = extractIpFromRequest(request);
-
-	return {
-		success: true,
-		clientId,
-		userAgent,
-		ip,
-		ownerId: website.ownerId,
-	};
+	return null;
 }
 
 async function insertError(
@@ -688,6 +698,18 @@ const app = new Elysia()
 			const eventType = body.type || 'track';
 
 			if (eventType === 'track') {
+				// Check for bots before processing track events
+				const botError = await checkForBot(
+					request,
+					body,
+					query,
+					clientId,
+					userAgent
+				);
+				if (botError) {
+					return botError.error;
+				}
+
 				const parseResult = analyticsEventSchema.safeParse(body);
 				if (!parseResult.success) {
 					console.error(
@@ -716,6 +738,18 @@ const app = new Elysia()
 			}
 
 			if (eventType === 'error') {
+				// Check for bots before processing error events
+				const botError = await checkForBot(
+					request,
+					body,
+					query,
+					clientId,
+					userAgent
+				);
+				if (botError) {
+					return botError.error;
+				}
+
 				const parseResult = errorEventSchema.safeParse(body);
 				if (!parseResult.success) {
 					console.error(
@@ -744,6 +778,18 @@ const app = new Elysia()
 			}
 
 			if (eventType === 'web_vitals') {
+				// Check for bots before processing web vitals events
+				const botError = await checkForBot(
+					request,
+					body,
+					query,
+					clientId,
+					userAgent
+				);
+				if (botError) {
+					return botError.error;
+				}
+
 				const parseResult = webVitalsEventSchema.safeParse(body);
 				if (!parseResult.success) {
 					console.error(
@@ -800,6 +846,18 @@ const app = new Elysia()
 			}
 
 			if (eventType === 'outgoing_link') {
+				// Check for bots before processing outgoing link events
+				const botError = await checkForBot(
+					request,
+					body,
+					query,
+					clientId,
+					userAgent
+				);
+				if (botError) {
+					return botError.error;
+				}
+
 				const parseResult = outgoingLinkSchema.safeParse(body);
 				if (!parseResult.success) {
 					console.error(
@@ -871,6 +929,23 @@ const app = new Elysia()
 				const eventType = event.type || 'track';
 
 				if (eventType === 'track') {
+					// Check for bots before processing track events
+					const botError = await checkForBot(
+						request,
+						event,
+						query,
+						clientId,
+						userAgent
+					);
+					if (botError) {
+						return {
+							status: 'error',
+							message: 'Bot detected',
+							eventType,
+							error: 'ignored',
+						};
+					}
+
 					const parseResult = analyticsEventSchema.safeParse(event);
 					if (!parseResult.success) {
 						console.error(
@@ -913,6 +988,23 @@ const app = new Elysia()
 					}
 				}
 				if (eventType === 'error') {
+					// Check for bots before processing error events
+					const botError = await checkForBot(
+						request,
+						event,
+						query,
+						clientId,
+						userAgent
+					);
+					if (botError) {
+						return {
+							status: 'error',
+							message: 'Bot detected',
+							eventType,
+							error: 'ignored',
+						};
+					}
+
 					const parseResult = errorEventSchema.safeParse(event);
 					if (!parseResult.success) {
 						console.error(
@@ -955,6 +1047,23 @@ const app = new Elysia()
 					}
 				}
 				if (eventType === 'web_vitals') {
+					// Check for bots before processing web vitals events
+					const botError = await checkForBot(
+						request,
+						event,
+						query,
+						clientId,
+						userAgent
+					);
+					if (botError) {
+						return {
+							status: 'error',
+							message: 'Bot detected',
+							eventType,
+							error: 'ignored',
+						};
+					}
+
 					const parseResult = webVitalsEventSchema.safeParse(event);
 					if (!parseResult.success) {
 						console.error(
@@ -1039,6 +1148,23 @@ const app = new Elysia()
 					}
 				}
 				if (eventType === 'outgoing_link') {
+					// Check for bots before processing outgoing link events
+					const botError = await checkForBot(
+						request,
+						event,
+						query,
+						clientId,
+						userAgent
+					);
+					if (botError) {
+						return {
+							status: 'error',
+							message: 'Bot detected',
+							eventType,
+							error: 'ignored',
+						};
+					}
+
 					const parseResult = outgoingLinkSchema.safeParse(event);
 					if (!parseResult.success) {
 						console.error(
