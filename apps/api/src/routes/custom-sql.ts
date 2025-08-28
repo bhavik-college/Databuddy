@@ -1,6 +1,7 @@
 import { chQueryWithMeta, TABLE_NAMES } from '@databuddy/db';
 import { Elysia, t } from 'elysia';
 import { getApiKeyFromHeader, hasWebsiteScope } from '../lib/api-key';
+import { createCustomRateLimitMiddleware } from '../middleware/rate-limit';
 
 // SQL Query validation schema
 const CustomSQLRequestSchema = t.Object({
@@ -539,7 +540,6 @@ async function executeClickHouseQuery(
 			rows_read: result.statistics?.rows_read || undefined,
 		};
 	} catch (error) {
-		console.error('ClickHouse query execution failed:', error);
 		throw new Error(
 			`ClickHouse query failed: ${error instanceof Error ? error.message : 'Unknown error'}`
 		);
@@ -547,6 +547,28 @@ async function executeClickHouseQuery(
 }
 
 export const customSQL = new Elysia({ prefix: '/v1/custom-sql' })
+	.use(
+		createCustomRateLimitMiddleware(30, '1 m', 'expensive', {
+			skipAuth: true,
+			errorMessage:
+				'Custom SQL rate limit exceeded. Maximum 30 queries per minute allowed.',
+		})
+	)
+	.derive(({ request }) => {
+		const startTime = Date.now();
+		return {
+			requestStartTime: startTime,
+			logContext: {
+				url: request.url,
+				method: request.method,
+				userAgent: request.headers.get('user-agent'),
+				ip:
+					request.headers.get('x-forwarded-for') ||
+					request.headers.get('x-real-ip') ||
+					'unknown',
+			},
+		};
+	})
 	.post(
 		'/execute',
 		async ({
@@ -557,9 +579,17 @@ export const customSQL = new Elysia({ prefix: '/v1/custom-sql' })
 			body: CustomSQLRequestType;
 			request: Request;
 			set: { status: number };
+			requestStartTime: number;
+			logContext: {
+				url: string;
+				method: string;
+				userAgent: string | null;
+				ip: string;
+			};
 		}) => {
 			// Get API key directly from request headers
 			const apiKey = await getApiKeyFromHeader(request.headers);
+
 			try {
 				if (!apiKey) {
 					set.status = 401;
@@ -628,8 +658,6 @@ export const customSQL = new Elysia({ prefix: '/v1/custom-sql' })
 					},
 				};
 			} catch (error) {
-				console.error('Custom SQL execution failed:', error);
-
 				if (error instanceof SQLValidationError) {
 					set.status = 400;
 					return {

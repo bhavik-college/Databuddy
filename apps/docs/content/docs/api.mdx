@@ -608,14 +608,24 @@ Check the health status of the API and its dependencies.
 
 ## Rate Limits
 
-API endpoints have different rate limits based on their computational cost:
+API endpoints have different rate limits based on their computational cost and your subscription plan:
 
-- **Standard endpoints**: 100 requests per minute
-- **Query endpoints**: 60 requests per minute  
-- **Custom SQL**: 30 requests per minute (enterprise feature)
-- **AI Assistant**: 20 requests per minute
-- **Export endpoints**: 10 requests per minute
-- **Event tracking**: 1000 requests per minute
+### Plan-Based Rate Limits
+
+Rate limits vary by your subscription tier:
+
+- **Free**: 50 requests per 10 seconds (300/minute)
+- **Hobby**: 100 requests per 10 seconds (600/minute)  
+- **Pro**: 200 requests per 10 seconds (1,200/minute)
+- **Scale**: 500 requests per 10 seconds (3,000/minute)
+
+### Endpoint-Specific Rate Limits
+
+Certain endpoints have additional restrictions:
+
+- **Public endpoints**: 100 requests per minute
+- **Authentication endpoints**: 30 requests per minute
+- **Custom SQL**: 30 requests per minute (heavy operations)
 
 Rate limit headers are included in responses:
 
