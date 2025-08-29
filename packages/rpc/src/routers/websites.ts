@@ -12,11 +12,7 @@ import { nanoid } from 'nanoid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '../trpc';
 import { authorizeWebsiteAccess } from '../utils/auth';
-import {
-	checkAndTrackWebsiteCreation,
-	getBillingCustomerId,
-	trackWebsiteUsage,
-} from '../utils/billing';
+
 import { invalidateWebsiteCaches } from '../utils/cache-invalidation';
 
 const websiteCache = createDrizzleCache({ redis, namespace: 'websites' });
@@ -254,20 +250,6 @@ export const websitesRouter = createTRPCRouter({
 				}
 			}
 
-			const billingCustomerId = await getBillingCustomerId(
-				ctx.user.id,
-				input.organizationId
-			);
-
-			const creationLimitCheck =
-				await checkAndTrackWebsiteCreation(billingCustomerId);
-			if (!creationLimitCheck.allowed) {
-				throw new TRPCError({
-					code: 'BAD_REQUEST',
-					message: creationLimitCheck.error,
-				});
-			}
-
 			const domainToCreate = buildFullDomain(input.domain, input.subdomain);
 			const websiteFilter = and(
 				eq(websites.domain, domainToCreate),
@@ -391,16 +373,8 @@ export const websitesRouter = createTRPCRouter({
 				input.id,
 				'delete'
 			);
-			const billingCustomerId = await getBillingCustomerId(
-				ctx.user.id,
-				websiteToDelete.organizationId
-			);
-
 			await ctx.db.transaction(async (tx) => {
 				await tx.delete(websites).where(eq(websites.id, input.id));
-
-				// Track billing usage (decrement)
-				await trackWebsiteUsage(billingCustomerId, -1);
 			});
 
 			logger.warning(

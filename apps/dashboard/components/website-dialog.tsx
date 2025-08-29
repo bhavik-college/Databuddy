@@ -103,11 +103,33 @@ export function WebsiteDialog({
 				toast.success('Website created successfully!');
 			}
 			onOpenChange(false);
-		} catch (error) {
-			const message =
-				error.data?.code === 'CONFLICT'
-					? 'A website with this domain already exists.'
-					: `Failed to ${isEditing ? 'update' : 'create'} website.`;
+		} catch (error: any) {
+			let message = `Failed to ${isEditing ? 'update' : 'create'} website.`;
+
+			if (error?.data?.code) {
+				switch (error.data.code) {
+					case 'CONFLICT':
+						message = 'A website with this domain already exists.';
+						break;
+					case 'FORBIDDEN':
+						message =
+							error.message ||
+							'You do not have permission to perform this action.';
+						break;
+					case 'UNAUTHORIZED':
+						message = 'You must be logged in to perform this action.';
+						break;
+					case 'BAD_REQUEST':
+						message =
+							error.message || 'Invalid request. Please check your input.';
+						break;
+					default:
+						message = error.message || message;
+				}
+			} else if (error?.message) {
+				message = error.message;
+			}
+
 			toast.error(message);
 		}
 	});
