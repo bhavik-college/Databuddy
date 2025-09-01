@@ -38,6 +38,9 @@ export const updateOrganizationSchema = z.object({
 
 export const uploadOrganizationLogoSchema = z.object({
 	organizationId: z.string().min(1, 'Organization ID is required'),
+	fileData: z.string().min(1, 'File data is required'),
+	fileName: z.string().min(1, 'File name is required'),
+	fileType: z.string().min(1, 'File type is required'),
 });
 
 export const deleteOrganizationSchema = z.object({

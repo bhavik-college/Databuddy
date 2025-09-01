@@ -71,66 +71,66 @@ export const SummaryBuilders: Record<string, SimpleQueryConfig> = {
 
 			return {
 				sql: `
-            WITH base_events AS (
-              SELECT
-                session_id,
-                anonymous_id,
-                event_name,
-                toTimeZone(time, {timezone:String}) as normalized_time
-              FROM analytics.events
-              WHERE 
-                client_id = {websiteId:String}
-                AND time >= parseDateTimeBestEffort({startDate:String})
-                AND time <= parseDateTimeBestEffort(concat({endDate:String}, ' 23:59:59'))
-                AND session_id != ''
-                ${combinedWhereClause}
-            ),
-            session_metrics AS (
-              SELECT
-                session_id,
-                countIf(event_name = 'screen_view') as page_count
-              FROM base_events
-              GROUP BY session_id
-            ),
-            session_durations AS (
-              SELECT
-                session_id,
-                dateDiff('second', MIN(normalized_time), MAX(normalized_time)) as duration
-              FROM base_events
-              GROUP BY session_id
-              HAVING duration >= 0
-            ),
-            unique_visitors AS (
-              SELECT
-                countDistinct(anonymous_id) as unique_visitors
-              FROM base_events
-              WHERE event_name = 'screen_view'
-            ),
-            all_events AS (
-              SELECT
-                count() as total_events,
-                countIf(event_name = 'screen_view') as total_screen_views
-              FROM base_events
-            ),
-            bounce_sessions AS (
-              SELECT
-                countIf(page_count = 1) as bounced_sessions,
-                count() as total_sessions
-              FROM session_metrics
-            )
-            SELECT
-              sum(page_count) as pageviews,
-              (SELECT unique_visitors FROM unique_visitors) as unique_visitors,
-              (SELECT total_sessions FROM bounce_sessions) as sessions,
-              ROUND(CASE 
-                WHEN (SELECT total_sessions FROM bounce_sessions) > 0 
-                THEN ((SELECT bounced_sessions FROM bounce_sessions) / (SELECT total_sessions FROM bounce_sessions)) * 100 
-                ELSE 0 
-              END, 2) as bounce_rate,
-              ROUND(median(sd.duration), 2) as avg_session_duration,
-              (SELECT total_events FROM all_events) as total_events
-            FROM session_metrics
-            LEFT JOIN session_durations as sd ON session_metrics.session_id = sd.session_id
+[		WITH base_events AS (
+			SELECT
+			session_id,
+			anonymous_id,
+			event_name,
+			toTimeZone(time, {timezone:String}) as normalized_time
+			FROM analytics.events
+			WHERE 
+			client_id = {websiteId:String}
+			AND time >= parseDateTimeBestEffort({startDate:String})
+			AND time <= parseDateTimeBestEffort(concat({endDate:String}, ' 23:59:59'))
+			AND session_id != ''
+			${combinedWhereClause}
+		),
+		session_metrics AS (
+			SELECT
+			session_id,
+			countIf(event_name = 'screen_view') as page_count
+			FROM base_events
+			GROUP BY session_id
+		),
+		session_durations AS (
+			SELECT
+			session_id,
+			dateDiff('second', MIN(normalized_time), MAX(normalized_time)) as duration
+			FROM base_events
+			GROUP BY session_id
+			HAVING duration >= 0
+		),
+		unique_visitors AS (
+			SELECT
+			countDistinct(anonymous_id) as unique_visitors
+			FROM base_events
+			WHERE event_name = 'screen_view'
+		),
+		all_events AS (
+			SELECT
+			count() as total_events,
+			countIf(event_name = 'screen_view') as total_screen_views
+			FROM base_events
+		),
+		bounce_sessions AS (
+			SELECT
+			countIf(page_count = 1) as bounced_sessions,
+			count() as total_sessions
+			FROM session_metrics
+		)
+		SELECT
+			sum(page_count) as pageviews,
+			(SELECT unique_visitors FROM unique_visitors) as unique_visitors,
+			(SELECT total_sessions FROM bounce_sessions) as sessions,
+			ROUND(CASE 
+			WHEN (SELECT total_sessions FROM bounce_sessions) > 0 
+			THEN ((SELECT bounced_sessions FROM bounce_sessions) / (SELECT total_sessions FROM bounce_sessions)) * 100 
+			ELSE 0 
+			END, 2) as bounce_rate,
+			ROUND(median(sd.duration), 2) as avg_session_duration,
+			(SELECT total_events FROM all_events) as total_events
+		FROM session_metrics
+		LEFT JOIN session_durations as sd ON session_metrics.session_id = sd.session_id]
         `,
 				params: {
 					websiteId,

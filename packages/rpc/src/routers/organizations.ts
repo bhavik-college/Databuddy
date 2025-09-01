@@ -7,10 +7,7 @@ import {
 	session,
 	user,
 } from '@databuddy/db';
-import {
-	getPendingInvitationsSchema,
-	uploadOrganizationLogoSchema,
-} from '@databuddy/validation';
+import { getPendingInvitationsSchema } from '@databuddy/validation';
 import { TRPCError } from '@trpc/server';
 import { Autumn as autumn } from 'autumn-js';
 import { and, desc, eq } from 'drizzle-orm';
@@ -18,15 +15,20 @@ import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 import { s3 } from '../utils/s3';
 
+const deleteOrganizationLogoSchema = z.object({
+	organizationId: z.string().min(1, 'Organization ID is required'),
+});
+
+const uploadOrganizationLogoSchema = z.object({
+	organizationId: z.string().min(1, 'Organization ID is required'),
+	fileData: z.string().min(1, 'File data is required'),
+	fileName: z.string().min(1, 'File name is required'),
+	fileType: z.string().min(1, 'File type is required'),
+});
+
 export const organizationsRouter = createTRPCRouter({
 	uploadLogo: protectedProcedure
-		.input(
-			uploadOrganizationLogoSchema.extend({
-				fileData: z.string().min(1, 'File data is required'),
-				fileName: z.string().min(1, 'File name is required'),
-				fileType: z.string().min(1, 'File type is required'),
-			})
-		)
+		.input(uploadOrganizationLogoSchema)
 		.mutation(async ({ input, ctx }) => {
 			const { success } = await websitesApi.hasPermission({
 				headers: ctx.headers,
@@ -113,7 +115,7 @@ export const organizationsRouter = createTRPCRouter({
 		}),
 
 	deleteLogo: protectedProcedure
-		.input(uploadOrganizationLogoSchema)
+		.input(deleteOrganizationLogoSchema)
 		.mutation(async ({ input, ctx }) => {
 			const { success } = await websitesApi.hasPermission({
 				headers: ctx.headers,
