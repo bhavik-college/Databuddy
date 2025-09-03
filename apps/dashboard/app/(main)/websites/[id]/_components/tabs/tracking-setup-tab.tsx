@@ -11,6 +11,7 @@ import {
 	FileCodeIcon,
 	WarningCircleIcon,
 } from '@phosphor-icons/react';
+import { useAtom } from 'jotai';
 import { useCallback, useEffect, useState } from 'react';
 import { codeToHtml } from 'shiki';
 import { toast } from 'sonner';
@@ -27,13 +28,15 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { trpc } from '@/lib/trpc';
 import {
+	toggleTrackingOptionAtom,
+	trackingOptionsAtom,
+} from '@/stores/jotai/filterAtoms';
+import {
 	generateNpmCode,
 	generateNpmComponentCode,
 	generateScriptTag,
 } from '../utils/code-generators';
 
-import { RECOMMENDED_DEFAULTS } from '../utils/tracking-defaults';
-import { toggleTrackingOption } from '../utils/tracking-helpers';
 import type { TrackingOptions, WebsiteDataTabProps } from '../utils/types';
 
 const CodeBlock = ({
@@ -91,17 +94,18 @@ const CodeBlock = ({
 			)}
 			<div className="relative">
 				<div
-					className='overflow-hidden rounded-lg border border-sidebar-border bg-sidebar/40 p-6 text-sm leading-relaxed [&_pre]:!bg-transparent [&_code]:!bg-transparent [&_*]:!font-mono'
+					className="[&_pre]:!bg-transparent [&_code]:!bg-transparent [&_*]:!font-mono overflow-hidden rounded-lg border border-sidebar-border bg-sidebar/40 p-6 text-sm leading-relaxed"
 					// biome-ignore lint/security/noDangerouslySetInnerHtml: Shiki generates safe HTML
 					dangerouslySetInnerHTML={{ __html: highlightedCode }}
-					style={{ 
-						fontSize: '14px', 
-						lineHeight: '1.6', 
-						fontFamily: 'var(--font-geist-mono), ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
+					style={{
+						fontSize: '14px',
+						lineHeight: '1.6',
+						fontFamily:
+							'var(--font-geist-mono), ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
 					}}
 				/>
 				<Button
-					className='absolute top-2 right-2 h-6 w-6 rounded hover:bg-background/50 border-0 shadow-none transition-colors duration-200'
+					className="absolute top-2 right-2 h-6 w-6 rounded border-0 shadow-none transition-colors duration-200 hover:bg-background/50"
 					onClick={onCopy}
 					size="icon"
 					variant="ghost"
@@ -109,7 +113,10 @@ const CodeBlock = ({
 					{copied ? (
 						<CheckIcon className="h-3.5 w-3.5 text-green-500" weight="bold" />
 					) : (
-						<ClipboardIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" weight="regular" />
+						<ClipboardIcon
+							className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground"
+							weight="regular"
+						/>
 					)}
 				</Button>
 			</div>
@@ -122,8 +129,7 @@ export function WebsiteTrackingSetupTab({ websiteId }: WebsiteDataTabProps) {
 	const [installMethod, setInstallMethod] = useState<'script' | 'npm'>(
 		'script'
 	);
-	const [trackingOptions, setTrackingOptions] =
-		useState<TrackingOptions>(RECOMMENDED_DEFAULTS);
+	const [trackingOptions] = useAtom(trackingOptionsAtom);
 
 	const trackingCode = generateScriptTag(websiteId, trackingOptions);
 	const npmCode = generateNpmCode(websiteId, trackingOptions);
@@ -135,8 +141,9 @@ export function WebsiteTrackingSetupTab({ websiteId }: WebsiteDataTabProps) {
 		setTimeout(() => setCopiedBlockId(null), 2000);
 	};
 
+	const [, toggleTrackingOptionAction] = useAtom(toggleTrackingOptionAtom);
 	const handleToggleOption = (option: keyof TrackingOptions) => {
-		setTrackingOptions((prev) => toggleTrackingOption(prev, option));
+		toggleTrackingOptionAction(option);
 	};
 
 	const utils = trpc.useUtils();
@@ -173,23 +180,29 @@ export function WebsiteTrackingSetupTab({ websiteId }: WebsiteDataTabProps) {
 				<div className="flex items-center justify-between p-4">
 					<div className="flex items-center gap-3">
 						<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 dark:bg-primary/20">
-							<WarningCircleIcon className="h-4 w-4 text-primary" weight="duotone" />
+							<WarningCircleIcon
+								className="h-4 w-4 text-primary"
+								weight="duotone"
+							/>
 						</div>
 						<div className="flex flex-col gap-0.5">
 							<span className="font-medium text-sm">Tracking Not Setup</span>
-							<span className="text-muted-foreground text-xs font-normal">
+							<span className="font-normal text-muted-foreground text-xs">
 								Install the tracking script to start collecting data
 							</span>
 						</div>
 					</div>
 					<Button
 						aria-label="Refresh tracking status"
-						className="h-7 w-7 rounded-md hover:bg-background/20 border-0 shadow-none hover:shadow-sm transition-all duration-200"
+						className="h-7 w-7 rounded-md border-0 shadow-none transition-all duration-200 hover:bg-background/20 hover:shadow-sm"
 						onClick={handleRefresh}
 						size="icon"
 						variant="ghost"
 					>
-						<ArrowClockwiseIcon className="h-3.5 w-3.5 text-primary/70 hover:text-primary" weight="fill" />
+						<ArrowClockwiseIcon
+							className="h-3.5 w-3.5 text-primary/70 hover:text-primary"
+							weight="fill"
+						/>
 					</Button>
 				</div>
 			</Card>

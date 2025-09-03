@@ -28,6 +28,13 @@ import { Input } from '@/components/ui/input';
 import type { CreateWebsiteData, Website } from '@/hooks/use-websites';
 import { useCreateWebsite, useUpdateWebsite } from '@/hooks/use-websites';
 
+interface UpdateWebsiteInput {
+	id: string;
+	name: string;
+	domain?: string;
+	isPublic?: boolean;
+}
+
 const domainRegex =
 	/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$/;
 const wwwRegex = /^www\./;
@@ -78,6 +85,38 @@ export function WebsiteDialog({
 		}
 	}, [website, form]);
 
+	const getErrorMessage = (error: unknown, isEditingMode: boolean): string => {
+		const defaultMessage = `Failed to ${isEditingMode ? 'update' : 'create'} website.`;
+
+		// Type guard for TRPC error
+		const trpcError = error as {
+			data?: { code?: string };
+			message?: string;
+		};
+
+		if (trpcError?.data?.code) {
+			switch (trpcError.data.code) {
+				case 'CONFLICT':
+					return 'A website with this domain already exists.';
+				case 'FORBIDDEN':
+					return (
+						trpcError.message ||
+						'You do not have permission to perform this action.'
+					);
+				case 'UNAUTHORIZED':
+					return 'You must be logged in to perform this action.';
+				case 'BAD_REQUEST':
+					return (
+						trpcError.message || 'Invalid request. Please check your input.'
+					);
+				default:
+					return trpcError.message || defaultMessage;
+			}
+		}
+
+		return trpcError?.message || defaultMessage;
+	};
+
 	const handleSubmit = form.handleSubmit(async (formData) => {
 		const submissionData: CreateWebsiteData = {
 			name: formData.name,
@@ -87,10 +126,12 @@ export function WebsiteDialog({
 
 		try {
 			if (isEditing) {
-				const result = await updateWebsiteMutation.mutateAsync({
+				const updateData: UpdateWebsiteInput = {
 					id: website.id,
 					name: formData.name,
-				});
+					domain: formData.domain,
+				};
+				const result = await updateWebsiteMutation.mutateAsync(updateData);
 				if (onSave) {
 					onSave(result);
 				}
@@ -103,33 +144,8 @@ export function WebsiteDialog({
 				toast.success('Website created successfully!');
 			}
 			onOpenChange(false);
-		} catch (error: any) {
-			let message = `Failed to ${isEditing ? 'update' : 'create'} website.`;
-
-			if (error?.data?.code) {
-				switch (error.data.code) {
-					case 'CONFLICT':
-						message = 'A website with this domain already exists.';
-						break;
-					case 'FORBIDDEN':
-						message =
-							error.message ||
-							'You do not have permission to perform this action.';
-						break;
-					case 'UNAUTHORIZED':
-						message = 'You must be logged in to perform this action.';
-						break;
-					case 'BAD_REQUEST':
-						message =
-							error.message || 'Invalid request. Please check your input.';
-						break;
-					default:
-						message = error.message || message;
-				}
-			} else if (error?.message) {
-				message = error.message;
-			}
-
+		} catch (error: unknown) {
+			const message = getErrorMessage(error, isEditing);
 			toast.error(message);
 		}
 	});

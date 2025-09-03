@@ -11,6 +11,7 @@ import {
 	WarningCircleIcon,
 } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
+import { useAtom } from 'jotai';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { DateRange as DayPickerRange } from 'react-day-picker';
@@ -35,7 +36,15 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { WebsiteDialog } from '@/components/website-dialog';
 import { useDataExport } from '@/hooks/use-data-export';
-import { useDeleteWebsite, useUpdateWebsite } from '@/hooks/use-websites';
+import { useDeleteWebsite, useTogglePublicWebsite } from '@/hooks/use-websites';
+import {
+	enableAllAdvancedTrackingAtom,
+	enableAllBasicTrackingAtom,
+	enableAllOptimizationAtom,
+	resetTrackingOptionsAtom,
+	toggleTrackingOptionAtom,
+	trackingOptionsAtom,
+} from '@/stores/jotai/filterAtoms';
 import {
 	COPY_SUCCESS_TIMEOUT,
 	INSTALL_COMMANDS,
@@ -43,14 +52,7 @@ import {
 	TOAST_MESSAGES,
 } from '../constants/settings-constants';
 import { generateNpmCode, generateScriptTag } from '../utils/code-generators';
-import { RECOMMENDED_DEFAULTS } from '../utils/tracking-defaults';
-import {
-	enableAllAdvancedTracking,
-	enableAllBasicTracking,
-	enableAllOptimization,
-	resetToDefaults,
-	toggleTrackingOption,
-} from '../utils/tracking-helpers';
+
 import type {
 	CodeBlockProps,
 	DeleteWebsiteDialogProps,
@@ -70,10 +72,9 @@ import { WebsiteHeader } from './settings/website-header';
 export function WebsiteSettingsTab({
 	websiteId,
 	websiteData,
-	onWebsiteUpdated,
 }: WebsiteDataTabProps) {
 	const router = useRouter();
-	const updateWebsiteMutation = useUpdateWebsite();
+	const togglePublicMutation = useTogglePublicWebsite();
 	const deleteWebsiteMutation = useDeleteWebsite();
 
 	// UI State
@@ -89,10 +90,11 @@ export function WebsiteSettingsTab({
 		websiteName: websiteData?.name || undefined,
 	});
 
-	// Settings State
-	const [isPublic, setIsPublic] = useState(websiteData?.isPublic ?? false);
-	const [trackingOptions, setTrackingOptions] =
-		useState<TrackingOptions>(RECOMMENDED_DEFAULTS);
+	// Settings State - use website data directly from props
+	const isPublic = websiteData?.isPublic ?? false;
+
+	// Use tracking options atom instead of local state
+	const [trackingOptions, setTrackingOptions] = useAtom(trackingOptionsAtom);
 
 	// Event handlers with improved error handling
 	const handleCopyCode = useCallback(
@@ -115,14 +117,12 @@ export function WebsiteSettingsTab({
 		}
 
 		const newIsPublic = !isPublic;
-		setIsPublic(newIsPublic);
 
 		try {
 			await toast.promise(
-				updateWebsiteMutation.mutateAsync({
+				togglePublicMutation.mutateAsync({
 					id: websiteId,
 					isPublic: newIsPublic,
-					name: websiteData.name ?? '',
 				}),
 				{
 					loading: TOAST_MESSAGES.PRIVACY_UPDATING,
@@ -131,14 +131,21 @@ export function WebsiteSettingsTab({
 				}
 			);
 		} catch {
-			// Revert state on error
-			setIsPublic(!newIsPublic);
+			// Error is already handled by toast.promise
 		}
-	}, [isPublic, websiteData, websiteId, updateWebsiteMutation]);
+	}, [isPublic, websiteData, websiteId, togglePublicMutation]);
 
-	const handleToggleOption = useCallback((option: keyof TrackingOptions) => {
-		setTrackingOptions((prev) => toggleTrackingOption(prev, option));
-	}, []);
+	const [, toggleTrackingOptionAction] = useAtom(toggleTrackingOptionAtom);
+	const [, enableAllBasicAction] = useAtom(enableAllBasicTrackingAtom);
+	const [, enableAllAdvancedAction] = useAtom(enableAllAdvancedTrackingAtom);
+	const [, enableAllOptimizationAction] = useAtom(enableAllOptimizationAtom);
+	const [, resetDefaultsAction] = useAtom(resetTrackingOptionsAtom);
+	const handleToggleOption = useCallback(
+		(option: keyof TrackingOptions) => {
+			toggleTrackingOptionAction(option);
+		},
+		[toggleTrackingOptionAction]
+	);
 
 	const handleDeleteWebsite = useCallback(async () => {
 		try {
@@ -160,8 +167,8 @@ export function WebsiteSettingsTab({
 
 	const handleWebsiteUpdated = useCallback(() => {
 		setShowEditDialog(false);
-		onWebsiteUpdated?.();
-	}, [onWebsiteUpdated]);
+		// Cache is automatically updated by the mutation, no need for manual refetch
+	}, []);
 
 	const handleExportData = useCallback(
 		async (format: ExportFormat, startDate?: string, endDate?: string) => {
@@ -181,7 +188,6 @@ export function WebsiteSettingsTab({
 		[websiteId, trackingOptions]
 	);
 
-	// Early return if no website data
 	if (!websiteData) {
 		return <div>Loading website data...</div>;
 	}
@@ -271,28 +277,20 @@ export function WebsiteSettingsTab({
 										onEnableAll={() => {
 											switch (activeTab) {
 												case SETTINGS_TABS.BASIC:
-													setTrackingOptions((prev) =>
-														enableAllBasicTracking(prev)
-													);
+													enableAllBasicAction();
 													break;
 												case SETTINGS_TABS.ADVANCED:
-													setTrackingOptions((prev) =>
-														enableAllAdvancedTracking(prev)
-													);
+													enableAllAdvancedAction();
 													break;
 												case SETTINGS_TABS.OPTIMIZATION:
-													setTrackingOptions((prev) =>
-														enableAllOptimization(prev)
-													);
+													enableAllOptimizationAction();
 													break;
 												default:
 													// No action needed for other tabs
 													break;
 											}
 										}}
-										onResetDefaults={() =>
-											setTrackingOptions(resetToDefaults())
-										}
+										onResetDefaults={resetDefaultsAction}
 									/>
 								)}
 						</CardContent>
@@ -531,17 +529,18 @@ function CodeBlock({ code, description, copied, onCopy }: CodeBlockProps) {
 			)}
 			<div className="relative">
 				<div
-					className='overflow-hidden rounded-lg border border-sidebar-border bg-sidebar/40 p-6 text-sm leading-relaxed [&_pre]:!bg-transparent [&_code]:!bg-transparent [&_*]:!font-mono'
+					className="[&_pre]:!bg-transparent [&_code]:!bg-transparent [&_*]:!font-mono overflow-hidden rounded-lg border border-sidebar-border bg-sidebar/40 p-6 text-sm leading-relaxed"
 					// biome-ignore lint/security/noDangerouslySetInnerHtml: Shiki generates safe HTML
 					dangerouslySetInnerHTML={{ __html: highlightedCode }}
-					style={{ 
-						fontSize: '14px', 
-						lineHeight: '1.6', 
-						fontFamily: 'var(--font-geist-mono), ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
+					style={{
+						fontSize: '14px',
+						lineHeight: '1.6',
+						fontFamily:
+							'var(--font-geist-mono), ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
 					}}
 				/>
 				<Button
-					className='absolute top-2 right-2 h-6 w-6 rounded hover:bg-background/50 border-0 shadow-none transition-colors duration-200'
+					className="absolute top-2 right-2 h-6 w-6 rounded border-0 shadow-none transition-colors duration-200 hover:bg-background/50"
 					onClick={onCopy}
 					size="icon"
 					variant="ghost"
@@ -549,7 +548,10 @@ function CodeBlock({ code, description, copied, onCopy }: CodeBlockProps) {
 					{copied ? (
 						<CheckIcon className="h-3.5 w-3.5 text-green-500" weight="bold" />
 					) : (
-						<ClipboardIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" weight="regular" />
+						<ClipboardIcon
+							className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground"
+							weight="regular"
+						/>
 					)}
 				</Button>
 			</div>
@@ -606,7 +608,10 @@ function WebsiteInfoSection({
 				<div className="flex flex-col gap-2">
 					<div className="flex items-center gap-2">
 						<div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/15">
-							<CheckIcon className="h-3.5 w-3.5 text-primary" weight="duotone" />
+							<CheckIcon
+								className="h-3.5 w-3.5 text-primary"
+								weight="duotone"
+							/>
 						</div>
 						<h4 className="font-medium text-sm">Ready to Track</h4>
 					</div>
@@ -868,32 +873,40 @@ function TrackingOptionCard({
 	return (
 		<div className="rounded-lg border border-sidebar-border bg-sidebar/20 p-4 transition-all duration-200 hover:bg-sidebar/30">
 			<div className="flex items-start justify-between pb-3">
-				<div className="space-y-1 min-w-0 flex-1 pr-3">
+				<div className="min-w-0 flex-1 space-y-1 pr-3">
 					<div className="font-medium text-sm">{title}</div>
-					<div className="text-muted-foreground text-xs leading-relaxed">{description}</div>
+					<div className="text-muted-foreground text-xs leading-relaxed">
+						{description}
+					</div>
 				</div>
 				<Switch checked={isEnabled} onCheckedChange={onToggle} />
 			</div>
 			{required && !isEnabled && (
 				<div className="mb-3 rounded-md border border-destructive/20 bg-destructive/5 p-3">
 					<div className="flex items-start gap-2">
-						<WarningCircleIcon className="h-4 w-4 flex-shrink-0 text-destructive mt-0.5" weight="duotone" />
+						<WarningCircleIcon
+							className="mt-0.5 h-4 w-4 flex-shrink-0 text-destructive"
+							weight="duotone"
+						/>
 						<div>
-							<span className="font-medium text-destructive text-sm">Warning:</span>
-							<p className="text-destructive text-xs mt-1">
-								Disabling page views will prevent analytics from working. This option is required.
+							<span className="font-medium text-destructive text-sm">
+								Warning:
+							</span>
+							<p className="mt-1 text-destructive text-xs">
+								Disabling page views will prevent analytics from working. This
+								option is required.
 							</p>
 						</div>
 					</div>
 				</div>
 			)}
-			<div className="border-t border-sidebar-border pt-3">
+			<div className="border-sidebar-border border-t pt-3">
 				<div className="text-muted-foreground text-xs">
 					<span className="font-medium">Data collected:</span>
 					<ul className="mt-2 space-y-1">
 						{data.map((item: string) => (
 							<li className="flex items-start gap-2 text-xs" key={item}>
-								<span className="text-primary mt-1 text-[8px]">●</span>
+								<span className="mt-1 text-[8px] text-primary">●</span>
 								<span className="leading-relaxed">{item}</span>
 							</li>
 						))}
@@ -948,17 +961,17 @@ function SamplingRateSection({
 }) {
 	return (
 		<div className="rounded-lg border border-sidebar-border bg-sidebar/20 p-4">
-			<div className="flex items-center gap-2 mb-3">
+			<div className="mb-3 flex items-center gap-2">
 				<div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
 					<InfoIcon className="h-3.5 w-3.5 text-primary" weight="duotone" />
 				</div>
 				<h4 className="font-medium text-sm">Sampling Rate</h4>
 			</div>
 			<div className="space-y-4">
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+				<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
 					<div className="space-y-3">
-						<div className="flex justify-between items-center">
-							<Label className="text-sm font-medium" htmlFor="sampling-rate">
+						<div className="flex items-center justify-between">
+							<Label className="font-medium text-sm" htmlFor="sampling-rate">
 								Data Collection Rate
 							</Label>
 							<span className="font-semibold text-primary text-sm">
@@ -983,12 +996,19 @@ function SamplingRateSection({
 
 					<div className="space-y-2">
 						<p className="text-muted-foreground text-sm leading-relaxed">
-							Sampling rate determines what percentage of your visitors will be tracked. Lower rates reduce costs.
+							Sampling rate determines what percentage of your visitors will be
+							tracked. Lower rates reduce costs.
 						</p>
-						<div className="rounded-md bg-primary/5 border border-primary/10 p-3">
+						<div className="rounded-md border border-primary/10 bg-primary/5 p-3">
 							<p className="flex items-start gap-2 text-muted-foreground text-xs">
-								<InfoIcon className="h-3.5 w-3.5 text-primary flex-shrink-0 mt-0.5" weight="duotone" />
-								<span><strong>Recommended:</strong> 100% for low traffic, 10-50% for high traffic</span>
+								<InfoIcon
+									className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary"
+									weight="duotone"
+								/>
+								<span>
+									<strong>Recommended:</strong> 100% for low traffic, 10-50% for
+									high traffic
+								</span>
 							</p>
 						</div>
 					</div>
@@ -1009,7 +1029,7 @@ function BatchingSection({
 }) {
 	return (
 		<div className="rounded-lg border border-sidebar-border bg-sidebar/20 p-4">
-			<div className="flex items-center gap-2 mb-3">
+			<div className="mb-3 flex items-center gap-2">
 				<div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
 					<CodeIcon className="h-3.5 w-3.5 text-primary" weight="duotone" />
 				</div>
@@ -1027,16 +1047,16 @@ function BatchingSection({
 							}))
 						}
 					/>
-					<Label className="text-sm font-medium" htmlFor="enable-batching">
+					<Label className="font-medium text-sm" htmlFor="enable-batching">
 						Enable request batching
 					</Label>
 				</div>
 
 				{trackingOptions.enableBatching && (
-					<div className="space-y-4 pl-6 border-l-2 border-primary/20">
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div className="space-y-4 border-primary/20 border-l-2 pl-6">
+						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 							<div className="space-y-2">
-								<Label className="text-sm font-medium" htmlFor="batch-size">
+								<Label className="font-medium text-sm" htmlFor="batch-size">
 									Batch Size
 								</Label>
 								<div className="flex items-center space-x-2">
@@ -1054,7 +1074,7 @@ function BatchingSection({
 									>
 										-
 									</Button>
-									<span className="w-8 text-center font-medium text-sm bg-muted rounded px-2 py-1">
+									<span className="w-8 rounded bg-muted px-2 py-1 text-center font-medium text-sm">
 										{trackingOptions.batchSize}
 									</span>
 									<Button
@@ -1075,7 +1095,7 @@ function BatchingSection({
 							</div>
 
 							<div className="space-y-2">
-								<Label className="text-sm font-medium" htmlFor="batch-timeout">
+								<Label className="font-medium text-sm" htmlFor="batch-timeout">
 									Batch Timeout (ms)
 								</Label>
 								<input
@@ -1096,9 +1116,10 @@ function BatchingSection({
 							</div>
 						</div>
 
-						<div className="rounded-md bg-primary/5 border border-primary/10 p-3">
+						<div className="rounded-md border border-primary/10 bg-primary/5 p-3">
 							<p className="text-muted-foreground text-xs leading-relaxed">
-								<strong>Batching</strong> groups multiple events into single requests, reducing server load and improving performance.
+								<strong>Batching</strong> groups multiple events into single
+								requests, reducing server load and improving performance.
 							</p>
 						</div>
 					</div>
@@ -1492,7 +1513,7 @@ function ExportTab({
 			{/* Export Info */}
 			<div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
 				<div className="flex items-start gap-3">
-					<div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/15 flex-shrink-0">
+					<div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-primary/15">
 						<InfoIcon className="h-4 w-4 text-primary" weight="duotone" />
 					</div>
 					<div className="space-y-3">
@@ -1501,28 +1522,29 @@ function ExportTab({
 						</h4>
 						<ul className="space-y-2">
 							<li className="flex items-start gap-2 text-sm">
-								<span className="text-primary mt-1 text-[8px]">●</span>
+								<span className="mt-1 text-[8px] text-primary">●</span>
 								<span>Page views and user sessions</span>
 							</li>
 							<li className="flex items-start gap-2 text-sm">
-								<span className="text-primary mt-1 text-[8px]">●</span>
+								<span className="mt-1 text-[8px] text-primary">●</span>
 								<span>User interactions and events</span>
 							</li>
 							<li className="flex items-start gap-2 text-sm">
-								<span className="text-primary mt-1 text-[8px]">●</span>
+								<span className="mt-1 text-[8px] text-primary">●</span>
 								<span>Performance metrics and Web Vitals</span>
 							</li>
 							<li className="flex items-start gap-2 text-sm">
-								<span className="text-primary mt-1 text-[8px]">●</span>
+								<span className="mt-1 text-[8px] text-primary">●</span>
 								<span>Error logs and debugging data</span>
 							</li>
 							<li className="flex items-start gap-2 text-sm">
-								<span className="text-primary mt-1 text-[8px]">●</span>
+								<span className="mt-1 text-[8px] text-primary">●</span>
 								<span>Device, browser, and location data</span>
 							</li>
 						</ul>
 						<p className="text-muted-foreground text-sm leading-relaxed">
-							Data is exported as a ZIP file containing multiple files organized by data type.
+							Data is exported as a ZIP file containing multiple files organized
+							by data type.
 						</p>
 					</div>
 				</div>

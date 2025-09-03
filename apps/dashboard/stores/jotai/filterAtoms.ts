@@ -1,6 +1,13 @@
 import type { DynamicQueryFilter } from '@databuddy/shared';
 import dayjs from 'dayjs';
 import { atom } from 'jotai';
+import { RECOMMENDED_DEFAULTS } from '../../app/(main)/websites/[id]/_components/utils/tracking-defaults';
+import {
+	enableAllAdvancedTracking,
+	enableAllBasicTracking,
+	enableAllOptimization,
+} from '../../app/(main)/websites/[id]/_components/utils/tracking-helpers';
+import type { TrackingOptions } from '../../app/(main)/websites/[id]/_components/utils/types';
 // Consider adding nanoid for unique ID generation for complex filters
 // import { nanoid } from 'nanoid';
 
@@ -323,4 +330,66 @@ export const removeDynamicFilterAtom = atom(
  */
 export const clearDynamicFiltersAtom = atom(null, (_get, set) => {
 	set(dynamicQueryFiltersAtom, []);
+});
+
+// --- Tracking Options ---
+/**
+ * Atom for website tracking options configuration.
+ * Shared across settings and tracking setup tabs.
+ */
+export const trackingOptionsAtom = atom<TrackingOptions>(RECOMMENDED_DEFAULTS);
+
+/**
+ * Action atom for updating tracking options.
+ */
+export const setTrackingOptionsAtom = atom(
+	null,
+	(_get, set, newOptions: TrackingOptions) => {
+		set(trackingOptionsAtom, newOptions);
+	}
+);
+
+/**
+ * Action atom for toggling a specific tracking option.
+ */
+export const toggleTrackingOptionAtom = atom(
+	null,
+	(get, set, option: keyof TrackingOptions) => {
+		const current = get(trackingOptionsAtom);
+		set(trackingOptionsAtom, {
+			...current,
+			[option]: !current[option],
+		});
+	}
+);
+
+/**
+ * Action atom for resetting tracking options to defaults.
+ */
+export const resetTrackingOptionsAtom = atom(null, (_get, set) => {
+	set(trackingOptionsAtom, RECOMMENDED_DEFAULTS);
+});
+
+/**
+ * Action atom for enabling all basic tracking options.
+ */
+export const enableAllBasicTrackingAtom = atom(null, (get, set) => {
+	const current = get(trackingOptionsAtom);
+	set(trackingOptionsAtom, enableAllBasicTracking(current));
+});
+
+/**
+ * Action atom for enabling all advanced tracking options.
+ */
+export const enableAllAdvancedTrackingAtom = atom(null, (get, set) => {
+	const current = get(trackingOptionsAtom);
+	set(trackingOptionsAtom, enableAllAdvancedTracking(current));
+});
+
+/**
+ * Action atom for enabling all optimization options.
+ */
+export const enableAllOptimizationAtom = atom(null, (get, set) => {
+	const current = get(trackingOptionsAtom);
+	set(trackingOptionsAtom, enableAllOptimization(current));
 });

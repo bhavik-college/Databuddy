@@ -2,11 +2,7 @@ import { websitesApi } from '@databuddy/auth';
 import { and, chQuery, eq, isNull, websites } from '@databuddy/db';
 import { createDrizzleCache, redis } from '@databuddy/redis';
 import { logger, type ProcessedMiniChartData } from '@databuddy/shared';
-import {
-	createWebsiteSchema,
-	transferWebsiteSchema,
-	updateWebsiteSchema,
-} from '@databuddy/validation';
+import { transferWebsiteSchema } from '@databuddy/validation';
 import { TRPCError } from '@trpc/server';
 import { nanoid } from 'nanoid';
 import { z } from 'zod';
@@ -14,6 +10,59 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from '../trpc';
 import { authorizeWebsiteAccess } from '../utils/auth';
 
 import { invalidateWebsiteCaches } from '../utils/cache-invalidation';
+
+const WEBSITE_NAME_REGEX = /^[a-zA-Z0-9\s\-_.]+$/;
+const DOMAIN_REGEX =
+	/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$/;
+const SUBDOMAIN_REGEX = /^[a-zA-Z0-9-]*$/;
+
+const websiteNameSchema = z
+	.string()
+	.min(1)
+	.max(100)
+	.regex(WEBSITE_NAME_REGEX, 'Invalid website name format');
+
+const domainSchema = z.preprocess(
+	(val) => {
+		if (typeof val !== 'string') {
+			return val;
+		}
+		let domain = val.trim();
+		if (domain.startsWith('http://') || domain.startsWith('https://')) {
+			try {
+				domain = new URL(domain).hostname;
+			} catch {
+				// Do nothing
+			}
+		}
+		return domain;
+	},
+	z.string().min(1).max(253).regex(DOMAIN_REGEX, 'Invalid domain format')
+);
+
+const subdomainSchema = z
+	.string()
+	.max(63)
+	.regex(SUBDOMAIN_REGEX, 'Invalid subdomain format')
+	.optional();
+
+const createWebsiteSchema = z.object({
+	name: websiteNameSchema,
+	domain: domainSchema,
+	subdomain: subdomainSchema,
+	organizationId: z.string().optional(),
+});
+
+const updateWebsiteSchema = z.object({
+	id: z.string(),
+	name: websiteNameSchema,
+	domain: domainSchema.optional(),
+});
+
+const togglePublicWebsiteSchema = z.object({
+	id: z.string(),
+	isPublic: z.boolean(),
+});
 
 const websiteCache = createDrizzleCache({ redis, namespace: 'websites' });
 const CACHE_DURATION = 60; // seconds
@@ -316,51 +365,102 @@ export const websitesRouter = createTRPCRouter({
 				'update'
 			);
 
-			const updatedWebsite = await ctx.db.transaction(async (tx) => {
-				const [website] = await tx
-					.update(websites)
-					.set({ name: input.name, isPublic: input.isPublic })
-					.where(eq(websites.id, input.id))
-					.returning();
+			// Check for domain conflicts if domain is being changed
+			if (input.domain && input.domain !== websiteToUpdate.domain) {
+				const domainToUpdate = buildFullDomain(input.domain);
+				const websiteFilter = and(
+					eq(websites.domain, domainToUpdate),
+					buildWebsiteFilter(ctx.user.id, websiteToUpdate.organizationId)
+				);
 
-				if (!website) {
+				const duplicateWebsite = await ctx.db.query.websites.findFirst({
+					where: websiteFilter,
+				});
+
+				if (duplicateWebsite && duplicateWebsite.id !== input.id) {
+					const scopeDescription = websiteToUpdate.organizationId
+						? 'in this organization'
+						: 'for your account';
 					throw new TRPCError({
-						code: 'NOT_FOUND',
-						message: 'Website not found',
+						code: 'CONFLICT',
+						message: `A website with the domain "${domainToUpdate}" already exists ${scopeDescription}.`,
 					});
 				}
+			}
 
-				return website;
-			});
+			const updateData: { name: string; domain?: string } = {
+				name: input.name,
+			};
+
+			if (input.domain) {
+				updateData.domain = buildFullDomain(input.domain);
+			}
+
+			const [updatedWebsite] = await ctx.db
+				.update(websites)
+				.set(updateData)
+				.where(eq(websites.id, input.id))
+				.returning();
+
+			if (!updatedWebsite) {
+				throw new TRPCError({
+					code: 'NOT_FOUND',
+					message: 'Website not found',
+				});
+			}
+
+			// Clean logging
+			const changes: string[] = [];
+			if (input.name !== websiteToUpdate.name) {
+				changes.push(`name: "${websiteToUpdate.name}" → "${input.name}"`);
+			}
+			if (input.domain && input.domain !== websiteToUpdate.domain) {
+				changes.push(
+					`domain: "${websiteToUpdate.domain}" → "${updatedWebsite.domain}"`
+				);
+			}
+
+			if (changes.length > 0) {
+				logger.info('Website Updated', changes.join(', '), {
+					websiteId: updatedWebsite.id,
+					userId: ctx.user.id,
+				});
+			}
+
+			await invalidateWebsiteCaches(input.id, ctx.user.id, 'website updated');
+
+			return updatedWebsite;
+		}),
+
+	togglePublic: protectedProcedure
+		.input(togglePublicWebsiteSchema)
+		.mutation(async ({ ctx, input }) => {
+			const website = await authorizeWebsiteAccess(ctx, input.id, 'update');
+
+			const [updatedWebsite] = await ctx.db
+				.update(websites)
+				.set({ isPublic: input.isPublic })
+				.where(eq(websites.id, input.id))
+				.returning();
+
+			if (!updatedWebsite) {
+				throw new TRPCError({
+					code: 'NOT_FOUND',
+					message: 'Website not found',
+				});
+			}
 
 			logger.info(
-				'Website Updated',
-				`Website "${websiteToUpdate.name}" was renamed to "${updatedWebsite.name}"`,
+				'Website Privacy Updated',
+				`${website.domain} is now ${input.isPublic ? 'public' : 'private'}`,
 				{
-					websiteId: updatedWebsite.id,
-					oldName: websiteToUpdate.name,
-					newName: updatedWebsite.name,
+					websiteId: input.id,
+					isPublic: input.isPublic,
 					userId: ctx.user.id,
 				}
 			);
 
-			if (
-				input.isPublic !== undefined &&
-				input.isPublic !== websiteToUpdate.isPublic
-			) {
-				logger.info(
-					'Public status changed - caches invalidated',
-					`Website ${input.id} public status changed to ${input.isPublic}`,
-					{
-						websiteId: input.id,
-						oldIsPublic: websiteToUpdate.isPublic,
-						newIsPublic: input.isPublic,
-						userId: ctx.user.id,
-					}
-				);
-			}
-
-			await invalidateWebsiteCaches(input.id, ctx.user.id, 'website updated');
+			await invalidateWebsiteCaches(input.id, ctx.user.id, 'privacy updated');
 
 			return updatedWebsite;
 		}),

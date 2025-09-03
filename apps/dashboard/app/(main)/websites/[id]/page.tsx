@@ -85,12 +85,7 @@ function WebsiteDetailsPage() {
 
 	const { dateRange } = useDateFilters();
 
-	const {
-		data,
-		isLoading,
-		isError,
-		refetch: refetchWebsiteData,
-	} = useWebsite(id as string);
+	const { data, isLoading, isError } = useWebsite(id as string);
 
 	const { isTrackingSetup } = useTrackingSetup(id as string);
 
@@ -120,7 +115,6 @@ function WebsiteDetailsPage() {
 				websiteId: id as string,
 				dateRange,
 				websiteData: data,
-				onWebsiteUpdated: refetchWebsiteData,
 			};
 
 			const tabProps: FullTabProps = {
@@ -161,7 +155,6 @@ function WebsiteDetailsPage() {
 			data,
 			isRefreshing,
 			setIsRefreshing,
-			refetchWebsiteData,
 			selectedFilters,
 			addFilter,
 		]

@@ -95,6 +95,35 @@ export function useUpdateWebsite() {
 	});
 }
 
+export function useTogglePublicWebsite() {
+	const utils = trpc.useUtils();
+	return trpc.websites.togglePublic.useMutation({
+		onSuccess: (updatedWebsite) => {
+			const getByIdKey = { id: updatedWebsite.id };
+			const listKey = {
+				organizationId: updatedWebsite.organizationId ?? undefined,
+			};
+
+			utils.websites.listWithCharts.setData(listKey, (old) => {
+				if (!old) {
+					return old;
+				}
+				return {
+					...old,
+					websites: old.websites.map((website) =>
+						website.id === updatedWebsite.id ? updatedWebsite : website
+					),
+				};
+			});
+
+			utils.websites.getById.setData(getByIdKey, updatedWebsite);
+		},
+		onError: (error) => {
+			console.error('Failed to toggle website privacy:', error);
+		},
+	});
+}
+
 export function useDeleteWebsite() {
 	const utils = trpc.useUtils();
 	return trpc.websites.delete.useMutation({
