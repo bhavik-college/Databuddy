@@ -398,7 +398,7 @@ function RegisterPageContent() {
 
 					<div className="space-y-2">
 						<Label
-							className="font-medium text-foreground whitespace-nowrap"
+							className="whitespace-nowrap font-medium text-foreground"
 							htmlFor="confirmPassword"
 						>
 							Confirm password<span className="text-blue-700">*</span>
@@ -469,8 +469,8 @@ function RegisterPageContent() {
 									target="_blank"
 								>
 									Terms of Service
-								</Link>
-								{' '}and{' '}
+								</Link>{' '}
+								and{' '}
 								<Link
 									className="font-medium text-primary hover:text-primary/80"
 									href="https://www.databuddy.cc/privacy"
@@ -487,8 +487,8 @@ function RegisterPageContent() {
 									target="_blank"
 								>
 									Terms
-								</Link>
-								{' '}&{' '}
+								</Link>{' '}
+								&{' '}
 								<Link
 									className="font-medium text-primary hover:text-primary/80"
 									href="https://www.databuddy.cc/privacy"
