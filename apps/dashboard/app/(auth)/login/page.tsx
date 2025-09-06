@@ -33,46 +33,28 @@ function LoginPage() {
 		setLastUsed(localStorage.getItem('lastUsedLogin'));
 	}, []);
 
-	const handlePostAuthCallback = () => {
+	const handleSocialLogin = (provider: 'github' | 'google') => {
+		setIsLoading(true);
+
 		const callbackUrl = searchParams.get('callback');
-		if (callbackUrl) {
-			router.push(callbackUrl);
-		}
-	};
+		const finalCallbackUrl = callbackUrl || defaultCallbackUrl;
 
-	const handleGoogleLogin = () => {
-		setIsLoading(true);
 		signIn.social({
-			provider: 'google',
-			callbackURL: defaultCallbackUrl,
+			provider,
+			callbackURL: finalCallbackUrl,
 			newUserCallbackURL: '/onboarding',
 			fetchOptions: {
 				onSuccess: () => {
-					localStorage.setItem('lastUsedLogin', 'google');
-					handlePostAuthCallback();
+					localStorage.setItem('lastUsedLogin', provider);
+					if (callbackUrl) {
+						router.push(callbackUrl);
+					}
 				},
 				onError: () => {
 					setIsLoading(false);
-					toast.error('Google login failed. Please try again.');
-				},
-			},
-		});
-	};
-
-	const handleGithubLogin = () => {
-		setIsLoading(true);
-		signIn.social({
-			provider: 'github',
-			callbackURL: defaultCallbackUrl,
-			newUserCallbackURL: '/onboarding',
-			fetchOptions: {
-				onSuccess: () => {
-					localStorage.setItem('lastUsedLogin', 'github');
-					handlePostAuthCallback();
-				},
-				onError: () => {
-					setIsLoading(false);
-					toast.error('GitHub login failed. Please try again.');
+					toast.error(
+						`${provider === 'github' ? 'GitHub' : 'Google'} login failed. Please try again.`
+					);
 				},
 			},
 		});
@@ -94,7 +76,10 @@ function LoginPage() {
 			fetchOptions: {
 				onSuccess: () => {
 					localStorage.setItem('lastUsedLogin', 'email');
-					handlePostAuthCallback();
+					const callbackUrl = searchParams.get('callback');
+					if (callbackUrl) {
+						router.push(callbackUrl);
+					}
 				},
 				onError: (error) => {
 					setIsLoading(false);
@@ -135,7 +120,7 @@ function LoginPage() {
 							<Button
 								className="relative flex h-11 w-full cursor-pointer items-center justify-center transition-all duration-200 hover:bg-primary/5"
 								disabled={isLoading}
-								onClick={handleGithubLogin}
+								onClick={() => handleSocialLogin('github')}
 								type="button"
 								variant="outline"
 							>
@@ -150,7 +135,7 @@ function LoginPage() {
 							<Button
 								className="relative flex h-11 w-full cursor-pointer items-center justify-center transition-all duration-200 hover:bg-primary/5"
 								disabled={isLoading}
-								onClick={handleGoogleLogin}
+								onClick={() => handleSocialLogin('google')}
 								type="button"
 								variant="outline"
 							>

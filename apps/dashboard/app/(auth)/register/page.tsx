@@ -54,9 +54,15 @@ function RegisterPageContent() {
 		setFormData((prev) => ({ ...prev, [name]: value }));
 	};
 
-	const handlePostAuthCallback = () => {
+	const handleAuthSuccess = () => {
 		if (callbackUrl) {
+			toast.success('Account created! Completing integration...');
 			router.push(callbackUrl);
+		} else if (selectedPlan) {
+			localStorage.setItem('pendingPlanSelection', selectedPlan);
+			router.push(`/billing?tab=plans&plan=${selectedPlan}`);
+		} else {
+			router.push('/websites');
 		}
 	};
 
@@ -85,28 +91,18 @@ function RegisterPageContent() {
 			password: formData.password,
 			name: formData.name,
 			fetchOptions: {
-				onSuccess: (ctx) => {
-					const authToken = ctx.response.headers.get('set-auth-token');
-					if (authToken) {
-						localStorage.setItem('authToken', authToken);
-					}
-
+				onSuccess: () => {
 					if (callbackUrl) {
-						toast.success('Account created! Completing integration...');
-						handlePostAuthCallback();
-						return;
+						handleAuthSuccess();
+					} else {
+						toast.success(
+							'Account created! Please check your email to verify your account.'
+						);
+						setRegistrationStep('verification-needed');
+						if (selectedPlan) {
+							localStorage.setItem('pendingPlanSelection', selectedPlan);
+						}
 					}
-
-					toast.success(
-						'Account created! Please check your email to verify your account.'
-					);
-					setRegistrationStep('verification-needed');
-
-					// Store plan selection for post-verification redirect
-					if (selectedPlan) {
-						localStorage.setItem('pendingPlanSelection', selectedPlan);
-					}
-					// router.push(`/verify?email=${encodeURIComponent(formData.email)}`);
 				},
 			},
 		});
@@ -142,33 +138,27 @@ function RegisterPageContent() {
 	const handleSocialLogin = async (provider: 'github' | 'google') => {
 		setIsLoading(true);
 
-		await authClient.signIn.social({
-			provider,
-			callbackURL: callbackUrl || '/websites',
-			fetchOptions: {
-				onSuccess: (ctx) => {
-					const authToken = ctx.response.headers.get('set-auth-token');
-					if (authToken) {
-						localStorage.setItem('authToken', authToken);
-					}
-
-					toast.success('Registration successful!');
-
-					// Redirect to billing with plan selection if plan was specified
-					if (selectedPlan) {
-						localStorage.setItem('pendingPlanSelection', selectedPlan);
-						router.push(`/billing?tab=plans&plan=${selectedPlan}`);
-					} else {
-						router.push('/websites');
-					}
+		try {
+			await authClient.signIn.social({
+				provider,
+				callbackURL: callbackUrl || '/websites',
+				fetchOptions: {
+					onSuccess: () => {
+						toast.success('Registration successful!');
+						handleAuthSuccess();
+					},
+					onError: () => {
+						toast.error(
+							`${provider === 'github' ? 'GitHub' : 'Google'} login failed. Please try again.`
+						);
+						setIsLoading(false);
+					},
 				},
-				onError: () => {
-					toast.error('Login failed. Please try again.');
-				},
-			},
-		});
-
-		setIsLoading(false);
+			});
+		} catch (error) {
+			toast.error('Login failed. Please try again.');
+			setIsLoading(false);
+		}
 	};
 
 	// Render header content based on current registration step
