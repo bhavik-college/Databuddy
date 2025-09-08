@@ -10,6 +10,7 @@ import { miniChartsRouter } from './routers/mini-charts';
 import { organizationsRouter } from './routers/organizations';
 import { performanceRouter } from './routers/performance';
 import { preferencesRouter } from './routers/preferences';
+import { vercelRouter } from './routers/vercel';
 import { websitesRouter } from './routers/websites';
 import { createTRPCRouter } from './trpc';
 
@@ -27,6 +28,7 @@ export const appRouter = createTRPCRouter({
 	dbConnections: dbConnectionsRouter,
 	performance: performanceRouter,
 	integrations: integrationsRouter,
+	vercel: vercelRouter,
 });
 
 export type AppRouter = typeof appRouter;

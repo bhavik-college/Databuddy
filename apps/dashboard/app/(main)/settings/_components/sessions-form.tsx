@@ -37,7 +37,7 @@ export function SessionsForm() {
 
 	useEffect(() => {
 		fetchSessions();
-	}, [fetchSessions]);
+	}, []);
 
 	const fetchSessions = async () => {
 		setIsLoading(true);
