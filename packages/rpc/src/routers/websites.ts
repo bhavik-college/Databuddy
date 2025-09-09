@@ -512,7 +512,7 @@ export const websitesRouter = createTRPCRouter({
 					.update(websites)
 					.set({
 						organizationId: input.organizationId ?? null,
-						updatedAt: new Date().toISOString(),
+						updatedAt: new Date(),
 					})
 					.where(eq(websites.id, input.websiteId))
 					.returning();

@@ -112,7 +112,7 @@ export const assistantRouter = createTRPCRouter({
 				// Update conversation timestamp
 				await tx
 					.update(assistantConversations)
-					.set({ updatedAt: new Date().toISOString() })
+					.set({ updatedAt: new Date() })
 					.where(eq(assistantConversations.id, conversationId));
 			});
 
@@ -286,7 +286,7 @@ export const assistantRouter = createTRPCRouter({
 				.update(assistantConversations)
 				.set({
 					title: input.title,
-					updatedAt: new Date().toISOString(),
+					updatedAt: new Date(),
 				})
 				.where(
 					and(

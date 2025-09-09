@@ -1,4 +1,5 @@
 import { account } from '@databuddy/db';
+import { decryptToken } from '@databuddy/shared';
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -27,7 +28,29 @@ const getVercelToken = async (userId: string, db: any): Promise<string> => {
 			});
 		}
 
-		return vercelAccount.accessToken;
+		// Decrypt the access token using Better Auth secret
+		const betterAuthSecret = process.env.BETTER_AUTH_SECRET;
+		if (!betterAuthSecret) {
+			throw new TRPCError({
+				code: 'INTERNAL_SERVER_ERROR',
+				message: 'Server configuration error: BETTER_AUTH_SECRET is missing',
+			});
+		}
+
+		try {
+			const decryptedToken = decryptToken(
+				vercelAccount.accessToken,
+				betterAuthSecret
+			);
+			return decryptedToken;
+		} catch (decryptionError) {
+			console.error('Token decryption failed:', decryptionError);
+			throw new TRPCError({
+				code: 'UNAUTHORIZED',
+				message:
+					'Failed to decrypt Vercel access token. Please reconnect your Vercel account.',
+			});
+		}
 	} catch (error) {
 		if (error instanceof TRPCError) {
 			throw error;
