@@ -1,10 +1,9 @@
 import { auth } from '@databuddy/auth';
+import { and, apikeyAccess, db, eq, isNull, websites } from '@databuddy/db';
 import { filterOptions } from '@databuddy/shared';
 import { Elysia, t } from 'elysia';
 import { getApiKeyFromHeader, isApiKeyPresent } from '../lib/api-key';
 import { getCachedWebsiteDomain, getWebsiteDomain } from '../lib/website-utils';
-// import { createRateLimitMiddleware } from '../middleware/rate-limit';
-import { websiteAuth } from '../middleware/website-auth';
 import { compileQuery, executeQuery } from '../query';
 import { QueryBuilders } from '../query/builders';
 import type { QueryRequest } from '../query/types';
@@ -49,9 +48,113 @@ async function checkAuth(request: Request): Promise<Response | null> {
 	);
 }
 
+async function getAccessibleWebsites(request: Request) {
+	const apiKeyPresent = isApiKeyPresent(request.headers);
+	const apiKey = apiKeyPresent
+		? await getApiKeyFromHeader(request.headers)
+		: null;
+	const session = await auth.api.getSession({ headers: request.headers });
+	const sessionUser = session?.user ?? null;
+
+	const baseSelect = {
+		id: websites.id,
+		name: websites.name,
+		domain: websites.domain,
+		isPublic: websites.isPublic,
+		createdAt: websites.createdAt,
+	};
+
+	if (sessionUser) {
+		return db
+			.select(baseSelect)
+			.from(websites)
+			.where(
+				and(
+					eq(websites.userId, sessionUser.id),
+					isNull(websites.organizationId)
+				)
+			)
+			.orderBy((table) => table.createdAt);
+	}
+
+	if (apiKey) {
+		// Check for global access first
+		const hasGlobalAccess = await db
+			.select({ count: apikeyAccess.apikeyId })
+			.from(apikeyAccess)
+			.where(
+				and(
+					eq(apikeyAccess.apikeyId, apiKey.id),
+					eq(apikeyAccess.resourceType, 'global')
+				)
+			)
+			.limit(1);
+
+		if (hasGlobalAccess.length > 0) {
+			// Global access - return all websites for the API key's scope
+			const filter = apiKey.organizationId
+				? eq(websites.organizationId, apiKey.organizationId)
+				: apiKey.userId
+					? and(
+							eq(websites.userId, apiKey.userId),
+							isNull(websites.organizationId)
+						)
+					: eq(websites.id, ''); // No matches if no user/org
+
+			return db
+				.select(baseSelect)
+				.from(websites)
+				.where(filter)
+				.orderBy((table) => table.createdAt);
+		}
+
+		// Specific website access - join with access table
+		return db
+			.select(baseSelect)
+			.from(websites)
+			.innerJoin(
+				apikeyAccess,
+				and(
+					eq(apikeyAccess.resourceId, websites.id),
+					eq(apikeyAccess.resourceType, 'website'),
+					eq(apikeyAccess.apikeyId, apiKey.id)
+				)
+			)
+			.orderBy((table) => table.createdAt);
+	}
+
+	return [];
+}
+
 export const query = new Elysia({ prefix: '/v1/query' })
-	// .use(createRateLimitMiddleware({ type: 'api' }))
-	.use(websiteAuth())
+	.get('/websites', async ({ request }: { request: Request }) => {
+		const authResult = await checkAuth(request);
+		if (authResult) {
+			return authResult;
+		}
+
+		try {
+			const websites = await getAccessibleWebsites(request);
+			return {
+				success: true,
+				websites,
+				total: websites.length,
+			};
+		} catch (error) {
+			return new Response(
+				JSON.stringify({
+					success: false,
+					error:
+						error instanceof Error ? error.message : 'Failed to fetch websites',
+					code: 'INTERNAL_SERVER_ERROR',
+				}),
+				{
+					status: 500,
+					headers: { 'Content-Type': 'application/json' },
+				}
+			);
+		}
+	})
 	.get(
 		'/types',
 		async ({
