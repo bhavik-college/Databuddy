@@ -139,6 +139,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@ai-sdk/react": "^2.0.29",
+        "@databuddy/env": "workspace:*",
         "@databuddy/sdk": "workspace:*",
         "@databuddy/validation": "workspace:*",
         "@hello-pangea/dnd": "^18.0.1",
@@ -406,6 +407,17 @@
         "react-email": "^4.0.17",
       },
     },
+    "packages/env": {
+      "name": "@databuddy/env",
+      "version": "0.1.0",
+      "dependencies": {
+        "zod": "^3.23.8",
+      },
+      "devDependencies": {
+        "@types/node": "^22.0.0",
+        "typescript": "^5.5.4",
+      },
+    },
     "packages/mapper": {
       "name": "@databuddy/mapper",
       "dependencies": {
@@ -635,6 +647,8 @@
     "@databuddy/docs": ["@databuddy/docs@workspace:apps/docs"],
 
     "@databuddy/email": ["@databuddy/email@workspace:packages/email"],
+
+    "@databuddy/env": ["@databuddy/env@workspace:packages/env"],
 
     "@databuddy/mapper": ["@databuddy/mapper@workspace:packages/mapper"],
 
@@ -3321,6 +3335,8 @@
     "@databuddy/docs/zod": ["zod@3.25.76", "", {}, "sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ=="],
 
     "@databuddy/email/@types/node": ["@types/node@24.3.1", "", { "dependencies": { "undici-types": "~7.10.0" } }, "sha512-3vXmQDXy+woz+gnrTvuvNrPzekOi+Ds0ReMxw0LzBiK3a+1k0kQn9f2NWk+lgD4rJehFUmYy2gMhJ2ZI+7YP9g=="],
+
+    "@databuddy/env/zod": ["zod@3.25.76", "", {}, "sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ=="],
 
     "@databuddy/redis/@types/node": ["@types/node@20.19.13", "", { "dependencies": { "undici-types": "~6.21.0" } }, "sha512-yCAeZl7a0DxgNVteXFHt9+uyFbqXGy/ShC4BlcHkoE0AfGXYv/BUiplV72DjMYXHDBXFjhvr6DD1NiRVfB4j8g=="],
 

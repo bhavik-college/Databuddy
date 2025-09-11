@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { auth } from '@databuddy/auth';
 import { account, and, db, eq } from '@databuddy/db';
+import { env } from '@databuddy/env/dashboard';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 
@@ -37,14 +38,14 @@ export async function GET(request: NextRequest) {
 		// If no session, redirect to auth pages with the callback URL
 		if (!session?.user) {
 			const callbackUrl = new URL(request.url);
-			const completeIntegrationUrl = `${process.env.BETTER_AUTH_URL}${callbackUrl.pathname}${callbackUrl.search}`;
+			const completeIntegrationUrl = `${env.BETTER_AUTH_URL}${callbackUrl.pathname}${callbackUrl.search}`;
 
 			return NextResponse.redirect(
-				`${process.env.BETTER_AUTH_URL}/register?callback=${encodeURIComponent(completeIntegrationUrl)}`
+				`${env.BETTER_AUTH_URL}/register?callback=${encodeURIComponent(completeIntegrationUrl)}`
 			);
 		}
 
-		const redirectUri = `${process.env.BETTER_AUTH_URL}/api/integrations/vercel/callback`;
+		const redirectUri = `${env.BETTER_AUTH_URL}/api/integrations/vercel/callback`;
 
 		const tokenResponse = await fetch(
 			'https://api.vercel.com/v2/oauth/access_token',
@@ -55,8 +56,8 @@ export async function GET(request: NextRequest) {
 				},
 				body: new URLSearchParams({
 					code,
-					client_id: process.env.VERCEL_CLIENT_ID as string,
-					client_secret: process.env.VERCEL_CLIENT_SECRET as string,
+					client_id: env.VERCEL_CLIENT_ID as string,
+					client_secret: env.VERCEL_CLIENT_SECRET as string,
 					redirect_uri: redirectUri,
 				}),
 			}
@@ -64,7 +65,7 @@ export async function GET(request: NextRequest) {
 
 		if (!tokenResponse.ok) {
 			return NextResponse.redirect(
-				`${process.env.BETTER_AUTH_URL}/auth/error?error=token_exchange_failed`
+				`${env.BETTER_AUTH_URL}/auth/error?error=token_exchange_failed`
 			);
 		}
 
@@ -78,7 +79,7 @@ export async function GET(request: NextRequest) {
 
 		if (!userResponse.ok) {
 			return NextResponse.redirect(
-				`${process.env.BETTER_AUTH_URL}/auth/error?error=user_fetch_failed`
+				`${env.BETTER_AUTH_URL}/auth/error?error=user_fetch_failed`
 			);
 		}
 
@@ -87,7 +88,7 @@ export async function GET(request: NextRequest) {
 
 		if (!(userInfo.email && userInfo.id)) {
 			return NextResponse.redirect(
-				`${process.env.BETTER_AUTH_URL}/auth/error?error=invalid_user_info`
+				`${env.BETTER_AUTH_URL}/auth/error?error=invalid_user_info`
 			);
 		}
 
@@ -111,7 +112,7 @@ export async function GET(request: NextRequest) {
 				.set({
 					accessToken: tokens.access_token,
 					scope: scopeData,
-					updatedAt: now,
+					updatedAt: new Date(now),
 				})
 				.where(eq(account.id, existingAccount.id));
 		} else {
@@ -122,19 +123,19 @@ export async function GET(request: NextRequest) {
 				userId,
 				accessToken: tokens.access_token,
 				scope: scopeData,
-				createdAt: now,
-				updatedAt: now,
+				createdAt: new Date(now),
+				updatedAt: new Date(now),
 			});
 		}
 
 		const redirectUrl =
-			next || `${process.env.BETTER_AUTH_URL}/dashboard?vercel_integrated=true`;
+			next || `${env.BETTER_AUTH_URL}/dashboard?vercel_integrated=true`;
 
 		return NextResponse.redirect(redirectUrl);
 	} catch (error) {
 		console.error('Vercel OAuth callback error:', error);
 		return NextResponse.redirect(
-			`${process.env.BETTER_AUTH_URL}/auth/error?error=internal_error`
+			`${env.BETTER_AUTH_URL}/auth/error?error=internal_error`
 		);
 	}
 }
