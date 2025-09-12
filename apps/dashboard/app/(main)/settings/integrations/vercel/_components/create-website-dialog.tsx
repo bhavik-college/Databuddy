@@ -123,81 +123,89 @@ export function CreateWebsiteDialog({
 	return (
 		<Sheet onOpenChange={handleClose} open={isOpen}>
 			<SheetContent
-				className="w-full overflow-y-auto p-6 sm:max-w-2xl"
+				className="w-full overflow-y-auto p-0 sm:max-w-2xl"
 				side="right"
 			>
-				<SheetHeader className="space-y-3 border-border/50 border-b pb-6">
-					<div className="flex items-center gap-3">
-						<div className="rounded-lg border border-primary/20 bg-primary/10 p-3">
-							<GlobeIcon className="h-6 w-6 text-primary" weight="duotone" />
+				<div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+					<SheetHeader className="space-y-3 border-border/50 border-b p-5 pb-3">
+						<div className="flex items-start gap-3">
+							<div className="rounded border border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 p-2 shadow-sm">
+								<GlobeIcon className="h-5 w-5 text-primary" weight="duotone" />
+							</div>
+							<div className="flex-1 space-y-1">
+								<SheetTitle className="font-semibold text-foreground text-xl">
+									{isMultipleMode
+										? `Integrate ${websiteConfigs.length} Websites`
+										: 'Integrate Website'}
+								</SheetTitle>
+								<SheetDescription className="text-muted-foreground text-sm leading-relaxed">
+									{isMultipleMode
+										? `Set up Databuddy integration for ${selectedProject?.name} with environment-specific configurations`
+										: `Configure Databuddy integration for ${websiteConfigs[0]?.domain.name}`}
+								</SheetDescription>
+							</div>
 						</div>
-						<div>
-							<SheetTitle className="font-semibold text-foreground text-xl">
-								{isMultipleMode
-									? `Integrate ${websiteConfigs.length} Websites`
-									: 'Integrate Website'}
-							</SheetTitle>
-							<SheetDescription className="mt-1 text-muted-foreground">
-								{isMultipleMode
-									? `Integrate websites for ${selectedProject?.name} and configure environment variables`
-									: `Integrate website for ${websiteConfigs[0]?.domain.name} and configure environment variables`}
-							</SheetDescription>
-						</div>
-					</div>
-				</SheetHeader>
+					</SheetHeader>
+				</div>
 
-				<div className="space-y-6 pt-6">
+				<div className="space-y-4 p-5 pt-0">
 					{websiteConfigs.map((config, index) => (
 						<div
-							className="space-y-4 rounded-lg border bg-card p-4"
+							className="group space-y-4 rounded border border-border/50 bg-gradient-to-br from-card to-card/50 p-4 shadow-sm transition-all hover:border-border hover:shadow-md"
 							key={config.domain.name}
 						>
-							<div className="flex items-center justify-between border-border/50 border-b pb-3">
+							<div className="flex items-center justify-between">
 								<div className="flex items-center gap-3">
-									<div className="rounded bg-muted p-1.5">
-										<GlobeIcon className="h-4 w-4 text-muted-foreground" />
+									<div className="rounded bg-gradient-to-br from-muted to-muted/50 p-2 shadow-sm">
+										<GlobeIcon
+											className="h-4 w-4 text-foreground/70"
+											weight="duotone"
+										/>
 									</div>
-									<div className="flex items-center gap-2">
-										<span className="font-medium">{config.domain.name}</span>
-										{config.domain.verified ? (
-											<Badge
-												className="border-green-200 bg-green-50 text-green-700 text-xs"
-												variant="outline"
-											>
-												<CheckCircleIcon className="mr-1 h-3 w-3" />
-												Verified
-											</Badge>
-										) : (
-											<Badge
-												className="border-yellow-200 bg-yellow-50 text-xs text-yellow-700"
-												variant="outline"
-											>
-												<WarningIcon className="mr-1 h-3 w-3" />
-												Pending
-											</Badge>
+									<div className="space-y-1">
+										<div className="flex items-center gap-2">
+											<span className="font-semibold text-foreground">
+												{config.domain.name}
+											</span>
+											{config.domain.verified ? (
+												<Badge
+													className="border-emerald-200 bg-emerald-50 font-medium text-emerald-700 text-xs"
+													variant="outline"
+												>
+													<CheckCircleIcon className="mr-1.5 h-3 w-3" />
+													Verified
+												</Badge>
+											) : (
+												<Badge
+													className="border-amber-200 bg-amber-50 font-medium text-amber-700 text-xs"
+													variant="outline"
+												>
+													<WarningIcon className="mr-1.5 h-3 w-3" />
+													Pending
+												</Badge>
+											)}
+										</div>
+										{config.domain.gitBranch && (
+											<div className="flex items-center gap-2 text-muted-foreground text-sm">
+												<GitBranchIcon className="h-3.5 w-3.5" />
+												<span>
+													Connected to {config.domain.gitBranch} branch
+												</span>
+											</div>
 										)}
 									</div>
 								</div>
-								{config.domain.gitBranch && (
-									<Badge
-										className="border-muted bg-muted/50 text-muted-foreground text-xs"
-										variant="outline"
-									>
-										<GitBranchIcon className="mr-1 h-3 w-3" />
-										{config.domain.gitBranch}
-									</Badge>
-								)}
 							</div>
 
 							<div className="space-y-2">
 								<Label
-									className="font-medium text-sm"
+									className="font-medium text-foreground text-sm"
 									htmlFor={`name-${index}`}
 								>
 									Website Name
 								</Label>
 								<Input
-									className="h-9 rounded border-border/50 transition-colors hover:border-border focus:border-primary/50 focus:ring-primary/20"
+									className="h-9 rounded border-border/60 bg-background/50 transition-all hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
 									id={`name-${index}`}
 									onChange={(e) =>
 										updateWebsiteConfig(index, { name: e.target.value })
@@ -205,13 +213,23 @@ export function CreateWebsiteDialog({
 									placeholder={generateWebsitePlaceholder(config.domain.name)}
 									value={config.name}
 								/>
+								<p className="text-muted-foreground text-xs">
+									Leave empty to use the domain name as the website name
+								</p>
 							</div>
 
 							<div className="space-y-3">
-								<Label className="font-medium text-sm">
-									Target Environment
-								</Label>
-								<div className="flex flex-wrap gap-2">
+								<div className="space-y-1">
+									<Label className="font-medium text-foreground text-sm">
+										Target Environment
+									</Label>
+									<p className="text-muted-foreground text-xs leading-relaxed">
+										Choose which Vercel environment this website will be
+										deployed to. Production is limited to one domain per
+										project.
+									</p>
+								</div>
+								<div className="grid grid-cols-2 gap-2">
 									{['production', 'preview'].map((env) => {
 										const isUsedByOther =
 											env === 'production' &&
@@ -224,12 +242,15 @@ export function CreateWebsiteDialog({
 
 										return (
 											<Button
-												className="h-8 rounded text-xs transition-colors"
+												className={`h-10 rounded font-medium text-sm transition-all ${
+													isSelected
+														? 'border-primary/50 bg-primary text-primary-foreground shadow-sm hover:bg-primary/90'
+														: 'border-border/60 bg-background/50 text-foreground hover:border-border hover:bg-muted/50'
+												} ${isUsedByOther && !isSelected ? 'opacity-50' : ''}`}
 												disabled={isUsedByOther && !isSelected}
 												key={env}
 												onClick={() => {
 													if (isSelected) {
-														// Remove this environment
 														updateWebsiteConfig(index, {
 															target: config.target.filter((t) => t !== env),
 														});
@@ -237,54 +258,55 @@ export function CreateWebsiteDialog({
 														updateWebsiteConfig(index, { target: [env] });
 													}
 												}}
-												size="sm"
-												variant={isSelected ? 'default' : 'outline'}
+												variant="outline"
 											>
-												{env.charAt(0).toUpperCase() + env.slice(1)}
-												{isUsedByOther && !isSelected && ' (Used)'}
+												<div className="flex flex-col items-center">
+													<span className="capitalize">{env}</span>
+													{isUsedByOther && !isSelected && (
+														<span className="text-xs opacity-60">(Used)</span>
+													)}
+												</div>
 											</Button>
 										);
 									})}
 								</div>
-								<p className="text-muted-foreground text-xs">
-									Production can only be assigned to one domain. Preview can be
-									used by multiple domains.
-								</p>
 								{config.target.length === 0 && (
-									<p className="text-destructive text-xs">
-										Please select an environment for this domain.
-									</p>
+									<div className="rounded border border-destructive/20 bg-destructive/5 p-2">
+										<p className="font-medium text-destructive text-sm">
+											Please select an environment for this domain
+										</p>
+									</div>
 								)}
 							</div>
 
-							<div className="rounded border bg-muted/30 p-3">
+							<div className="rounded border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 p-3">
 								<div className="mb-2 flex items-center gap-2">
-									<div className="h-2 w-2 rounded-full bg-green-500" />
-									<Label className="font-medium text-sm">
+									<div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-sm" />
+									<Label className="font-medium text-foreground text-sm">
 										Environment Variable Preview
 									</Label>
 								</div>
-								<div className="space-y-2 text-sm">
-									<div className="flex items-center justify-between">
-										<span className="font-mono text-muted-foreground">
-											DATABUDDY_CLIENT_ID
+								<div className="space-y-2">
+									<div className="flex items-center justify-between rounded bg-background/50 p-2">
+										<span className="font-mono text-foreground text-xs">
+											NEXT_PUBLIC_DATABUDDY_CLIENT_ID
 										</span>
 										<Badge
-											className="bg-primary/10 text-primary text-xs"
+											className="border-emerald-200 bg-emerald-50 font-medium text-emerald-700 text-xs"
 											variant="outline"
 										>
 											Auto-generated
 										</Badge>
 									</div>
 									<div className="flex items-center justify-between">
-										<span className="text-muted-foreground">
+										<span className="font-medium text-foreground text-xs">
 											Target Environments:
 										</span>
 										<div className="flex gap-1">
 											{config.target.length > 0 ? (
 												config.target.map((env) => (
 													<Badge
-														className="text-xs"
+														className="bg-primary/20 font-medium text-primary text-xs"
 														key={env}
 														variant="secondary"
 													>
@@ -303,35 +325,45 @@ export function CreateWebsiteDialog({
 						</div>
 					))}
 
-					<div className="rounded border border-primary/20 bg-primary/5 p-4">
+					<div className="rounded border border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 p-4 shadow-sm">
 						<div className="mb-3 flex items-center gap-2">
-							<CheckCircleIcon className="h-5 w-5 text-primary" />
-							<h4 className="font-medium text-primary">Summary</h4>
+							<div className="rounded bg-primary/20 p-1.5">
+								<CheckCircleIcon
+									className="h-4 w-4 text-primary"
+									weight="duotone"
+								/>
+							</div>
+							<h4 className="font-medium text-primary">Integration Summary</h4>
 						</div>
-						<ul className="space-y-2 text-primary/80 text-sm">
-							<li className="flex items-center gap-2">
-								<div className="h-1.5 w-1.5 rounded-full bg-primary/60" />
-								<span>
-									Integrate {websiteConfigs.length} website
+						<div className="grid gap-2">
+							<div className="flex items-center gap-2 rounded bg-background/50 p-2">
+								<div className="h-1.5 w-1.5 rounded-full bg-primary shadow-sm" />
+								<span className="text-foreground text-sm">
+									Create {websiteConfigs.length} website
 									{websiteConfigs.length !== 1 ? 's' : ''} in Databuddy
 								</span>
-							</li>
-							<li className="flex items-center gap-2">
-								<div className="h-1.5 w-1.5 rounded-full bg-primary/60" />
-								<span>Generate unique client IDs for each website</span>
-							</li>
-							<li className="flex items-center gap-2">
-								<div className="h-1.5 w-1.5 rounded-full bg-primary/60" />
-								<span>
-									Add DATABUDDY_CLIENT_ID environment variables to Vercel
+							</div>
+							<div className="flex items-center gap-2 rounded bg-background/50 p-2">
+								<div className="h-1.5 w-1.5 rounded-full bg-primary shadow-sm" />
+								<span className="text-foreground text-sm">
+									Generate unique client IDs for tracking
 								</span>
-							</li>
-						</ul>
+							</div>
+							<div className="flex items-center gap-2 rounded bg-background/50 p-2">
+								<div className="h-1.5 w-1.5 rounded-full bg-primary shadow-sm" />
+								<span className="text-foreground text-sm">
+									Configure NEXT_PUBLIC_DATABUDDY_CLIENT_ID environment
+									variables
+								</span>
+							</div>
+						</div>
 					</div>
+				</div>
 
-					<div className="flex justify-end gap-3 border-border/50 border-t pt-6">
+				<div className="sticky bottom-0 border-border/50 border-t bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+					<div className="flex justify-end gap-3">
 						<Button
-							className="rounded transition-colors hover:bg-muted"
+							className="h-9 rounded px-4 font-medium transition-all hover:bg-muted/80"
 							disabled={isSaving}
 							onClick={handleClose}
 							variant="outline"
@@ -339,21 +371,21 @@ export function CreateWebsiteDialog({
 							Cancel
 						</Button>
 						<Button
-							className="relative rounded bg-gradient-to-r from-primary to-primary/90 transition-colors hover:from-primary/90 hover:to-primary"
+							className="relative h-9 rounded bg-gradient-to-r from-primary to-primary/90 px-4 font-medium shadow-sm transition-all hover:from-primary/90 hover:to-primary hover:shadow-md disabled:opacity-50"
 							disabled={!isFormValid || isSaving}
 							onClick={handleSubmit}
 						>
 							{isSaving && (
 								<div className="absolute left-3">
-									<div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground" />
+									<div className="h-3 w-3 animate-spin rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground" />
 								</div>
 							)}
-							<span className={isSaving ? 'ml-6' : ''}>
+							<span className={isSaving ? 'ml-6' : 'flex items-center gap-2'}>
 								{isSaving ? (
 									'Integrating...'
 								) : (
 									<>
-										<PlusIcon className="mr-2 h-4 w-4" />
+										<PlusIcon className="h-3 w-3" />
 										Integrate {websiteConfigs.length} Website
 										{websiteConfigs.length !== 1 ? 's' : ''}
 									</>
