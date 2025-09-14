@@ -261,7 +261,9 @@ export function CreateWebsiteDialog({
 												variant="outline"
 											>
 												<div className="flex flex-col items-center">
-													<span className="capitalize">{env}</span>
+													<span className="text-foreground capitalize">
+														{env}
+													</span>
 													{isUsedByOther && !isSelected && (
 														<span className="text-xs opacity-60">(Used)</span>
 													)}
