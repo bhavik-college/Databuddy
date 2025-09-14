@@ -100,7 +100,7 @@ export function CodeBlock({
 			)}
 			<div className="relative">
 				<div
-					className="[&_pre]:!bg-transparent [&_code]:!bg-transparent [&_*]:!font-mono overflow-hidden rounded border bg-slate-50 p-6 text-sm leading-relaxed dark:bg-slate-900"
+					className="[&_pre]:!bg-transparent [&_code]:!bg-transparent [&_*]:!font-mono overflow-hidden rounded border bg-muted p-6 text-sm leading-relaxed"
 					dangerouslySetInnerHTML={{ __html: highlightedCode }}
 					style={{
 						fontSize: '14px',
@@ -110,13 +110,16 @@ export function CodeBlock({
 					}}
 				/>
 				<Button
-					className="absolute top-2 right-2 h-6 w-6 rounded border-0 shadow-none transition-colors duration-200 hover:bg-white/80 dark:hover:bg-slate-800/80"
+					className="absolute top-2 right-2 h-6 w-6 rounded border-0 shadow-none transition-colors duration-200 hover:bg-accent"
 					onClick={onCopy}
 					size="icon"
 					variant="ghost"
 				>
 					{copied ? (
-						<CheckIcon className="h-3.5 w-3.5 text-green-500" weight="bold" />
+						<CheckIcon
+							className="h-3.5 w-3.5 text-accent-foreground"
+							weight="bold"
+						/>
 					) : (
 						<ClipboardIcon
 							className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground"
@@ -209,17 +212,17 @@ export function TrackingOptionCard({
 				<Switch checked={isEnabled} onCheckedChange={onToggle} />
 			</div>
 			{required && !isEnabled && (
-				<div className="mb-3 rounded border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950">
+				<div className="mb-3 rounded border border-destructive/20 bg-destructive/10 p-3">
 					<div className="flex items-start gap-2">
 						<WarningCircleIcon
-							className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-600 dark:text-red-400"
+							className="mt-0.5 h-4 w-4 flex-shrink-0 text-destructive"
 							weight="duotone"
 						/>
 						<div>
-							<span className="font-medium text-red-800 text-sm dark:text-red-200">
+							<span className="font-medium text-destructive text-sm">
 								Warning:
 							</span>
-							<p className="mt-1 text-red-700 text-xs dark:text-red-300">
+							<p className="mt-1 text-destructive text-xs">
 								Disabling page views will prevent analytics from working. This
 								option is required.
 							</p>

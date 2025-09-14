@@ -204,13 +204,13 @@ export function StatCard({
 	const getVariantClasses = () => {
 		switch (variant) {
 			case 'success':
-				return 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900';
+				return 'bg-accent/10 border-accent/20';
 			case 'info':
-				return 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900';
+				return 'bg-accent/10 border-accent/20';
 			case 'warning':
-				return 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-900';
+				return 'bg-muted border-border';
 			case 'danger':
-				return 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900';
+				return 'bg-destructive/10 border-destructive/20';
 			default:
 				return '';
 		}

@@ -833,9 +833,9 @@ function DeleteWebsiteDialog({
 								? This action cannot be undone.
 							</p>
 
-							<div className="rounded-md bg-amber-50 p-3 text-amber-700 text-sm dark:bg-amber-950/20 dark:text-amber-400">
+							<div className="rounded-md bg-muted p-3 text-muted-foreground text-sm">
 								<div className="flex items-start gap-2">
-									<WarningCircleIcon className="h-5 w-5 flex-shrink-0 text-amber-500" />
+									<WarningCircleIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
 									<div className="space-y-1">
 										<p className="font-medium">Warning:</p>
 										<ul className="list-disc space-y-1 pl-4 text-xs">
@@ -852,7 +852,7 @@ function DeleteWebsiteDialog({
 				<AlertDialogFooter>
 					<AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
 					<AlertDialogAction
-						className="bg-red-600 text-white hover:bg-red-700 hover:text-white"
+						className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 						disabled={isDeleting}
 						onClick={onConfirmDelete}
 					>

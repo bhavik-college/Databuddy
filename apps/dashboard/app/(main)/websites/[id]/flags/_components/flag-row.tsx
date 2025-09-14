@@ -81,9 +81,7 @@ export function FlagRow({
 		switch (status) {
 			case 'active':
 				return (
-					<Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
-						● Active
-					</Badge>
+					<Badge className="bg-accent text-accent-foreground">● Active</Badge>
 				);
 			case 'inactive':
 				return <Badge variant="secondary">○ Inactive</Badge>;
