@@ -17,7 +17,7 @@ const config = {
 		temperature: 0.1,
 	},
 	agent: {
-		model: 'openai/gpt-4o',
+		model: 'openai/gpt-5',
 		stepCount: 10,
 		temperature: 0.2,
 	},
@@ -44,7 +44,7 @@ function getPrompt(
 	}
 }
 
-export async function handleChat(
+export async function handleMessage(
 	messages: ModelMessage[],
 	mode: Mode,
 	websiteId: string,
@@ -55,12 +55,12 @@ export async function handleChat(
 
 	const response = streamText({
 		model: openrouter.chat(modeConfig.model),
+		system: prompt,
 		tools,
 		stopWhen: stepCountIs(modeConfig.stepCount),
-		system: prompt,
 		messages,
 		temperature: modeConfig.temperature,
-		experimental_transform: smoothStream({ chunking: 'line' }),
+		experimental_transform: smoothStream({ chunking: 'word' }),
 	});
 
 	return response.toUIMessageStreamResponse();
