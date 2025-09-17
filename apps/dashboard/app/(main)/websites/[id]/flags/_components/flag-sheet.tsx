@@ -31,7 +31,6 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from '@/components/ui/sheet';
-import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { trpc } from '@/lib/trpc';
@@ -96,7 +95,6 @@ export function FlagSheet({
 	flag,
 }: FlagSheetProps) {
 	const [keyManuallyEdited, setKeyManuallyEdited] = useState(false);
-	const [sliderValue, setSliderValue] = useState(0);
 	const isEditing = Boolean(flag);
 
 	const form = useForm<FlagFormData>({
@@ -132,10 +130,8 @@ export function FlagSheet({
 					rolloutPercentage: flag.rolloutPercentage || 0,
 					rules: (flag.rules as any[]) || [],
 				});
-				setSliderValue(flag.rolloutPercentage || 0);
 			} else {
 				form.reset();
-				setSliderValue(0);
 			}
 			setKeyManuallyEdited(false);
 		}
@@ -425,48 +421,39 @@ export function FlagSheet({
 										control={form.control}
 										name="rolloutPercentage"
 										render={({ field }) => {
-											useEffect(() => {
-												const formValue = Number(field.value) || 0;
-												if (formValue !== sliderValue) {
-													setSliderValue(formValue);
-												}
-											}, [field.value]);
+											const currentValue = Number(field.value) || 0;
 
 											return (
 												<FormItem>
 													<div className="flex items-center justify-between">
 														<FormLabel>Rollout Percentage</FormLabel>
 														<span className="font-mono font-semibold text-sm">
-															{sliderValue}%
+															{currentValue}%
 														</span>
 													</div>
 													<FormControl>
 														<div className="space-y-3">
-															<Slider
-																className="w-full"
-																max={100}
-																min={0}
-																onValueChange={(values) => {
-																	const newValue = values[0];
-																	setSliderValue(newValue);
-																	field.onChange(newValue);
-																}}
-																step={5}
-																value={[sliderValue]}
+															<input
+																className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
+																max="100"
+																min="0"
+																onChange={(e) =>
+																	field.onChange(Number(e.target.value))
+																}
+																step="5"
+																type="range"
+																value={currentValue}
 															/>
 															<div className="flex justify-center gap-2">
 																{[0, 25, 50, 75, 100].map((preset) => (
 																	<button
 																		className={`rounded border px-2 py-1 text-xs transition-colors ${
-																			sliderValue === preset
+																			currentValue === preset
 																				? 'border-primary bg-primary text-primary-foreground'
 																				: 'border-border hover:border-primary/50'
 																		}`}
 																		key={preset}
-																		onClick={() => {
-																			setSliderValue(preset);
-																			field.onChange(preset);
-																		}}
+																		onClick={() => field.onChange(preset)}
 																		type="button"
 																	>
 																		{preset}%
