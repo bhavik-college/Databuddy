@@ -1,5 +1,6 @@
 'use client';
 
+import { useFlags } from '@databuddy/sdk/react';
 import { FlagIcon } from '@phosphor-icons/react';
 import { useAtom } from 'jotai';
 import { useParams } from 'next/navigation';
@@ -56,6 +57,8 @@ export default function FlagsPage() {
 	const [editingFlag, setEditingFlag] = useState<Flag | null>(null);
 
 	const { data: website } = useWebsite(websiteId);
+	const { isEnabled } = useFlags();
+	const isExperimentEnabled = isEnabled('experiment-50');
 
 	const {
 		data: flags,
@@ -140,6 +143,29 @@ export default function FlagsPage() {
 				websiteId={websiteId}
 				websiteName={website?.name || undefined}
 			/>
+
+			{isExperimentEnabled && (
+				<Card className="border bg-primary/10">
+					<CardContent className="flex items-center justify-between gap-3 p-4">
+						<div className="flex items-center gap-3">
+							<FlagIcon
+								className="h-5 w-5 text-primary"
+								size={16}
+								weight="duotone"
+							/>
+							<div>
+								<p className="font-medium text-foreground text-sm">
+									You found a hidden feature!
+								</p>
+								<p className="text-muted-foreground text-xs">
+									Only 50% of users can see this, you're one of them! (This is a
+									feature flag:)
+								</p>
+							</div>
+						</div>
+					</CardContent>
+				</Card>
+			)}
 
 			<Suspense fallback={<FlagsListSkeleton />}>
 				<FlagsList

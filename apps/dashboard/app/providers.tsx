@@ -81,19 +81,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 }
 
 function FlagsProviderWrapper({ children }: { children: React.ReactNode }) {
-	const { data: session, isPending, error } = authClient.useSession();
-	const isLocalhost = process.env.NODE_ENV === 'development';
-
+	const { data: session, isPending } = authClient.useSession();
 	return (
 		<FlagsProvider
-			// apiUrl={
-			// 	isLocalhost ? 'http://localhost:3001' : 'https://api.databuddy.cc'
-			// }
-			clientId={
-				isLocalhost
-					? 'OXmNQsViBT-FOS_wZCTHc'
-					: '3ed1fce1-5a56-4cb6-a977-66864f6d18e3'
-			}
+			clientId="3ed1fce1-5a56-4cb6-a977-66864f6d18e3"
 			isPending={isPending}
 			user={
 				session?.user
