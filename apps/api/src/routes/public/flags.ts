@@ -42,7 +42,7 @@ interface FlagResult {
 	reason: string;
 }
 
-function hashString(str: string): number {
+export function hashString(str: string): number {
 	let hash = 0;
 	for (let i = 0; i < str.length; i++) {
 		const char = str.charCodeAt(i);
@@ -52,7 +52,9 @@ function hashString(str: string): number {
 	return Math.abs(hash);
 }
 
-function parseProperties(propertiesJson?: string): Record<string, unknown> {
+export function parseProperties(
+	propertiesJson?: string
+): Record<string, unknown> {
 	if (!propertiesJson) {
 		return {};
 	}
@@ -65,7 +67,7 @@ function parseProperties(propertiesJson?: string): Record<string, unknown> {
 	}
 }
 
-function evaluateStringRule(
+export function evaluateStringRule(
 	value: string | undefined,
 	rule: FlagRule
 ): boolean {
@@ -94,7 +96,7 @@ function evaluateStringRule(
 	}
 }
 
-function evaluateValueRule(value: unknown, rule: FlagRule): boolean {
+export function evaluateValueRule(value: unknown, rule: FlagRule): boolean {
 	const { operator, value: ruleValue, values } = rule;
 
 	switch (operator) {
@@ -115,8 +117,7 @@ function evaluateValueRule(value: unknown, rule: FlagRule): boolean {
 	}
 }
 
-function evaluateRule(rule: FlagRule, context: UserContext): boolean {
-	// Handle batch mode
+export function evaluateRule(rule: FlagRule, context: UserContext): boolean {
 	if (rule.batch && rule.batchValues?.length) {
 		switch (rule.type) {
 			case 'user_id': {
@@ -168,7 +169,7 @@ function evaluateRule(rule: FlagRule, context: UserContext): boolean {
 	}
 }
 
-function evaluateFlag(flag: any, context: UserContext): FlagResult {
+export function evaluateFlag(flag: any, context: UserContext): FlagResult {
 	if (flag.rules && Array.isArray(flag.rules) && flag.rules.length > 0) {
 		for (const rule of flag.rules as FlagRule[]) {
 			if (evaluateRule(rule, context)) {
