@@ -40,8 +40,8 @@ const CustomTooltip = ({
 	}
 
 	return (
-		<div className="min-w-[200px] rounded border border-border/50 bg-card p-4">
-			<div className="mb-3 flex items-center gap-2 border-border/30 border-b pb-2">
+		<div className="min-w-[200px] rounded-b bg-card p-4">
+			<div className="mb-3 flex items-center gap-2 pb-2">
 				<div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
 				<p className="font-semibold text-foreground text-sm">{label}</p>
 			</div>
