@@ -383,7 +383,7 @@ export const PagesBuilders: Record<string, SimpleQueryConfig> = {
 
 			// Use session attribution if helpers are provided
 			const sessionAttributionCTE = helpers?.sessionAttributionCTE
-				? `${helpers.sessionAttributionCTE('time')}`
+				? `${helpers.sessionAttributionCTE('time')},`
 				: '';
 
 			const baseQuery = helpers?.sessionAttributionCTE

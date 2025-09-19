@@ -30,30 +30,15 @@ import {
 import { MetricsChart } from '@/components/charts/metrics-chart';
 import { BrowserIcon, OSIcon } from '@/components/icon';
 import { useBatchDynamicQuery } from '@/hooks/use-dynamic-query';
-import {
-	formatCompact,
-	formatDuration,
-	normalizeDurationSeconds,
-} from '@/lib/analytics/formatters';
-import {
-	filterFutureEvents as filterFutureEventsByTz,
-	formatDateByGranularity,
-} from '@/lib/analytics/time';
 import { useTableTabs } from '@/lib/table-tabs';
 import { getUserTimezone } from '@/lib/timezone';
 import {
 	metricVisibilityAtom,
 	toggleMetricAtom,
 } from '@/stores/jotai/chartAtoms';
-import type {
-	CellInfo as CellInfoTyped,
-	ChartDataPoint,
-	PageRow,
-	ReferrerRow,
-	TechnologyRow,
-} from '@/types/overview';
 import {
 	calculatePercentChange,
+	formatDateByGranularity,
 	getColorVariant,
 } from '../utils/analytics-helpers';
 import { PercentageBadge } from '../utils/technology-helpers';
@@ -66,7 +51,44 @@ const CustomEventsSection = dynamic(() =>
 	}))
 );
 
-type CellInfo = CellInfoTyped<unknown>;
+interface ChartDataPoint {
+	date: string;
+	pageviews?: number;
+	visitors?: number;
+	sessions?: number;
+	bounce_rate?: number;
+	avg_session_duration?: number;
+	[key: string]: unknown;
+}
+
+interface TechnologyData {
+	name: string;
+	visitors: number;
+	pageviews?: number;
+	percentage: number;
+	icon?: string;
+	category?: string;
+}
+
+interface CellInfo {
+	getValue: () => unknown;
+	row: { original: unknown };
+}
+
+interface AnalyticsRowData {
+	name: string;
+	visitors?: number;
+	pageviews?: number;
+	percentage?: number;
+	referrer?: string;
+}
+
+interface PageRowData {
+	name: string;
+	visitors?: number;
+	pageviews?: number;
+	percentage?: number;
+}
 
 // Constants
 const MIN_PREVIOUS_SESSIONS_FOR_TREND = 5;
@@ -250,7 +272,7 @@ export function WebsiteOverviewTab({
 			primaryField: 'name',
 			primaryHeader: 'Source',
 			customCell: referrerCustomCell,
-			getFilter: (row: ReferrerRow) => {
+			getFilter: (row: AnalyticsRowData) => {
 				return {
 					field: 'referrer',
 					value: row.referrer || '',
@@ -262,7 +284,7 @@ export function WebsiteOverviewTab({
 			label: 'UTM Sources',
 			primaryField: 'name',
 			primaryHeader: 'Source',
-			getFilter: (row: ReferrerRow) => ({
+			getFilter: (row: AnalyticsRowData) => ({
 				field: 'utm_source',
 				value: row.name,
 			}),
@@ -272,7 +294,7 @@ export function WebsiteOverviewTab({
 			label: 'UTM Mediums',
 			primaryField: 'name',
 			primaryHeader: 'Medium',
-			getFilter: (row: ReferrerRow) => ({
+			getFilter: (row: AnalyticsRowData) => ({
 				field: 'utm_medium',
 				value: row.name,
 			}),
@@ -282,7 +304,7 @@ export function WebsiteOverviewTab({
 			label: 'UTM Campaigns',
 			primaryField: 'name',
 			primaryHeader: 'Campaign',
-			getFilter: (row: ReferrerRow) => ({
+			getFilter: (row: AnalyticsRowData) => ({
 				field: 'utm_campaign',
 				value: row.name,
 			}),
@@ -295,7 +317,7 @@ export function WebsiteOverviewTab({
 			label: 'Top Pages',
 			primaryField: 'name',
 			primaryHeader: 'Page',
-			getFilter: (row: { name: string }) => ({
+			getFilter: (row: PageRowData) => ({
 				field: 'path',
 				value: row.name,
 			}),
@@ -305,7 +327,7 @@ export function WebsiteOverviewTab({
 			label: 'Entry Pages',
 			primaryField: 'name',
 			primaryHeader: 'Page',
-			getFilter: (row: PageRow) => ({
+			getFilter: (row: PageRowData) => ({
 				field: 'path',
 				value: row.name,
 			}),
@@ -315,7 +337,7 @@ export function WebsiteOverviewTab({
 			label: 'Exit Pages',
 			primaryField: 'name',
 			primaryHeader: 'Page',
-			getFilter: (row: PageRow) => ({
+			getFilter: (row: PageRowData) => ({
 				field: 'path',
 				value: row.name,
 			}),
@@ -334,11 +356,23 @@ export function WebsiteOverviewTab({
 	const dateDiff = dateTo.diff(dateFrom, 'day');
 
 	const filterFutureEvents = useCallback(
-		(events: MetricPoint[]) =>
-			filterFutureEventsByTz(
-				events,
-				(dateRange.granularity as 'hourly' | 'daily') || 'daily'
-			),
+		(events: MetricPoint[]) => {
+			const userTimezone = getUserTimezone();
+			const now = dayjs().tz(userTimezone);
+
+			return events.filter((event: MetricPoint) => {
+				const eventDate = dayjs.utc(event.date).tz(userTimezone);
+
+				if (dateRange.granularity === 'hourly') {
+					return eventDate.isBefore(now);
+				}
+
+				const endOfToday = now.endOf('day');
+				return (
+					eventDate.isBefore(endOfToday) || eventDate.isSame(endOfToday, 'day')
+				);
+			});
+		},
 		[dateRange.granularity]
 	);
 
@@ -349,10 +383,7 @@ export function WebsiteOverviewTab({
 		const filteredEvents = filterFutureEvents(analytics.events_by_date);
 		return filteredEvents.map((event: MetricPoint): ChartDataPoint => {
 			const filtered: ChartDataPoint = {
-				date: formatDateByGranularity(
-					event.date,
-					(dateRange.granularity as 'hourly' | 'daily') || 'daily'
-				),
+				date: formatDateByGranularity(event.date, dateRange.granularity),
 			};
 			if (visibleMetrics.pageviews) {
 				filtered.pageviews = event.pageviews as number;
@@ -403,14 +434,19 @@ export function WebsiteOverviewTab({
 			pageviews: createChartSeries('pageviews'),
 			pagesPerSession: createChartSeries('pages_per_session'),
 			bounceRate: createChartSeries('bounce_rate'),
-			sessionDuration: createChartSeries('avg_session_duration', (value) =>
-				normalizeDurationSeconds(value)
-			),
+			sessionDuration: createChartSeries('avg_session_duration', (value) => {
+				if (value < 60) {
+					return Math.round(value);
+				}
+				const minutes = Math.floor(value / 60);
+				const seconds = Math.round(value % 60);
+				return minutes * 60 + seconds;
+			}),
 		};
 	}, [analytics.events_by_date, dateRange.granularity, filterFutureEvents]);
 
 	const createTechnologyCell = (type: 'browser' | 'os') => (info: CellInfo) => {
-		const entry = info.row.original as TechnologyRow;
+		const entry = info.row.original as TechnologyData;
 		const IconComponent = type === 'browser' ? BrowserIcon : OSIcon;
 		return (
 			<div className="flex items-center gap-3">
@@ -421,20 +457,31 @@ export function WebsiteOverviewTab({
 	};
 
 	const formatNumber = useCallback(
-		(value: number | null | undefined): string =>
-			formatCompact((value as number) || 0),
+		(value: number | null | undefined): string => {
+			if (value == null || Number.isNaN(value)) {
+				return '0';
+			}
+			return Intl.NumberFormat(undefined, {
+				notation: 'compact',
+				maximumFractionDigits: 1,
+			}).format(value);
+		},
 		[]
 	);
 
-	const formatTimeSeconds = useCallback(
-		(seconds: number): string => formatDuration(seconds),
-		[]
-	);
+	const formatTimeSeconds = useCallback((seconds: number): string => {
+		if (seconds < 60) {
+			return `${seconds.toFixed(1)}s`;
+		}
+		const minutes = Math.floor(seconds / 60);
+		const remainingSeconds = Math.round(seconds % 60);
+		return `${minutes}m ${remainingSeconds}s`;
+	}, []);
 
 	const createTimeCell = (info: CellInfo) => {
 		const seconds = info.getValue() as number;
 		return (
-			<span className="font-medium text-sidebar-foreground">
+			<span className="font-medium text-foreground">
 				{formatTimeSeconds(seconds)}
 			</span>
 		);
@@ -453,7 +500,7 @@ export function WebsiteOverviewTab({
 			cell: (info: CellInfo) => {
 				const name = info.getValue() as string;
 				return (
-					<span className="font-medium text-sidebar-foreground" title={name}>
+					<span className="font-medium text-foreground" title={name}>
 						{name}
 					</span>
 				);
@@ -470,7 +517,7 @@ export function WebsiteOverviewTab({
 			accessorKey: 'sessions_with_time',
 			header: 'Sessions',
 			cell: (info: CellInfo) => (
-				<span className="font-medium text-sidebar-foreground">
+				<span className="font-medium text-foreground">
 					{formatNumber(info.getValue() as number)}
 				</span>
 			),
@@ -480,7 +527,7 @@ export function WebsiteOverviewTab({
 			accessorKey: 'visitors',
 			header: 'Visitors',
 			cell: (info: CellInfo) => (
-				<span className="font-medium text-sidebar-foreground">
+				<span className="font-medium text-foreground">
 					{formatNumber(info.getValue() as number)}
 				</span>
 			),
@@ -499,8 +546,8 @@ export function WebsiteOverviewTab({
 			id: 'page_time_analysis',
 			label: 'Time Analysis',
 			data: analytics.page_time_analysis || [],
-			columns: pageTimeColumns as any,
-			getFilter: (row: PageRow) => ({
+			columns: pageTimeColumns,
+			getFilter: (row: PageRowData) => ({
 				field: 'path',
 				value: row.name,
 			}),
@@ -522,7 +569,7 @@ export function WebsiteOverviewTab({
 			accessorKey: 'visitors',
 			header: 'Visitors',
 			cell: (info: CellInfo) => (
-				<span className="font-medium text-sidebar-foreground">
+				<span className="font-medium">
 					{formatNumber(info.getValue() as number)}
 				</span>
 			),
@@ -547,7 +594,7 @@ export function WebsiteOverviewTab({
 			accessorKey: 'visitors',
 			header: 'Visitors',
 			cell: (info: CellInfo) => (
-				<span className="font-medium text-sidebar-foreground">
+				<span className="font-medium">
 					{formatNumber(info.getValue() as number)}
 				</span>
 			),
@@ -557,7 +604,7 @@ export function WebsiteOverviewTab({
 			accessorKey: 'pageviews',
 			header: 'Pageviews',
 			cell: (info: CellInfo) => (
-				<span className="font-medium text-sidebar-foreground">
+				<span className="font-medium">
 					{formatNumber(info.getValue() as number)}
 				</span>
 			),
@@ -788,10 +835,12 @@ export function WebsiteOverviewTab({
 						title: 'PAGES/SESSION',
 						value: analytics.summary
 							? analytics.summary.sessions > 0
-								? analytics.summary.pageviews / analytics.summary.sessions
-								: 0
-							: 0,
-						description: undefined,
+								? (
+										analytics.summary.pageviews / analytics.summary.sessions
+									).toFixed(1)
+								: '0'
+							: '0',
+						description: '',
 						icon: LayoutIcon,
 						chartData: miniChartData.pagesPerSession,
 						trend: calculateTrends.pages_per_session,
@@ -800,8 +849,10 @@ export function WebsiteOverviewTab({
 					{
 						id: 'bounce-rate-chart',
 						title: 'BOUNCE RATE',
-						value: analytics.summary?.bounce_rate || 0,
-						description: undefined,
+						value: analytics.summary?.bounce_rate
+							? `${analytics.summary.bounce_rate.toFixed(1)}%`
+							: '0%',
+						description: '',
 						icon: CursorIcon,
 						chartData: miniChartData.bounceRate,
 						trend: calculateTrends.bounce_rate,
@@ -816,18 +867,43 @@ export function WebsiteOverviewTab({
 					{
 						id: 'session-duration-chart',
 						title: 'SESSION DURATION',
-						value: analytics.summary?.avg_session_duration || 0,
-						description: undefined,
+						value: (() => {
+							const duration = analytics.summary?.avg_session_duration;
+							if (!duration) {
+								return '0s';
+							}
+							if (duration < 60) {
+								return `${duration.toFixed(1)}s`;
+							}
+							const minutes = Math.floor(duration / 60);
+							const seconds = Math.round(duration % 60);
+							return `${minutes}m ${seconds}s`;
+						})(),
+						description: '',
 						icon: TimerIcon,
 						chartData: miniChartData.sessionDuration,
 						trend: calculateTrends.session_duration,
-						formatValue: (value: number) => formatDuration(value),
-						formatChartValue: (value: number) => formatDuration(value),
+						formatValue: (value: number) => {
+							if (value < 60) {
+								return `${Math.round(value)}s`;
+							}
+							const minutes = Math.floor(value / 60);
+							const seconds = Math.round(value % 60);
+							return `${minutes}m ${seconds}s`;
+						},
+						formatChartValue: (value: number) => {
+							if (value < 60) {
+								return `${Math.round(value)}s`;
+							}
+							const minutes = Math.floor(value / 60);
+							const seconds = Math.round(value % 60);
+							return `${minutes}m ${seconds}s`;
+						},
 					},
 				].map((metric) => (
 					<StatCard
 						chartData={isLoading ? undefined : metric.chartData}
-						className="h-full min-h-[140px]"
+						className="h-full"
 						description={
 							metric.description &&
 							metric.id !== 'pages-per-session-chart' &&
@@ -873,12 +949,7 @@ export function WebsiteOverviewTab({
 						</p>
 						{dateRange.granularity === 'hourly' && dateDiff > 7 && (
 							<div className="mt-1 flex items-center gap-1 text-amber-600 text-xs">
-								<WarningIcon
-									aria-label="Performance warning"
-									size={16}
-									weight="fill"
-								/>
-								<span className="sr-only">Performance notice:</span>
+								<WarningIcon size={16} weight="fill" />
 								<span>Large date ranges may affect performance</span>
 							</div>
 						)}
@@ -900,13 +971,8 @@ export function WebsiteOverviewTab({
 						/>
 					</div>
 				</div>
-				<div className="min-h-[350px]">
-					<MetricsChart
-						className="rounded-b border-0"
-						data={chartData}
-						height={350}
-						isLoading={isLoading}
-					/>
+				<div>
+					<MetricsChart data={chartData} height={350} isLoading={isLoading} />
 				</div>
 			</div>
 
@@ -914,7 +980,6 @@ export function WebsiteOverviewTab({
 			<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
 				<DataTable
 					description="Referrers and campaign data"
-					emptyMessage="No traffic sources for this range"
 					isLoading={isLoading}
 					minHeight={350}
 					onAddFilter={onAddFilter}
@@ -924,7 +989,6 @@ export function WebsiteOverviewTab({
 
 				<DataTable
 					description="Top pages and entry/exit points"
-					emptyMessage="No page data for this range"
 					isLoading={isLoading}
 					minHeight={350}
 					onAddFilter={onAddFilter}
@@ -946,7 +1010,6 @@ export function WebsiteOverviewTab({
 					columns={deviceColumns}
 					data={analytics.device_types || []}
 					description="Device breakdown"
-					emptyMessage="No device data for this range"
 					initialPageSize={8}
 					isLoading={isLoading}
 					minHeight={350}
@@ -958,7 +1021,7 @@ export function WebsiteOverviewTab({
 							label: 'Devices',
 							data: analytics.device_types || [],
 							columns: deviceColumns,
-							getFilter: (row: TechnologyRow) => {
+							getFilter: (row: TechnologyData) => {
 								const deviceDisplayToFilterMap: Record<string, string> = {
 									laptop: 'mobile',
 									tablet: 'tablet',
@@ -978,7 +1041,6 @@ export function WebsiteOverviewTab({
 					columns={browserColumns}
 					data={analytics.browser_versions || []}
 					description="Browser breakdown"
-					emptyMessage="No browser data for this range"
 					initialPageSize={8}
 					isLoading={isLoading}
 					minHeight={350}
@@ -990,7 +1052,7 @@ export function WebsiteOverviewTab({
 							label: 'Browsers',
 							data: analytics.browser_versions || [],
 							columns: browserColumns,
-							getFilter: (row: TechnologyRow) => ({
+							getFilter: (row: TechnologyData) => ({
 								field: 'browser_name',
 								value: row.name,
 							}),
@@ -1003,7 +1065,6 @@ export function WebsiteOverviewTab({
 					columns={osColumns}
 					data={analytics.operating_systems || []}
 					description="OS breakdown"
-					emptyMessage="No OS data for this range"
 					initialPageSize={8}
 					isLoading={isLoading}
 					minHeight={350}
@@ -1015,7 +1076,7 @@ export function WebsiteOverviewTab({
 							label: 'Operating Systems',
 							data: analytics.operating_systems || [],
 							columns: osColumns,
-							getFilter: (row: TechnologyRow) => ({
+							getFilter: (row: TechnologyData) => ({
 								field: 'os_name',
 								value: row.name,
 							}),
