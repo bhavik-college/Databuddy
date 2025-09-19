@@ -418,11 +418,9 @@ export const websitesRouter = createTRPCRouter({
 				'read'
 			);
 
-			// Check if website has Vercel integration (has NEXT_PUBLIC_DATABUDDY_CLIENT_ID env var)
 			const hasVercelIntegration = !!(website.integrations as any)?.vercel
 				?.environments;
 
-			// Always check for actual tracking events
 			const trackingCheckResult = await chQuery<{ count: number }>(
 				`SELECT COUNT(*) as count FROM analytics.events WHERE client_id = {websiteId:String} AND event_name = 'screen_view' LIMIT 1`,
 				{ websiteId: input.websiteId }
