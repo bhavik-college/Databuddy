@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/elastic-slider';
 import {
 	Form,
 	FormControl,
@@ -426,23 +427,14 @@ export function FlagSheet({
 
 											return (
 												<FormItem>
-													<div className="flex items-center justify-between">
-														<FormLabel>Rollout Percentage</FormLabel>
-														<span className="font-mono font-semibold text-sm">
-															{currentValue}%
-														</span>
-													</div>
+													<FormLabel>Rollout Percentage</FormLabel>
 													<FormControl>
-														<div className="space-y-3">
-															<input
-																className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
-																max="100"
-																min="0"
-																onChange={(e) =>
-																	field.onChange(Number(e.target.value))
-																}
-																step="5"
-																type="range"
+														<div className="space-y-4">
+															<Slider
+																max={100}
+																min={0}
+																onValueChange={field.onChange}
+																step={5}
 																value={currentValue}
 															/>
 															<div className="flex justify-center gap-2">
