@@ -77,7 +77,7 @@ function formatBrowserName(browser: string): string {
 }
 
 function determineEventType(
-	row: UmamiCsvRow,
+	_row: UmamiCsvRow,
 	isLastInSession = false
 ): 'screen_view' | 'page_exit' {
 	if (isLastInSession) {
@@ -111,7 +111,7 @@ export const umamiAdapter = (
 
 		const lastInSessionMap = new Map<string, boolean>();
 
-		for (const [sessionId, sessionEvents] of sessionGroups) {
+		for (const [_sessionId, sessionEvents] of sessionGroups) {
 			if (sessionEvents.length >= 2) {
 				sessionEvents.sort(
 					(a, b) =>

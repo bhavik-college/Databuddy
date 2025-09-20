@@ -5,8 +5,8 @@
     "build": "turbo run build",
     "dev": "dotenv -- turbo run dev",
     "start": "turbo run start",
-    "lint": "bunx biome check ./",
-    "format": "bunx --bun biome lint --write --unsafe ./",
+    "lint": "npx ultracite@latest check",
+    "format": "npx ultracite@latest fix",
     "check-types": "tsc --noEmit --project .",
     "generate-db": "turbo run generate --filter=@databuddy/db",
     "db:studio": "dotenv -- turbo run db:studio",
@@ -71,9 +71,9 @@
       "@logtail/edge": "^0.5.4",
       "@logtail/js": "^0.5.5",
       "@logtail/pino": "^0.5.5",
-      "@biomejs/biome": "2.1.2",
+      "@biomejs/biome": "2.2.2",
       "@types/bun": "latest",
-      "ultracite": "5.0.49",
+      "ultracite": "5.3.10",
       "turbo": "^2.5.2"
     }
   },

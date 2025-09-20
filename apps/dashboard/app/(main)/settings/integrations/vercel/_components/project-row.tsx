@@ -98,7 +98,7 @@ const TriageMenu = ({
 	) => Promise<void>;
 }) => {
 	const getTriageActions = (domainStatus: any) => {
-		const actions = [];
+		const actions: any[] = [];
 
 		if (domainStatus.status === 'orphaned') {
 			actions.push({
@@ -462,6 +462,12 @@ export function ProjectRow({
 			<div
 				className="flex cursor-pointer items-center justify-between p-4"
 				onClick={onToggle}
+				onKeyUp={(e) => {
+					if (e.key === 'Enter' || e.key === ' ') {
+						e.preventDefault();
+						onToggle();
+					}
+				}}
 			>
 				<div className="flex items-center">
 					<motion.div
@@ -576,6 +582,13 @@ export function ProjectRow({
 													<div
 														className="flex cursor-pointer items-center gap-2"
 														onClick={handleSelectAll}
+														onKeyUp={(e) => {
+															if (e.key === 'Enter' || e.key === ' ') {
+																e.preventDefault();
+																handleSelectAll();
+															}
+														}}
+														type="button"
 													>
 														<Checkbox
 															checked={

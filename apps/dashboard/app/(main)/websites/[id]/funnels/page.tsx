@@ -92,7 +92,7 @@ export default function FunnelsPage() {
 	// Intersection observer for lazy loading
 	const pageRef = useRef<HTMLDivElement>(null);
 
-	const { isTrackingSetup, refetchTrackingSetup } = useTrackingSetup(websiteId);
+	const { refetchTrackingSetup } = useTrackingSetup(websiteId);
 
 	const { formattedDateRangeState, dateRange } = useDateFilters();
 
@@ -266,7 +266,7 @@ export default function FunnelsPage() {
 			<Suspense fallback={<FunnelsListSkeleton />}>
 				<FunnelsList
 					expandedFunnelId={expandedFunnelId}
-					funnels={funnels}
+					funnels={(funnels as any) || []}
 					isLoading={funnelsLoading}
 					onCreateFunnel={() => {
 						setEditingFunnel(null);

@@ -13,6 +13,7 @@ import {
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
 const ENV_KEY = 'NEXT_PUBLIC_DATABUDDY_CLIENT_ID';
+const WWW_REGEX = /^www\./;
 
 const buildDomainIntegrationStatus = (
 	domain: any,
@@ -27,7 +28,7 @@ const buildDomainIntegrationStatus = (
 			return domainMap.get(targetDomain);
 		}
 
-		const withoutWww = targetDomain.replace(/^www\./, '');
+		const withoutWww = targetDomain.replace(WWW_REGEX, '');
 		if (domainMap.has(withoutWww)) {
 			return domainMap.get(withoutWww);
 		}
@@ -61,7 +62,7 @@ const buildDomainIntegrationStatus = (
 		}
 		return (
 			websiteForEnv.domain === domainName ||
-			websiteForEnv.domain === domainName.replace(/^www\./, '') ||
+			websiteForEnv.domain === domainName.replace(WWW_REGEX, '') ||
 			websiteForEnv.domain === `www.${domainName}` ||
 			domainName === `www.${websiteForEnv.domain}`
 		);
@@ -111,7 +112,7 @@ const buildDomainIntegrationStatus = (
 
 			const websiteDomainMatches =
 				website.domain === domainName ||
-				website.domain === domainName.replace(/^www\./, '') ||
+				website.domain === domainName.replace(WWW_REGEX, '') ||
 				website.domain === `www.${domainName}` ||
 				domainName === `www.${website.domain}`;
 
@@ -462,7 +463,7 @@ export const vercelRouter = createTRPCRouter({
 								})),
 							},
 						};
-					} catch (error: any) {
+					} catch (_error: any) {
 						return {
 							id: project.id,
 							name: project.name,
@@ -668,8 +669,8 @@ export const vercelRouter = createTRPCRouter({
 				}
 			}
 
-			const results = [];
-			const errors = [];
+			const results: any[] = [];
+			const errors: any[] = [];
 
 			const websiteService = new WebsiteService(ctx.db);
 			const [existingEnvVars, userWebsites] = await Promise.all([
@@ -698,7 +699,7 @@ export const vercelRouter = createTRPCRouter({
 					});
 					const existingWebsite = domainMap.get(domainName);
 
-					let websiteToUse;
+					let websiteToUse: any;
 					let isNewWebsite = false;
 
 					if (existingWebsite) {
@@ -720,7 +721,7 @@ export const vercelRouter = createTRPCRouter({
 						);
 						isNewWebsite = true;
 					}
-					let envVarResult = null;
+					let envVarResult: any = null;
 					if (!existingEnvVar || existingEnvVar.value !== websiteToUse.id) {
 						const conflictingEnvVar = existingEnvVars.find((envVar) =>
 							envVar.target?.some((target) =>
@@ -905,14 +906,13 @@ export const vercelRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			const token = await getVercelToken(ctx.user.id, ctx.db);
 			const vercel = new VercelSDK(token);
-			const websiteService = new WebsiteService(ctx.db);
+			const _websiteService = new WebsiteService(ctx.db);
 
 			const {
 				projectId,
 				action,
 				domainName,
 				envVarId,
-				websiteId,
 				organizationId,
 				teamId,
 				slug,
@@ -963,7 +963,7 @@ export const vercelRouter = createTRPCRouter({
 							}
 						);
 
-						const duplicates = databeddyEnvVars.filter((envVar, index) => {
+						const duplicates = databeddyEnvVars.filter((_envVar, index) => {
 							return index > 0;
 						});
 

@@ -65,15 +65,15 @@ export default function ExperimentResultsPage() {
 		updatedAt: '2024-10-15T00:00:00Z',
 	};
 	const experimentLoading = false;
-	const experimentError = null;
+	const experimentError: any = null;
 
-	const handleRefresh = useCallback(async () => {
+	const handleRefresh = useCallback(() => {
 		setIsRefreshing(true);
 		try {
 			// Refresh experiment results data
 			// await refetchExperimentResults();
-		} catch (error) {
-			console.error('Failed to refresh experiment results:', error);
+		} catch (_error) {
+			// console.error('Failed to refresh experiment results:', error);
 		} finally {
 			setIsRefreshing(false);
 		}
