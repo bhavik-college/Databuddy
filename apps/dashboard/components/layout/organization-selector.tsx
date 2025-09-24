@@ -309,12 +309,6 @@ export function OrganizationSelector() {
 						</div>
 					)}
 
-					{filteredOrganizations.length === 0 && (
-						<div className="px-4 py-2.5 text-sidebar-foreground/60 text-xs">
-							No workspaces match "{query}".
-						</div>
-					)}
-
 					<DropdownMenuSeparator className="my-1 bg-sidebar-border" />
 					<DropdownMenuItem
 						className="flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sidebar-foreground/70 text-sm transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
