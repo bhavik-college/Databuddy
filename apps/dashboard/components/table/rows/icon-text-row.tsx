@@ -29,7 +29,7 @@ export function createIconTextColumns({
 			accessorKey,
 			header,
 			cell: (info: CellContext<IconTextEntry, any>) => {
-				const name = info.getValue() as string;
+				const name = (info.getValue() as string) || '';
 				const entry = info.row.original;
 				const subtitle = getSubtitle?.(entry);
 

@@ -34,7 +34,7 @@ export function createGeoColumns({ type }: GeoRowProps): ColumnDef<GeoEntry>[] {
 			header: type.charAt(0).toUpperCase() + type.slice(1),
 			cell: (info: CellContext<GeoEntry, any>) => {
 				const entry = info.row.original;
-				const name = info.getValue() as string;
+				const name = (info.getValue() as string) || '';
 				const countryCode = entry.country_code;
 				const countryName = entry.country_name;
 

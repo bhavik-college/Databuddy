@@ -43,7 +43,7 @@ export function createMetricColumns({
 			accessorKey: 'name',
 			header: nameLabel,
 			cell: (info: CellContext<MetricEntry, any>) => {
-				const name = info.getValue() as string;
+				const name = (info.getValue() as string) || '';
 				return (
 					<span className="font-medium text-foreground" title={name}>
 						{name}
