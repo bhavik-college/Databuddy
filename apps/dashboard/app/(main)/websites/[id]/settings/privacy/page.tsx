@@ -26,12 +26,12 @@ export default function PrivacyPage() {
 		? `${window.location.origin}/websites/${websiteId}`
 		: '';
 
-	const handleTogglePublic = useCallback(async () => {
+	const handleTogglePublic = useCallback(() => {
 		if (!websiteData) {
 			return;
 		}
 
-		await toast.promise(
+		toast.promise(
 			toggleMutation.mutateAsync({ id: websiteId, isPublic: !isPublic }),
 			{
 				loading: 'Updating privacy settings...',
@@ -39,14 +39,14 @@ export default function PrivacyPage() {
 				error: 'Failed to update privacy settings',
 			}
 		);
-		await refetch();
+		refetch();
 	}, [websiteData, websiteId, isPublic, toggleMutation, refetch]);
 
-	const handleCopyLink = useCallback(async () => {
+	const handleCopyLink = useCallback(() => {
 		if (!shareableLink) {
 			return;
 		}
-		await navigator.clipboard.writeText(shareableLink);
+		navigator.clipboard.writeText(shareableLink);
 		toast.success('Link copied to clipboard!');
 	}, [shareableLink]);
 
