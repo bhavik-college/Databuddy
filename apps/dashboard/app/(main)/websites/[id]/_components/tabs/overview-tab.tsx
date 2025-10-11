@@ -340,11 +340,82 @@ export function WebsiteOverviewTab({
 		[dateRange.granularity]
 	);
 
-	const chartData = useMemo(() => {
-		if (!analytics.events_by_date?.length) return [];
+	const fillMissingDates = useCallback((data: MetricPoint[]) => {
+		const userTimezone = getUserTimezone();
+		const isHourly = dateRange.granularity === 'hourly';
+		
+		// Create a map of existing data for quick lookup
+		const dataMap = new Map<string, MetricPoint>();
+		for (const item of data) {
+			const key = isHourly ? item.date : item.date.slice(0, 10);
+			dataMap.set(key, item);
+		}
 
-		const filteredEvents = filterFutureEvents(analytics.events_by_date);
-		return filteredEvents.map((event: MetricPoint): ChartDataPoint => ({
+		// Generate all dates in range
+		const startDate = dayjs(dateRange.start_date).tz(userTimezone);
+		const endDate = dayjs(dateRange.end_date).tz(userTimezone);
+		const now = dayjs().tz(userTimezone);
+		
+		const filled: MetricPoint[] = [];
+		let current = startDate;
+
+		while (current.isBefore(endDate) || current.isSame(endDate, 'day')) {
+			if (isHourly) {
+				// Hourly granularity - iterate through hours
+				for (let hour = 0; hour < 24; hour++) {
+					const hourDate = current.hour(hour);
+					
+					// Don't add future hours
+					if (hourDate.isAfter(now)) break;
+					
+					const key = hourDate.format('YYYY-MM-DD HH:00:00');
+					const existing = dataMap.get(key);
+					
+					filled.push(existing || {
+						date: key,
+						pageviews: 0,
+						visitors: 0,
+						unique_visitors: 0,
+						sessions: 0,
+						bounce_rate: 0,
+						avg_session_duration: 0,
+						pages_per_session: 0,
+					});
+				}
+				current = current.add(1, 'day');
+				
+				// If we've reached today, stop after processing current hour
+				if (current.isAfter(endDate, 'day')) break;
+			} else {
+				// Daily granularity
+				const key = current.format('YYYY-MM-DD');
+				const existing = dataMap.get(key);
+				
+				filled.push(existing || {
+					date: key,
+					pageviews: 0,
+					visitors: 0,
+					unique_visitors: 0,
+					sessions: 0,
+					bounce_rate: 0,
+					avg_session_duration: 0,
+					pages_per_session: 0,
+				});
+				
+				current = current.add(1, 'day');
+			}
+		}
+
+		return filled;
+	}, [dateRange.start_date, dateRange.end_date, dateRange.granularity]);
+
+	const chartData = useMemo(() => {
+		const filteredEvents = analytics.events_by_date?.length 
+			? filterFutureEvents(analytics.events_by_date) 
+			: [];
+		const filledEvents = fillMissingDates(filteredEvents);
+		
+		return filledEvents.map((event: MetricPoint): ChartDataPoint => ({
 			date: formatDateByGranularity(event.date, dateRange.granularity),
 			rawDate: event.date,
 			...(visibleMetrics.pageviews && { pageviews: event.pageviews as number }),
@@ -360,19 +431,24 @@ export function WebsiteOverviewTab({
 	}, [
 		analytics.events_by_date,
 		dateRange.granularity,
+		dateRange.start_date,
+		dateRange.end_date,
 		visibleMetrics,
 		filterFutureEvents,
+		fillMissingDates,
 	]);
 
 	const miniChartData = useMemo(() => {
-		if (!analytics.events_by_date?.length) return {};
-
-		const filteredEvents = filterFutureEvents(analytics.events_by_date);
+		const filteredEvents = analytics.events_by_date?.length 
+			? filterFutureEvents(analytics.events_by_date) 
+			: [];
+		const filledEvents = fillMissingDates(filteredEvents);
+		
 		const createChartSeries = (
 			field: keyof MetricPoint,
 			transform?: (value: number) => number
 		) =>
-			filteredEvents.map((event: MetricPoint) => ({
+			filledEvents.map((event: MetricPoint) => ({
 				date: dateRange.granularity === 'hourly' ? event.date : event.date.slice(0, 10),
 				value: transform ? transform(event[field] as number) : (event[field] as number) || 0,
 			}));
@@ -392,7 +468,7 @@ export function WebsiteOverviewTab({
 			bounceRate: createChartSeries('bounce_rate'),
 			sessionDuration: createChartSeries('avg_session_duration', formatSessionDuration),
 		};
-	}, [analytics.events_by_date, dateRange.granularity, filterFutureEvents]);
+	}, [analytics.events_by_date, dateRange.granularity, filterFutureEvents, fillMissingDates]);
 
 	const createTechnologyCell = (type: 'browser' | 'os') => (info: CellInfo) => {
 		const entry = info.row.original as TechnologyData;
