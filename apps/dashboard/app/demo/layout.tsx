@@ -6,6 +6,7 @@ import { AnalyticsToolbar } from '@/app/(main)/websites/[id]/_components/analyti
 import { Sidebar } from '@/components/layout/sidebar';
 import { cn } from '@/lib/utils';
 import { isAnalyticsRefreshingAtom } from '@/stores/jotai/filterAtoms';
+import { useParams } from 'next/navigation';
 
 
 interface MainLayoutProps {
@@ -14,6 +15,7 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
 	const [isRefreshing, setIsRefreshing] = useAtom(isAnalyticsRefreshingAtom);
+	const { id } = useParams();
 
 	const handleRefresh = async () => {
 		setIsRefreshing(true);
@@ -41,6 +43,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 					>
 						<div className="flex-shrink-0 space-y-4">
 							<AnalyticsToolbar
+								websiteId={id as string}
 								isRefreshing={isRefreshing}
 								onRefresh={handleRefresh}
 							/>
