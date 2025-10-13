@@ -3,7 +3,7 @@
 import type { ErrorEvent, ErrorSummary } from '@databuddy/shared';
 import { ArrowClockwiseIcon, BugIcon } from '@phosphor-icons/react';
 import { useAtom } from 'jotai';
-import { use, useCallback } from 'react';
+import { use, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -38,17 +38,18 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
 	});
 
 	const handleRefresh = useCallback(async () => {
-		setIsRefreshing(true);
-		try {
-			await refetch();
-			toast.success('Error data refreshed');
-		} catch (err) {
-			console.error('Failed to refresh data:', err);
-			toast.error('Failed to refresh error data.');
-		} finally {
-			setIsRefreshing(false);
+		if (isRefreshing) {
+			try {
+				await refetch();
+			} finally {
+				setIsRefreshing(false);
+			}
 		}
-	}, [refetch, setIsRefreshing]);
+	}, [isRefreshing, refetch, setIsRefreshing]);
+
+	useEffect(() => {
+		handleRefresh();
+	}, [handleRefresh]);
 
 	const getData = (id: string): unknown[] =>
 		(errorResults?.find((r) => r.queryId === id)?.data?.[id] as unknown[]) ||
@@ -99,17 +100,8 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
 					</h4>
 					<p className="mb-4 text-destructive/80 text-sm">
 						There was an issue loading your error analytics. Please try
-						refreshing.
+						refreshing using the toolbar above.
 					</p>
-					<Button
-						className="gap-2 rounded"
-						onClick={handleRefresh}
-						size="sm"
-						variant="outline"
-					>
-						<ArrowClockwiseIcon className="h-4 w-4" weight="fill" />
-						Retry
-					</Button>
 				</div>
 			</div>
 		);
