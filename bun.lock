@@ -58,6 +58,7 @@
         "@databuddy/auth": "workspace:*",
         "@databuddy/db": "workspace:*",
         "@databuddy/redis": "workspace:*",
+        "@databuddy/shared": "workspace:*",
         "@databuddy/validation": "workspace:*",
         "@elysiajs/cors": "^1.3.3",
         "@elysiajs/server-timing": "^1.3.0",
