@@ -13,10 +13,9 @@ import { formatDateTime, getErrorCategory, getSeverityColor } from './utils';
 
 interface Props {
 	recentErrors: ErrorEvent[];
-	isLoading: boolean;
 }
 
-export const RecentErrorsTable = ({ recentErrors, isLoading }: Props) => {
+export const RecentErrorsTable = ({ recentErrors }: Props) => {
 	const [selectedError, setSelectedError] = useState<ErrorEvent | null>(null);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -166,7 +165,6 @@ export const RecentErrorsTable = ({ recentErrors, isLoading }: Props) => {
 				}))}
 				emptyMessage="No recent errors found"
 				initialPageSize={10}
-				isLoading={isLoading}
 				minHeight={400}
 				onRowAction={(row) => handleViewError(row)}
 				showSearch={true}
