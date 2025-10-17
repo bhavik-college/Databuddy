@@ -11,6 +11,7 @@ services:
       - clickhouse_data:/var/lib/clickhouse
       - ./config.xml:/etc/clickhouse-server/config.xml:ro
       - ./users.xml:/etc/clickhouse-server/users.xml:ro
+      - ./flags:/var/lib/clickhouse/flags
     environment:
       CLICKHOUSE_DB: default
       CLICKHOUSE_USER: default
