@@ -64,7 +64,8 @@ const buddyWare = (buddy: Databuddy): LanguageModelV2Middleware => {
 				totalTokenCostUSD: costs.totalTokenCostUSD,
 				toolCallNames,
 			};
-			buddy.track({name: 'ai.generate', properties: payload});
+			console.log('payload', payload);
+			// buddy.track({name: 'ai.generate', properties: payload});
 
 			return result;
 		},
