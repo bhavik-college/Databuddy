@@ -578,7 +578,7 @@
     <default_password_type>sha256_password</default_password_type>
 
     <!-- Work factor for bcrypt_password authentication type -->
-    <bcrypt_workfactor>12</bcrypt_workfactor>
+    <bcrypt_workfactor>12</bcrypt_workfactor>   
 
     <!-- Complexity requirements for user passwords.
          Note: ClickHouse Cloud https://clickhouse.com/cloud is always configured for strong passwords.
