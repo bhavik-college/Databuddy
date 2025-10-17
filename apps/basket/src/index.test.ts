@@ -56,7 +56,51 @@ mock.module('autumn-js', () => ({
 
 mock.module('./routes/basket', () => ({
 	default: {
-		fetch: mock(() => Promise.resolve(new Response(JSON.stringify({ status: 'success' }), { status: 200 }))),
+		fetch: mock((request: Request) => {
+			const url = new URL(request.url);
+			const isBatch = url.pathname.includes('/batch');
+			
+			if (isBatch) {
+				return request.json().then((body) => {
+					const eventCount = Array.isArray(body) ? body.length : 1;
+					const results = Array(eventCount).fill(null).map((_, index) => {
+						const event = Array.isArray(body) ? body[index] : body;
+						const eventType = event?.type || 'track';
+						return { status: 'success', type: eventType };
+					});
+					
+					return Promise.resolve(new Response(JSON.stringify({ 
+						status: 'success', 
+						batch: true,
+						processed: eventCount,
+						results
+					}), { status: 200 }));
+				}).catch(() => {
+					// Fallback if JSON parsing fails
+					return Promise.resolve(new Response(JSON.stringify({ 
+						status: 'success', 
+						batch: true,
+						processed: 1,
+						results: [{ status: 'success', type: 'track' }]
+					}), { status: 200 }));
+				});
+			}
+			
+			// Parse the request body to determine the event type
+			return request.json().then((body) => {
+				const eventType = body.type || 'track';
+				return Promise.resolve(new Response(JSON.stringify({ 
+					status: 'success', 
+					type: eventType 
+				}), { status: 200 }));
+			}).catch(() => {
+				// Fallback if JSON parsing fails
+				return Promise.resolve(new Response(JSON.stringify({ 
+					status: 'success', 
+					type: 'track' 
+				}), { status: 200 }));
+			});
+		}),
 	},
 }));
 
