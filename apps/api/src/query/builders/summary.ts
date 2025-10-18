@@ -1,6 +1,5 @@
 import { Analytics } from '../../types/tables';
 import type { Filter, SimpleQueryConfig, TimeUnit } from '../types';
-import { buildWhereClause } from '../utils';
 
 export const SummaryBuilders: Record<string, SimpleQueryConfig> = {
 	summary_metrics: {
@@ -283,8 +282,8 @@ export const SummaryBuilders: Record<string, SimpleQueryConfig> = {
 			websiteId: string,
 			startDate: string,
 			endDate: string,
-			_filters?: unknown[],
-			_granularity?: unknown,
+		_filters?: Filter[],
+		_granularity?: TimeUnit,
 			_limit?: number,
 			_offset?: number,
 			timezone?: string,
@@ -533,8 +532,8 @@ export const SummaryBuilders: Record<string, SimpleQueryConfig> = {
 			websiteId: string,
 			_startDate: string,
 			_endDate: string,
-			_filters?: unknown[],
-			_granularity?: unknown,
+			_filters?: Filter[],
+			_granularity?: TimeUnit,
 			_limit?: number,
 			_offset?: number,
 			_timezone?: string,

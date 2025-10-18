@@ -1,6 +1,5 @@
 import { Analytics } from '../../types/tables';
-import type { Filter, SimpleQueryConfig } from '../types';
-import { buildWhereClause } from '../utils';
+import type { Filter, SimpleQueryConfig, TimeUnit } from '../types';
 
 export const ProfilesBuilders: Record<string, SimpleQueryConfig> = {
 	profile_list: {
@@ -8,8 +7,8 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig> = {
 			websiteId: string,
 			startDate: string,
 			endDate: string,
-			_filters?: unknown[],
-			_granularity?: unknown,
+		_filters?: Filter[],
+		_granularity?: TimeUnit,
 			limit?: number,
 			offset?: number,
 			_timezone?: string,
@@ -135,12 +134,12 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig> = {
 			startDate: string,
 			endDate: string,
 			filters?: Filter[],
-			_granularity?: unknown,
+			_granularity?: TimeUnit,
 			_limit?: number,
 			_offset?: number,
 			_timezone?: string,
-			_filterConditions?: string[],
-			_filterParams?: Record<string, Filter['value']>
+			filterConditions?: string[],
+			filterParams?: Record<string, Filter['value']>
 		) => {
 			const visitorId = filters?.find((f) => f.field === 'anonymous_id')?.value;
 
@@ -352,8 +351,8 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig> = {
 			websiteId: string,
 			startDate: string,
 			endDate: string,
-			_filters?: unknown[],
-			_granularity?: unknown,
+		_filters?: Filter[],
+		_granularity?: TimeUnit,
 			limit?: number,
 			offset?: number,
 			_timezone?: string,
