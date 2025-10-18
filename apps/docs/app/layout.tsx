@@ -91,7 +91,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 			lang="en"
 			suppressHydrationWarning
 		>
-			<Databuddy clientId="OXmNQsViBT-FOS_wZCTHc" trackErrors trackAttributes trackOutgoingLinks trackWebVitals/>
+			<Databuddy clientId="OXmNQsViBT-FOS_wZCTHc" trackErrors trackAttributes trackOutgoingLinks trackWebVitals />
 			<body>
 				<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 					<RootProvider>
