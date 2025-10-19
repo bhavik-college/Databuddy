@@ -1,11 +1,16 @@
 sources:
   redpanda:
     type: kafka
-    bootstrap_servers: redpanda:9092
+    bootstrap_servers: "${REDPANDA_BROKER}"
     group_id: vector-analytics
     topics:
       - analytics-events
     auto_offset_reset: earliest
+    sasl:
+      enabled: true
+      mechanism: SCRAM-SHA-256
+      username: "${VECTOR_KAFKA_USER}"
+      password: "${VECTOR_KAFKA_PASSWORD}"
 
 sinks:
   clickhouse:
