@@ -282,7 +282,8 @@ export async function insertOutgoingLink(
 }
 
 /**
- * Insert a track event (pageview/analytics event) into Kafka
+ * Insert a track event (pageview/analytics event) into ClickHouse
+ * Optionally also sends to Kafka if feature flag is enabled
  */
 export async function insertTrackEvent(
 	trackData: any,
@@ -395,9 +396,24 @@ export async function insertTrackEvent(
 	};
 
 	try {
-		sendEvent('analytics-events', trackEvent);
+		await clickHouse.insert({
+			table: 'analytics.events',
+			values: [trackEvent],
+			format: 'JSONEachRow',
+		});
+
+		if (process.env.ENABLE_KAFKA_EVENTS === 'true') {
+			try {
+				sendEvent('analytics-events', trackEvent);
+			} catch (kafkaErr) {
+				console.error('Failed to send track event to Kafka', {
+					error: kafkaErr as Error,
+					eventId,
+				});
+			}
+		}
 	} catch (err) {
-		console.error('Failed to send track event to Kafka', {
+		console.error('Failed to insert track event', {
 			error: err as Error,
 			eventId,
 		});
