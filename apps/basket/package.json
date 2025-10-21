@@ -10,7 +10,17 @@
     "test:routes": "bun test src/routes/*.test.ts",
     "test:utils": "bun test src/utils/*.test.ts",
     "test:kafka": "bun test src/lib/kafka.test.ts src/lib/producer.test.ts",
-    "test:coverage": "bun test --coverage"
+    "test:coverage": "bun test --coverage",
+    "test:stress": "bun test src/lib/kafka-stress.test.ts",
+    "stress:light": "bun run src/lib/kafka-stress-cli.ts 1000 10 100 1",
+    "stress:medium": "bun run src/lib/kafka-stress-cli.ts 5000 10 250 1",
+    "stress:heavy": "bun run src/lib/kafka-stress-cli.ts 10000 10 500 1",
+    "stress:extreme": "bun run src/lib/kafka-stress-cli.ts 25000 10 1000 1",
+    "stress:burst": "bun run src/lib/kafka-stress-cli.ts 50000 1 1000 1",
+    "stress:sustained": "bun run src/lib/kafka-stress-cli.ts 10000 30 500 1",
+    "stress:concurrent": "bun run src/lib/kafka-stress-cli.ts 5000 10 250 5",
+    "stress:monitor": "bun run src/lib/kafka-monitor.ts",
+    "stress:run": "bun run src/lib/run-stress-test.ts"
   },
   "dependencies": {
     "@clickhouse/client": "catalog:",
