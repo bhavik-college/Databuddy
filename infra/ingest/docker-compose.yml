@@ -49,8 +49,6 @@ services:
       - "8080:8080"
     environment:
       KAFKA_BROKERS: redpanda:9092
-      REDPANDA_ADMIN_API_ENABLED: "true"
-      REDPANDA_ADMIN_API_URLS: "http://redpanda:9644"
     networks:
       - databuddy
     depends_on:
