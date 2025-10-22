@@ -7,7 +7,7 @@ import {
 	type WebVitalsEvent,
 } from '@databuddy/db';
 import { checkDuplicate } from './security';
-import { sendEvent } from './producer';
+import { sendEvent, sendEventBatch } from './producer';
 import { getGeo } from '../utils/ip-geo';
 import { parseUserAgent } from '../utils/user-agent';
 import {
@@ -87,11 +87,11 @@ export async function insertError(
 	try {
 		sendEvent('analytics-errors', errorEvent);
 	} catch (err) {
-		console.error('Failed to send error event to Kafka', {
+		console.error('Failed to queue error event', {
 			error: err as Error,
 			eventId,
 		});
-		throw err;
+		// Don't throw - event is buffered or sent async
 	}
 }
 
@@ -154,11 +154,11 @@ export async function insertWebVitals(
 	try {
 		sendEvent('analytics-web-vitals', webVitalsEvent);
 	} catch (err) {
-		console.error('Failed to send web vitals event to Kafka', {
+		console.error('Failed to queue web vitals event', {
 			error: err as Error,
 			eventId,
 		});
-		throw err;
+		// Don't throw - event is buffered or sent async
 	}
 }
 
@@ -208,11 +208,11 @@ export async function insertCustomEvent(
 	try {
 		sendEvent('analytics-custom-events', customEvent);
 	} catch (err) {
-		console.error('Failed to send custom event to Kafka', {
+		console.error('Failed to queue custom event', {
 			error: err as Error,
 			eventId,
 		});
-		throw err;
+		// Don't throw - event is buffered or sent async
 	}
 }
 
@@ -260,11 +260,11 @@ export async function insertOutgoingLink(
 	try {
 		sendEvent('analytics-outgoing-links', outgoingLinkEvent);
 	} catch (err) {
-		console.error('Failed to send outgoing link event to Kafka', {
+		console.error('Failed to queue outgoing link event', {
 			error: err as Error,
 			eventId,
 		});
-		throw err;
+		// Don't throw - event is buffered or sent async
 	}
 }
 
@@ -383,11 +383,90 @@ export async function insertTrackEvent(
 	try {
 		sendEvent('analytics-events', trackEvent);
 	} catch (err) {
-		console.error('Failed to send track event to Kafka', {
+		console.error('Failed to queue track event', {
 			error: err as Error,
 			eventId,
 		});
-		throw err;
+		// Don't throw - event is buffered or sent async
 	}
 }
+
+export async function insertTrackEventsBatch(
+	events: AnalyticsEvent[]
+): Promise<void> {
+	if (events.length === 0) return;
+
+	try {
+		await sendEventBatch('analytics-events', events);
+	} catch (err) {
+		console.error('Failed to queue track events batch', {
+			error: err as Error,
+			count: events.length,
+		});
+		// Don't throw - events are buffered
+	}
+}
+
+export async function insertErrorsBatch(events: ErrorEvent[]): Promise<void> {
+	if (events.length === 0) return;
+
+	try {
+		await sendEventBatch('analytics-errors', events);
+	} catch (err) {
+		console.error('Failed to queue errors batch', {
+			error: err as Error,
+			count: events.length,
+		});
+		// Don't throw - events are buffered
+	}
+}
+
+export async function insertWebVitalsBatch(
+	events: WebVitalsEvent[]
+): Promise<void> {
+	if (events.length === 0) return;
+
+	try {
+		await sendEventBatch('analytics-web-vitals', events);
+	} catch (err) {
+		console.error('Failed to queue web vitals batch', {
+			error: err as Error,
+			count: events.length,
+		});
+		// Don't throw - events are buffered
+	}
+}
+
+export async function insertCustomEventsBatch(
+	events: CustomEvent[]
+): Promise<void> {
+	if (events.length === 0) return;
+
+	try {
+		await sendEventBatch('analytics-custom-events', events);
+	} catch (err) {
+		console.error('Failed to queue custom events batch', {
+			error: err as Error,
+			count: events.length,
+		});
+		// Don't throw - events are buffered
+	}
+}
+
+export async function insertOutgoingLinksBatch(
+	events: CustomOutgoingLink[]
+): Promise<void> {
+	if (events.length === 0) return;
+
+	try {
+		await sendEventBatch('analytics-outgoing-links', events);
+	} catch (err) {
+		console.error('Failed to queue outgoing links batch', {
+			error: err as Error,
+			count: events.length,
+		});
+		// Don't throw - events are buffered
+	}
+}
+
 

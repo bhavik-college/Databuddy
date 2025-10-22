@@ -70,6 +70,7 @@
         "@logtail/pino": "catalog:",
         "@maxmind/geoip2-node": "^6.1.0",
         "@types/ua-parser-js": "^0.7.39",
+        "async-mutex": "^0.5.0",
         "autumn-js": "catalog:",
         "dayjs": "catalog:",
         "elysia": "catalog:",
@@ -195,7 +196,7 @@
       "name": "@databuddy/docs",
       "version": "0.0.0",
       "dependencies": {
-        "@databuddy/sdk": "^2.2.0",
+        "@databuddy/sdk": "workspace:*",
         "@databuddy/shared": "workspace:*",
         "@hookform/resolvers": "^5.0.1",
         "@icons-pack/react-simple-icons": "^13.7.0",
@@ -1516,6 +1517,8 @@
     "astring": ["astring@1.9.0", "", { "bin": { "astring": "bin/astring" } }, "sha512-LElXdjswlqjWrPpJFg1Fx4wpkOCxj1TDHlSV4PlaRxHGWko024xICaa97ZkMfs6DRKlCguiAI+rbXv5GWwXIkg=="],
 
     "async": ["async@0.9.2", "", {}, "sha512-l6ToIJIotphWahxxHyzK9bnLR6kM4jJIIgLShZeqLY7iboHoGkdgFl7W2/Ivi4SkMJYGKqW8vSuk0uKUj6qsSw=="],
+
+    "async-mutex": ["async-mutex@0.5.0", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-1A94B18jkJ3DYq284ohPxoXbfTA5HsQ7/Mf4DEhcyLx3Bz27Rh59iScbB6EPiP+B+joue6YCxcMXSbFC1tZKwA=="],
 
     "asynckit": ["asynckit@0.4.0", "", {}, "sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q=="],
 
