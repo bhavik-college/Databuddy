@@ -1,0 +1,51 @@
+redpanda:
+  data_directory: /var/lib/redpanda/data
+  
+  node_id: 1
+  
+  rpc_server:
+    address: 0.0.0.0
+    port: 33145
+  
+  kafka_api:
+    - name: internal
+      address: 0.0.0.0
+      port: 9092
+    - name: external
+      address: 0.0.0.0
+      port: 19092
+  
+  advertised_kafka_api:
+    - name: internal
+      address: redpanda
+      port: 9092
+    - name: external
+      address: REDPANDA_ADVERTISED_HOST_PLACEHOLDER
+      port: 19092
+  
+  pandaproxy_api:
+    - name: internal
+      address: 0.0.0.0
+      port: 8082
+  
+  advertised_pandaproxy_api:
+    - name: internal
+      address: redpanda
+      port: 8082
+  
+  admin:
+    - address: 0.0.0.0
+      port: 9644
+  
+  mode: dev-container
+  
+  overprovisioned: true
+  
+  smp: 2
+  
+  memory: 2G
+  
+  reserve_memory: 0M
+  
+  default_log_level: info
+
