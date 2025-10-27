@@ -23,8 +23,6 @@ services:
           --advertise-kafka-addr internal://redpanda:9092,external://$$REDPANDA_ADVERTISED_HOST:19092 \
           --pandaproxy-addr internal://0.0.0.0:8082 \
           --advertise-pandaproxy-addr internal://redpanda:8082 \
-          --admin-addr internal://0.0.0.0:9644 \
-          --advertise-admin-addr internal://redpanda:9644 \
           --rpc-addr redpanda:33145 \
           --advertise-rpc-addr redpanda:33145 \
           --overprovisioned \
