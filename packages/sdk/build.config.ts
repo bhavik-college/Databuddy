@@ -11,7 +11,7 @@ export default defineBuildConfig({
 		'./src/node/index.ts',
 		'./src/ai/vercel/index.ts',
 	],
-	externals: ['react', 'react-dom', 'vue', 'jotai', '@ai-sdk/provider', 'ai', 'tokenlens'],
+	externals: ['react', 'react-dom', 'vue', 'jotai', '@ai-sdk/provider', 'ai', 'tokenlens', 'msw'],
 	declaration: true,
 	alias: {
 		'@': resolve(__dirname, 'src'),

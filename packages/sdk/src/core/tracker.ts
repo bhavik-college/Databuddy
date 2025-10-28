@@ -111,6 +111,24 @@ export function trackError(
 }
 
 /**
+ * Get anonymous ID from multiple sources
+ * Priority: URL params > tracker instance > localStorage
+ */
+export function getAnonymousId(urlParams?: URLSearchParams): string | null {
+	if (typeof window === 'undefined') return null;
+	return urlParams?.get('anonId') || window.databuddy?.anonymousId || localStorage.getItem('did') || null;
+}
+
+/**
+ * Get session ID from multiple sources
+ * Priority: URL params > tracker instance > sessionStorage
+ */
+export function getSessionId(urlParams?: URLSearchParams): string | null {
+	if (typeof window === 'undefined') return null;
+	return urlParams?.get('sessionId') || window.databuddy?.sessionId || sessionStorage.getItem('did_session') || null;
+}
+
+/**
  * Get tracking IDs (anonymous ID and session ID) from multiple sources
  * Priority: URL params > tracker instance > localStorage/sessionStorage
  */
@@ -118,22 +136,9 @@ export function getTrackingIds(urlParams?: URLSearchParams): {
 	anonId: string | null;
 	sessionId: string | null;
 } {
-	if (typeof window === 'undefined') {
-		return { anonId: null, sessionId: null };
-	}
-
-	const urlAnonId = urlParams?.get('anonId');
-	const urlSessionId = urlParams?.get('sessionId');
-
-	const trackerAnonId = window.databuddy?.anonymousId;
-	const trackerSessionId = window.databuddy?.sessionId;
-
-	const storageAnonId = localStorage.getItem('did');
-	const storageSessionId = sessionStorage.getItem('did_session');
-
 	return {
-		anonId: urlAnonId || trackerAnonId || storageAnonId || null,
-		sessionId: urlSessionId || trackerSessionId || storageSessionId || null,
+		anonId: getAnonymousId(urlParams),
+		sessionId: getSessionId(urlParams),
 	};
 }
 
@@ -141,7 +146,8 @@ export function getTrackingIds(urlParams?: URLSearchParams): {
  * Get tracking IDs as URL search params string
  */
 export function getTrackingParams(urlParams?: URLSearchParams): string {
-	const { anonId, sessionId } = getTrackingIds(urlParams);
+	const anonId = getAnonymousId(urlParams);
+	const sessionId = getSessionId(urlParams);
 	const params = new URLSearchParams();
 	if (anonId) params.set('anonId', anonId);
 	if (sessionId) params.set('sessionId', sessionId);
