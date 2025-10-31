@@ -199,6 +199,8 @@ export const databaseNavigation: NavigationSection[] = [
 export const websiteNavigation: NavigationSection[] = [
 	createNavSection('Web Analytics', ChartBarIcon, [
 		createNavItem('Dashboard', EyeIcon, '', { rootLevel: false }),
+		createNavItem('Audience', UsersThreeIcon, '/audience', { rootLevel: false }),
+		createNavItem('Performance', ActivityIcon, '/performance', { rootLevel: false }),
 		createNavItem('Geographic Data', MapPinIcon, '/map', { rootLevel: false }),
 		createNavItem('Error Tracking', BugIcon, '/errors', { rootLevel: false }),
 	]),

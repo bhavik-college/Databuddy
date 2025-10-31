@@ -6,11 +6,9 @@ import { useAtom } from 'jotai';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useQueryState } from 'nuqs';
-import { Suspense, useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDateFilters } from '@/hooks/use-date-filters';
 import { useTrackingSetup } from '@/hooks/use-tracking-setup';
 import { useWebsite } from '@/hooks/use-websites';
@@ -24,8 +22,6 @@ import type {
 	WebsiteDataTabProps,
 } from './_components/utils/types';
 import { EmptyState } from './_components/utils/ui-components';
-
-type TabId = 'overview' | 'audience' | 'performance' | 'tracking-setup';
 
 const LoadingSkeleton = () => (
 	<div className="select-none space-y-6">
@@ -129,20 +125,6 @@ const WebsiteOverviewTab = dynamic(
 		})),
 	{ loading: () => <LoadingSkeleton />, ssr: false }
 );
-const WebsiteAudienceTab = dynamic(
-	() =>
-		import('./_components/tabs/audience-tab').then((mod) => ({
-			default: mod.WebsiteAudienceTab,
-		})),
-	{ loading: () => <LoadingSkeleton />, ssr: false }
-);
-const WebsitePerformanceTab = dynamic(
-	() =>
-		import('./_components/tabs/performance-tab').then((mod) => ({
-			default: mod.WebsitePerformanceTab,
-		})),
-	{ loading: () => <LoadingSkeleton />, ssr: false }
-);
 const WebsiteTrackingSetupTab = dynamic(
 	() =>
 		import('./_components/tabs/tracking-setup-tab').then((mod) => ({
@@ -151,16 +133,8 @@ const WebsiteTrackingSetupTab = dynamic(
 	{ loading: () => <LoadingSkeleton />, ssr: false }
 );
 
-type TabDefinition = {
-	id: TabId;
-	label: string;
-	className?: string;
-};
 
 function WebsiteDetailsPage() {
-	const [activeTab, setActiveTab] = useQueryState('tab', {
-		defaultValue: 'overview' as TabId,
-	});
 	const { id } = useParams();
 	const [isRefreshing, setIsRefreshing] = useAtom(isAnalyticsRefreshingAtom);
 	const [selectedFilters] = useAtom(dynamicQueryFiltersAtom);
@@ -179,53 +153,21 @@ function WebsiteDetailsPage() {
 		[addFilterAction]
 	);
 
-	useEffect(() => {
-		if (isTrackingSetup === false && activeTab === 'overview') {
-			setActiveTab('tracking-setup');
-		} else if (isTrackingSetup === true && activeTab === 'tracking-setup') {
-			setActiveTab('overview');
-		}
-	}, [isTrackingSetup, activeTab]);
+	const tabProps: FullTabProps = {
+		websiteId: id as string,
+		dateRange,
+		websiteData: data,
+		isRefreshing,
+		setIsRefreshing,
+		filters: selectedFilters,
+		addFilter,
+	};
 
-	const renderTabContent = useCallback(
-		(tabId: TabId) => {
-			if (tabId !== activeTab) {
-				return null;
-			}
-
-			const settingsProps: WebsiteDataTabProps = {
-				websiteId: id as string,
-				dateRange,
-				websiteData: data,
-			};
-
-			const tabProps: FullTabProps = {
-				...settingsProps,
-				isRefreshing,
-				setIsRefreshing,
-				filters: selectedFilters,
-				addFilter,
-			};
-
-			const getTabComponent = () => {
-				switch (tabId) {
-					case 'overview':
-						return <WebsiteOverviewTab {...tabProps} />;
-					case 'audience':
-						return <WebsiteAudienceTab {...tabProps} />;
-					case 'performance':
-						return <WebsitePerformanceTab {...tabProps} />;
-					case 'tracking-setup':
-						return <WebsiteTrackingSetupTab {...settingsProps} />;
-					default:
-						return null;
-				}
-			};
-
-			return getTabComponent();
-		},
-		[activeTab, id, dateRange, data, isRefreshing, selectedFilters, addFilter]
-	);
+	const settingsProps: WebsiteDataTabProps = {
+		websiteId: id as string,
+		dateRange,
+		websiteData: data,
+	};
 
 	if (isError || (!isLoading && !data)) {
 		return (
@@ -258,47 +200,19 @@ function WebsiteDetailsPage() {
 		);
 	}
 
-	const tabs: TabDefinition[] = isTrackingSetup
-		? [
-				{ id: 'overview', label: 'Overview', className: 'pt-2 space-y-2' },
-				{ id: 'audience', label: 'Audience' },
-				{ id: 'performance', label: 'Performance' },
-			]
-		: [{ id: 'tracking-setup', label: 'Setup Tracking' }];
+	if (isTrackingSetup === false) {
+		return (
+			<div className="p-6">
+				<WebsiteTrackingSetupTab {...settingsProps} />
+			</div>
+		);
+	}
 
 	return (
 		<div className="p-6">
-			<Tabs
-				className="space-y-4"
-				defaultValue="overview"
-				onValueChange={(value) => setActiveTab(value as TabId)}
-				value={activeTab}
-			>
-				<div className="relative border-b">
-					<TabsList className="h-10 w-full justify-start overflow-x-auto bg-transparent p-0">
-						{tabs.map((tab) => (
-							<TabsTrigger
-								className="relative h-10 cursor-pointer touch-manipulation whitespace-nowrap rounded-none px-2 text-xs transition-colors hover:bg-muted/50 sm:px-4 sm:text-sm"
-								key={tab.id}
-								onClick={() => setActiveTab(tab.id)}
-								value={tab.id}
-							>
-								{tab.label}
-								{activeTab === tab.id && (
-									<div className="absolute bottom-0 left-0 h-[2px] w-full bg-primary" />
-								)}
-							</TabsTrigger>
-						))}
-					</TabsList>
-				</div>
-				<TabsContent
-					className={`${tabs.find((t) => t.id === activeTab)?.className || ''} animate-fadeIn transition-all duration-200`}
-					key={activeTab}
-					value={activeTab as TabId}
-				>
-					{renderTabContent(activeTab as TabId)}
-				</TabsContent>
-			</Tabs>
+			<div className="pt-2 space-y-2">
+				<WebsiteOverviewTab {...tabProps} />
+			</div>
 		</div>
 	);
 }
