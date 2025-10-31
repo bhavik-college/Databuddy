@@ -7,6 +7,33 @@ import emailRouter from './routes/email';
 import stripeRouter from './routes/stripe';
 import { getProducerStats } from './lib/producer';
 import './polyfills/compression';
+
+function getKafkaHealth() {
+	const stats = getProducerStats();
+	
+	if (!stats.kafkaEnabled) {
+		return {
+			status: 'disabled',
+			enabled: false,
+		};
+	}
+
+	if (stats.connected) {
+		return {
+			status: 'healthy',
+			enabled: true,
+			connected: true,
+		};
+	}
+
+	return {
+		status: 'unhealthy',
+		enabled: true,
+		connected: false,
+		failed: stats.failed,
+		lastErrorTime: stats.lastErrorTime,
+	};
+}
 // import { checkBotId } from "botid/server";
 
 const app = new Elysia()
@@ -37,7 +64,12 @@ const app = new Elysia()
 	.use(basketRouter)
 	.use(stripeRouter)
 	.use(emailRouter)
-	.get('/health', () => ({ status: 'ok', version: '1.0.0', producer_stats: getProducerStats() }));
+	.get('/health', () => ({
+		status: 'ok',
+		version: '1.0.0',
+		producer_stats: getProducerStats(),
+		kafka: getKafkaHealth(),
+	}));
 
 const port = process.env.PORT || 4000;
 

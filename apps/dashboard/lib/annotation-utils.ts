@@ -1,4 +1,7 @@
+import dayjs from 'dayjs';
 import type { Annotation } from '@/types/annotations';
+
+type Granularity = 'hourly' | 'daily' | 'weekly' | 'monthly';
 
 /**
  * Formats a date to a readable string
@@ -43,12 +46,13 @@ export function isSingleDayAnnotation(annotation: Annotation): boolean {
 
 /**
  * Gets the display date for chart rendering
+ * Matches the format used by formatDateByGranularity
  */
-export function getChartDisplayDate(date: Date | string): string {
-	return new Date(date).toLocaleDateString('en-US', {
-		month: 'short',
-		day: 'numeric',
-	});
+export function getChartDisplayDate(date: Date | string, granularity: Granularity = 'daily'): string {
+	const dateObj = dayjs(date);
+	return granularity === 'hourly'
+		? dateObj.format('MMM D, h:mm A')
+		: dateObj.format('MMM D');
 }
 
 /**
