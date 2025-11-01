@@ -1,6 +1,6 @@
 'use client';
 
-import type { LocationData } from '@databuddy/shared';
+import type { LocationData } from '@databuddy/shared/types/website';
 import { GlobeIcon } from '@phosphor-icons/react';
 import { useAtom } from 'jotai';
 import dynamic from 'next/dynamic';

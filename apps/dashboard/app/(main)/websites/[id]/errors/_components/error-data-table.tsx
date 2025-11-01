@@ -1,6 +1,6 @@
 'use client';
 
-import type { ErrorTab } from '@databuddy/shared';
+import type { ErrorTab } from '@databuddy/shared/types/errors';
 import dynamic from 'next/dynamic';
 import {
 	createErrorTypeColumns,

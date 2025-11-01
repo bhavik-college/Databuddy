@@ -1,15 +1,7 @@
-import type {
-	BatchQueryResponse,
-	DateRange,
-	DynamicQueryFilter,
-	DynamicQueryRequest,
-	DynamicQueryResponse,
-	ExtractDataTypes,
-	ParameterDataMap,
-	ProfileData,
-	QueryOptionsResponse,
-} from '@databuddy/shared';
-import { getCountryCode, getCountryName } from '@databuddy/shared';
+import { getCountryCode, getCountryName } from '@databuddy/shared/country-codes';
+import type { BatchQueryResponse, DynamicQueryFilter, DynamicQueryRequest, DynamicQueryResponse } from '@databuddy/shared/types/api';
+import type { DateRange, ProfileData } from '@databuddy/shared/types/analytics';
+import type { ExtractDataTypes, ParameterDataMap, QueryOptionsResponse } from '@databuddy/shared/types/parameters';
 import {
 	type UseInfiniteQueryOptions,
 	type UseQueryOptions,

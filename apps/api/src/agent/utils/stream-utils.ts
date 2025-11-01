@@ -1,4 +1,4 @@
-import type { StreamingUpdate } from '@databuddy/shared';
+import type { StreamingUpdate } from '@databuddy/shared/types/assistant';
 
 export function createStreamingResponse(updates: StreamingUpdate[]): Response {
 	const stream = new ReadableStream({

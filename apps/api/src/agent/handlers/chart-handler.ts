@@ -1,4 +1,4 @@
-import type { StreamingUpdate } from '@databuddy/shared';
+import type { StreamingUpdate } from '@databuddy/shared/types/assistant';
 import type { z } from 'zod';
 import type { AIResponseJsonSchema } from '../prompts/agent';
 import { executeQuery } from '../utils/query-executor';

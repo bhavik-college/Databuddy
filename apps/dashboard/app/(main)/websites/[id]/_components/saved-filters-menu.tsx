@@ -1,7 +1,7 @@
 'use client';
 
-import type { DynamicQueryFilter } from '@databuddy/shared';
-import { filterOptions } from '@databuddy/shared';
+import type { DynamicQueryFilter } from '@databuddy/shared/types/api';
+import { filterOptions } from '@databuddy/shared/lists/filters';
 import {
 	BookmarkIcon,
 	CheckCircleIcon,

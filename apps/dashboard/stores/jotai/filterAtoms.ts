@@ -1,4 +1,4 @@
-import type { DynamicQueryFilter } from '@databuddy/shared';
+import type { DynamicQueryFilter } from '@databuddy/shared/types/api';
 import dayjs from 'dayjs';
 import { atom } from 'jotai';
 import { RECOMMENDED_DEFAULTS } from '../../app/(main)/websites/[id]/_components/utils/tracking-defaults';

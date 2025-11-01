@@ -9,7 +9,7 @@ import type {
 	VercelProject,
 	VercelProjectsResponse,
 	VercelProjectWithDomain,
-} from '@databuddy/shared';
+} from '@databuddy/shared/types/vercel';
 
 export class VercelSDK {
 	private baseUrl = 'https://api.vercel.com';

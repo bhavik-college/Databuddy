@@ -5,7 +5,8 @@
  * and platform identification.
  */
 
-import { bots, logger } from '@databuddy/shared';
+import { bots } from '@databuddy/shared/lists/bots';
+import { logger } from '@databuddy/shared/utils/discord-webhook';
 import { UAParser } from 'ua-parser-js';
 
 export interface UserAgentInfo {

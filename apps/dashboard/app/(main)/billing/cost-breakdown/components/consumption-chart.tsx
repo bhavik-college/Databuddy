@@ -1,6 +1,6 @@
 'use client';
 
-import type { UsageResponse } from '@databuddy/shared';
+import type { UsageResponse } from '@databuddy/shared/types/billing';
 import { CalendarIcon, ChartBarIcon } from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
 import {

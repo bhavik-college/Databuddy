@@ -1,6 +1,6 @@
 'use client';
 
-import type { Website } from '@databuddy/shared';
+import type { Website } from '@databuddy/shared/types/website';
 import { GlobeIcon } from '@phosphor-icons/react';
 import { FaviconImage } from '@/components/analytics/favicon-image';
 import { cn } from '@/lib/utils';

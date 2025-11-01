@@ -1,6 +1,6 @@
 'use client';
 
-import type { Session, SessionsListProps } from '@databuddy/shared';
+import type { Session, SessionsListProps } from '@databuddy/shared/types/sessions';
 import { SpinnerIcon, UserIcon } from '@phosphor-icons/react';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';

@@ -1,6 +1,7 @@
 'use client';
 
-import { type DynamicQueryFilter, filterOptions } from '@databuddy/shared';
+import type { DynamicQueryFilter } from '@databuddy/shared/types/api';
+import { filterOptions } from '@databuddy/shared/lists/filters';
 import { FloppyDiskIcon, PencilIcon, XIcon } from '@phosphor-icons/react';
 import { useAtom } from 'jotai';
 import { useParams } from 'next/navigation';

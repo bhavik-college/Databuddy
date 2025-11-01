@@ -1,6 +1,6 @@
 'use client';
 
-import type { UsageResponse } from '@databuddy/shared';
+import type { UsageResponse } from '@databuddy/shared/types/billing';
 import {
 	BugIcon,
 	ChartBarIcon,

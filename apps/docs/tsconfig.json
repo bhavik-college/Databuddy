@@ -42,5 +42,9 @@
   ],
   "exclude": [
     "node_modules"
+  ],
+  "references": [
+    { "path": "../../packages/sdk" },
+    { "path": "../../packages/shared" }
   ]
 }

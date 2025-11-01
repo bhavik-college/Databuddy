@@ -38,7 +38,7 @@ async function loadDatabaseFromCdn(): Promise<Buffer> {
 
 		return dbBuffer;
 	} catch (error) {
-		logger.error('Failed to load database from CDN:', { error });
+		logger.error({ error }, 'Failed to load database from CDN:');
 		throw error;
 	}
 }
@@ -65,7 +65,7 @@ function loadDatabase() {
 
 			reader = Reader.openBuffer(dbBuffer) as GeoIPReader;
 		} catch (error) {
-			logger.error('Failed to load GeoIP database:', { error });
+			logger.error({ error }, 'Failed to load GeoIP database:');
 			loadError = error as Error;
 			reader = null;
 		} finally {
@@ -108,7 +108,7 @@ export async function getGeoLocation(ip: string) {
 		try {
 			await loadDatabase();
 		} catch (error) {
-			logger.error('Failed to load database for IP lookup:', { error });
+			logger.error({ error }, 'Failed to load database for IP lookup:');
 			return { country: undefined, region: undefined, city: undefined };
 		}
 	}
@@ -143,7 +143,7 @@ export async function getGeoLocation(ip: string) {
 			return { country: undefined, region: undefined, city: undefined };
 		}
 
-		logger.error('Error looking up IP:', { ip, error });
+		logger.error({ error }, 'Error looking up IP:');
 		return { country: undefined, region: undefined, city: undefined };
 	}
 }

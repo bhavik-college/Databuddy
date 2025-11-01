@@ -4,7 +4,7 @@ import {
 	convertToTimezone,
 	formatDate,
 	getBrowserTimezone,
-} from '@databuddy/shared';
+} from '@databuddy/shared/utils/date-utils';
 import { useCallback } from 'react';
 import { trpc } from '@/lib/trpc';
 

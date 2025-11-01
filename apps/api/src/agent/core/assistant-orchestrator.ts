@@ -1,6 +1,7 @@
 import type { User } from '@databuddy/auth';
-import type { StreamingUpdate } from '@databuddy/shared';
-import { createId, type Website } from '@databuddy/shared';
+import type { StreamingUpdate } from '@databuddy/shared/types/assistant';
+import type { Website } from '@databuddy/shared/types/website';
+import { createId } from '@databuddy/shared/utils/ids';
 import type { AssistantRequestType } from '../../schemas';
 import { AIService } from './ai-service';
 import { AssistantSession, type SessionMetrics } from './assistant-session';

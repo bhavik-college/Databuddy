@@ -1,4 +1,4 @@
-import type { Website } from '@databuddy/shared';
+import type { Website } from '@databuddy/shared/types/website';
 import { CaretLeftIcon, PlanetIcon } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { FaviconImage } from '@/components/analytics/favicon-image';

@@ -1,7 +1,7 @@
 import { auth } from '@databuddy/auth';
 import { db, userPreferences, websites } from '@databuddy/db';
 import { cacheable } from '@databuddy/redis';
-import type { Website } from '@databuddy/shared';
+import type { Website } from '@databuddy/shared/types/website';
 import { eq } from 'drizzle-orm';
 import {
 	getApiKeyFromHeader,

@@ -4,7 +4,7 @@ import { Elysia } from 'elysia';
 import { logger } from './lib/logger';
 import basketRouter from './routes/basket';
 import emailRouter from './routes/email';
-import stripeRouter from './routes/stripe';
+// import stripeRouter from './routes/stripe';
 import { getProducerStats } from './lib/producer';
 import './polyfills/compression';
 
@@ -62,7 +62,7 @@ const app = new Elysia()
 	})
 	.options('*', () => new Response(null, { status: 204 }))
 	.use(basketRouter)
-	.use(stripeRouter)
+	// .use(stripeRouter)
 	.use(emailRouter)
 	.get('/health', () => ({
 		status: 'ok',

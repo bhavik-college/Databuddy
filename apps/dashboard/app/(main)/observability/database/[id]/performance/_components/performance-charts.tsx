@@ -1,6 +1,6 @@
 'use client';
 
-import type { QueryPerformanceSummary } from '@databuddy/shared';
+import type { QueryPerformanceSummary } from '@databuddy/shared/types/performance';
 import {
 	Bar,
 	BarChart,

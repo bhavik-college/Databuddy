@@ -1,5 +1,5 @@
 import { type db as drizzleDb, websites, and, eq, isNull, type InferSelectModel } from '@databuddy/db';
-import { logger } from '@databuddy/shared';
+import { logger } from '@databuddy/shared/utils/discord-webhook';
 import { Effect, pipe } from 'effect';
 import { nanoid } from 'nanoid';
 import { z } from 'zod';

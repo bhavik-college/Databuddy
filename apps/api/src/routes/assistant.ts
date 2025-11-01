@@ -1,5 +1,5 @@
 import { auth, type User, websitesApi } from '@databuddy/auth';
-import type { StreamingUpdate } from '@databuddy/shared';
+import type { StreamingUpdate } from '@databuddy/shared/types/assistant';
 import { Elysia } from 'elysia';
 import { processAssistantRequest } from '../agent/processor';
 import { createStreamingResponse } from '../agent/utils/stream-utils';

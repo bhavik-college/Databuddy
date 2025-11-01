@@ -1,6 +1,7 @@
 'use client';
 
-import { filterOptions, type GoalFilter } from '@databuddy/shared';
+import type { GoalFilter } from '@databuddy/shared/types/api';
+import { filterOptions } from '@databuddy/shared/lists/filters';
 import {
 	Eye,
 	MouseMiddleClick,

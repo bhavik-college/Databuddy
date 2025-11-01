@@ -1,6 +1,6 @@
 'use client';
 
-import type { DynamicQueryFilter } from '@databuddy/shared';
+import type { DynamicQueryFilter } from '@databuddy/shared/types/api';
 import { CheckIcon, FloppyDiskIcon } from '@phosphor-icons/react';
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';

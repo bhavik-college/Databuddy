@@ -1,6 +1,6 @@
 'use client';
 
-import type { CountryData, LocationData } from '@databuddy/shared';
+import type { CountryData, LocationData } from '@databuddy/shared/types/website';
 import { scalePow } from 'd3-scale';
 import type { Feature, GeoJsonObject } from 'geojson';
 import type { Layer, Map as LeafletMap } from 'leaflet';

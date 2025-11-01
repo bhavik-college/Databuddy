@@ -10,7 +10,7 @@ import {
 	websites,
 } from '@databuddy/db';
 import { createDrizzleCache, redis } from '@databuddy/redis';
-import type { ProcessedMiniChartData } from '@databuddy/shared';
+import type { ProcessedMiniChartData } from '@databuddy/shared/types/website';
 import { z } from 'zod/v4';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 

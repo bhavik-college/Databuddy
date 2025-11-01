@@ -1,4 +1,4 @@
-import type { GoalFilter } from '@databuddy/shared';
+import type { GoalFilter } from '@databuddy/shared/types/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { trpc } from '@/lib/trpc';

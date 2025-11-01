@@ -4,8 +4,8 @@ import {
 	assistantMessages,
 	db,
 } from '@databuddy/db';
-import type { StreamingUpdate } from '@databuddy/shared';
-import { createId } from '@databuddy/shared';
+import type { StreamingUpdate } from '@databuddy/shared/types/assistant';
+import { createId } from '@databuddy/shared/utils/ids';
 import { eq } from 'drizzle-orm';
 import type { AssistantSession, SessionMetrics } from './assistant-session';
 import type { AIResponseContent } from './response-processor';

@@ -37,7 +37,7 @@ import type {
 	SessionEvent,
 	SessionReferrer,
 	SessionRowProps,
-} from '@databuddy/shared';
+} from '@databuddy/shared/types/sessions';
 import { BrowserIcon, CountryFlag, OSIcon } from '@/components/icon';
 import { getDeviceIcon } from '@/lib/utils';
 

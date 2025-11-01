@@ -1,4 +1,4 @@
-import type { ProcessedMiniChartData, Website } from '@databuddy/shared';
+import type { ProcessedMiniChartData, Website } from '@databuddy/shared/types/website';
 import {
 	ArrowRightIcon,
 	MinusIcon,

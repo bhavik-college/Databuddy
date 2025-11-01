@@ -1,6 +1,6 @@
 'use client';
 
-import type { QueryBuilderMeta } from '@databuddy/shared';
+import type { QueryBuilderMeta } from '@databuddy/shared/types/query';
 import { CheckCircleIcon, CopyIcon } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';

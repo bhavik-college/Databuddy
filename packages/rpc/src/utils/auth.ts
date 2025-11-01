@@ -1,7 +1,7 @@
 import { websitesApi } from '@databuddy/auth';
 import { db, dbConnections, eq, websites } from '@databuddy/db';
 import { cacheable } from '@databuddy/redis';
-import { logger } from '@databuddy/shared';
+import { logger } from '@databuddy/shared/utils/discord-webhook';
 import { TRPCError } from '@trpc/server';
 import type { Context } from '../trpc';
 

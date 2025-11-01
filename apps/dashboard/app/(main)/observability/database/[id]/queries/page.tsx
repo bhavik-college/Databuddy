@@ -1,6 +1,6 @@
 'use client';
 
-import type { QueryPerformanceSummary } from '@databuddy/shared';
+import type { QueryPerformanceSummary } from '@databuddy/shared/types/performance';
 import { DatabaseIcon } from '@phosphor-icons/react';
 import { useQueryState } from 'nuqs';
 import { use, useCallback, useMemo, useState } from 'react';

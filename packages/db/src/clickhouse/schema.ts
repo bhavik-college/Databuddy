@@ -575,7 +575,7 @@ export interface EmailEvent {
 	event_time: number;
 	received_at: number;
 	ingestion_time: number;
-	metadata_json: JSON;
+	metadata_json: string;
 }
 
 export interface ObservabilityEvent {

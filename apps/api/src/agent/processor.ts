@@ -1,5 +1,6 @@
 import type { User } from '@databuddy/auth';
-import type { StreamingUpdate, Website } from '@databuddy/shared';
+import type { StreamingUpdate } from '@databuddy/shared/types/assistant';
+import type { Website } from '@databuddy/shared/types/website';
 import type { AssistantRequestType } from '../schemas';
 import { AssistantOrchestrator } from './core/assistant-orchestrator';
 

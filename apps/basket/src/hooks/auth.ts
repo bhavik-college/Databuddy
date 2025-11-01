@@ -46,22 +46,13 @@ async function _resolveOwnerId(website: Website): Promise<string | null> {
 				return orgMember.userId;
 			}
 
-			logger.warn('Organization owner not found for website', {
-				websiteId: website.id,
-				organizationId: website.organizationId,
-			});
+			logger.warn({ websiteId: website.id, organizationId: website.organizationId }, 'Organization owner not found for website');
 		} catch (error) {
-			logger.error('Failed to fetch organization owner', {
-				websiteId: website.id,
-				organizationId: website.organizationId,
-				error,
-			});
+			logger.error({ websiteId: website.id, organizationId: website.organizationId, error }, 'Failed to fetch organization owner');
 		}
 	}
 
-	logger.warn('No owner could be determined for website', {
-		websiteId: website.id,
-	});
+	logger.warn({ websiteId: website.id }, 'No owner could be determined for website');
 	return null;
 }
 
@@ -173,7 +164,7 @@ export function normalizeDomain(domain: string): string {
 		}
 		return finalDomain;
 	} catch (error) {
-		logger.error(`Failed to parse domain: ${domain}`, { error });
+		logger.error({ error }, `Failed to parse domain: ${domain}`);
 		throw new Error(`Invalid domain format: ${domain}`);
 	}
 }

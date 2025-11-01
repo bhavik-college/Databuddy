@@ -4,7 +4,7 @@ import type {
 	DailyUsageByTypeRow,
 	DailyUsageRow,
 	EventTypeBreakdown,
-} from '@databuddy/shared';
+} from '@databuddy/shared/types/billing';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { logger } from '../lib/logger';

@@ -1,4 +1,4 @@
-import type { DateRange } from '@databuddy/shared';
+import type { DateRange } from '@databuddy/shared/types/analytics';
 import { useQueries, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { trpc } from '@/lib/trpc';

@@ -1,4 +1,4 @@
-import type { ErrorCategory } from '@databuddy/shared';
+import type { ErrorCategory } from '@databuddy/shared/types/errors';
 
 export { formatDateTime, formatDateTimeSeconds } from '@/lib/formatters';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { filterOptions } from '@databuddy/shared';
+import { filterOptions } from '@databuddy/shared/lists/filters';
 import {
 	DragDropContext,
 	Draggable,

@@ -4,7 +4,7 @@
  * Functions for analyzing referrer URLs to extract information about traffic sources.
  */
 
-import { referrers } from '@databuddy/shared';
+import { referrers } from '@databuddy/shared/lists/referrers';
 
 export interface ReferrerInfo {
 	type: string;

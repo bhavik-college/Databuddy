@@ -1,6 +1,6 @@
 'use client';
 
-import { getCountryCode, getCountryName } from '@databuddy/shared';
+import { getCountryCode, getCountryName } from '@databuddy/shared/country-codes';
 import { LightningIcon } from '@phosphor-icons/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CountryFlag } from '@/components/analytics/icons/CountryFlag';

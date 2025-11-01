@@ -1,4 +1,4 @@
-import type { StreamingUpdate } from '@databuddy/shared';
+import type { StreamingUpdate } from '@databuddy/shared/types/assistant';
 import { useAtom } from 'jotai';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';

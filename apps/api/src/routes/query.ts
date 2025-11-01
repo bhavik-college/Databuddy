@@ -1,6 +1,6 @@
 import { auth } from '@databuddy/auth';
 import { and, apikeyAccess, db, eq, isNull, websites } from '@databuddy/db';
-import { filterOptions } from '@databuddy/shared';
+import { filterOptions } from '@databuddy/shared/lists/filters';
 import { Elysia, t } from 'elysia';
 import { getApiKeyFromHeader, isApiKeyPresent } from '../lib/api-key';
 import { getCachedWebsiteDomain, getWebsiteDomain } from '../lib/website-utils';

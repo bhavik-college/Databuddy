@@ -4,7 +4,7 @@ import type {
 	PgStatStatement,
 	QueryDistribution,
 	QueryPerformanceSummary,
-} from '@databuddy/shared';
+} from '@databuddy/shared/types/performance';
 import { Client } from 'pg';
 
 async function createClient(connectionUrl: string): Promise<Client> {

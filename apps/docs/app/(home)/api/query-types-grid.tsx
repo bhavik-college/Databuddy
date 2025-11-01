@@ -1,6 +1,6 @@
 'use client';
 
-import type { QueryBuilderMeta } from '@databuddy/shared';
+import type { QueryBuilderMeta } from '@databuddy/shared/types/query';
 import { CaretRightIcon } from '@phosphor-icons/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { QueryTypeDialog } from './query-type-dialog';

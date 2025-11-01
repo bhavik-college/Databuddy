@@ -40,23 +40,15 @@ async function insertEmailEvent(emailData: EmailEventInput): Promise<void> {
 		event_time: emailData.event_time || now,
 		received_at: emailData.received_at || now,
 		ingestion_time: now,
-		metadata_json: emailData.metadata || {},
+		metadata_json: emailData.metadata ? JSON.stringify(emailData.metadata) : '{}',
 	};
 
 	try {
 		sendEvent('analytics-email-events', emailEvent);
 
-		logger.info('Email event sent to Kafka successfully', {
-			domain: emailEvent.domain,
-			labels: emailEvent.labels,
-			eventId: emailEvent.event_id,
-		});
+		logger.info({ emailEvent }, 'Email event sent to Kafka successfully');
 	} catch (err) {
-		logger.error('Failed to send email event to Kafka', {
-			error: err as Error,
-			domain: emailEvent.domain,
-			eventId: emailEvent.event_id,
-		});
+		logger.error({ error: err as Error, emailEvent }, 'Failed to send email event to Kafka');
 		throw err;
 	}
 }
@@ -112,10 +104,7 @@ const app = new Elysia()
 					event_id: emailHash,
 				};
 			} catch (error) {
-				logger.error('Email event processing failed', {
-					error: error as Error,
-					domain: emailData.domain,
-				});
+				logger.error({ error }, 'Email event processing failed');
 				return {
 					status: 'error',
 					message: 'Failed to process email event',

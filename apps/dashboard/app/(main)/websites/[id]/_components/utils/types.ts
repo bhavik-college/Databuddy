@@ -1,8 +1,6 @@
-import type {
-	DateRange as BaseDateRange,
-	DynamicQueryFilter,
-	Website,
-} from '@databuddy/shared';
+import type { DynamicQueryFilter } from '@databuddy/shared/types/api';
+import type { DateRange as BaseDateRange } from '@databuddy/shared/types/analytics';
+import type { Website } from '@databuddy/shared/types/website';
 
 export interface DateRange extends BaseDateRange {
 	granularity?: 'daily' | 'hourly';

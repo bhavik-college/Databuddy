@@ -1,6 +1,6 @@
 'use client';
 
-import type { DynamicQueryFilter } from '@databuddy/shared';
+import type { DynamicQueryFilter } from '@databuddy/shared/types/api';
 import { WarningIcon } from '@phosphor-icons/react';
 import { useAtom } from 'jotai';
 import dynamic from 'next/dynamic';

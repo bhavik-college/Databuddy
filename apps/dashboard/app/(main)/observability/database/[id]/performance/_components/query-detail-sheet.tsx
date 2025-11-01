@@ -1,6 +1,6 @@
 'use client';
 
-import type { QueryPerformanceSummary } from '@databuddy/shared';
+import type { QueryPerformanceSummary } from '@databuddy/shared/types/performance';
 import { CopyIcon, DatabaseIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { toast } from 'sonner';

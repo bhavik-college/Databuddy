@@ -24,8 +24,8 @@ import { useUserProfile } from '@/hooks/use-dynamic-query';
 import { getDeviceIcon } from '@/lib/utils';
 import { SessionRow } from './_components/session-row';
 import { generateProfileName } from './_components/generate-profile-name';
-import { getCountryCode } from '@databuddy/shared';
-import type { Session } from '@databuddy/shared';
+import { getCountryCode } from '@databuddy/shared/country-codes';
+import type { Session } from '@databuddy/shared/types/sessions';
 
 export default function UserDetailPage() {
 	const { id: websiteId, userId } = useParams();

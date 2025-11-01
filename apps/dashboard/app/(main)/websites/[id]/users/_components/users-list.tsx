@@ -1,7 +1,7 @@
 'use client';
 
-import type { ProfileData } from '@databuddy/shared';
-import { getCountryName } from '@databuddy/shared';
+import { getCountryName } from '@databuddy/shared/country-codes';
+import type { ProfileData } from '@databuddy/shared/types/analytics';
 import { SpinnerIcon, UsersIcon } from '@phosphor-icons/react';
 import {
 	type ColumnDef,

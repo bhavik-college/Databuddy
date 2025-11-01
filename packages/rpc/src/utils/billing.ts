@@ -1,6 +1,6 @@
 import { and, db, eq, member } from '@databuddy/db';
 import { cacheable } from '@databuddy/redis';
-import { logger } from '@databuddy/shared';
+import { logger } from '@databuddy/shared/utils/discord-webhook';
 import { Autumn } from 'autumn-js';
 
 const autumn = new Autumn();

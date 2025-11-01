@@ -1,5 +1,5 @@
 import { assistantConversations, assistantMessages, db } from '@databuddy/db';
-import { createId } from '@databuddy/shared';
+import { createId } from '@databuddy/shared/utils/ids';
 import { TRPCError } from '@trpc/server';
 import { and, asc, desc, eq } from 'drizzle-orm';
 import { z } from 'zod';

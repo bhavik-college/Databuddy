@@ -1,4 +1,4 @@
-import { formatDate } from '@databuddy/shared';
+import { formatDate } from '@databuddy/shared/utils/date-utils';
 import {
 	ArrowLeftIcon,
 	CalendarIcon,

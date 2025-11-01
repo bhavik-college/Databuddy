@@ -1,5 +1,5 @@
 import { redis } from '@databuddy/redis';
-import { logger } from '@databuddy/shared';
+import { logger } from '@databuddy/shared/utils/discord-webhook';
 import { parseDurationToSeconds } from '@databuddy/validation';
 
 export interface RateLimitConfig {

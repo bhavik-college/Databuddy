@@ -1,4 +1,4 @@
-import type { StreamingUpdate } from '@databuddy/shared';
+import type { StreamingUpdate } from '@databuddy/shared/types/assistant';
 import type { z } from 'zod';
 import { handleChartResponse } from '../handlers/chart-handler';
 import { handleMetricResponse } from '../handlers/metric-handler';

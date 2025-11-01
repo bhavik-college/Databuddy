@@ -1,7 +1,8 @@
 import { websitesApi } from '@databuddy/auth';
 import { chQuery } from '@databuddy/db';
 import { createDrizzleCache, redis } from '@databuddy/redis';
-import { logger, type ProcessedMiniChartData } from '@databuddy/shared';
+import type { ProcessedMiniChartData } from '@databuddy/shared/types/website';
+import { logger } from '@databuddy/shared/utils/discord-webhook';
 import { transferWebsiteSchema, transferWebsiteToOrgSchema } from '@databuddy/validation';
 import { TRPCError } from '@trpc/server';
 import { Effect, pipe } from 'effect';

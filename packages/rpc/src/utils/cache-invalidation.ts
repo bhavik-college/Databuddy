@@ -1,5 +1,5 @@
 import { createDrizzleCache, redis } from '@databuddy/redis';
-import { logger } from '@databuddy/shared';
+import { logger } from '@databuddy/shared/utils/discord-webhook';
 
 /**
  * Invalidates basic website caches (websites table and getById key)

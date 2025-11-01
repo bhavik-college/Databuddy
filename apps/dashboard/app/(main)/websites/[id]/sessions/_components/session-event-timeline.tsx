@@ -1,6 +1,6 @@
 'use client';
 
-import type { SessionEvent } from '@databuddy/shared';
+import type { SessionEvent } from '@databuddy/shared/types/sessions';
 import { FileTextIcon, SparkleIcon } from '@phosphor-icons/react';
 import { Badge } from '@/components/ui/badge';
 import {

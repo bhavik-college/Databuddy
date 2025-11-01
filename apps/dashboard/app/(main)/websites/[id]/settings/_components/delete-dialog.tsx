@@ -1,6 +1,6 @@
 'use client';
 
-import type { Website } from '@databuddy/shared';
+import type { Website } from '@databuddy/shared/types/website';
 import { WarningCircleIcon } from '@phosphor-icons/react';
 import {
 	AlertDialog,

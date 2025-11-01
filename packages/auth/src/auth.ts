@@ -7,7 +7,7 @@ import {
 	VerificationEmail,
 } from '@databuddy/email';
 import { getRedisCache } from '@databuddy/redis';
-import { logger } from '@databuddy/shared';
+import { logger } from '@databuddy/shared/utils/discord-webhook';
 import { betterAuth } from 'better-auth';
 
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
@@ -32,7 +32,7 @@ export const auth = betterAuth({
 	databaseHooks: {
 		user: {
 			create: {
-				after: (user: { id: string; name: string; email: string }) => {
+				after: async (user: { id: string; name: string; email: string }) => {
 					logger.info(
 						'User Created',
 						`User ${user.id}, ${user.name}, ${user.email} created`
@@ -266,7 +266,7 @@ export const auth = betterAuth({
 });
 
 export const websitesApi = {
-	hasPermission: auth.api.hasPermission,
+	hasPermission: auth.api.hasPermission
 };
 
 export type User = (typeof auth)['$Infer']['Session']['user'] & {
