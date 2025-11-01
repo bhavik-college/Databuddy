@@ -45,6 +45,9 @@ export const ReferrerSourceCell: React.FC<ReferrerSourceCellProps> = ({
 			)}
 			href={`https://${domain.trim()}`}
 			id={id}
+			onClick={(e) => {
+				e.stopPropagation();
+			}}
 			rel="noopener noreferrer nofollow"
 			target="_blank"
 		>
