@@ -92,8 +92,8 @@ export default function PricingTable({
 
 	const intervals = Array.from(
 		new Set(
-			products?.map((p) => p.properties?.interval_group).filter((i) => !!i),
-		),
+			products?.map((p) => p.properties?.interval_group).filter((i) => !!i)
+		)
 	);
 
 	const multiInterval = intervals.length > 1;
@@ -131,7 +131,7 @@ export default function PricingTable({
 									"rounded-full px-4 py-1 font-medium text-sm transition focus:outline-none",
 									isAnnual
 										? "bg-transparent text-foreground"
-										: "bg-primary text-primary-foreground shadow",
+										: "bg-primary text-primary-foreground shadow"
 								)}
 								onClick={() => setIsAnnual(false)}
 								type="button"
@@ -144,7 +144,7 @@ export default function PricingTable({
 									"rounded-full px-4 py-1 font-medium text-sm transition focus:outline-none",
 									isAnnual
 										? "bg-primary text-primary-foreground shadow"
-										: "bg-transparent text-foreground",
+										: "bg-transparent text-foreground"
 								)}
 								onClick={() => setIsAnnual(true)}
 								type="button"
@@ -261,7 +261,7 @@ export const PricingTableContainer = ({
 				{multiInterval && (
 					<div
 						className={cn(
-							products.some((p) => p.display?.recommend_text) && "mb-8",
+							products.some((p) => p.display?.recommend_text) && "mb-8"
 						)}
 					>
 						<AnnualSwitch
@@ -273,7 +273,7 @@ export const PricingTableContainer = ({
 				<div
 					className={cn(
 						"grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]",
-						className,
+						className
 					)}
 				>
 					{children}
@@ -371,7 +371,7 @@ export const PricingCard = ({
 				isRecommended &&
 					"lg:-translate-y-6 animate-recommended-glow border-primary bg-secondary/40 lg:h-[calc(100%+48px)] lg:shadow-lg dark:shadow-zinc-800/80",
 				isSelected && "border-primary bg-primary/5 ring-2 ring-primary/20",
-				className,
+				className
 			)}
 		>
 			{isRecommended && (
@@ -380,7 +380,7 @@ export const PricingCard = ({
 			<div
 				className={cn(
 					"flex h-full flex-grow flex-col",
-					isRecommended && "lg:translate-y-6",
+					isRecommended && "lg:translate-y-6"
 				)}
 			>
 				<div className="h-full">
@@ -443,7 +443,7 @@ export const PricingCard = ({
 						</div>
 					)}
 				</div>
-				<div className={cn(" px-6 ", isRecommended && "lg:-translate-y-12")}>
+				<div className={cn("px-6", isRecommended && "lg:-translate-y-12")}>
 					<PricingCardButton
 						recommended={!!productDisplay?.recommend_text}
 						{...buttonProps}
@@ -466,56 +466,54 @@ export const PricingFeatureList = ({
 	showIcon?: boolean;
 	everythingFrom?: string;
 	className?: string;
-}) => {
-	return (
-		<div className={cn("flex-grow", className)}>
-			{everythingFrom && (
-				<p className="mb-4 text-sm">Everything from {everythingFrom}, plus:</p>
-			)}
-			<div className="space-y-3">
-				{items.map((item) => {
-					const featureItem = item as any;
-					let secondaryText = featureItem.display?.secondary_text;
+}) => (
+	<div className={cn("flex-grow", className)}>
+		{everythingFrom && (
+			<p className="mb-4 text-sm">Everything from {everythingFrom}, plus:</p>
+		)}
+		<div className="space-y-3">
+			{items.map((item) => {
+				const featureItem = item as any;
+				let secondaryText = featureItem.display?.secondary_text;
 
-					const hasTiers =
-						featureItem.type === "priced_feature" &&
-						featureItem.tiers?.length > 0;
+				const hasTiers =
+					featureItem.type === "priced_feature" &&
+					featureItem.tiers?.length > 0;
 
-					if (hasTiers) {
-						secondaryText = "Usage-based pricing";
-					}
+				if (hasTiers) {
+					secondaryText = "Usage-based pricing";
+				}
 
-					return (
-						<div
-							className="flex items-start gap-2 text-sm"
-							key={featureItem.display?.primary_text}
-						>
-							{showIcon && (
-								<CheckIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
-							)}
-							<div className="flex flex-col">
-								<span>{featureItem.display?.primary_text}</span>
-								<div className="flex items-center gap-1">
-									{secondaryText && (
-										<span className="text-muted-foreground text-sm">
-											{secondaryText}
-										</span>
-									)}
-									{hasTiers && (
-										<PricingTiersTooltip
-											showText={false}
-											tiers={featureItem.tiers}
-										/>
-									)}
-								</div>
+				return (
+					<div
+						className="flex items-start gap-2 text-sm"
+						key={featureItem.display?.primary_text}
+					>
+						{showIcon && (
+							<CheckIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+						)}
+						<div className="flex flex-col">
+							<span>{featureItem.display?.primary_text}</span>
+							<div className="flex items-center gap-1">
+								{secondaryText && (
+									<span className="text-muted-foreground text-sm">
+										{secondaryText}
+									</span>
+								)}
+								{hasTiers && (
+									<PricingTiersTooltip
+										showText={false}
+										tiers={featureItem.tiers}
+									/>
+								)}
 							</div>
 						</div>
-					);
-				})}
-			</div>
+					</div>
+				);
+			})}
 		</div>
-	);
-};
+	</div>
+);
 
 export interface PricingCardButtonProps extends React.ComponentProps<"button"> {
 	recommended?: boolean;
@@ -543,7 +541,7 @@ export const PricingCardButton = React.forwardRef<
 		<Button
 			className={cn(
 				"group relative w-full overflow-hidden rounded-lg border px-4 py-3 transition-all duration-300 hover:brightness-90",
-				className,
+				className
 			)}
 			{...props}
 			disabled={loading || props.disabled}
@@ -576,39 +574,35 @@ export const AnnualSwitch = ({
 }: {
 	isAnnualToggle: boolean;
 	setIsAnnualToggle: (isAnnual: boolean) => void;
-}) => {
-	return (
-		<div className="mb-4 flex flex-col items-center space-y-1">
-			<span
-				className="font-medium text-foreground text-sm"
-				id="billing-interval-label"
+}) => (
+	<div className="mb-4 flex flex-col items-center space-y-1">
+		<span
+			className="font-medium text-foreground text-sm"
+			id="billing-interval-label"
+		>
+			Choose billing interval
+		</span>
+		<div className="flex items-center space-x-2">
+			<span className="text-muted-foreground text-sm">Monthly</span>
+			<Switch
+				aria-label="Toggle annual billing"
+				checked={isAnnualToggle}
+				id="annual-billing"
+				onCheckedChange={setIsAnnualToggle}
 			>
-				Choose billing interval
-			</span>
-			<div className="flex items-center space-x-2">
-				<span className="text-muted-foreground text-sm">Monthly</span>
-				<Switch
-					aria-label="Toggle annual billing"
-					checked={isAnnualToggle}
-					id="annual-billing"
-					onCheckedChange={setIsAnnualToggle}
-				>
-					<span className="sr-only">Toggle annual billing</span>
-				</Switch>
-				<span className="text-muted-foreground text-sm">Annual</span>
-			</div>
+				<span className="sr-only">Toggle annual billing</span>
+			</Switch>
+			<span className="text-muted-foreground text-sm">Annual</span>
 		</div>
-	);
-};
+	</div>
+);
 
-export const RecommendedBadge = ({ recommended }: { recommended: string }) => {
-	return (
-		<div className="absolute top-[-1px] right-[-1px] flex animate-bounce-in items-center gap-1 rounded-bl-lg border border-primary bg-primary/90 px-3 font-medium text-primary-foreground text-sm shadow-md lg:top-4 lg:right-4 lg:rounded-full lg:py-0.5">
-			<StarIcon aria-hidden="true" className="h-4 w-4" weight="duotone" />
-			<span>{recommended}</span>
-		</div>
-	);
-};
+export const RecommendedBadge = ({ recommended }: { recommended: string }) => (
+	<div className="absolute top-[-1px] right-[-1px] flex animate-bounce-in items-center gap-1 rounded-bl-lg border border-primary bg-primary/90 px-3 font-medium text-primary-foreground text-sm shadow-md lg:top-4 lg:right-4 lg:rounded-full lg:py-0.5">
+		<StarIcon aria-hidden="true" className="h-4 w-4" weight="duotone" />
+		<span>{recommended}</span>
+	</div>
+);
 
 <style global jsx>{`
   @keyframes recommended-glow {

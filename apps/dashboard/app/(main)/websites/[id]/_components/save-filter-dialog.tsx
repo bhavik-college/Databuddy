@@ -77,7 +77,7 @@ interface SaveFilterDialogProps {
 	isLoading?: boolean;
 	validateName?: (
 		name: string,
-		excludeId?: string,
+		excludeId?: string
 	) => { type: string; message: string } | null;
 	editingFilter?: {
 		id: string;

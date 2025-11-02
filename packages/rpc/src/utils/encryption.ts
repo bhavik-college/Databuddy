@@ -14,7 +14,7 @@ function getEncryptionKey(): Buffer {
 		"databuddy-db-connections",
 		100_000,
 		32,
-		"sha512",
+		"sha512"
 	);
 }
 
@@ -43,7 +43,7 @@ export function decryptConnectionUrl(encryptedData: string): string {
 
 	try {
 		const combined = JSON.parse(
-			Buffer.from(encryptedData, "base64").toString("utf8"),
+			Buffer.from(encryptedData, "base64").toString("utf8")
 		);
 
 		const iv = Buffer.from(combined.iv, "base64");

@@ -10,7 +10,7 @@ import { AssistantOrchestrator } from "./core/assistant-orchestrator";
 export async function processAssistantRequest(
 	request: AssistantRequestType,
 	user: User,
-	website: Website,
+	website: Website
 ): Promise<StreamingUpdate[]> {
 	const orchestrator = new AssistantOrchestrator();
 	return await orchestrator.processRequest(request, user, website);

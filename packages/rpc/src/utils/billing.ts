@@ -29,7 +29,7 @@ export async function checkAndTrackWebsiteCreation(customerId: string) {
 	} catch (error) {
 		logger.error(
 			"Error with autumn checkAndTrack:",
-			error instanceof Error ? error.message : String(error),
+			error instanceof Error ? error.message : String(error)
 		);
 		return { allowed: true };
 	}
@@ -53,14 +53,14 @@ export async function trackWebsiteUsage(customerId: string, value: number) {
 	} catch (error) {
 		logger.error(
 			"[Billing Util] Error with autumn track:",
-			error instanceof Error ? error.message : String(error),
+			error instanceof Error ? error.message : String(error)
 		);
 		return { success: false };
 	}
 }
 
 async function _getOrganizationOwnerId(
-	organizationId: string,
+	organizationId: string
 ): Promise<string | null> {
 	if (!organizationId) {
 		return null;
@@ -69,7 +69,7 @@ async function _getOrganizationOwnerId(
 		const orgMember = await db.query.member.findFirst({
 			where: and(
 				eq(member.organizationId, organizationId),
-				eq(member.role, "owner"),
+				eq(member.role, "owner")
 			),
 			columns: { userId: true },
 		});
@@ -77,7 +77,7 @@ async function _getOrganizationOwnerId(
 	} catch (error) {
 		logger.error(
 			"[Billing Util] Error with _getOrganizationOwnerId:",
-			error instanceof Error ? error.message : String(error),
+			error instanceof Error ? error.message : String(error)
 		);
 		return null;
 	}
@@ -96,7 +96,7 @@ const getOrganizationOwnerId = cacheable(_getOrganizationOwnerId, {
  */
 export async function getBillingCustomerId(
 	userId: string,
-	organizationId?: string | null,
+	organizationId?: string | null
 ): Promise<string> {
 	if (!organizationId) {
 		return userId;

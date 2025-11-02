@@ -44,7 +44,7 @@ export function RevenueSettingsTab({
 	// Check if the webhook secret is masked (contains asterisks)
 	const isMaskedSecret = useCallback(
 		(secret: string) => secret.includes("*"),
-		[],
+		[]
 	);
 
 	// Initialize webhook secret only if it's not masked

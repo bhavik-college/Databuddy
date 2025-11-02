@@ -89,7 +89,7 @@ export default function Iridescence({
 				program.uniforms.uResolution.value = new Color(
 					gl.canvas.width,
 					gl.canvas.height,
-					gl.canvas.width / gl.canvas.height,
+					gl.canvas.width / gl.canvas.height
 				);
 			}
 		}
@@ -107,7 +107,7 @@ export default function Iridescence({
 					value: new Color(
 						gl.canvas.width,
 						gl.canvas.height,
-						gl.canvas.width / gl.canvas.height,
+						gl.canvas.width / gl.canvas.height
 					),
 				},
 				uMouse: {

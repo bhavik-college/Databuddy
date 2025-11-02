@@ -87,7 +87,7 @@ export function SessionsForm() {
 	const handleRevokeAll = async () => {
 		if (
 			!confirm(
-				"Are you sure you want to revoke all other sessions? You'll remain logged in on this device only.",
+				"Are you sure you want to revoke all other sessions? You'll remain logged in on this device only."
 			)
 		) {
 			return;

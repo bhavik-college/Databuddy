@@ -14,7 +14,7 @@ export function Databuddy(props: DatabuddyConfig) {
 	if (!clientId) {
 		if (typeof window !== "undefined" && !props.disabled && props.debug) {
 			console.warn(
-				"Databuddy: No client ID found. Please provide clientId prop or set NEXT_PUBLIC_DATABUDDY_CLIENT_ID environment variable.",
+				"Databuddy: No client ID found. Please provide clientId prop or set NEXT_PUBLIC_DATABUDDY_CLIENT_ID environment variable."
 			);
 		}
 		return null;

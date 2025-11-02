@@ -16,7 +16,7 @@ export class BrowserFlagStorage implements StorageInterface {
 		const now = Date.now();
 
 		const keys = Object.keys(localStorage).filter((key) =>
-			key.startsWith("db-flag-"),
+			key.startsWith("db-flag-")
 		);
 
 		for (const key of keys) {
@@ -38,7 +38,7 @@ export class BrowserFlagStorage implements StorageInterface {
 
 	clear(): void {
 		const keys = Object.keys(localStorage).filter((key) =>
-			key.startsWith("db-flag-"),
+			key.startsWith("db-flag-")
 		);
 		for (const key of keys) {
 			localStorage.removeItem(key);
@@ -115,7 +115,7 @@ export class BrowserFlagStorage implements StorageInterface {
 	cleanupExpired(): void {
 		const now = Date.now();
 		const keys = Object.keys(localStorage).filter((key) =>
-			key.startsWith("db-flag-"),
+			key.startsWith("db-flag-")
 		);
 
 		for (const key of keys) {

@@ -107,7 +107,7 @@ export function MemberList({
 	organizationId,
 }: MemberListProps) {
 	const [memberToRemove, setMemberToRemove] = useState<MemberToRemove | null>(
-		null,
+		null
 	);
 
 	const handleRemove = async () => {

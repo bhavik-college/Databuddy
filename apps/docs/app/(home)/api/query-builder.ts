@@ -10,7 +10,7 @@ function buildQueryParams(
 	websiteId: string,
 	startDate: string,
 	endDate: string,
-	timezone = "UTC",
+	timezone = "UTC"
 ): URLSearchParams {
 	const params = new URLSearchParams({
 		website_id: websiteId,
@@ -26,7 +26,7 @@ async function executeDynamicQuery(
 	startDate: string,
 	endDate: string,
 	queryData: DynamicQueryRequest | DynamicQueryRequest[],
-	timezone = "UTC",
+	timezone = "UTC"
 ): Promise<DynamicQueryResponse | BatchQueryResponse> {
 	try {
 		const params = buildQueryParams(websiteId, startDate, endDate, timezone);
@@ -85,7 +85,7 @@ export async function executeQuery(
 	startDate: string,
 	endDate: string,
 	queryRequest: DynamicQueryRequest,
-	timezone = "UTC",
+	timezone = "UTC"
 ): Promise<DynamicQueryResponse> {
 	try {
 		const result = await executeDynamicQuery(
@@ -93,7 +93,7 @@ export async function executeQuery(
 			startDate,
 			endDate,
 			queryRequest,
-			timezone,
+			timezone
 		);
 
 		if ("batch" in result) {
@@ -122,7 +122,7 @@ export async function executeBatchQueries(
 	startDate: string,
 	endDate: string,
 	queries: DynamicQueryRequest[],
-	timezone = "UTC",
+	timezone = "UTC"
 ): Promise<BatchQueryResponse> {
 	try {
 		const result = await executeDynamicQuery(
@@ -130,7 +130,7 @@ export async function executeBatchQueries(
 			startDate,
 			endDate,
 			queries,
-			timezone,
+			timezone
 		);
 
 		if (!("batch" in result)) {

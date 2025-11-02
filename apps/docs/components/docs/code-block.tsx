@@ -11,31 +11,32 @@ interface CodeBlockProps extends React.ComponentProps<"div"> {
 	children?: React.ReactNode;
 }
 
-const getShikiHighlighter = cache(async () => {
-	return await createHighlighter({
-		themes: ["github-dark", "github-light"],
-		langs: [
-			"typescript",
-			"javascript",
-			"tsx",
-			"jsx",
-			"bash",
-			"shell",
-			"sh",
-			"html",
-			"css",
-			"json",
-			"python",
-			"go",
-			"rust",
-			"sql",
-			"yaml",
-			"xml",
-			"markdown",
-			"plaintext",
-		],
-	});
-});
+const getShikiHighlighter = cache(
+	async () =>
+		await createHighlighter({
+			themes: ["github-dark", "github-light"],
+			langs: [
+				"typescript",
+				"javascript",
+				"tsx",
+				"jsx",
+				"bash",
+				"shell",
+				"sh",
+				"html",
+				"css",
+				"json",
+				"python",
+				"go",
+				"rust",
+				"sql",
+				"yaml",
+				"xml",
+				"markdown",
+				"plaintext",
+			],
+		})
+);
 
 async function CodeBlock({
 	children,
@@ -79,7 +80,7 @@ async function CodeBlock({
 		} catch {
 			// Fallback to plain text if language is not supported
 			console.warn(
-				`Shiki: Language "${language}" not supported, falling back to plain text`,
+				`Shiki: Language "${language}" not supported, falling back to plain text`
 			);
 			highlightedCode = null;
 		}
@@ -118,7 +119,7 @@ async function CodeBlock({
 							"[&>pre]:m-0 [&>pre]:overflow-visible [&>pre]:p-4 [&>pre]:font-geist-mono [&>pre]:text-sm [&>pre]:leading-relaxed",
 							"[&>pre>code]:block [&>pre>code]:w-full [&>pre>code]:font-geist-mono [&>pre>code]:text-sm [&>pre>code]:leading-relaxed",
 							"[&_.line]:min-h-[1.25rem] [&_.line]:px-0",
-							className,
+							className
 						)}
 						dangerouslySetInnerHTML={{ __html: highlightedCode }}
 					/>
@@ -127,7 +128,7 @@ async function CodeBlock({
 						className={cn(
 							"overflow-x-auto p-4 font-geist-mono text-foreground text-sm leading-relaxed",
 							"[&>code]:block [&>code]:w-full [&>code]:p-0 [&>code]:text-inherit",
-							className,
+							className
 						)}
 						tabIndex={-1}
 					>
@@ -146,7 +147,7 @@ function InlineCode({ className, ...props }: InlineCodeProps) {
 		<code
 			className={cn(
 				"relative rounded border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-geist-mono font-medium text-primary text-sm",
-				className,
+				className
 			)}
 			{...props}
 		/>

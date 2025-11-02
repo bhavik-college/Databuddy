@@ -135,11 +135,13 @@ export default function VisualizationSection() {
 	const [messages] = useAtom(messagesAtom);
 
 	// Find the latest assistant message with a chartType
-	const latestAssistantMsg = useMemo(() => {
-		return [...messages]
-			.reverse()
-			.find((msg: Message) => msg.type === "assistant" && msg.chartType);
-	}, [messages]);
+	const latestAssistantMsg = useMemo(
+		() =>
+			[...messages]
+				.reverse()
+				.find((msg: Message) => msg.type === "assistant" && msg.chartType),
+		[messages]
+	);
 
 	const rawAiData = useMemo(() => {
 		if (!latestAssistantMsg?.data || latestAssistantMsg.data.length === 0) {
@@ -154,7 +156,7 @@ export default function VisualizationSection() {
 
 		// Ensure each item is an object
 		const validData = data.filter(
-			(item) => item && typeof item === "object" && !Array.isArray(item),
+			(item) => item && typeof item === "object" && !Array.isArray(item)
 		);
 
 		return validData;
@@ -185,7 +187,7 @@ export default function VisualizationSection() {
 
 				// Sort by the metric value in descending order
 				formattedData.sort(
-					(a, b) => (Number(b[metricKey]) || 0) - (Number(a[metricKey]) || 0),
+					(a, b) => (Number(b[metricKey]) || 0) - (Number(a[metricKey]) || 0)
 				);
 
 				const MAX_CHART_ITEMS = 10; // Show up to 10 items for "Top 10" queries
@@ -216,7 +218,7 @@ export default function VisualizationSection() {
 					? "pageviews"
 					: Object.keys(workingData[0]).find(
 							(k) =>
-								typeof workingData[0][k] === "number" && k !== xAxisKeyFromFunc,
+								typeof workingData[0][k] === "number" && k !== xAxisKeyFromFunc
 						);
 
 			if (metricKeyForAggregation) {
@@ -226,7 +228,7 @@ export default function VisualizationSection() {
 					const metricValue = Number(item[metricKeyForAggregation]) || 0;
 					aggregatedMap.set(
 						displayName,
-						(aggregatedMap.get(displayName) || 0) + metricValue,
+						(aggregatedMap.get(displayName) || 0) + metricValue
 					);
 				}
 				workingData = Array.from(aggregatedMap, ([name, value]) => ({
@@ -246,7 +248,7 @@ export default function VisualizationSection() {
 			const primaryMetricKeyForSorting = workingData[0]
 				? Object.keys(workingData[0]).find(
 						(k) =>
-							typeof workingData[0][k] === "number" && k !== xAxisKeyFromFunc,
+							typeof workingData[0][k] === "number" && k !== xAxisKeyFromFunc
 					)
 				: undefined;
 
@@ -255,7 +257,7 @@ export default function VisualizationSection() {
 				sortableData.sort(
 					(a, b) =>
 						(Number(b[primaryMetricKeyForSorting]) || 0) -
-						(Number(a[primaryMetricKeyForSorting]) || 0),
+						(Number(a[primaryMetricKeyForSorting]) || 0)
 				);
 				finalChartData = sortableData.slice(0, MAX_CHART_ITEMS);
 			} else {
@@ -312,7 +314,7 @@ export default function VisualizationSection() {
 			layout?: "vertical" | "horizontal";
 			stacked?: boolean;
 			grouped?: boolean;
-		} = {},
+		} = {}
 	) => {
 		const isVertical = chartOptions.layout === "vertical";
 		return (
@@ -368,13 +370,13 @@ export default function VisualizationSection() {
 		data: ChartDataItem[],
 		xAxisKey: string,
 		availableMetricKeys: string[],
-		chartConfig: ChartConfig,
+		chartConfig: ChartConfig
 	) =>
 		renderBaseBarChart(
 			data,
 			xAxisKey,
 			availableMetricKeys.slice(0, 1),
-			chartConfig,
+			chartConfig
 		);
 
 	const renderBaseLineChart = (
@@ -382,7 +384,7 @@ export default function VisualizationSection() {
 		xAxisKey: string,
 		availableMetricKeys: string[],
 		chartConfig: ChartConfig,
-		options: { minimal?: boolean; showGrid?: boolean; showAxes?: boolean } = {},
+		options: { minimal?: boolean; showGrid?: boolean; showAxes?: boolean } = {}
 	) => (
 		<LineChart data={data}>
 			{options.showGrid !== false && <CartesianGrid vertical={false} />}
@@ -426,13 +428,13 @@ export default function VisualizationSection() {
 		data: ChartDataItem[],
 		xAxisKey: string,
 		availableMetricKeys: string[],
-		chartConfig: ChartConfig,
+		chartConfig: ChartConfig
 	) =>
 		renderBaseLineChart(
 			data,
 			xAxisKey,
 			availableMetricKeys.slice(0, 1),
-			chartConfig,
+			chartConfig
 		);
 
 	const renderBaseAreaChart = (
@@ -440,7 +442,7 @@ export default function VisualizationSection() {
 		xAxisKey: string,
 		availableMetricKeys: string[],
 		chartConfig: ChartConfig,
-		options: { stacked?: boolean } = {},
+		options: { stacked?: boolean } = {}
 	) => (
 		<AreaChart data={data}>
 			<CartesianGrid vertical={false} />
@@ -479,7 +481,7 @@ export default function VisualizationSection() {
 		data: ChartDataItem[],
 		xAxisKey: string,
 		availableMetricKeys: string[],
-		chartConfig: ChartConfig,
+		chartConfig: ChartConfig
 	) =>
 		renderBaseAreaChart(data, xAxisKey, availableMetricKeys, chartConfig, {
 			stacked: true,
@@ -488,7 +490,7 @@ export default function VisualizationSection() {
 	const renderPieChart = (
 		data: ChartDataItem[],
 		xAxisKey: string,
-		availableMetricKeys: string[],
+		availableMetricKeys: string[]
 	) => {
 		if (availableMetricKeys.length === 0) {
 			return (
@@ -498,7 +500,7 @@ export default function VisualizationSection() {
 			);
 		}
 		const COLORS = data.map(
-			(_entry, index) => CHART_COLORS[index % CHART_COLORS.length],
+			(_entry, index) => CHART_COLORS[index % CHART_COLORS.length]
 		);
 		return (
 			<PieChart>
@@ -529,14 +531,14 @@ export default function VisualizationSection() {
 		data: ChartDataItem[],
 		xAxisKey: string,
 		availableMetricKeys: string[],
-		chartConfig: ChartConfig,
+		chartConfig: ChartConfig
 	) => renderBaseLineChart(data, xAxisKey, availableMetricKeys, chartConfig);
 
 	const renderStackedBarChart = (
 		data: ChartDataItem[],
 		xAxisKey: string,
 		availableMetricKeys: string[],
-		chartConfig: ChartConfig,
+		chartConfig: ChartConfig
 	) =>
 		renderBaseBarChart(data, xAxisKey, availableMetricKeys, chartConfig, {
 			layout: "vertical",
@@ -547,7 +549,7 @@ export default function VisualizationSection() {
 		data: ChartDataItem[],
 		xAxisKey: string,
 		availableMetricKeys: string[],
-		chartConfig: ChartConfig,
+		chartConfig: ChartConfig
 	) =>
 		renderBaseBarChart(data, xAxisKey, availableMetricKeys, chartConfig, {
 			grouped: true,
@@ -556,7 +558,7 @@ export default function VisualizationSection() {
 	const renderBaseScatterChart = (
 		data: ChartDataItem[],
 		availableMetricKeys: string[],
-		options: { sizeKey?: string } = {},
+		options: { sizeKey?: string } = {}
 	) => {
 		if (availableMetricKeys.length < 2) {
 			return (
@@ -597,7 +599,7 @@ export default function VisualizationSection() {
 										: 1;
 									const size = Math.max(
 										2,
-										Math.min(20, (Number(sizeValue) || 1) / 10),
+										Math.min(20, (Number(sizeValue) || 1) / 10)
 									);
 									return (
 										<circle
@@ -617,14 +619,14 @@ export default function VisualizationSection() {
 
 	const renderScatterChart = (
 		data: ChartDataItem[],
-		availableMetricKeys: string[],
+		availableMetricKeys: string[]
 	) => renderBaseScatterChart(data, availableMetricKeys);
 
 	const renderRadarChart = (
 		data: ChartDataItem[],
 		xAxisKey: string,
 		availableMetricKeys: string[],
-		chartConfig: ChartConfig,
+		chartConfig: ChartConfig
 	) => (
 		<RadarChart data={data}>
 			<PolarGrid />
@@ -647,7 +649,7 @@ export default function VisualizationSection() {
 	const renderFunnelChart = (
 		data: ChartDataItem[],
 		xAxisKey: string,
-		availableMetricKeys: string[],
+		availableMetricKeys: string[]
 	) => (
 		<FunnelChart>
 			<Tooltip content={<ChartTooltipContent />} />
@@ -670,7 +672,7 @@ export default function VisualizationSection() {
 	const renderDonutChart = (
 		data: ChartDataItem[],
 		xAxisKey: string,
-		availableMetricKeys: string[],
+		availableMetricKeys: string[]
 	) => {
 		if (availableMetricKeys.length === 0) {
 			return (
@@ -680,7 +682,7 @@ export default function VisualizationSection() {
 			);
 		}
 		const COLORS = data.map(
-			(_entry, index) => CHART_COLORS[index % CHART_COLORS.length],
+			(_entry, index) => CHART_COLORS[index % CHART_COLORS.length]
 		);
 		return (
 			<PieChart>
@@ -710,7 +712,7 @@ export default function VisualizationSection() {
 
 	const renderBubbleChart = (
 		data: ChartDataItem[],
-		availableMetricKeys: string[],
+		availableMetricKeys: string[]
 	) =>
 		renderBaseScatterChart(data, availableMetricKeys, {
 			sizeKey: availableMetricKeys[2],
@@ -733,7 +735,7 @@ export default function VisualizationSection() {
 		const max = Math.max(...values);
 		const binCount = Math.min(
 			10,
-			Math.max(5, Math.floor(Math.sqrt(values.length))),
+			Math.max(5, Math.floor(Math.sqrt(values.length)))
 		);
 		const binSize = (max - min) / binCount;
 
@@ -741,7 +743,7 @@ export default function VisualizationSection() {
 			const binStart = min + i * binSize;
 			const binEnd = binStart + binSize;
 			const count = values.filter(
-				(v) => v >= binStart && (i === binCount - 1 ? v <= binEnd : v < binEnd),
+				(v) => v >= binStart && (i === binCount - 1 ? v <= binEnd : v < binEnd)
 			).length;
 			return {
 				range: `${binStart.toFixed(1)}-${binEnd.toFixed(1)}`,
@@ -773,7 +775,7 @@ export default function VisualizationSection() {
 	const renderTreemapChart = (
 		data: ChartDataItem[],
 		nameKey: string,
-		availableMetricKeys: string[],
+		availableMetricKeys: string[]
 	) => {
 		if (availableMetricKeys.length === 0) {
 			return (
@@ -890,7 +892,7 @@ export default function VisualizationSection() {
 		].includes(aiChartType?.toLowerCase() || "");
 
 		const metricKeys = Object.keys(chartConfig).filter(
-			(key) => key !== chartDisplayConfig.finalXAxisKey,
+			(key) => key !== chartDisplayConfig.finalXAxisKey
 		);
 
 		const renderChart = () => {
@@ -908,7 +910,7 @@ export default function VisualizationSection() {
 			const data = chartDisplayConfig.chartDataForDisplay;
 			const xAxisKey = chartDisplayConfig.finalXAxisKey;
 			const availableMetricKeys = metricKeys.filter((key) =>
-				data.some((item) => item[key] !== null && item[key] !== undefined),
+				data.some((item) => item[key] !== null && item[key] !== undefined)
 			);
 
 			if (availableMetricKeys.length === 0) {
@@ -948,7 +950,7 @@ export default function VisualizationSection() {
 						data,
 						xAxisKey,
 						availableMetricKeys,
-						chartConfig,
+						chartConfig
 					);
 				case "horizontal_bar":
 					return renderBaseBarChart(
@@ -956,14 +958,14 @@ export default function VisualizationSection() {
 						xAxisKey,
 						availableMetricKeys,
 						chartConfig,
-						{ layout: "vertical" },
+						{ layout: "vertical" }
 					);
 				case "line":
 					return renderLineChart(
 						data,
 						xAxisKey,
 						availableMetricKeys,
-						chartConfig,
+						chartConfig
 					);
 				case "sparkline":
 					return renderBaseLineChart(
@@ -971,14 +973,14 @@ export default function VisualizationSection() {
 						xAxisKey,
 						availableMetricKeys.slice(0, 1),
 						chartConfig,
-						{ minimal: true, showGrid: false, showAxes: false },
+						{ minimal: true, showGrid: false, showAxes: false }
 					);
 				case "area":
 					return renderAreaChart(
 						data,
 						xAxisKey,
 						availableMetricKeys,
-						chartConfig,
+						chartConfig
 					);
 				case "unstacked_area":
 					return renderBaseAreaChart(
@@ -986,7 +988,7 @@ export default function VisualizationSection() {
 						xAxisKey,
 						availableMetricKeys,
 						chartConfig,
-						{ stacked: false },
+						{ stacked: false }
 					);
 				case "pie":
 					return renderPieChart(data, xAxisKey, availableMetricKeys);
@@ -997,21 +999,21 @@ export default function VisualizationSection() {
 						data,
 						xAxisKey,
 						availableMetricKeys,
-						chartConfig,
+						chartConfig
 					);
 				case "stacked_bar":
 					return renderStackedBarChart(
 						data,
 						xAxisKey,
 						availableMetricKeys,
-						chartConfig,
+						chartConfig
 					);
 				case "grouped_bar":
 					return renderGroupedBarChart(
 						data,
 						xAxisKey,
 						availableMetricKeys,
-						chartConfig,
+						chartConfig
 					);
 				case "scatter":
 					return renderScatterChart(data, availableMetricKeys);
@@ -1022,7 +1024,7 @@ export default function VisualizationSection() {
 						data,
 						xAxisKey,
 						availableMetricKeys,
-						chartConfig,
+						chartConfig
 					);
 				case "funnel":
 					return renderFunnelChart(data, xAxisKey, availableMetricKeys);
@@ -1216,7 +1218,7 @@ function getReferrerDisplayName(referrer: string | unknown): string {
 }
 
 const generateColumns = (
-	data: ChartDataItem[],
+	data: ChartDataItem[]
 ): ColumnDef<ChartDataItem, any>[] => {
 	if (!data || data.length === 0 || !data[0]) {
 		return [];
@@ -1248,7 +1250,7 @@ const TIME_KEYS = ["date", "time", "hour", "day", "week", "month", "timestamp"];
 
 const transformDataForMetricsChart = (
 	rawData: any[],
-	chartTypeInput?: string,
+	chartTypeInput?: string
 	// aiQuery parameter removed as it was unused
 ): TransformResult => {
 	if (!rawData || rawData.length === 0 || !rawData[0]) {
@@ -1301,17 +1303,17 @@ const transformDataForMetricsChart = (
 	if (chartType === "multi_line") {
 		const firstItemKeys = Object.keys(rawData[0]);
 		const timeCol = firstItemKeys.find(
-			(k: string) => k.toLowerCase() === "date" || k.toLowerCase() === "hour",
+			(k: string) => k.toLowerCase() === "date" || k.toLowerCase() === "hour"
 		);
 		let categoryCol: string | undefined;
 		let metricCol: string | undefined;
 
 		if (timeCol) {
 			categoryCol = firstItemKeys.find(
-				(k: string) => k !== timeCol && typeof rawData[0][k] === "string",
+				(k: string) => k !== timeCol && typeof rawData[0][k] === "string"
 			);
 			metricCol = firstItemKeys.find(
-				(k: string) => k !== timeCol && typeof rawData[0][k] === "number",
+				(k: string) => k !== timeCol && typeof rawData[0][k] === "number"
 			);
 		}
 
@@ -1368,14 +1370,14 @@ const transformDataForMetricsChart = (
 						}
 					}
 					return completeDataPoint;
-				},
+				}
 			);
 
 			if (TIME_KEYS.includes(_timeCol.toLowerCase())) {
 				try {
 					result.sort(
 						(a, b) =>
-							new Date(a[_timeCol]).getTime() - new Date(b[_timeCol]).getTime(),
+							new Date(a[_timeCol]).getTime() - new Date(b[_timeCol]).getTime()
 					);
 				} catch (_e) {
 					/* ignore sort error for non-standard time keys */
@@ -1387,12 +1389,12 @@ const transformDataForMetricsChart = (
 
 	const firstItemKeys = Object.keys(rawData[0]);
 	const identifiedTimeKeyForSingleSeries = firstItemKeys.find((key: string) =>
-		TIME_KEYS.includes(key.toLowerCase()),
+		TIME_KEYS.includes(key.toLowerCase())
 	);
 	const identifiedMetricKey = firstItemKeys.find(
 		(key: string) =>
 			key !== identifiedTimeKeyForSingleSeries &&
-			typeof rawData[0][key] === "number",
+			typeof rawData[0][key] === "number"
 	);
 
 	determinedXAxisKey = "date";
@@ -1413,7 +1415,7 @@ const transformDataForMetricsChart = (
 		} else {
 			// DATE_ALIASES is defined locally
 			foundDateKeyActual = originalKeys.find((k: string) =>
-				DATE_ALIASES.includes(k.toLowerCase()),
+				DATE_ALIASES.includes(k.toLowerCase())
 			);
 			if (foundDateKeyActual) {
 				categoryValueToSet = item[foundDateKeyActual];
@@ -1426,7 +1428,7 @@ const transformDataForMetricsChart = (
 			(chartType === "bar" || chartType === "pie")
 		) {
 			const stringKey = originalKeys.find(
-				(k: string) => typeof item[k] === "string" && !usedOriginalKeys.has(k),
+				(k: string) => typeof item[k] === "string" && !usedOriginalKeys.has(k)
 			);
 			if (stringKey) {
 				categoryValueToSet = item[stringKey];
@@ -1437,7 +1439,7 @@ const transformDataForMetricsChart = (
 
 		if (categoryValueToSet === undefined && originalKeys.length > 0) {
 			const firstNonUsedKey = originalKeys.find(
-				(k: string) => !usedOriginalKeys.has(k),
+				(k: string) => !usedOriginalKeys.has(k)
 			);
 			if (firstNonUsedKey) {
 				categoryValueToSet = String(item[firstNonUsedKey]);
@@ -1461,7 +1463,7 @@ const transformDataForMetricsChart = (
 			if (
 				keyUsedForCategoryIsReferrer ||
 				potentialReferrerIndicators.some((indicator) =>
-					categoryValueToSet.toLowerCase().includes(indicator),
+					categoryValueToSet.toLowerCase().includes(indicator)
 				)
 			) {
 				transformed[dateField] = getReferrerDisplayName(categoryValueToSet);
@@ -1495,7 +1497,7 @@ const transformDataForMetricsChart = (
 				currentPrimaryMetricAliases.includes(k.toLowerCase()) &&
 				!usedOriginalKeys.has(k) &&
 				k !== foundDateKeyActual &&
-				typeof item[k] === "number",
+				typeof item[k] === "number"
 		);
 
 		if (!foundPrimaryMetricKey) {
@@ -1508,7 +1510,7 @@ const transformDataForMetricsChart = (
 							(k: string) =>
 								typeof item[k] === "number" &&
 								!usedOriginalKeys.has(k) &&
-								k !== foundDateKeyActual,
+								k !== foundDateKeyActual
 						);
 		}
 
@@ -1534,7 +1536,7 @@ const transformDataForMetricsChart = (
 					!usedOriginalKeys.has(k) &&
 					k !== foundDateKeyActual &&
 					k !== foundPrimaryMetricKey &&
-					typeof item[k] === "number",
+					typeof item[k] === "number"
 			);
 			if (
 				foundSecondaryMetricKey &&

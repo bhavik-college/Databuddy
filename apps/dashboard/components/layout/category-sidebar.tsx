@@ -33,7 +33,7 @@ const HelpDialog = dynamic(
 	{
 		ssr: false,
 		loading: () => null,
-	},
+	}
 );
 
 interface CategorySidebarProps {
@@ -72,7 +72,7 @@ export function CategorySidebar({
 		const defaultCat = getDefaultCategory(pathname);
 		const filteredCategories = filterCategoriesForRoute(
 			config.categories,
-			pathname,
+			pathname
 		);
 
 		return { categories: filteredCategories, defaultCategory: defaultCat };
@@ -110,7 +110,7 @@ export function CategorySidebar({
 										"flex cursor-pointer items-center justify-center px-3 py-2.5 hover:bg-sidebar-accent",
 										"focus:outline-none",
 										isActive &&
-											"bg-sidebar-accent text-sidebar-accent-foreground",
+											"bg-sidebar-accent text-sidebar-accent-foreground"
 									)}
 									onClick={() => onCategoryChange?.(category.id)}
 									type="button"
@@ -120,7 +120,7 @@ export function CategorySidebar({
 											"h-5 w-5 transition-colors",
 											isActive
 												? "text-sidebar-ring"
-												: "text-sidebar-primary-foreground/70",
+												: "text-sidebar-primary-foreground/70"
 										)}
 										weight={isActive ? "fill" : "duotone"}
 									/>

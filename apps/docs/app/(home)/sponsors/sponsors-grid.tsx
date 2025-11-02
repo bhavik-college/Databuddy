@@ -49,7 +49,7 @@ function SponsorCard({ sponsor }: { sponsor: Sponsor }) {
 								"max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105",
 								sponsor.name === "Upstash"
 									? "dark:brightness-0 dark:invert"
-									: "brightness-0 dark:brightness-100",
+									: "brightness-0 dark:brightness-100"
 							)}
 							height={96}
 							src={sponsor.logo}
@@ -96,7 +96,7 @@ export default function SponsorsGrid({ sponsors }: SponsorsGridProps) {
 				acc[sponsor.tier].push(sponsor);
 				return acc;
 			},
-			{} as Record<string, Sponsor[]>,
+			{} as Record<string, Sponsor[]>
 		);
 
 	const tierOrder = ["platinum", "gold", "silver", "bronze"] as const;

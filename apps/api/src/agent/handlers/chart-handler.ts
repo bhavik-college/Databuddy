@@ -21,7 +21,7 @@ const noDataMessages = [
 ];
 
 export async function handleChartResponse(
-	parsedAiJson: z.infer<typeof AIResponseJsonSchema>,
+	parsedAiJson: z.infer<typeof AIResponseJsonSchema>
 ): Promise<StreamingUpdate> {
 	if (!parsedAiJson.sql) {
 		return {

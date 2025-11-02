@@ -135,7 +135,7 @@ export function validateUtmParameter(utm: unknown): string {
 export function validateNumeric(
 	value: unknown,
 	min = 0,
-	max = Number.MAX_SAFE_INTEGER,
+	max = Number.MAX_SAFE_INTEGER
 ): number | null {
 	if (
 		typeof value === "number" &&
@@ -174,7 +174,7 @@ export function validateUrl(url: unknown): string {
 }
 
 export function filterSafeHeaders(
-	headers: Record<string, string | string[] | undefined>,
+	headers: Record<string, string | string[] | undefined>
 ): Record<string, string> {
 	const safeHeaders: Record<string, string> = {};
 
@@ -192,7 +192,7 @@ export function filterSafeHeaders(
 }
 
 export function validateProperties(
-	properties: unknown,
+	properties: unknown
 ): Record<string, unknown> {
 	if (
 		!properties ||
@@ -231,7 +231,7 @@ export function validateProperties(
 
 export function validatePayloadSize(
 	data: unknown,
-	maxSize = 1024 * 1024,
+	maxSize = 1024 * 1024
 ): boolean {
 	try {
 		const serialized = JSON.stringify(data);

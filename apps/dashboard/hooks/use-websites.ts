@@ -19,7 +19,7 @@ export function useWebsites() {
 	const { data, isLoading, isError, refetch, isFetching } =
 		trpc.websites.listWithCharts.useQuery(
 			{ organizationId: activeOrganization?.id },
-			{ enabled: !isLoadingOrganization },
+			{ enabled: !isLoadingOrganization }
 		);
 
 	return {
@@ -82,7 +82,7 @@ export function useUpdateWebsite() {
 				return {
 					...old,
 					websites: old.websites.map((website) =>
-						website.id === updatedWebsite.id ? updatedWebsite : website,
+						website.id === updatedWebsite.id ? updatedWebsite : website
 					),
 				};
 			});
@@ -111,7 +111,7 @@ export function useTogglePublicWebsite() {
 				return {
 					...old,
 					websites: old.websites.map((website) =>
-						website.id === updatedWebsite.id ? updatedWebsite : website,
+						website.id === updatedWebsite.id ? updatedWebsite : website
 					),
 				};
 			});
@@ -146,7 +146,7 @@ export function useDeleteWebsite() {
 					...old,
 					websites: old.websites.filter((w) => w.id !== id),
 					chartData: Object.fromEntries(
-						Object.entries(old.chartData).filter(([key]) => key !== id),
+						Object.entries(old.chartData).filter(([key]) => key !== id)
 					),
 				};
 			});
@@ -157,7 +157,7 @@ export function useDeleteWebsite() {
 			if (context?.previousData && context.listKey) {
 				utils.websites.listWithCharts.setData(
 					context.listKey,
-					context.previousData,
+					context.previousData
 				);
 			}
 		},

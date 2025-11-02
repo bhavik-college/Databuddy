@@ -30,7 +30,7 @@ export function useIntegrations() {
 export function useIntegration(provider: "vercel") {
 	return trpc.integrations.getIntegration.useQuery(
 		{ provider },
-		{ enabled: !!provider },
+		{ enabled: !!provider }
 	);
 }
 

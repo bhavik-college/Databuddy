@@ -41,7 +41,7 @@ export const Description = () => {
 			prevData.map((item, index) => ({
 				...item,
 				isActive: index === currentIndex,
-			})),
+			}))
 		);
 	}, [currentIndex]);
 

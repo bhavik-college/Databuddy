@@ -40,7 +40,7 @@ const LoadingSkeleton = () => (
 			))}
 		</div>
 		<div className="rounded border border-sidebar-border bg-sidebar shadow-sm">
-			<div className="flex flex-col items-start justify-between gap-3 border-b border-sidebar-border p-4 sm:flex-row">
+			<div className="flex flex-col items-start justify-between gap-3 border-sidebar-border border-b p-4 sm:flex-row">
 				<div className="space-y-2">
 					<Skeleton className="h-5 w-32" />
 					<Skeleton className="h-4 w-48" />
@@ -61,7 +61,7 @@ const LoadingSkeleton = () => (
 					className="rounded border border-sidebar-border bg-sidebar"
 					key={`table-skeleton-${tableNum}`}
 				>
-					<div className="border-b border-sidebar-border p-4">
+					<div className="border-sidebar-border border-b p-4">
 						<Skeleton className="h-5 w-24" />
 						<Skeleton className="mt-1 h-4 w-32" />
 					</div>
@@ -91,7 +91,7 @@ const LoadingSkeleton = () => (
 					className="rounded border border-sidebar-border bg-sidebar"
 					key={`tech-skeleton-${techNum}`}
 				>
-					<div className="border-b border-sidebar-border p-4">
+					<div className="border-sidebar-border border-b p-4">
 						<Skeleton className="h-5 w-20" />
 						<Skeleton className="mt-1 h-4 w-28" />
 					</div>
@@ -123,14 +123,14 @@ const WebsiteOverviewTab = dynamic(
 		import("./_components/tabs/overview-tab").then((mod) => ({
 			default: mod.WebsiteOverviewTab,
 		})),
-	{ loading: () => <LoadingSkeleton />, ssr: false },
+	{ loading: () => <LoadingSkeleton />, ssr: false }
 );
 const WebsiteTrackingSetupTab = dynamic(
 	() =>
 		import("./_components/tabs/tracking-setup-tab").then((mod) => ({
 			default: mod.WebsiteTrackingSetupTab,
 		})),
-	{ loading: () => <LoadingSkeleton />, ssr: false },
+	{ loading: () => <LoadingSkeleton />, ssr: false }
 );
 
 function WebsiteDetailsPage() {
@@ -144,14 +144,14 @@ function WebsiteDetailsPage() {
 	const { data, isLoading, isError } = useWebsite(id as string);
 
 	const { isTrackingSetup, isTrackingSetupLoading } = useTrackingSetup(
-		id as string,
+		id as string
 	);
 
 	const addFilter = useCallback(
 		(filter: DynamicQueryFilter) => {
 			addFilterAction(filter);
 		},
-		[addFilterAction],
+		[addFilterAction]
 	);
 
 	const tabProps: FullTabProps = {
@@ -170,7 +170,7 @@ function WebsiteDetailsPage() {
 		websiteData: data,
 	};
 
-	if (isError || (!isLoading && !data)) {
+	if (isError || !(isLoading || data)) {
 		return (
 			<div className="select-none py-8">
 				<EmptyState
@@ -211,7 +211,7 @@ function WebsiteDetailsPage() {
 
 	return (
 		<div className="px-6 pt-0 pb-6 sm:pt-6">
-			<div className="pt-2 space-y-2">
+			<div className="space-y-2 pt-2">
 				<WebsiteOverviewTab {...tabProps} />
 			</div>
 		</div>

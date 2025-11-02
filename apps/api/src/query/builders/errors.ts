@@ -115,7 +115,7 @@ export const ErrorsBuilders: Record<string, SimpleQueryConfig> = {
 			_offset?: number,
 			_timezone?: string,
 			filterConditions?: string[],
-			filterParams?: Record<string, Filter["value"]>,
+			filterParams?: Record<string, Filter["value"]>
 		) => {
 			const combinedWhereClause = filterConditions?.length
 				? `AND ${filterConditions.join(" AND ")}`

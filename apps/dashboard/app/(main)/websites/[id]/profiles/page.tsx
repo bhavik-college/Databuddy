@@ -16,7 +16,7 @@ const ProfilesList = dynamic(
 			</div>
 		),
 		ssr: false,
-	},
+	}
 );
 
 export default function ProfilesPage() {

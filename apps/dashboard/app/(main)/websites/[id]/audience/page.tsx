@@ -41,7 +41,7 @@ const AudienceContent = dynamic(
 			</div>
 		),
 		ssr: false,
-	},
+	}
 );
 
 export default function AudiencePage() {
@@ -60,7 +60,7 @@ export default function AudiencePage() {
 		(filter: DynamicQueryFilter) => {
 			addFilterAction(filter);
 		},
-		[addFilterAction],
+		[addFilterAction]
 	);
 
 	if (isTrackingSetupLoading) {

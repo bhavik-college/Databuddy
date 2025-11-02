@@ -30,7 +30,7 @@ export const AutocompleteInput = memo(
 	}) => {
 		const [isOpen, setIsOpen] = useState(false);
 		const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>(
-			[],
+			[]
 		);
 		const containerRef = useRef<HTMLDivElement>(null);
 
@@ -115,7 +115,7 @@ export const AutocompleteInput = memo(
 				)}
 			</div>
 		);
-	},
+	}
 );
 
 AutocompleteInput.displayName = "AutocompleteInput";
@@ -202,7 +202,7 @@ export const DraggableStep = memo(
 				)}
 			</div>
 		);
-	},
+	}
 );
 
 DraggableStep.displayName = "DraggableStep";

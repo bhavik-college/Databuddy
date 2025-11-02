@@ -207,11 +207,8 @@ export const TIME_RANGES = {
 	},
 } as const;
 
-export const getQueriesByCategory = (
-	category: keyof typeof QUERY_CATEGORIES,
-) => {
-	return QUERY_CATEGORIES[category].queries;
-};
+export const getQueriesByCategory = (category: keyof typeof QUERY_CATEGORIES) =>
+	QUERY_CATEGORIES[category].queries;
 
 export const getQueryCategory = (queryType: keyof typeof QueryBuilders) => {
 	for (const [category, config] of Object.entries(QUERY_CATEGORIES)) {

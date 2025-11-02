@@ -212,7 +212,7 @@ export default function ChatSection() {
 													"h-auto px-4 py-3 text-left font-normal text-sm",
 													"hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5",
 													"border-dashed transition-all duration-300 hover:border-solid",
-													"fade-in-0 slide-in-from-left-2 animate-in",
+													"fade-in-0 slide-in-from-left-2 animate-in"
 												)}
 												disabled={isLoading || isRateLimited}
 												key={question.text}
@@ -267,7 +267,7 @@ export default function ChatSection() {
 							"h-11 flex-1 rounded-xl border-2 bg-background/50 backdrop-blur-sm",
 							"placeholder:text-muted-foreground/60",
 							"focus:border-primary/30 focus:bg-background/80",
-							"transition-all duration-200",
+							"transition-all duration-200"
 						)}
 						disabled={isLoading || isRateLimited}
 						onChange={(e) => setInputValue(e.target.value)}
@@ -297,7 +297,7 @@ export default function ChatSection() {
 							"shadow-lg transition-all duration-200",
 							(!inputValue.trim() || isRateLimited) &&
 								!isLoading &&
-								"opacity-50",
+								"opacity-50"
 						)}
 						disabled={!inputValue.trim() || isLoading || isRateLimited}
 						onClick={handleSend}
@@ -307,10 +307,7 @@ export default function ChatSection() {
 						<PaperPlaneRightIcon
 							className={cn(
 								"h-4 w-4",
-								inputValue.trim() &&
-									!isLoading &&
-									!isRateLimited &&
-									"scale-110",
+								inputValue.trim() && !isLoading && !isRateLimited && "scale-110"
 							)}
 							weight="duotone"
 						/>

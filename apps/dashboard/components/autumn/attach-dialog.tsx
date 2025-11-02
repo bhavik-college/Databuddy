@@ -26,7 +26,7 @@ export default function AttachDialog(params?: AttachDialogProps) {
 	const { attach } = useCustomer();
 	const [loading, setLoading] = useState(false);
 	const [optionsInput, setOptionsInput] = useState<FeatureOption[]>(
-		params?.preview?.options || [],
+		params?.preview?.options || []
 	);
 
 	const getTotalPrice = () => {
@@ -56,7 +56,7 @@ export default function AttachDialog(params?: AttachDialogProps) {
 			<DialogContent
 				className={cn("gap-0 overflow-hidden p-0 pt-4 text-foreground text-sm")}
 			>
-				<DialogTitle className={cn("mb-1 px-6 ")}>{title}</DialogTitle>
+				<DialogTitle className={cn("mb-1 px-6")}>{title}</DialogTitle>
 				<div className={cn("mt-1 mb-4 px-6 text-muted-foreground")}>
 					{message}
 				</div>
@@ -69,17 +69,15 @@ export default function AttachDialog(params?: AttachDialogProps) {
 							</PriceItem>
 						))}
 
-						{optionsInput?.map((option, index) => {
-							return (
-								<OptionsInput
-									index={index}
-									key={option.feature_name}
-									option={option as FeatureOptionWithRequiredPrice}
-									optionsInput={optionsInput}
-									setOptionsInput={setOptionsInput}
-								/>
-							);
-						})}
+						{optionsInput?.map((option, index) => (
+							<OptionsInput
+								index={index}
+								key={option.feature_name}
+								option={option as FeatureOptionWithRequiredPrice}
+								optionsInput={optionsInput}
+								setOptionsInput={setOptionsInput}
+							/>
+						))}
 					</div>
 				)}
 
@@ -131,19 +129,17 @@ export const PriceItem = ({
 }: {
 	children: React.ReactNode;
 	className?: string;
-} & React.HTMLAttributes<HTMLDivElement>) => {
-	return (
-		<div
-			className={cn(
-				"flex flex-col justify-between gap-1 pb-4 sm:h-7 sm:flex-row sm:items-center sm:gap-2 sm:pb-0",
-				className,
-			)}
-			{...props}
-		>
-			{children}
-		</div>
-	);
-};
+} & React.HTMLAttributes<HTMLDivElement>) => (
+	<div
+		className={cn(
+			"flex flex-col justify-between gap-1 pb-4 sm:h-7 sm:flex-row sm:items-center sm:gap-2 sm:pb-0",
+			className
+		)}
+		{...props}
+	>
+		{children}
+	</div>
+);
 
 interface FeatureOption {
 	feature_id: string;
@@ -246,13 +242,11 @@ export const QuantityInput = ({
 	);
 };
 
-export const TotalPrice = ({ children }: { children: React.ReactNode }) => {
-	return (
-		<div className="flex w-full items-center justify-between font-semibold">
-			{children}
-		</div>
-	);
-};
+export const TotalPrice = ({ children }: { children: React.ReactNode }) => (
+	<div className="flex w-full items-center justify-between font-semibold">
+		{children}
+	</div>
+);
 
 export const PricingDialogButton = ({
 	children,
@@ -266,16 +260,14 @@ export const PricingDialogButton = ({
 	onClick: () => void;
 	disabled?: boolean;
 	className?: string;
-}) => {
-	return (
-		<Button
-			className={cn(className, "shadow-sm shadow-stone-400")}
-			disabled={disabled}
-			onClick={onClick}
-			size={size}
-		>
-			{children}
-			<ArrowRight className="!h-3" />
-		</Button>
-	);
-};
+}) => (
+	<Button
+		className={cn(className, "shadow-sm shadow-stone-400")}
+		disabled={disabled}
+		onClick={onClick}
+		size={size}
+	>
+		{children}
+		<ArrowRight className="!h-3" />
+	</Button>
+);

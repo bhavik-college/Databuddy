@@ -109,10 +109,10 @@ export function EditGoalDialog({
 							...prev,
 							[field]: value,
 						}
-					: prev,
+					: prev
 			);
 		},
-		[formData],
+		[formData]
 	);
 
 	const handleFiltersChange = useCallback((newFilters: GoalFilter[]) => {
@@ -150,7 +150,7 @@ export function EditGoalDialog({
 					return [];
 			}
 		},
-		[autocompleteData],
+		[autocompleteData]
 	);
 
 	const getStepSuggestions = useCallback(
@@ -168,7 +168,7 @@ export function EditGoalDialog({
 
 			return [];
 		},
-		[autocompleteData],
+		[autocompleteData]
 	);
 
 	const handleClose = useCallback(() => {
@@ -267,7 +267,7 @@ export function EditGoalDialog({
 								id="edit-name"
 								onChange={(e) =>
 									setFormData((prev) =>
-										prev ? { ...prev, name: e.target.value } : prev,
+										prev ? { ...prev, name: e.target.value } : prev
 									)
 								}
 								placeholder="e.g., Newsletter Signup"
@@ -286,7 +286,7 @@ export function EditGoalDialog({
 								id="edit-description"
 								onChange={(e) =>
 									setFormData((prev) =>
-										prev ? { ...prev, description: e.target.value } : prev,
+										prev ? { ...prev, description: e.target.value } : prev
 									)
 								}
 								placeholder="Optional description"
@@ -357,7 +357,7 @@ export function EditGoalDialog({
 										formData?.type === "PAGE_VIEW" ? "/path" : "event_name"
 									}
 									suggestions={getStepSuggestions(
-										formData?.type || "PAGE_VIEW",
+										formData?.type || "PAGE_VIEW"
 									)}
 									value={formData?.target || ""}
 								/>

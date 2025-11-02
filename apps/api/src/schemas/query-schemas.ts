@@ -33,7 +33,7 @@ export const ParameterWithDatesSchema = t.Object({
 			t.Literal("daily"),
 			t.Literal("hour"),
 			t.Literal("day"),
-		]),
+		])
 	),
 	id: t.Optional(t.String()),
 });
@@ -50,7 +50,7 @@ export const DynamicQueryRequestSchema = t.Object({
 			t.Literal("daily"),
 			t.Literal("hour"),
 			t.Literal("day"),
-		]),
+		])
 	),
 	groupBy: t.Optional(t.Union([t.String(), t.Array(t.String())])),
 	startDate: t.Optional(t.String()),
@@ -70,7 +70,7 @@ export const CompileRequestSchema = t.Object({
 			day: "day",
 			week: "week",
 			month: "month",
-		}),
+		})
 	),
 	filters: t.Optional(t.Array(FilterSchema)),
 	groupBy: t.Optional(t.Array(t.String())),

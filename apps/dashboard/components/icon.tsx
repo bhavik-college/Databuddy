@@ -92,10 +92,10 @@ function normalizeIconName(name: string): string {
 
 function findIconMatch(
 	normalizedName: string,
-	availableIcons: readonly string[],
+	availableIcons: readonly string[]
 ): string | undefined {
 	const exactMatch = availableIcons.find(
-		(icon) => icon.toLowerCase() === normalizedName.toLowerCase(),
+		(icon) => icon.toLowerCase() === normalizedName.toLowerCase()
 	);
 	if (exactMatch) {
 		return exactMatch;
@@ -104,7 +104,7 @@ function findIconMatch(
 	const partialMatch = availableIcons.find(
 		(icon) =>
 			icon.toLowerCase().includes(normalizedName.toLowerCase()) ||
-			normalizedName.toLowerCase().includes(icon.toLowerCase()),
+			normalizedName.toLowerCase().includes(icon.toLowerCase())
 	);
 	return partialMatch;
 }
@@ -130,13 +130,13 @@ function getIconSrc(iconName: string, folder: string): string {
 function createFallbackIcon(
 	normalizedName: string,
 	iconSize: number,
-	className?: string,
+	className?: string
 ) {
 	return (
 		<div
 			className={cn(
 				"flex items-center justify-center rounded bg-muted font-medium text-muted-foreground text-xs",
-				className,
+				className
 			)}
 			style={{ width: iconSize, height: iconSize }}
 		>
@@ -179,7 +179,7 @@ export function PublicIcon({
 		<div
 			className={cn(
 				"relative flex-shrink-0 overflow-hidden rounded",
-				className,
+				className
 			)}
 			style={{
 				width: iconSize,
@@ -269,7 +269,7 @@ export function CountryFlag({
 		<div
 			className={cn(
 				"relative flex-shrink-0 overflow-hidden rounded-sm",
-				className,
+				className
 			)}
 			style={{ width: 24, height: iconSize, minWidth: 24, minHeight: iconSize }}
 		>

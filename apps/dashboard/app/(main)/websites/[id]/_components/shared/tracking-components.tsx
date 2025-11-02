@@ -176,7 +176,7 @@ export function PackageManagerTabs({
 							onCopyCode(
 								command,
 								`${manager}-install`,
-								"Command copied to clipboard!",
+								"Command copied to clipboard!"
 							)
 						}
 					/>
@@ -406,7 +406,7 @@ export function InstallationTabs({
 						onCopyCode(
 							trackingCode,
 							"script-tag",
-							"Script tag copied to clipboard!",
+							"Script tag copied to clipboard!"
 						)
 					}
 				/>
@@ -434,7 +434,7 @@ export function InstallationTabs({
 							onCopyCode(
 								npmCode,
 								"tracking-code",
-								"Tracking code copied to clipboard!",
+								"Tracking code copied to clipboard!"
 							)
 						}
 					/>

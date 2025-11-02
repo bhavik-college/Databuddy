@@ -22,7 +22,7 @@ const API_BASE_URL =
 	process.env.NEXT_PUBLIC_API_URL || "https://api.databuddy.cc";
 
 export async function getQueryTypes(
-	includeMeta = false,
+	includeMeta = false
 ): Promise<QueryTypesResponse> {
 	try {
 		const url = new URL(`${API_BASE_URL}/v1/query/types`);

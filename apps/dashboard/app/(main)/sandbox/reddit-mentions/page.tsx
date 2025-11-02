@@ -244,7 +244,7 @@ export default function RedditMentionsPage() {
 		const date = new Date(timestamp * 1000);
 		const now = new Date();
 		const diffInHours = Math.floor(
-			(now.getTime() - date.getTime()) / (1000 * 60 * 60),
+			(now.getTime() - date.getTime()) / (1000 * 60 * 60)
 		);
 
 		if (diffInHours < 1) {
@@ -295,7 +295,7 @@ export default function RedditMentionsPage() {
 								"flex items-center gap-2 rounded-full border px-3 py-1.5 font-medium text-xs",
 								isApiHealthy
 									? "border-green-200 bg-green-50 text-green-700"
-									: "border-red-200 bg-red-50 text-red-700",
+									: "border-red-200 bg-red-50 text-red-700"
 							)}
 						>
 							{isApiHealthy ? (
@@ -323,7 +323,7 @@ export default function RedditMentionsPage() {
 								className={cn(
 									"gap-2 px-6 py-3 font-medium",
 									"bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary",
-									"group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl",
+									"group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl"
 								)}
 								disabled={isRefreshing || !isApiHealthy}
 								onClick={handleRefresh}
@@ -477,7 +477,7 @@ export default function RedditMentionsPage() {
 											setMinScore(
 												e.target.value
 													? Number.parseInt(e.target.value, 10)
-													: undefined,
+													: undefined
 											)
 										}
 										placeholder="e.g. 10"

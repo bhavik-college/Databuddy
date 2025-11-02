@@ -6,7 +6,6 @@ import {
 	EnvelopeIcon,
 	XIcon,
 } from "@phosphor-icons/react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrganizationInvitations } from "@/hooks/use-organization-invitations";
 import type {
@@ -24,9 +23,9 @@ function InvitationsSkeleton() {
 function EmptyInvitationsState() {
 	return (
 		<EmptyState
+			description="There are no pending invitations for this organization. All invited members have either joined or declined their invitations."
 			icon={EnvelopeIcon}
 			title="No Pending Invitations"
-			description="There are no pending invitations for this organization. All invited members have either joined or declined their invitations."
 		/>
 	);
 }
@@ -129,9 +128,9 @@ export function InvitationsView({
 							/>
 						) : (
 							<EmptyState
+								description="All sent invitations have been responded to or have expired."
 								icon={EnvelopeIcon}
 								title="No Pending Invitations"
-								description="All sent invitations have been responded to or have expired."
 							/>
 						)}
 					</TabsContent>
@@ -145,9 +144,9 @@ export function InvitationsView({
 							/>
 						) : (
 							<EmptyState
+								description="Great! You don't have any expired invitations at the moment."
 								icon={ClockIcon}
 								title="No Expired Invitations"
-								description="Great! You don't have any expired invitations at the moment."
 								variant="warning"
 							/>
 						)}
@@ -162,9 +161,9 @@ export function InvitationsView({
 							/>
 						) : (
 							<EmptyState
+								description="When team members accept invitations, they'll appear here."
 								icon={CheckIcon}
 								title="No Accepted Invitations Yet"
-								description="When team members accept invitations, they'll appear here."
 								variant="success"
 							/>
 						)}

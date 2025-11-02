@@ -23,18 +23,17 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-const getOrganizationInitials = (name: string) => {
-	return name
+const getOrganizationInitials = (name: string) =>
+	name
 		.split(" ")
 		.map((n) => n[0])
 		.join("")
 		.toUpperCase()
 		.slice(0, 2);
-};
 
 function filterOrganizations<T extends { name: string; slug?: string | null }>(
 	orgs: T[] | undefined,
-	query: string,
+	query: string
 ): T[] {
 	if (!orgs || orgs.length === 0) {
 		return [];
@@ -75,7 +74,7 @@ function OrganizationSelectorTrigger({
 				"flex h-12 w-full items-center border-sidebar-border border-b bg-sidebar-accent px-3 py-3 transition-colors",
 				"hover:bg-sidebar-accent/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/50",
 				isSettingActiveOrganization && "cursor-not-allowed opacity-70",
-				isOpen && "bg-sidebar-accent/60",
+				isOpen && "bg-sidebar-accent/60"
 			)}
 		>
 			<div className="flex w-full items-center justify-between">
@@ -115,7 +114,7 @@ function OrganizationSelectorTrigger({
 					<CaretDownIcon
 						className={cn(
 							"h-4 w-4 text-sidebar-accent-foreground/60 transition-transform duration-200",
-							isOpen && "rotate-180",
+							isOpen && "rotate-180"
 						)}
 						weight="fill"
 					/>
@@ -220,7 +219,7 @@ export function OrganizationSelector() {
 							"flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sm transition-colors",
 							"text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
 							!activeOrganization &&
-								"bg-sidebar-accent font-medium text-sidebar-accent-foreground",
+								"bg-sidebar-accent font-medium text-sidebar-accent-foreground"
 						)}
 						onClick={() => handleSelectOrganization(null)}
 					>
@@ -244,14 +243,14 @@ export function OrganizationSelector() {
 
 					{filteredOrganizations && filteredOrganizations.length > 0 && (
 						<div className="flex flex-col">
-							<DropdownMenuSeparator className="p-0 m-0 bg-sidebar-border" />
+							<DropdownMenuSeparator className="m-0 bg-sidebar-border p-0" />
 							{filteredOrganizations.map((org) => (
 								<DropdownMenuItem
 									className={cn(
 										"flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sm transition-colors",
 										"text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
 										activeOrganization?.id === org.id &&
-											"bg-sidebar-accent font-medium text-sidebar-accent-foreground",
+											"bg-sidebar-accent font-medium text-sidebar-accent-foreground"
 									)}
 									key={org.id}
 									onClick={() => handleSelectOrganization(org.id)}
@@ -281,7 +280,7 @@ export function OrganizationSelector() {
 						</div>
 					)}
 
-					<DropdownMenuSeparator className="p-0 m-0 bg-sidebar-border" />
+					<DropdownMenuSeparator className="m-0 bg-sidebar-border p-0" />
 					<DropdownMenuItem
 						className="flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sidebar-foreground/70 text-sm transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
 						onClick={handleCreateOrganization}

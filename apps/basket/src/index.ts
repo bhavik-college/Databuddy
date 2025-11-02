@@ -40,8 +40,8 @@ const app = new Elysia()
 	.onError(({ error }) => {
 		logger.error(
 			new Error(
-				`${error instanceof Error ? error.name : "Unknown"}: ${error instanceof Error ? error.message : "Unknown"}`,
-			),
+				`${error instanceof Error ? error.name : "Unknown"}: ${error instanceof Error ? error.message : "Unknown"}`
+			)
 		);
 	})
 	.onBeforeHandle(({ request, set }) => {
@@ -78,5 +78,5 @@ console.log(`Basket service running on http://localhost:${port}`);
 
 export default {
 	fetch: app.fetch,
-	port: parseInt(port.toString()),
+	port: Number.parseInt(port.toString()),
 };

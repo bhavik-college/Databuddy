@@ -25,7 +25,7 @@ const DEFAULT_API_URL = "https://basket.databuddy.cc";
 const DEFAULT_BATCH_SIZE = 10;
 const DEFAULT_BATCH_TIMEOUT = 2000;
 const DEFAULT_MAX_QUEUE_SIZE = 1000;
-const DEFAULT_MAX_DEDUPLICATION_CACHE_SIZE = 10000;
+const DEFAULT_MAX_DEDUPLICATION_CACHE_SIZE = 10_000;
 
 export class Databuddy {
 	private clientId: string;
@@ -335,10 +335,10 @@ export class Databuddy {
 				firstEventProperties: JSON.stringify(
 					processedEvents[0]?.properties,
 					null,
-					2,
+					2
 				),
 				firstEventPropertiesCount: Object.keys(
-					processedEvents[0]?.properties || {},
+					processedEvents[0]?.properties || {}
 				).length,
 			});
 
@@ -500,7 +500,7 @@ export class Databuddy {
 	}
 
 	private async applyMiddleware(
-		event: BatchEventInput,
+		event: BatchEventInput
 	): Promise<BatchEventInput | null> {
 		let processedEvent: BatchEventInput | null = event;
 

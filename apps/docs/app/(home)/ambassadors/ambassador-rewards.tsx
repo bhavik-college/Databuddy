@@ -70,7 +70,7 @@ function RewardCard({ reward }: { reward: Reward }) {
 			<div
 				className={cn(
 					"relative h-full rounded border bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-border/80 hover:bg-card/70 hover:shadow-lg",
-					reward.highlight ? "border-primary/50 bg-primary/5" : "border-border",
+					reward.highlight ? "border-primary/50 bg-primary/5" : "border-border"
 				)}
 			>
 				<div className="flex flex-col p-6">

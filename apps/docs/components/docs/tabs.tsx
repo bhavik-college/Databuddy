@@ -74,7 +74,7 @@ function TabsList({
 		<BaseTabsList
 			className={cn(
 				"inline-flex h-10 w-fit items-center justify-center rounded border border-border bg-card/50 p-1 backdrop-blur-sm",
-				className,
+				className
 			)}
 			{...props}
 		/>
@@ -89,7 +89,7 @@ function TabsTrigger({
 		<BaseTabsTrigger
 			className={cn(
 				"relative inline-flex h-8 flex-1 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded px-3 py-1 font-medium text-muted-foreground text-sm transition-all duration-200 hover:bg-background/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
-				className,
+				className
 			)}
 			{...props}
 		/>

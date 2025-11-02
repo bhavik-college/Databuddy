@@ -28,7 +28,7 @@ export default function CostBreakdownPage() {
 			endDate: dateRange.endDate,
 			organizationId: activeOrganization?.id || null,
 		}),
-		[dateRange, activeOrganization?.id],
+		[dateRange, activeOrganization?.id]
 	);
 
 	const { data: usageData, isLoading: isLoadingUsage } =

@@ -6,7 +6,7 @@
  */
 export function buildDateFilter(
 	startDate?: string,
-	endDate?: string,
+	endDate?: string
 ): {
 	filter: string;
 	params: Record<string, string>;

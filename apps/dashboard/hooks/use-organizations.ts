@@ -45,7 +45,7 @@ const createMutation = <TData, TVariables>(
 	successMessage: string,
 	errorMessage: string,
 	onSuccessCallback?: () => void,
-	options: { showToast?: boolean } = { showToast: true },
+	options: { showToast?: boolean } = { showToast: true }
 ) => ({
 	mutationFn,
 	onSuccess: () => {
@@ -92,8 +92,8 @@ export function useOrganizations() {
 				return result;
 			},
 			"Organization created successfully",
-			"Failed to create organization",
-		),
+			"Failed to create organization"
+		)
 	);
 
 	const updateOrganizationMutation = useMutation(
@@ -124,8 +124,8 @@ export function useOrganizations() {
 				return result;
 			},
 			"Organization updated successfully",
-			"Failed to update organization",
-		),
+			"Failed to update organization"
+		)
 	);
 
 	const uploadOrganizationLogoMutation =
@@ -161,8 +161,8 @@ export function useOrganizations() {
 				return result;
 			},
 			"Organization deleted successfully",
-			"Failed to delete organization",
-		),
+			"Failed to delete organization"
+		)
 	);
 
 	const setActiveOrganizationMutation = useMutation({
@@ -174,7 +174,7 @@ export function useOrganizations() {
 					});
 				if (apiError) {
 					throw new Error(
-						apiError.message || "Failed to unset active organization",
+						apiError.message || "Failed to unset active organization"
 					);
 				}
 				return setActiveData;
@@ -185,7 +185,7 @@ export function useOrganizations() {
 				});
 			if (apiError2) {
 				throw new Error(
-					apiError2.message || "Failed to set active organization",
+					apiError2.message || "Failed to set active organization"
 				);
 			}
 			return setActiveData2;
@@ -219,8 +219,8 @@ export function useOrganizations() {
 				return result;
 			},
 			"Left organization successfully",
-			"Failed to leave organization",
-		),
+			"Failed to leave organization"
+		)
 	);
 
 	return {
@@ -304,8 +304,8 @@ export function useOrganizationMembers(organizationId: string) {
 			},
 			"Member invited successfully",
 			"Failed to invite member",
-			invalidateMembers,
-		),
+			invalidateMembers
+		)
 	);
 
 	const updateMemberMutation = useMutation(
@@ -324,8 +324,8 @@ export function useOrganizationMembers(organizationId: string) {
 			},
 			"Member role updated successfully",
 			"Failed to update member role",
-			invalidateMembers,
-		),
+			invalidateMembers
+		)
 	);
 
 	const removeMemberMutation = useMutation(
@@ -343,8 +343,8 @@ export function useOrganizationMembers(organizationId: string) {
 			},
 			"Member removed successfully",
 			"Failed to remove member",
-			invalidateMembers,
-		),
+			invalidateMembers
+		)
 	);
 
 	return {
@@ -407,8 +407,8 @@ export function useUserInvitations() {
 			},
 			"Invitation accepted successfully",
 			"Failed to accept invitation",
-			invalidateUserInvitations,
-		),
+			invalidateUserInvitations
+		)
 	);
 
 	const rejectInvitationMutation = useMutation(
@@ -425,8 +425,8 @@ export function useUserInvitations() {
 			},
 			"Invitation rejected",
 			"Failed to reject invitation",
-			invalidateUserInvitations,
-		),
+			invalidateUserInvitations
+		)
 	);
 
 	return {

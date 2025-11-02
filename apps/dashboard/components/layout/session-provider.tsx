@@ -15,13 +15,11 @@ export const SessionProvider = ({
 }: {
 	children: React.ReactNode;
 	session: Session | null;
-}) => {
-	return (
-		<SessionContext.Provider value={{ session }}>
-			{children}
-		</SessionContext.Provider>
-	);
-};
+}) => (
+	<SessionContext.Provider value={{ session }}>
+		{children}
+	</SessionContext.Provider>
+);
 
 export const useSession = () => {
 	const context = useContext(SessionContext);

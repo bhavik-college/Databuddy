@@ -82,7 +82,7 @@ function createGradient(
 		accent: number;
 		glow: number;
 	},
-	percentage: number,
+	percentage: number
 ) {
 	const {
 		background: bgOpacity,
@@ -106,27 +106,27 @@ function getPercentageGradient(percentage: number) {
 		return createGradient(
 			GRADIENT_COLORS.high.rgb,
 			GRADIENT_COLORS.high.opacity,
-			percentage,
+			percentage
 		);
 	}
 	if (percentage >= PERCENTAGE_THRESHOLDS.MEDIUM) {
 		return createGradient(
 			GRADIENT_COLORS.medium.rgb,
 			GRADIENT_COLORS.medium.opacity,
-			percentage,
+			percentage
 		);
 	}
 	if (percentage >= PERCENTAGE_THRESHOLDS.LOW) {
 		return createGradient(
 			GRADIENT_COLORS.low.rgb,
 			GRADIENT_COLORS.low.opacity,
-			percentage,
+			percentage
 		);
 	}
 	return createGradient(
 		GRADIENT_COLORS.default.rgb,
 		GRADIENT_COLORS.default.opacity,
-		percentage,
+		percentage
 	);
 }
 
@@ -139,7 +139,7 @@ interface TableContentProps<TData extends { name: string | number }> {
 	renderSubRow?: (
 		subRow: TData,
 		parentRow: TData,
-		index: number,
+		index: number
 	) => React.ReactNode;
 	onAddFilter?: (field: string, value: string, tableTitle?: string) => void;
 	onRowAction?: (row: TData) => void;
@@ -221,7 +221,7 @@ export function TableContent<TData extends { name: string | number }>({
 			aria-labelledby={`tab-${activeTab}`}
 			className={cn(
 				"custom-scrollbar relative overflow-auto border-sidebar-border bg-sidebar",
-				className,
+				className
 			)}
 			id={`tabpanel-${activeTab}`}
 			role="tabpanel"
@@ -238,7 +238,7 @@ export function TableContent<TData extends { name: string | number }>({
 								<TableHead
 									className={cn(
 										"h-10 bg-sidebar-accent px-2 font-semibold text-sidebar-foreground/70 text-xs uppercase tracking-wide",
-										(header.column.columnDef.meta as any)?.className,
+										(header.column.columnDef.meta as any)?.className
 									)}
 									key={header.id}
 									style={{
@@ -255,7 +255,7 @@ export function TableContent<TData extends { name: string | number }>({
 											? null
 											: flexRender(
 													header.column.columnDef.header,
-													header.getContext(),
+													header.getContext()
 												)}
 									</span>
 								</TableHead>
@@ -279,7 +279,7 @@ export function TableContent<TData extends { name: string | number }>({
 										"relative h-11 border-border/20 pl-3 transition-all duration-300 ease-in-out",
 										(isInteractive || hasSubRows) && "cursor-pointer",
 										!gradient &&
-											(rowIndex % 2 === 0 ? "bg-background/50" : "bg-muted/10"),
+											(rowIndex % 2 === 0 ? "bg-background/50" : "bg-muted/10")
 									)}
 									onClick={() =>
 										handleRowClick(row.original, hasSubRows, row.id)
@@ -302,10 +302,10 @@ export function TableContent<TData extends { name: string | number }>({
 									{row.getVisibleCells().map((cell, cellIndex) => (
 										<TableCell
 											className={cn(
-												"px-2 py-2 font-medium text-sm transition-colors text-sidebar-foreground/80",
+												"px-2 py-2 font-medium text-sidebar-foreground/80 text-sm transition-colors",
 												cellIndex === 0 &&
 													"font-semibold text-sidebar-foreground",
-												(cell.column.columnDef.meta as any)?.className,
+												(cell.column.columnDef.meta as any)?.className
 											)}
 											key={cell.id}
 											style={{
@@ -343,7 +343,7 @@ export function TableContent<TData extends { name: string | number }>({
 													<div className="truncate">
 														{flexRender(
 															cell.column.columnDef.cell,
-															cell.getContext(),
+															cell.getContext()
 														)}
 													</div>
 												</div>
@@ -371,7 +371,7 @@ export function TableContent<TData extends { name: string | number }>({
 													<TableCell
 														className={cn(
 															"py-2 text-sidebar-foreground/70 text-sm",
-															cellIndex === 0 ? "pl-8" : "px-2",
+															cellIndex === 0 ? "pl-8" : "px-2"
 														)}
 														key={`sub-${cell.id}`}
 														style={{

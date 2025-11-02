@@ -15,14 +15,14 @@ export async function logBlockedTraffic(
 	blockReason: string,
 	blockCategory: string,
 	botName?: string,
-	clientId?: string,
+	clientId?: string
 ): Promise<void> {
 	try {
 		const ip = extractIpFromRequest(request);
 		const userAgent =
 			sanitizeString(
 				request.headers.get("user-agent"),
-				VALIDATION_LIMITS.STRING_MAX_LENGTH,
+				VALIDATION_LIMITS.STRING_MAX_LENGTH
 			) || "";
 
 		const { anonymizedIP, country, region, city } = await getGeo(ip);
@@ -39,27 +39,27 @@ export async function logBlockedTraffic(
 			path: sanitizeString(body?.path, VALIDATION_LIMITS.STRING_MAX_LENGTH),
 			url: sanitizeString(
 				body?.url || body?.href,
-				VALIDATION_LIMITS.STRING_MAX_LENGTH,
+				VALIDATION_LIMITS.STRING_MAX_LENGTH
 			),
 			referrer: sanitizeString(
 				body?.referrer || request.headers.get("referer"),
-				VALIDATION_LIMITS.STRING_MAX_LENGTH,
+				VALIDATION_LIMITS.STRING_MAX_LENGTH
 			),
 			method: "POST",
 			origin: sanitizeString(
 				request.headers.get("origin"),
-				VALIDATION_LIMITS.STRING_MAX_LENGTH,
+				VALIDATION_LIMITS.STRING_MAX_LENGTH
 			),
 
 			ip: anonymizedIP || ip,
 			user_agent: userAgent || "",
 			accept_header: sanitizeString(
 				request.headers.get("accept"),
-				VALIDATION_LIMITS.STRING_MAX_LENGTH,
+				VALIDATION_LIMITS.STRING_MAX_LENGTH
 			),
 			language: sanitizeString(
 				request.headers.get("accept-language"),
-				VALIDATION_LIMITS.STRING_MAX_LENGTH,
+				VALIDATION_LIMITS.STRING_MAX_LENGTH
 			),
 
 			block_reason: blockReason,

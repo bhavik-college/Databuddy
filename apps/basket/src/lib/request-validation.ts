@@ -27,7 +27,7 @@ interface ValidationError {
 export async function validateRequest(
 	body: any,
 	query: any,
-	request: Request,
+	request: Request
 ): Promise<ValidationResult | ValidationError> {
 	if (!validatePayloadSize(body, VALIDATION_LIMITS.PAYLOAD_MAX_SIZE)) {
 		await logBlockedTraffic(
@@ -35,14 +35,14 @@ export async function validateRequest(
 			body,
 			query,
 			"payload_too_large",
-			"Validation Error",
+			"Validation Error"
 		);
 		return { error: { status: "error", message: "Payload too large" } };
 	}
 
 	const clientId = sanitizeString(
 		query.client_id,
-		VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+		VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 	);
 	if (!clientId) {
 		await logBlockedTraffic(
@@ -50,7 +50,7 @@ export async function validateRequest(
 			body,
 			query,
 			"missing_client_id",
-			"Validation Error",
+			"Validation Error"
 		);
 		return { error: { status: "error", message: "Missing client ID" } };
 	}
@@ -64,7 +64,7 @@ export async function validateRequest(
 			"invalid_client_id",
 			"Validation Error",
 			undefined,
-			clientId,
+			clientId
 		);
 		return {
 			error: { status: "error", message: "Invalid or inactive client ID" },
@@ -86,7 +86,7 @@ export async function validateRequest(
 				"exceeded_event_limit",
 				"Validation Error",
 				undefined,
-				clientId,
+				clientId
 			);
 			return { error: { status: "error", message: "Exceeded event limit" } };
 		}
@@ -101,7 +101,7 @@ export async function validateRequest(
 			"origin_not_authorized",
 			"Security Check",
 			undefined,
-			clientId,
+			clientId
 		);
 		return { error: { status: "error", message: "Origin not authorized" } };
 	}
@@ -109,7 +109,7 @@ export async function validateRequest(
 	const userAgent =
 		sanitizeString(
 			request.headers.get("user-agent"),
-			VALIDATION_LIMITS.STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.STRING_MAX_LENGTH
 		) || "";
 
 	const ip = extractIpFromRequest(request);
@@ -132,7 +132,7 @@ export async function checkForBot(
 	body: any,
 	query: any,
 	clientId: string,
-	userAgent: string,
+	userAgent: string
 ): Promise<{ error?: { status: string } } | undefined> {
 	const botCheck = detectBot(userAgent, request);
 	if (botCheck.isBot) {
@@ -143,9 +143,9 @@ export async function checkForBot(
 			botCheck.reason || "unknown_bot",
 			botCheck.category || "Bot Detection",
 			botCheck.botName,
-			clientId,
+			clientId
 		);
 		return { error: { status: "ignored" } };
 	}
-	return undefined;
+	return;
 }

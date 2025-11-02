@@ -2,7 +2,6 @@
 
 import { UsersIcon } from "@phosphor-icons/react";
 
-import { Skeleton } from "@/components/ui/skeleton";
 import {
 	type ActiveOrganization,
 	type Organization,
@@ -19,14 +18,14 @@ function MembersSkeleton() {
 function EmptyMembersState() {
 	return (
 		<EmptyState
-			icon={UsersIcon}
-			title="Build Your Team"
 			description="This organization doesn't have any team members yet. Invite people to start collaborating and building together."
 			features={[
 				{ label: "Assign roles" },
 				{ label: "Track activity" },
 				{ label: "Share access" },
 			]}
+			icon={UsersIcon}
+			title="Build Your Team"
 		/>
 	);
 }
@@ -34,9 +33,9 @@ function EmptyMembersState() {
 function ErrorState({ error }: { error: Error }) {
 	return (
 		<EmptyState
+			description={error.message}
 			icon={UsersIcon}
 			title="Failed to Load Members"
-			description={error.message}
 			variant="destructive"
 		/>
 	);

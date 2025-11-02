@@ -54,7 +54,7 @@ function EventItem({
 	eventIndex: number;
 }) {
 	const hasProperties = Boolean(
-		event.properties && Object.keys(event.properties).length > 0,
+		event.properties && Object.keys(event.properties).length > 0
 	);
 	const { icon, color, bgColor, borderColor, badgeColor } =
 		getEventIconAndColor(event.event_name, hasProperties);

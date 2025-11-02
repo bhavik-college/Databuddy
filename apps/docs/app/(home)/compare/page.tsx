@@ -43,7 +43,7 @@ function CompetitorCard({
 }) {
 	const { competitor } = data;
 	const featuresWin = data.features.filter(
-		(f) => f.databuddy && !f.competitor,
+		(f) => f.databuddy && !f.competitor
 	).length;
 	const totalFeatures = data.features.length;
 

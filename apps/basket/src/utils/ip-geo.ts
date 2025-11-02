@@ -23,7 +23,7 @@ async function loadDatabaseFromCdn(): Promise<Buffer> {
 		const response = await fetch(CDN_URL);
 		if (!response.ok) {
 			throw new Error(
-				`Failed to fetch database from CDN: ${response.status} ${response.statusText}`,
+				`Failed to fetch database from CDN: ${response.status} ${response.statusText}`
 			);
 		}
 
@@ -32,7 +32,7 @@ async function loadDatabaseFromCdn(): Promise<Buffer> {
 
 		if (dbBuffer.length < 1_000_000) {
 			throw new Error(
-				`Database file seems too small: ${dbBuffer.length} bytes`,
+				`Database file seems too small: ${dbBuffer.length} bytes`
 			);
 		}
 
@@ -138,7 +138,7 @@ export async function getGeoLocation(ip: string) {
 		// Handle BadMethodCallError (wrong database type)
 		if (error instanceof BadMethodCallError) {
 			logger.error(
-				"Database type mismatch - using city() method with ipinfo database",
+				"Database type mismatch - using city() method with ipinfo database"
 			);
 			return { country: undefined, region: undefined, city: undefined };
 		}

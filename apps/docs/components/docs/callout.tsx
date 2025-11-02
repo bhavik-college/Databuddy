@@ -28,7 +28,7 @@ const calloutVariants = cva(
 		defaultVariants: {
 			type: "info",
 		},
-	},
+	}
 );
 
 const iconVariants = cva("size-5 shrink-0", {

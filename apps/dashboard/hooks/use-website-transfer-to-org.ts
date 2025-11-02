@@ -19,7 +19,7 @@ export function useWebsiteTransferToOrg() {
 		isTransferring: transferMutation.isPending,
 		transferWebsiteToOrg: (
 			args: { websiteId: string; targetOrganizationId: string },
-			opts?: { onSuccess?: () => void; onError?: (error: any) => void },
+			opts?: { onSuccess?: () => void; onError?: (error: any) => void }
 		) => {
 			transferMutation.mutate(args, {
 				onSuccess: () => {

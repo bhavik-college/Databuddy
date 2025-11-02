@@ -35,7 +35,7 @@ function getOperatorSymbol(operator: string): string {
 
 export function FiltersSection() {
 	const [selectedFilters, setSelectedFilters] = useAtom(
-		dynamicQueryFiltersAtom,
+		dynamicQueryFiltersAtom
 	);
 	const [, removeFilter] = useAtom(removeDynamicFilterAtom);
 
@@ -50,7 +50,7 @@ export function FiltersSection() {
 				});
 			}
 		},
-		[selectedFilters, removeFilter],
+		[selectedFilters, removeFilter]
 	);
 
 	const { id } = useParams();
@@ -117,14 +117,14 @@ export function FiltersSection() {
 			// Error is handled by toast in the hook
 			setIsSaving(false);
 		},
-		[selectedFilters, saveFilter, updateFilter, editingFilter],
+		[selectedFilters, saveFilter, updateFilter, editingFilter]
 	);
 
 	const handleApplyFilter = useCallback(
 		(filters: DynamicQueryFilter[]) => {
 			setSelectedFilters(filters);
 		},
-		[setSelectedFilters],
+		[setSelectedFilters]
 	);
 
 	const handleDeleteSavedFilter = useCallback(
@@ -140,7 +140,7 @@ export function FiltersSection() {
 				filterName: filterToDelete.name,
 			});
 		},
-		[savedFilters],
+		[savedFilters]
 	);
 
 	const handleConfirmDelete = useCallback(() => {
@@ -159,7 +159,7 @@ export function FiltersSection() {
 			duplicateFilter(savedFilterId);
 			// Success/error feedback is handled by toast in the hook
 		},
-		[duplicateFilter],
+		[duplicateFilter]
 	);
 
 	const handleEditSavedFilter = useCallback(
@@ -179,7 +179,7 @@ export function FiltersSection() {
 				originalFilters: [...filterToEdit.filters], // Store original state
 			});
 		},
-		[savedFilters, setSelectedFilters],
+		[savedFilters, setSelectedFilters]
 	);
 
 	const handleCancelEdit = useCallback(() => {
@@ -200,7 +200,7 @@ export function FiltersSection() {
 		const result = updateFilter(
 			editingFilter.id,
 			editingFilter.name,
-			selectedFilters,
+			selectedFilters
 		);
 
 		if (result.success) {
@@ -239,7 +239,7 @@ export function FiltersSection() {
 									Editing: "{editingFilter.name}"
 								</span>
 							</div>
-							<span className="text-amber-700 text-xs sm:inline hidden">
+							<span className="hidden text-amber-700 text-xs sm:inline">
 								Add, remove, or modify filters below, then save your changes.
 							</span>
 						</div>
@@ -284,7 +284,7 @@ export function FiltersSection() {
 				<div className="flex flex-wrap items-center gap-2">
 					{selectedFilters.map((filter, index) => {
 						const fieldLabel = filterOptions.find(
-							(o) => o.value === filter.field,
+							(o) => o.value === filter.field
 						)?.label;
 						const operatorSymbol = getOperatorSymbol(filter.operator);
 						const valueLabel = Array.isArray(filter.value)
@@ -303,13 +303,13 @@ export function FiltersSection() {
 									<span className="text-muted-foreground text-xs">
 										{operatorSymbol}
 									</span>
-									<span className="truncate font-mono text-foreground text-xs max-w-[120px] sm:max-w-none">
+									<span className="max-w-[120px] truncate font-mono text-foreground text-xs sm:max-w-none">
 										{valueLabel}
 									</span>
 								</div>
 								<button
 									aria-label={`Remove filter ${fieldLabel} ${operatorSymbol} ${valueLabel}`}
-									className="h-6 w-6 shrink-0 rounded-full p-0.5 text-muted-foreground opacity-60 transition-all hover:bg-destructive/10 hover:text-destructive hover:opacity-100 group-hover:opacity-80 touch-manipulation"
+									className="h-6 w-6 shrink-0 touch-manipulation rounded-full p-0.5 text-muted-foreground opacity-60 transition-all hover:bg-destructive/10 hover:text-destructive hover:opacity-100 group-hover:opacity-80"
 									onClick={() => handleRemoveFilter(index)}
 									type="button"
 								>

@@ -19,7 +19,7 @@ export function useDbConnections() {
 	const { data, isLoading, isError, error, refetch, isFetching } =
 		trpc.dbConnections.list.useQuery(
 			{ organizationId: activeOrganization?.id },
-			{ enabled: !isLoadingOrganization },
+			{ enabled: !isLoadingOrganization }
 		);
 
 	return {
@@ -88,7 +88,7 @@ export function useUpdateDbConnection({
 				return old.map((connection) =>
 					connection.id === updatedConnection.id
 						? updatedConnection
-						: connection,
+						: connection
 				);
 			});
 

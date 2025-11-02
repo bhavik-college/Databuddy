@@ -59,7 +59,7 @@ export function MobileCategorySelector({
 		const defaultCat = getDefaultCategory(pathname);
 		const filteredCategories = filterCategoriesForRoute(
 			config.categories,
-			pathname,
+			pathname
 		);
 
 		return { categories: filteredCategories, defaultCategory: defaultCat };
@@ -94,8 +94,7 @@ export function MobileCategorySelector({
 							<DropdownMenuItem
 								className={cn(
 									"flex cursor-pointer items-center gap-2",
-									isActive &&
-										"bg-sidebar-accent text-sidebar-accent-foreground",
+									isActive && "bg-sidebar-accent text-sidebar-accent-foreground"
 								)}
 								key={category.id}
 								onClick={() => onCategoryChange?.(category.id)}
@@ -103,7 +102,7 @@ export function MobileCategorySelector({
 								<Icon
 									className={cn(
 										"h-4 w-4",
-										isActive ? "text-sidebar-ring" : "text-muted-foreground",
+										isActive ? "text-sidebar-ring" : "text-muted-foreground"
 									)}
 									weight={isActive ? "fill" : "duotone"}
 								/>

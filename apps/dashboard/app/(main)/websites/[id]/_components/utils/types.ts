@@ -122,7 +122,7 @@ export interface TrackingTabProps {
 export interface OptimizationTabProps {
 	trackingOptions: TrackingOptions;
 	setTrackingOptions: (
-		options: TrackingOptions | ((prev: TrackingOptions) => TrackingOptions),
+		options: TrackingOptions | ((prev: TrackingOptions) => TrackingOptions)
 	) => void;
 }
 
@@ -139,7 +139,7 @@ export interface ExportTabProps {
 	onExportData: (
 		format: ExportFormat,
 		startDate?: string,
-		endDate?: string,
+		endDate?: string
 	) => void;
 	websiteData: Website;
 	websiteId: string;

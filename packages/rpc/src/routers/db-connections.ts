@@ -39,7 +39,7 @@ const buildDbConnectionFilter = (userId: string, organizationId?: string) =>
 		? eq(dbConnections.organizationId, organizationId)
 		: and(
 				eq(dbConnections.userId, userId),
-				isNull(dbConnections.organizationId),
+				isNull(dbConnections.organizationId)
 			);
 
 export const dbConnectionsRouter = createTRPCRouter({
@@ -61,7 +61,7 @@ export const dbConnectionsRouter = createTRPCRouter({
 
 			const whereClause = buildDbConnectionFilter(
 				ctx.user.id,
-				input.organizationId,
+				input.organizationId
 			);
 
 			const connections = await ctx.db.query.dbConnections.findMany({
@@ -232,7 +232,7 @@ export const dbConnectionsRouter = createTRPCRouter({
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"read",
+				"read"
 			);
 
 			try {
@@ -252,13 +252,13 @@ export const dbConnectionsRouter = createTRPCRouter({
 			z.object({
 				id: z.string(),
 				limit: z.number().optional(),
-			}),
+			})
 		)
 		.query(async ({ ctx, input }) => {
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"read",
+				"read"
 			);
 
 			try {
@@ -279,7 +279,7 @@ export const dbConnectionsRouter = createTRPCRouter({
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"read",
+				"read"
 			);
 
 			try {
@@ -300,7 +300,7 @@ export const dbConnectionsRouter = createTRPCRouter({
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"read",
+				"read"
 			);
 
 			try {
@@ -320,20 +320,20 @@ export const dbConnectionsRouter = createTRPCRouter({
 			z.object({
 				id: z.string(),
 				extensionName: z.string(),
-			}),
+			})
 		)
 		.query(async ({ ctx, input }) => {
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"read",
+				"read"
 			);
 
 			try {
 				const decryptedUrl = decryptConnectionUrl(connection.url);
 				const safetyCheck = await checkExtensionSafety(
 					decryptedUrl,
-					input.extensionName,
+					input.extensionName
 				);
 				return safetyCheck;
 			} catch (error) {
@@ -349,13 +349,13 @@ export const dbConnectionsRouter = createTRPCRouter({
 			z.object({
 				id: z.string(),
 				extensionName: z.string(),
-			}),
+			})
 		)
 		.mutation(async ({ ctx, input }) => {
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"update",
+				"update"
 			);
 
 			try {
@@ -375,13 +375,13 @@ export const dbConnectionsRouter = createTRPCRouter({
 			z.object({
 				id: z.string(),
 				extensionName: z.string(),
-			}),
+			})
 		)
 		.mutation(async ({ ctx, input }) => {
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"update",
+				"update"
 			);
 
 			try {
@@ -403,13 +403,13 @@ export const dbConnectionsRouter = createTRPCRouter({
 				extensionName: z.string(),
 				schema: z.string().optional(),
 				force: z.boolean().optional(),
-			}),
+			})
 		)
 		.mutation(async ({ ctx, input }) => {
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"update",
+				"update"
 			);
 
 			try {
@@ -418,7 +418,7 @@ export const dbConnectionsRouter = createTRPCRouter({
 					decryptedUrl,
 					input.extensionName,
 					input.schema,
-					input.force,
+					input.force
 				);
 				return result;
 			} catch (error) {
@@ -435,13 +435,13 @@ export const dbConnectionsRouter = createTRPCRouter({
 				id: z.string(),
 				extensionName: z.string(),
 				cascade: z.boolean().optional(),
-			}),
+			})
 		)
 		.mutation(async ({ ctx, input }) => {
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"update",
+				"update"
 			);
 
 			try {
@@ -449,7 +449,7 @@ export const dbConnectionsRouter = createTRPCRouter({
 				const result = await safeDropExtension(
 					decryptedUrl,
 					input.extensionName,
-					input.cascade,
+					input.cascade
 				);
 				return result;
 			} catch (error) {

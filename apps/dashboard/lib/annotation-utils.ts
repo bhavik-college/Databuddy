@@ -9,7 +9,7 @@ type Granularity = "hourly" | "daily" | "weekly" | "monthly";
  */
 export function formatAnnotationDate(
 	date: Date | string,
-	showTime = false,
+	showTime = false
 ): string {
 	const dateObj = dayjs(date);
 	if (showTime) {
@@ -25,7 +25,7 @@ export function formatAnnotationDate(
 export function formatAnnotationDateRange(
 	start: Date | string,
 	end: Date | string | null,
-	granularity: Granularity = "daily",
+	granularity: Granularity = "daily"
 ): string {
 	const startDate = dayjs(start);
 	const endDate = end ? dayjs(end) : null;
@@ -70,7 +70,7 @@ export function isSingleDayAnnotation(annotation: Annotation): boolean {
  */
 export function getChartDisplayDate(
 	date: Date | string,
-	granularity: Granularity = "daily",
+	granularity: Granularity = "daily"
 ): string {
 	const dateObj = dayjs(date);
 	return granularity === "hourly"

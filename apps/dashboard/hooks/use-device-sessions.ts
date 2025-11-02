@@ -47,7 +47,7 @@ type RawSessionItem = {
 
 // Helper function to build session details
 function buildSessionDetails(
-	sessionItem: RawSessionItem,
+	sessionItem: RawSessionItem
 ): DeviceSessionDetails {
 	return (
 		sessionItem.session || {

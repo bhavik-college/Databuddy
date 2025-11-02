@@ -285,12 +285,12 @@ export default function PerformancePage({ params }: PerformancePageProps) {
 	const { data: metrics, isLoading: metricsLoading } =
 		trpc.performance.getMetrics.useQuery(
 			{ id: connectionId },
-			{ enabled: extensionStatus?.enabled === true },
+			{ enabled: extensionStatus?.enabled === true }
 		);
 
 	const { data: userInfo } = trpc.performance.getUserInfo.useQuery(
 		{ id: connectionId },
-		{ enabled: extensionStatus?.enabled === true },
+		{ enabled: extensionStatus?.enabled === true }
 	);
 
 	const handleSuccess = (message: string) => {
@@ -306,7 +306,7 @@ export default function PerformancePage({ params }: PerformancePageProps) {
 				name: query.query, // Use query text as name for DataTable compatibility
 			}));
 		},
-		[],
+		[]
 	);
 
 	const handleQueryClick = useCallback(
@@ -314,7 +314,7 @@ export default function PerformancePage({ params }: PerformancePageProps) {
 			setSelectedQuery(query);
 			setSheetOpen(true);
 		},
-		[],
+		[]
 	);
 
 	const queryTabs = useMemo(
@@ -330,14 +330,14 @@ export default function PerformancePage({ params }: PerformancePageProps) {
 					]
 						.filter(
 							(query, index, self) =>
-								self.findIndex((q) => q.queryid === query.queryid) === index,
+								self.findIndex((q) => q.queryid === query.queryid) === index
 						)
-						.slice(0, 15),
+						.slice(0, 15)
 				),
 				columns: createQueryColumns(),
 			} as const,
 		],
-		[metrics, transformQueryData],
+		[metrics, transformQueryData]
 	);
 
 	if (extensionLoading) {
@@ -421,7 +421,7 @@ export default function PerformancePage({ params }: PerformancePageProps) {
 
 				{/* Query Text Permission Info */}
 				{metrics.top_queries_by_time.some((q) =>
-					q.query.includes("Query ID:"),
+					q.query.includes("Query ID:")
 				) && (
 					<Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20">
 						<DatabaseIcon className="h-4 w-4 text-muted-foreground" />
@@ -544,7 +544,7 @@ export default function PerformancePage({ params }: PerformancePageProps) {
 									...transformQueryData(metrics?.slowest_queries || []),
 								];
 								const query = allQueries.find(
-									(q) => q.query === value || q.name === value,
+									(q) => q.query === value || q.name === value
 								);
 								if (query) {
 									handleQueryClick(query);

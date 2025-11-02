@@ -12,7 +12,7 @@ import type {
 
 export function generateExportFiles(
 	data: ExportData,
-	format: ExportFormat,
+	format: ExportFormat
 ): ExportFile[] {
 	const extension = getFileExtension(format);
 
@@ -34,7 +34,7 @@ export function generateExportFiles(
 
 export function generateMetadataFile(
 	request: ExportRequest,
-	data: ExportData,
+	data: ExportData
 ): ExportFile {
 	const metadata: ExportMetadata = {
 		export_date: new Date().toISOString(),

@@ -64,7 +64,7 @@ function formatFilterDisplay(filter: DynamicQueryFilter): {
 
 function filtersAreEqual(
 	filters1: DynamicQueryFilter[],
-	filters2: DynamicQueryFilter[],
+	filters2: DynamicQueryFilter[]
 ): boolean {
 	if (filters1.length !== filters2.length) {
 		return false;
@@ -160,7 +160,7 @@ export function SavedFiltersMenu({
 					{savedFilters.map((savedFilter) => {
 						const isCurrentlyApplied = filtersAreEqual(
 							currentFilters,
-							savedFilter.filters,
+							savedFilter.filters
 						);
 
 						return (

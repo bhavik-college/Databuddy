@@ -31,9 +31,8 @@ export function UserRulesBuilder({ rules, onChange }: UserRulesBuilderProps) {
 		onChange([...rules, newRule]);
 	};
 
-	const canUseBatch = (rule: UserRule) => {
-		return rule.operator !== "exists" && rule.operator !== "not_exists";
-	};
+	const canUseBatch = (rule: UserRule) =>
+		rule.operator !== "exists" && rule.operator !== "not_exists";
 
 	const updateRule = (index: number, updatedRule: Partial<UserRule>) => {
 		const newRules = [...rules];

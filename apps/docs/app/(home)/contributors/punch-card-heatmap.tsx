@@ -108,7 +108,7 @@ export default function PunchCardHeatmap({ data }: Props) {
 							x: event.clientX,
 							y: event.clientY,
 						}
-					: null,
+					: null
 			);
 		}
 	};
@@ -161,7 +161,7 @@ export default function PunchCardHeatmap({ data }: Props) {
 				.reduce((sum, d) => sum + d.commits, 0),
 		}));
 		const peakDayData = dayTotals.reduce((max, day) =>
-			day.total > max.total ? day : max,
+			day.total > max.total ? day : max
 		);
 
 		// Find peak hour
@@ -172,12 +172,12 @@ export default function PunchCardHeatmap({ data }: Props) {
 				.reduce((sum, d) => sum + d.commits, 0),
 		}));
 		const peakHourData = hourTotals.reduce((max, hour) =>
-			hour.total > max.total ? hour : max,
+			hour.total > max.total ? hour : max
 		);
 
 		// Find most active single time slot
 		const mostActive = data.reduce((max, current) =>
-			current.commits > max.commits ? current : max,
+			current.commits > max.commits ? current : max
 		);
 
 		return {
@@ -407,7 +407,7 @@ export default function PunchCardHeatmap({ data }: Props) {
 									blocks.reduce((sum, block) => sum + block.intensity, 0) / 4;
 								const totalCommits = blocks.reduce(
 									(sum, block) => sum + block.commits,
-									0,
+									0
 								);
 
 								mobileBlocks.push({
@@ -447,7 +447,7 @@ export default function PunchCardHeatmap({ data }: Props) {
 															{
 																clientX: touch.clientX,
 																clientY: touch.clientY,
-															} as React.MouseEvent,
+															} as React.MouseEvent
 														);
 													}
 												}}

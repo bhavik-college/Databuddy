@@ -42,7 +42,7 @@ export function UsersList({ websiteId }: UsersListProps) {
 	const [page, setPage] = useState(1);
 	const [allUsers, setAllUsers] = useState<ProfileData[]>([]);
 	const [loadMoreRef, setLoadMoreRef] = useState<HTMLTableCellElement | null>(
-		null,
+		null
 	);
 	const [scrollContainerRef, setScrollContainerRef] =
 		useState<HTMLDivElement | null>(null);
@@ -53,7 +53,7 @@ export function UsersList({ websiteId }: UsersListProps) {
 		dateRange,
 		50,
 		page,
-		filters,
+		filters
 	);
 
 	useEffect(() => {
@@ -69,11 +69,11 @@ export function UsersList({ websiteId }: UsersListProps) {
 				setPage((prev) => prev + 1);
 			}
 		},
-		[pagination.hasNext, isLoading],
+		[pagination.hasNext, isLoading]
 	);
 
 	useEffect(() => {
-		if (!loadMoreRef || !scrollContainerRef) {
+		if (!(loadMoreRef && scrollContainerRef)) {
 			return;
 		}
 
@@ -257,7 +257,7 @@ export function UsersList({ websiteId }: UsersListProps) {
 				size: 150,
 			},
 		],
-		[],
+		[]
 	);
 
 	const table = useReactTable({
@@ -448,7 +448,7 @@ export function UsersList({ websiteId }: UsersListProps) {
 												? null
 												: flexRender(
 														header.column.columnDef.header,
-														header.getContext(),
+														header.getContext()
 													)}
 										</TableHead>
 									))}
@@ -462,7 +462,7 @@ export function UsersList({ websiteId }: UsersListProps) {
 									key={row.id}
 									onClick={() => {
 										router.push(
-											`/websites/${websiteId}/users/${row.original.visitor_id}`,
+											`/websites/${websiteId}/users/${row.original.visitor_id}`
 										);
 									}}
 								>
@@ -475,7 +475,7 @@ export function UsersList({ websiteId }: UsersListProps) {
 										>
 											{flexRender(
 												cell.column.columnDef.cell,
-												cell.getContext(),
+												cell.getContext()
 											)}
 										</TableCell>
 									))}

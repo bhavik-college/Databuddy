@@ -30,7 +30,7 @@ export function saltAnonymousId(anonymousId: string, salt: string): string {
  */
 export async function checkDuplicate(
 	eventId: string,
-	eventType: string,
+	eventType: string
 ): Promise<boolean> {
 	const key = `dedup:${eventType}:${eventId}`;
 	if (await redis.exists(key)) {

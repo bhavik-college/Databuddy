@@ -3,7 +3,7 @@
 import type { ExportFormat } from "./types";
 
 export function convertToCSV<T extends Record<string, unknown>>(
-	data: T[],
+	data: T[]
 ): string {
 	if (data.length === 0) {
 		return "";
@@ -28,7 +28,7 @@ export function convertToCSV<T extends Record<string, unknown>>(
 					}
 					return stringValue;
 				})
-				.join(","),
+				.join(",")
 		)
 		.join("\n");
 
@@ -36,7 +36,7 @@ export function convertToCSV<T extends Record<string, unknown>>(
 }
 
 export function convertToTXT<T extends Record<string, unknown>>(
-	data: T[],
+	data: T[]
 ): string {
 	if (data.length === 0) {
 		return "";
@@ -53,7 +53,7 @@ export function convertToTXT<T extends Record<string, unknown>>(
 					// Replace tabs and newlines to maintain format
 					return String(value).replace(/[\t\n\r]/g, " ");
 				})
-				.join("\t"),
+				.join("\t")
 		)
 		.join("\n");
 
@@ -62,7 +62,7 @@ export function convertToTXT<T extends Record<string, unknown>>(
 
 export function convertToProto<T extends Record<string, unknown>>(
 	data: T[],
-	typeName: string,
+	typeName: string
 ): string {
 	if (data.length === 0) {
 		return "";
@@ -107,7 +107,7 @@ export function convertToProto<T extends Record<string, unknown>>(
 export function formatData<T extends Record<string, unknown>>(
 	data: T[],
 	format: ExportFormat,
-	typeName: string,
+	typeName: string
 ): string {
 	switch (format) {
 		case "csv":

@@ -57,9 +57,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
 			<SunIcon
 				className={cn(
 					"h-4 w-4 transition-all duration-300",
-					currentTheme === "light"
-						? "scale-100 rotate-0"
-						: "scale-0 -rotate-90",
+					currentTheme === "light" ? "rotate-0 scale-100" : "-rotate-90 scale-0"
 				)}
 				size={16}
 				suppressHydrationWarning
@@ -68,7 +66,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
 			<MoonIcon
 				className={cn(
 					"absolute h-4 w-4 transition-all duration-300",
-					currentTheme === "dark" ? "scale-100 rotate-0" : "scale-0 rotate-90",
+					currentTheme === "dark" ? "rotate-0 scale-100" : "rotate-90 scale-0"
 				)}
 				size={16}
 				suppressHydrationWarning
@@ -77,9 +75,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
 			<MonitorIcon
 				className={cn(
 					"absolute h-4 w-4 transition-all duration-300",
-					currentTheme === "system"
-						? "scale-100 rotate-0"
-						: "scale-0 rotate-90",
+					currentTheme === "system" ? "rotate-0 scale-100" : "rotate-90 scale-0"
 				)}
 				size={16}
 				suppressHydrationWarning

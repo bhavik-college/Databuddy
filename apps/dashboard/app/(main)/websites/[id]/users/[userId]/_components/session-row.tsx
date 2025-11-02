@@ -14,7 +14,6 @@ import {
 	EyeIcon,
 	SparkleIcon,
 } from "@phosphor-icons/react";
-import lazy from "next/dynamic";
 import React, { useCallback } from "react";
 import { FaviconImage } from "@/components/analytics/favicon-image";
 import { BrowserIcon, CountryFlag, OSIcon } from "@/components/icon";
@@ -29,7 +28,7 @@ import { generateSessionName } from "./generate-session-name";
 import { SessionEventTimeline } from "./session-event-timeline";
 
 function transformSessionEvents(
-	events: RawSessionEventTuple[],
+	events: RawSessionEventTuple[]
 ): SessionEvent[] {
 	return events
 		.map((tuple) => {
@@ -108,8 +107,8 @@ function SessionRowInternal({
 		events?.filter(
 			(event) =>
 				!["screen_view", "page_exit", "web_vitals", "link_out"].includes(
-					event.event_name,
-				),
+					event.event_name
+				)
 		).length || 0;
 	const referrerInfo = getReferrerInfo(session);
 

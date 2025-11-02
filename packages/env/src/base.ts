@@ -8,7 +8,7 @@ export const createEnv = <T extends z.ZodRawShape>(
 	options: {
 		skipValidation?: boolean;
 		environment?: Record<string, string | undefined>;
-	} = {},
+	} = {}
 ) => {
 	const { skipValidation = false, environment = process.env } = options;
 

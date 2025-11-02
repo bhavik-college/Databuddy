@@ -49,7 +49,7 @@ export function QueryDemo() {
 				websiteId,
 				startDate,
 				endDate,
-				queries,
+				queries
 			);
 
 			setResult(response);
@@ -88,7 +88,7 @@ export function QueryDemo() {
 					allowedFilters: data.configs[name]?.allowedFilters,
 				}));
 				const sortedByName = [...types].sort((a, b) =>
-					a.name.localeCompare(b.name),
+					a.name.localeCompare(b.name)
 				);
 				setAvailableTypes(sortedByName);
 

@@ -130,7 +130,7 @@ export function TwoFactorForm() {
 					setIsEnabled(
 						!!(user as any).twoFactorEnabled ||
 							!!(user as any).mfaEnabled ||
-							!!(user as any).hasTwoFactor,
+							!!(user as any).hasTwoFactor
 					);
 				}
 			} catch (error) {
@@ -152,7 +152,7 @@ export function TwoFactorForm() {
 
 	// Handle setup 2FA (Step 1: Enter password)
 	const onSetupSubmit: SubmitHandler<typeof setupFormDefaultValues> = async (
-		data,
+		data
 	) => {
 		setIsLoading(true);
 		try {
@@ -181,7 +181,7 @@ export function TwoFactorForm() {
 
 	// Handle verify code (Step 2: Enter 2FA code)
 	const onVerifySubmit: SubmitHandler<typeof verifyFormDefaultValues> = async (
-		data,
+		data
 	) => {
 		setIsLoading(true);
 		try {
@@ -213,7 +213,7 @@ export function TwoFactorForm() {
 	const handleDisable2FA = async () => {
 		if (
 			!confirm(
-				"Are you sure you want to disable two-factor authentication? This will make your account less secure.",
+				"Are you sure you want to disable two-factor authentication? This will make your account less secure."
 			)
 		) {
 			return;

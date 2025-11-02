@@ -21,7 +21,7 @@ export default function ExportPage() {
 	type ExportFormat = "json" | "csv" | "txt";
 	const [selectedFormat, setSelectedFormat] = useState<ExportFormat>("csv");
 	const [dateRange, setDateRange] = useState<DayPickerRange | undefined>(
-		undefined,
+		undefined
 	);
 	const [useCustomRange, setUseCustomRange] = useState(false);
 
@@ -51,7 +51,7 @@ export default function ExportPage() {
 				icon: "📝",
 			},
 		],
-		[],
+		[]
 	);
 
 	const isExportDisabled =

@@ -59,21 +59,25 @@ export function Sidebar() {
 		pathname !== "/observability/database" &&
 		pathname !== "/observability/database/";
 
-	const websiteId = useMemo(() => {
-		return isDemo || isWebsite ? pathname.split("/")[2] : null;
-	}, [isDemo, isWebsite, pathname]);
+	const websiteId = useMemo(
+		() => (isDemo || isWebsite ? pathname.split("/")[2] : null),
+		[isDemo, isWebsite, pathname]
+	);
 
-	const databaseId = useMemo(() => {
-		return isDatabase ? pathname.split("/")[3] : null;
-	}, [isDatabase, pathname]);
+	const databaseId = useMemo(
+		() => (isDatabase ? pathname.split("/")[3] : null),
+		[isDatabase, pathname]
+	);
 
-	const currentWebsite = useMemo(() => {
-		return websiteId ? websites?.find((site) => site.id === websiteId) : null;
-	}, [websiteId, websites]);
+	const currentWebsite = useMemo(
+		() => (websiteId ? websites?.find((site) => site.id === websiteId) : null),
+		[websiteId, websites]
+	);
 
-	const currentDatabase = useMemo(() => {
-		return databaseId ? databases?.find((db) => db.id === databaseId) : null;
-	}, [databaseId, databases]);
+	const currentDatabase = useMemo(
+		() => (databaseId ? databases?.find((db) => db.id === databaseId) : null),
+		[databaseId, databases]
+	);
 
 	const closeSidebar = useCallback(() => {
 		setIsMobileOpen(false);
@@ -127,7 +131,7 @@ export function Sidebar() {
 
 		if (isWebsite || isDemo) {
 			headerComponent = (
-				<WebsiteHeader website={currentWebsite} showBackButton={!isDemo} />
+				<WebsiteHeader showBackButton={!isDemo} website={currentWebsite} />
 			);
 			currentId = websiteId;
 		} else if (isDatabase) {
@@ -177,7 +181,7 @@ export function Sidebar() {
 	useEffect(() => {
 		if (isMobileOpen && sidebarRef.current) {
 			const firstFocusableElement = sidebarRef.current.querySelector(
-				'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+				'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
 			) as HTMLElement;
 			if (firstFocusableElement) {
 				firstFocusableElement.focus();
@@ -252,12 +256,12 @@ export function Sidebar() {
 			<nav
 				aria-hidden={!isMobileOpen}
 				className={cn(
-					"fixed inset-y-0 z-40 w-56 sm:w-60 md:w-64 lg:w-72 bg-sidebar",
+					"fixed inset-y-0 z-40 w-56 bg-sidebar sm:w-60 md:w-64 lg:w-72",
 					"border-sidebar-border border-r transition-transform duration-200 ease-out",
 					"left-0 md:left-12",
 					"pt-12 md:pt-0",
 					"md:translate-x-0",
-					isMobileOpen ? "translate-x-0" : "-translate-x-full",
+					isMobileOpen ? "translate-x-0" : "-translate-x-full"
 				)}
 				ref={sidebarRef}
 			>

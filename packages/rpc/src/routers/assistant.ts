@@ -37,7 +37,7 @@ export const assistantRouter = createTRPCRouter({
 				websiteId: z.string(),
 				title: z.string(),
 				messages: z.array(messageSchema.omit({ conversationId: true })),
-			}),
+			})
 		)
 		.mutation(async ({ ctx, input }) => {
 			const conversationId = input.conversationId || createId();
@@ -85,8 +85,8 @@ export const assistantRouter = createTRPCRouter({
 				.where(
 					and(
 						eq(assistantConversations.id, conversationId),
-						eq(assistantConversations.userId, ctx.user.id),
-					),
+						eq(assistantConversations.userId, ctx.user.id)
+					)
 				)
 				.limit(1);
 
@@ -133,7 +133,7 @@ export const assistantRouter = createTRPCRouter({
 				websiteId: z.string().optional(),
 				limit: z.number().default(20),
 				offset: z.number().default(0),
-			}),
+			})
 		)
 		.query(async ({ ctx, input }) => {
 			const conversations = await db
@@ -143,9 +143,9 @@ export const assistantRouter = createTRPCRouter({
 					input.websiteId
 						? and(
 								eq(assistantConversations.userId, ctx.user.id),
-								eq(assistantConversations.websiteId, input.websiteId),
+								eq(assistantConversations.websiteId, input.websiteId)
 							)
-						: eq(assistantConversations.userId, ctx.user.id),
+						: eq(assistantConversations.userId, ctx.user.id)
 				)
 				.orderBy(desc(assistantConversations.updatedAt))
 				.limit(input.limit)
@@ -164,8 +164,8 @@ export const assistantRouter = createTRPCRouter({
 				.where(
 					and(
 						eq(assistantConversations.id, input.conversationId),
-						eq(assistantConversations.userId, ctx.user.id),
-					),
+						eq(assistantConversations.userId, ctx.user.id)
+					)
 				)
 				.limit(1);
 
@@ -199,7 +199,7 @@ export const assistantRouter = createTRPCRouter({
 				})
 				.refine((v) => v.type || v.comment, {
 					message: "Either type or comment must be provided",
-				}),
+				})
 		)
 		.mutation(async ({ ctx, input }) => {
 			// Get message with conversation to verify user access
@@ -211,13 +211,13 @@ export const assistantRouter = createTRPCRouter({
 				.from(assistantMessages)
 				.innerJoin(
 					assistantConversations,
-					eq(assistantMessages.conversationId, assistantConversations.id),
+					eq(assistantMessages.conversationId, assistantConversations.id)
 				)
 				.where(
 					and(
 						eq(assistantMessages.id, input.messageId),
-						eq(assistantConversations.userId, ctx.user.id),
-					),
+						eq(assistantConversations.userId, ctx.user.id)
+					)
 				)
 				.limit(1);
 
@@ -273,8 +273,8 @@ export const assistantRouter = createTRPCRouter({
 				.where(
 					and(
 						eq(assistantConversations.id, input.conversationId),
-						eq(assistantConversations.userId, ctx.user.id),
-					),
+						eq(assistantConversations.userId, ctx.user.id)
+					)
 				);
 
 			return { success: true };
@@ -286,7 +286,7 @@ export const assistantRouter = createTRPCRouter({
 			z.object({
 				conversationId: z.string(),
 				title: z.string().min(1).max(100),
-			}),
+			})
 		)
 		.mutation(async ({ ctx, input }) => {
 			await db
@@ -298,8 +298,8 @@ export const assistantRouter = createTRPCRouter({
 				.where(
 					and(
 						eq(assistantConversations.id, input.conversationId),
-						eq(assistantConversations.userId, ctx.user.id),
-					),
+						eq(assistantConversations.userId, ctx.user.id)
+					)
 				);
 
 			return { success: true };

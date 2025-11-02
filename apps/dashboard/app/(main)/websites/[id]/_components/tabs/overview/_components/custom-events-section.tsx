@@ -25,9 +25,8 @@ const formatNumber = (value: number): string => {
 const PROTOCOL_REGEX = /^https?:\/\//;
 const JSON_QUOTE_REGEX = /^"(.*)"$/;
 
-const cleanPropertyValue = (value: string): string => {
-	return value.replace(JSON_QUOTE_REGEX, "$1");
-};
+const cleanPropertyValue = (value: string): string =>
+	value.replace(JSON_QUOTE_REGEX, "$1");
 
 const createEventIndicator = () => (
 	<div className="h-2 w-2 flex-shrink-0 rounded bg-primary" />
@@ -56,7 +55,7 @@ export function CustomEventsSection({
 	onAddFilter,
 }: CustomEventsSectionProps) {
 	const [expandedProperties, setExpandedProperties] = useState<Set<string>>(
-		new Set(),
+		new Set()
 	);
 
 	const processedEvents = useMemo(() => {
@@ -149,7 +148,7 @@ export function CustomEventsSection({
 				cell: ({ getValue }: any) => createPercentageBadge(getValue()),
 			},
 		],
-		[],
+		[]
 	);
 
 	const outboundLinksColumns = useMemo(
@@ -214,7 +213,7 @@ export function CustomEventsSection({
 				cell: ({ getValue }: any) => createPercentageBadge(getValue()),
 			},
 		],
-		[],
+		[]
 	);
 
 	const outboundDomainsColumns = useMemo(
@@ -255,7 +254,7 @@ export function CustomEventsSection({
 				cell: ({ getValue }: any) => createPercentageBadge(getValue()),
 			},
 		],
-		[],
+		[]
 	);
 
 	return (
@@ -271,7 +270,7 @@ export function CustomEventsSection({
 					(key): PropertySubRow => ({
 						key,
 						values: row.properties[key] || [],
-					}),
+					})
 				);
 			}}
 			isLoading={isLoading}
@@ -279,7 +278,7 @@ export function CustomEventsSection({
 			onAddFilter={onAddFilter}
 			renderSubRow={(
 				subRow: PropertySubRow,
-				parentRow: ProcessedCustomEvent,
+				parentRow: ProcessedCustomEvent
 			) => {
 				const propertyKey = subRow.key;
 				const propertyValues = subRow.values;
@@ -383,7 +382,7 @@ export function CustomEventsSection({
 					label: "Outbound Domains",
 					data: (customEventsData.outbound_domains || [])
 						.filter(
-							(domain) => domain && typeof domain === "object" && domain.domain,
+							(domain) => domain && typeof domain === "object" && domain.domain
 						)
 						.map((domain) => ({
 							...domain,

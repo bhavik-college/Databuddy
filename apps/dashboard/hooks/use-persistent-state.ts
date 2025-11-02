@@ -19,7 +19,7 @@ function useIsClient() {
  */
 export function usePersistentState<T>(
 	key: string,
-	defaultValue: T,
+	defaultValue: T
 ): [T, (value: T | ((prev: T) => T)) => void] {
 	const isClient = useIsClient();
 
@@ -74,7 +74,7 @@ export function usePersistentState<T>(
 				console.error(`Error setting localStorage key "${key}":`, error);
 			}
 		},
-		[key, isClient],
+		[key, isClient]
 	);
 
 	return [state, setPersistentState];
@@ -99,14 +99,13 @@ export function useAccordionStates(storageKey = "sidebar-accordion-states") {
 				};
 			});
 		},
-		[setAccordionStates],
+		[setAccordionStates]
 	);
 
 	const getAccordionState = useCallback(
-		(sectionTitle: string, defaultState = true) => {
-			return accordionStates[sectionTitle] ?? defaultState;
-		},
-		[accordionStates],
+		(sectionTitle: string, defaultState = true) =>
+			accordionStates[sectionTitle] ?? defaultState,
+		[accordionStates]
 	);
 
 	const setAccordionState = useCallback(
@@ -116,7 +115,7 @@ export function useAccordionStates(storageKey = "sidebar-accordion-states") {
 				[sectionTitle]: isExpanded,
 			}));
 		},
-		[setAccordionStates],
+		[setAccordionStates]
 	);
 
 	return {

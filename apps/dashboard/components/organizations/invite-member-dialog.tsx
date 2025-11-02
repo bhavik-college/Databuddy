@@ -104,7 +104,7 @@ export function InviteMemberDialog({
 									<FormItem className="flex-1">
 										<FormControl>
 											<Input
-												className="text-sm "
+												className="text-sm"
 												placeholder="email@company.com"
 												type="email"
 												{...field}

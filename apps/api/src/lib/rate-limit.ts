@@ -61,7 +61,7 @@ export const ratelimit = {
 
 function createRateLimiter(
 	type: RateLimitType,
-	customConfig?: { requests: number; window: string },
+	customConfig?: { requests: number; window: string }
 ): Ratelimit | null {
 	const config = customConfig || RATE_LIMIT_CONFIGS[type];
 	const cacheKey = `${type}-${config.requests}-${config.window}`;
@@ -89,7 +89,7 @@ function createRateLimiter(
 function getRateLimitIdentifier(
 	request: Request,
 	customIdentifier?: string,
-	userId?: string,
+	userId?: string
 ): string {
 	if (customIdentifier) {
 		return `custom:${customIdentifier}`;
@@ -147,7 +147,7 @@ function parseWindowMs(window: string): number {
 function checkInMemoryRateLimit(
 	identifier: string,
 	config: { requests: number; window: string },
-	rate = 1,
+	rate = 1
 ): RateLimitResult {
 	const windowMs = parseWindowMs(config.window);
 	const now = Date.now();
@@ -180,12 +180,12 @@ function checkInMemoryRateLimit(
 export async function checkRateLimit(
 	request: Request,
 	options: RateLimitOptions,
-	userId?: string,
+	userId?: string
 ): Promise<RateLimitResult> {
 	const identifier = getRateLimitIdentifier(
 		request,
 		options.identifier,
-		userId,
+		userId
 	);
 	const config = options.customConfig || RATE_LIMIT_CONFIGS[options.type];
 	const rate = options.rate || 1;
@@ -195,7 +195,7 @@ export async function checkRateLimit(
 		try {
 			const result = await rateLimiter.limit(
 				identifier,
-				rate > 1 ? { rate } : undefined,
+				rate > 1 ? { rate } : undefined
 			);
 			return {
 				success: result.success,

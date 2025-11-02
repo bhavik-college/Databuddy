@@ -59,7 +59,7 @@ export function QueryTypeSelector({
 					{[...selectedTypes].map((type) => (
 						<Card
 							className={
-								"group relative cursor-pointer border transition-all duration-200 hover:border-border/80 hover:shadow-sm "
+								"group relative cursor-pointer border transition-all duration-200 hover:border-border/80 hover:shadow-sm"
 							}
 							key={type}
 							onClick={() => onTypeToggle(type)}

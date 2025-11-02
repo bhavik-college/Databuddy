@@ -128,9 +128,8 @@ export default function AcceptInvitationPage() {
 		router.push("/websites");
 	};
 
-	const formatRole = (role: string) => {
-		return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
-	};
+	const formatRole = (role: string) =>
+		role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
 
 	const formatExpiryDate = (expiresAt: string) => {
 		const date = new Date(expiresAt);

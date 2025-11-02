@@ -20,7 +20,7 @@ const getWebsiteById = cacheable(
 			logger.error(
 				"Error fetching website by ID:",
 				error instanceof Error ? error.message : String(error),
-				{ id },
+				{ id }
 			);
 			return null;
 		}
@@ -30,7 +30,7 @@ const getWebsiteById = cacheable(
 		prefix: "website_by_id",
 		staleWhileRevalidate: true,
 		staleTime: 60,
-	},
+	}
 );
 
 const getDbConnectionById = async (id: string) => {
@@ -45,7 +45,7 @@ const getDbConnectionById = async (id: string) => {
 		logger.error(
 			"Error fetching database connection by ID:",
 			error instanceof Error ? error.message : String(error),
-			{ id },
+			{ id }
 		);
 		return null;
 	}
@@ -61,7 +61,7 @@ const getDbConnectionById = async (id: string) => {
 export async function authorizeWebsiteAccess(
 	ctx: Context,
 	websiteId: string,
-	permission: Permission,
+	permission: Permission
 ) {
 	const website = await getWebsiteById(websiteId);
 
@@ -115,7 +115,7 @@ export async function authorizeWebsiteAccess(
 export async function authorizeDbConnectionAccess(
 	ctx: Context,
 	connectionId: string,
-	permission: Permission,
+	permission: Permission
 ) {
 	const connection = await getDbConnectionById(connectionId);
 

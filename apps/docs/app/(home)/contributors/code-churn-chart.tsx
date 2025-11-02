@@ -112,11 +112,11 @@ export default function CodeChurnChart({ data }: Props) {
 
 		const totalAdditions = sortedData.reduce(
 			(sum, week) => sum + week.additions,
-			0,
+			0
 		);
 		const totalDeletions = sortedData.reduce(
 			(sum, week) => sum + week.deletions,
-			0,
+			0
 		);
 		const netGrowth = totalAdditions - totalDeletions;
 		const avgWeeklyAdditions = Math.round(totalAdditions / sortedData.length);
@@ -198,7 +198,7 @@ export default function CodeChurnChart({ data }: Props) {
 					<div
 						className={cn(
 							"font-bold text-lg sm:text-2xl",
-							insights.netGrowth >= 0 ? "text-green-600" : "text-red-600",
+							insights.netGrowth >= 0 ? "text-green-600" : "text-red-600"
 						)}
 					>
 						{insights.netGrowth >= 0 ? "+" : ""}

@@ -37,7 +37,7 @@ export function SciFiCard({
 		cornerOpacity && [
 			cornerOpacity,
 			"transition-all duration-300 group-hover:opacity-100",
-		],
+		]
 	);
 
 	return (
@@ -55,7 +55,7 @@ export function SciFiCard({
 					className={cn(
 						"-scale-x-[1] absolute top-0 right-0",
 						cornerSize,
-						cornerClasses,
+						cornerClasses
 					)}
 				>
 					<Corner
@@ -68,7 +68,7 @@ export function SciFiCard({
 					className={cn(
 						"-scale-y-[1] absolute bottom-0 left-0",
 						cornerSize,
-						cornerClasses,
+						cornerClasses
 					)}
 				>
 					<Corner
@@ -81,7 +81,7 @@ export function SciFiCard({
 					className={cn(
 						"-scale-[1] absolute right-0 bottom-0",
 						cornerSize,
-						cornerClasses,
+						cornerClasses
 					)}
 				>
 					<Corner
@@ -111,7 +111,7 @@ function Corner({
 					"absolute top-0 left-0.5 origin-left",
 					lineClasses.horizontal,
 					bgClass,
-					cornerColor,
+					cornerColor
 				)}
 			/>
 			<div
@@ -119,7 +119,7 @@ function Corner({
 					"absolute top-0 left-0 origin-top",
 					lineClasses.vertical,
 					bgClass,
-					cornerColor,
+					cornerColor
 				)}
 			/>
 		</>

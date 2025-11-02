@@ -61,7 +61,7 @@ export function EmailForm() {
 			} else {
 				form.reset();
 				toast.success(
-					"Email update request sent! Check your new email for verification.",
+					"Email update request sent! Check your new email for verification."
 				);
 			}
 
@@ -152,7 +152,7 @@ export function EmailForm() {
 										<Input
 											className={cn(
 												"pl-10 transition-all duration-200",
-												form.formState.errors.newEmail && "border-destructive",
+												form.formState.errors.newEmail && "border-destructive"
 											)}
 											placeholder="Enter your new email address"
 											{...field}
@@ -187,7 +187,7 @@ export function EmailForm() {
 										<Input
 											className={cn(
 												"pl-10 transition-all duration-200",
-												form.formState.errors.password && "border-destructive",
+												form.formState.errors.password && "border-destructive"
 											)}
 											placeholder="Enter your current password"
 											type="password"

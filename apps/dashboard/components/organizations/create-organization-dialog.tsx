@@ -144,7 +144,7 @@ export function CreateOrganizationDialog({
 			formData.name.trim().length >= 2 &&
 			(formData.slug || "").trim().length >= 2 &&
 			SLUG_ALLOWED_REGEX.test(formData.slug || ""),
-		[formData.name, formData.slug],
+		[formData.name, formData.slug]
 	);
 
 	// Image crop modal handlers
@@ -170,7 +170,7 @@ export function CreateOrganizationDialog({
 		const percentCrop = centerCrop(
 			makeAspectCrop({ unit: "%", width: 90 }, 1, width, height),
 			width,
-			height,
+			height
 		);
 		setCrop(percentCrop);
 		setCompletedCrop({
@@ -204,7 +204,7 @@ export function CreateOrganizationDialog({
 			const croppedFile = await getCroppedImage(
 				imageRef.current,
 				completedCrop,
-				"logo.png",
+				"logo.png"
 			);
 
 			setLogoFile(croppedFile);
@@ -257,7 +257,7 @@ export function CreateOrganizationDialog({
 					});
 				} catch (logoError) {
 					toast.warning(
-						"Organization created, but logo upload failed. You can upload it later from settings.",
+						"Organization created, but logo upload failed. You can upload it later from settings."
 					);
 					console.error("Logo upload failed:", logoError);
 				}

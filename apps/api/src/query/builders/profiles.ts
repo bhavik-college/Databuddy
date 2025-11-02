@@ -1,4 +1,3 @@
-import { Analytics } from "../../types/tables";
 import type { Filter, SimpleQueryConfig, TimeUnit } from "../types";
 
 export const ProfilesBuilders: Record<string, SimpleQueryConfig> = {
@@ -13,7 +12,7 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig> = {
 			offset?: number,
 			_timezone?: string,
 			filterConditions?: string[],
-			filterParams?: Record<string, Filter["value"]>,
+			filterParams?: Record<string, Filter["value"]>
 		) => {
 			const combinedWhereClause = filterConditions?.length
 				? `AND ${filterConditions.join(" AND ")}`
@@ -139,13 +138,13 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig> = {
 			_offset?: number,
 			_timezone?: string,
 			filterConditions?: string[],
-			filterParams?: Record<string, Filter["value"]>,
+			filterParams?: Record<string, Filter["value"]>
 		) => {
 			const visitorId = filters?.find((f) => f.field === "anonymous_id")?.value;
 
 			if (!visitorId || typeof visitorId !== "string") {
 				throw new Error(
-					"anonymous_id filter is required for profile_detail query",
+					"anonymous_id filter is required for profile_detail query"
 				);
 			}
 
@@ -190,13 +189,13 @@ export const ProfilesBuilders: Record<string, SimpleQueryConfig> = {
 			filters?: Filter[],
 			_granularity?: TimeUnit,
 			limit = 100,
-			offset = 0,
+			offset = 0
 		) => {
 			const visitorId = filters?.find((f) => f.field === "anonymous_id")?.value;
 
 			if (!visitorId || typeof visitorId !== "string") {
 				throw new Error(
-					"anonymous_id filter is required for profile_sessions query",
+					"anonymous_id filter is required for profile_sessions query"
 				);
 			}
 

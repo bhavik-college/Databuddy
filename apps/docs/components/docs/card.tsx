@@ -24,7 +24,7 @@ function Card({
 			className={cn(
 				"group h-full rounded-none border border-border bg-card/50 backdrop-blur-sm transition-all duration-300 hover:bg-card/70",
 				href && "cursor-pointer",
-				className,
+				className
 			)}
 			opacity="reduced"
 			{...props}

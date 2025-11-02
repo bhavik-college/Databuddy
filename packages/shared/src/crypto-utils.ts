@@ -59,7 +59,7 @@ export function decryptToken(encryptedToken: string, secret: string): string {
 		const iv = combined.subarray(SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
 		const tag = combined.subarray(
 			SALT_LENGTH + IV_LENGTH,
-			SALT_LENGTH + IV_LENGTH + TAG_LENGTH,
+			SALT_LENGTH + IV_LENGTH + TAG_LENGTH
 		);
 		const encrypted = combined.subarray(SALT_LENGTH + IV_LENGTH + TAG_LENGTH);
 

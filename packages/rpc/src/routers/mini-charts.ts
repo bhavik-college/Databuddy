@@ -35,7 +35,7 @@ const normalizeWebsiteIds = (ids: string[]): string[] => {
 
 const getAuthorizedWebsiteIds = (
 	userId: string,
-	requestedIds: string[],
+	requestedIds: string[]
 ): Promise<string[]> => {
 	if (!userId || requestedIds.length === 0) {
 		return Promise.resolve([]);
@@ -65,7 +65,7 @@ const getAuthorizedWebsiteIds = (
 					inArray(websites.id, requestedIds),
 					orgFilter
 						? or(eq(websites.userId, userId), orgFilter)
-						: eq(websites.userId, userId),
+						: eq(websites.userId, userId)
 				),
 				columns: {
 					id: true,
@@ -107,7 +107,7 @@ const calculateTrend = (data: { date: string; value: number }[]) => {
 
 const getBatchedMiniChartData = async (
 	websiteIds: string[],
-	days: number,
+	days: number
 ): Promise<Record<string, ProcessedMiniChartData>> => {
 	const uniqueIds = Array.from(new Set(websiteIds));
 	if (uniqueIds.length === 0) {
@@ -156,7 +156,7 @@ const getBatchedMiniChartData = async (
 			acc[id] = [];
 			return acc;
 		},
-		{} as Record<string, { date: string; value: number }[]>,
+		{} as Record<string, { date: string; value: number }[]>
 	);
 
 	for (const row of queryResult) {
@@ -191,7 +191,7 @@ export const miniChartsRouter = createTRPCRouter({
 			z.object({
 				websiteIds: z.array(z.string().min(1).max(64)).min(1).max(5000),
 				days: z.number().int().optional(),
-			}),
+			})
 		)
 		.query(({ ctx, input }) => {
 			const normalizedIds = normalizeWebsiteIds(input.websiteIds);
@@ -211,7 +211,7 @@ export const miniChartsRouter = createTRPCRouter({
 				queryFn: async () => {
 					const authorizedIds = await getAuthorizedWebsiteIds(
 						ctx.user.id,
-						normalizedIds,
+						normalizedIds
 					);
 					return getBatchedMiniChartData(authorizedIds, clampedDays);
 				},

@@ -17,7 +17,7 @@ export function useFullScreen() {
 
 		lastFocusedElement.current = document.activeElement as HTMLElement;
 		const focusable = modalRef.current?.querySelectorAll<HTMLElement>(
-			'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+			'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
 		);
 
 		if (focusable?.length) {

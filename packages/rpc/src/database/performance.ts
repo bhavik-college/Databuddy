@@ -19,7 +19,7 @@ async function createClient(connectionUrl: string): Promise<Client> {
 
 export async function getPerformanceStatements(
 	connectionUrl: string,
-	filters: PerformanceFilters = {},
+	filters: PerformanceFilters = {}
 ): Promise<PgStatStatement[]> {
 	const client = await createClient(connectionUrl);
 
@@ -49,7 +49,7 @@ export async function getPerformanceStatements(
 function formatQuery(
 	query: string,
 	queryid: string,
-	mean_exec_time: number,
+	mean_exec_time: number
 ): string {
 	if (query === "<insufficient privilege>") {
 		const speed =
@@ -62,7 +62,7 @@ function formatQuery(
 async function getTopQueries(
 	client: Client,
 	orderBy: string,
-	limit = 10,
+	limit = 10
 ): Promise<QueryPerformanceSummary[]> {
 	const query = `
 		WITH total_time AS (SELECT SUM(total_exec_time) as total FROM pg_stat_statements)
@@ -102,7 +102,7 @@ async function getTopQueries(
 }
 
 export async function getPerformanceMetrics(
-	connectionUrl: string,
+	connectionUrl: string
 ): Promise<PerformanceMetrics> {
 	const client = await createClient(connectionUrl);
 
@@ -185,7 +185,7 @@ export async function getPerformanceMetrics(
 }
 
 export async function resetPerformanceStats(
-	connectionUrl: string,
+	connectionUrl: string
 ): Promise<void> {
 	const client = await createClient(connectionUrl);
 	try {
@@ -196,13 +196,13 @@ export async function resetPerformanceStats(
 }
 
 export async function checkPgStatStatementsEnabled(
-	connectionUrl: string,
+	connectionUrl: string
 ): Promise<boolean> {
 	const client = await createClient(connectionUrl);
 	try {
 		// Check extension exists
 		const extensionResult = await client.query(
-			`SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_stat_statements') as extension_exists`,
+			`SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_stat_statements') as extension_exists`
 		);
 
 		if (!extensionResult.rows[0].extension_exists) {
@@ -260,13 +260,13 @@ export async function getCurrentUserInfo(connectionUrl: string): Promise<{
 // Online Advisor Extension Functions
 
 export async function checkOnlineAdvisorEnabled(
-	connectionUrl: string,
+	connectionUrl: string
 ): Promise<boolean> {
 	const client = await createClient(connectionUrl);
 	try {
 		// Check extension exists
 		const extensionResult = await client.query(
-			`SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'online_advisor') as extension_exists`,
+			`SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'online_advisor') as extension_exists`
 		);
 
 		if (!extensionResult.rows[0].extension_exists) {
@@ -284,7 +284,7 @@ export async function checkOnlineAdvisorEnabled(
 }
 
 export async function getOnlineAdvisorIndexes(
-	connectionUrl: string,
+	connectionUrl: string
 ): Promise<any[]> {
 	const client = await createClient(connectionUrl);
 
@@ -319,7 +319,7 @@ export async function getOnlineAdvisorIndexes(
 }
 
 export async function getOnlineAdvisorStatistics(
-	connectionUrl: string,
+	connectionUrl: string
 ): Promise<any[]> {
 	const client = await createClient(connectionUrl);
 
@@ -343,7 +343,7 @@ export async function getOnlineAdvisorStatistics(
 
 export async function getExecutorStats(
 	connectionUrl: string,
-	reset = false,
+	reset = false
 ): Promise<any> {
 	const client = await createClient(connectionUrl);
 
@@ -359,7 +359,7 @@ export async function getExecutorStats(
 
 export async function applyIndexRecommendation(
 	connectionUrl: string,
-	createIndexSQL: string,
+	createIndexSQL: string
 ): Promise<{ success: boolean; message?: string }> {
 	const client = await createClient(connectionUrl);
 
@@ -378,7 +378,7 @@ export async function applyIndexRecommendation(
 
 export async function applyStatisticsRecommendation(
 	connectionUrl: string,
-	createStatsSQL: string,
+	createStatsSQL: string
 ): Promise<{ success: boolean; message?: string }> {
 	const client = await createClient(connectionUrl);
 
@@ -396,7 +396,7 @@ export async function applyStatisticsRecommendation(
 }
 
 export async function activateOnlineAdvisor(
-	connectionUrl: string,
+	connectionUrl: string
 ): Promise<{ success: boolean; message?: string }> {
 	const client = await createClient(connectionUrl);
 

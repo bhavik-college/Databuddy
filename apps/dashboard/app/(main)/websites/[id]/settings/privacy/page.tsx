@@ -37,7 +37,7 @@ export default function PrivacyPage() {
 				loading: "Updating privacy settings...",
 				success: "Privacy settings updated successfully",
 				error: "Failed to update privacy settings",
-			},
+			}
 		);
 		refetch();
 	}, [websiteData, websiteId, isPublic, toggleMutation, refetch]);

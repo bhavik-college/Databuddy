@@ -16,11 +16,11 @@ import { CountryFlag } from "./icons/CountryFlag";
 
 const MapContainer = dynamic(
 	() => import("react-leaflet").then((mod) => mod.MapContainer),
-	{ ssr: false },
+	{ ssr: false }
 );
 const GeoJSON = dynamic(
 	() => import("react-leaflet").then((mod) => mod.GeoJSON),
-	{ ssr: false },
+	{ ssr: false }
 );
 
 interface TooltipContent {
@@ -36,9 +36,8 @@ interface TooltipPosition {
 	y: number;
 }
 
-const roundToTwo = (num: number): number => {
-	return Math.round((num + Number.EPSILON) * 100) / 100;
-};
+const roundToTwo = (num: number): number =>
+	Math.round((num + Number.EPSILON) * 100) / 100;
 
 const mapApiToGeoJson = (code: string): string =>
 	code === "TW" ? "CN-TW" : code;
@@ -86,14 +85,13 @@ export function MapComponent({
 		}
 
 		const validCountries = locationsData.countries.filter(
-			(country: CountryData) =>
-				country.country && country.country.trim() !== "",
+			(country: CountryData) => country.country && country.country.trim() !== ""
 		);
 
 		const totalVisitors =
 			validCountries.reduce(
 				(sum: number, c: CountryData) => sum + c.visitors,
-				0,
+				0
 			) || 1;
 
 		return {
@@ -107,7 +105,7 @@ export function MapComponent({
 	}, [locationsData?.countries]);
 
 	const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(
-		null,
+		null
 	);
 	const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>({
 		x: 0,
@@ -129,7 +127,7 @@ export function MapComponent({
 					...item,
 					perCapita: perCapitaValue,
 				};
-			},
+			}
 		);
 	}, [countryData?.data]);
 
@@ -141,7 +139,7 @@ export function MapComponent({
 
 		const metricToUse = mode === "perCapita" ? "perCapita" : "count";
 		const values = processedCountryData?.map(
-			(d: { count: number; perCapita: number }) => d[metricToUse],
+			(d: { count: number; perCapita: number }) => d[metricToUse]
 		) || [0];
 		const maxValue = Math.max(...values);
 		const nonZeroValues = values.filter((v: number) => v > 0);
@@ -188,7 +186,7 @@ export function MapComponent({
 		(
 			hasData: boolean,
 			isHovered: boolean,
-			colors: ReturnType<typeof getThemeColors>,
+			colors: ReturnType<typeof getThemeColors>
 		) => {
 			if (!hasData) {
 				return `${colors.muted.replace(")", ", 0.5)")}`;
@@ -197,7 +195,7 @@ export function MapComponent({
 				? colors.primary
 				: `${colors.primary.replace(")", ", 0.6)")}`;
 		},
-		[],
+		[]
 	);
 
 	const getFeatureData = useCallback(
@@ -210,7 +208,7 @@ export function MapComponent({
 			// Convert GeoJSON code to API code for data lookup
 			const apiCode = mapGeoJsonToApi(dataKey ?? "");
 			const foundData = processedCountryData?.find(
-				({ value }: { value: string }) => value === apiCode,
+				({ value }: { value: string }) => value === apiCode
 			);
 
 			const metricValue =
@@ -222,7 +220,7 @@ export function MapComponent({
 
 			return { dataKey, foundData, metricValue, isHovered, hasData };
 		},
-		[processedCountryData, mode, hoveredId],
+		[processedCountryData, mode, hoveredId]
 	);
 
 	const getStyleWeights = useCallback(
@@ -230,7 +228,7 @@ export function MapComponent({
 			borderWeight: hasData ? (isHovered ? 2.5 : 1.5) : 1.0,
 			fillOpacity: hasData ? (isHovered ? 0.95 : 0.85) : 0.4,
 		}),
-		[],
+		[]
 	);
 
 	const handleStyle = useCallback(
@@ -279,7 +277,7 @@ export function MapComponent({
 			getBorderColor,
 			getStyleWeights,
 			getFeatureData,
-		],
+		]
 	);
 
 	const handleEachFeature = useCallback(
@@ -293,7 +291,7 @@ export function MapComponent({
 					// Convert GeoJSON code to API code for data lookup
 					const apiCode = mapGeoJsonToApi(code ?? "");
 					const foundData = processedCountryData?.find(
-						({ value }) => value === apiCode,
+						({ value }) => value === apiCode
 					);
 					const count = foundData?.count || 0;
 					const percentage = foundData?.percentage || 0;
@@ -320,13 +318,13 @@ export function MapComponent({
 								animate: true,
 								duration: 1.2,
 								easeLinearity: 0.5,
-							},
+							}
 						);
 					}
 				},
 			});
 		},
-		[processedCountryData],
+		[processedCountryData]
 	);
 
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -368,7 +366,7 @@ export function MapComponent({
 			let pointCount = 0;
 
 			const processCoordinates = (
-				coords: number[] | number[][] | number[][][],
+				coords: number[] | number[][] | number[][][]
 			) => {
 				if (typeof coords[0] === "number") {
 					centroidLng += coords[0] as number;
@@ -396,7 +394,7 @@ export function MapComponent({
 					}
 				: null;
 		},
-		[],
+		[]
 	);
 
 	useEffect(() => {
@@ -406,7 +404,7 @@ export function MapComponent({
 
 		const geoJsonCode = mapApiToGeoJson(selectedCountry);
 		const countryFeature = countriesGeoData.features?.find(
-			(feature) => feature.properties?.ISO_A2 === geoJsonCode,
+			(feature) => feature.properties?.ISO_A2 === geoJsonCode
 		);
 
 		if (!countryFeature?.geometry) {
@@ -470,11 +468,11 @@ export function MapComponent({
 						outline: "none",
 						zIndex: "1",
 					}}
+					wheelPxPerZoomLevel={60}
 					zoom={zoom}
 					zoomControl={false}
-					zoomSnap={0.25}
 					zoomDelta={0.5}
-					wheelPxPerZoomLevel={60}
+					zoomSnap={0.25}
 				>
 					{mapView === "countries" && countriesGeoData && (
 						<GeoJSON

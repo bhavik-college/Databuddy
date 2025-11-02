@@ -57,7 +57,7 @@ const ProfileRow = dynamic(
 				<SpinnerIcon className="h-4 w-4 animate-spin" />
 			</div>
 		),
-	},
+	}
 );
 
 interface ProfilesListProps {
@@ -70,7 +70,7 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
 	const [filters] = useAtom(dynamicQueryFiltersAtom);
 
 	const [expandedProfileId, setExpandedProfileId] = useState<string | null>(
-		null,
+		null
 	);
 	const [page, setPage] = useState(1);
 	const [allProfiles, setAllProfiles] = useState<ProfileData[]>([]);
@@ -83,7 +83,7 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
 		dateRange,
 		25,
 		page,
-		filters,
+		filters
 	);
 
 	// Reset page and profiles when dateRange or filters change
@@ -95,7 +95,7 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
 
 	const toggleProfile = useCallback((profileId: string) => {
 		setExpandedProfileId((currentId) =>
-			currentId === profileId ? null : profileId,
+			currentId === profileId ? null : profileId
 		);
 	}, []);
 
@@ -106,7 +106,7 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
 				setPage((prev) => prev + 1);
 			}
 		},
-		[pagination.hasNext, isLoading],
+		[pagination.hasNext, isLoading]
 	);
 
 	useEffect(() => {
@@ -136,7 +136,7 @@ export function ProfilesList({ websiteId }: ProfilesListProps) {
 					if (!existingProfiles.has(profile.visitor_id)) {
 						existingProfiles.set(
 							profile.visitor_id,
-							profile as unknown as ProfileData,
+							profile as unknown as ProfileData
 						);
 						hasNewProfiles = true;
 					}

@@ -38,7 +38,7 @@ const formSchema = z
 			.min(8, "Password must be at least 8 characters")
 			.regex(
 				/^(?=.*[a-zA-Z])(?=.*[0-9])/,
-				"Password must include letters and numbers",
+				"Password must include letters and numbers"
 			),
 		confirmPassword: z.string(),
 	})
@@ -164,7 +164,7 @@ export function PasswordForm() {
 											className={cn(
 												"pr-10 pl-10 transition-all duration-200",
 												form.formState.errors.newPassword &&
-													"border-destructive",
+													"border-destructive"
 											)}
 											placeholder="Enter your new password"
 											type={showNewPassword ? "text" : "password"}
@@ -216,7 +216,7 @@ export function PasswordForm() {
 													passwordStrength.score >= 70 &&
 														passwordStrength.score < 90 &&
 														"text-foreground",
-													passwordStrength.score >= 90 && "text-green-600",
+													passwordStrength.score >= 90 && "text-green-600"
 												)}
 											>
 												{passwordStrength.feedback}
@@ -252,7 +252,7 @@ export function PasswordForm() {
 													"border-destructive",
 												field.value &&
 													field.value === newPassword &&
-													"border-green-500 bg-green-50/50 dark:bg-green-950/20",
+													"border-green-500 bg-green-50/50 dark:bg-green-950/20"
 											)}
 											placeholder="Confirm your new password"
 											type={showConfirmPassword ? "text" : "password"}

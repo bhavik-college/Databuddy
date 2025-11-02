@@ -78,7 +78,7 @@ function EnhancedEmptyState() {
 					className={cn(
 						"gap-2 px-6 py-3 font-medium",
 						"bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary",
-						"group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl",
+						"group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl"
 					)}
 					size="lg"
 				>

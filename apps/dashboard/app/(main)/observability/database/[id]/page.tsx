@@ -319,7 +319,7 @@ export default function DatabasePage({ params }: DatabasePageProps) {
 		error: statsError,
 	} = trpc.dbConnections.getDatabaseStats.useQuery(
 		{ id: connectionId },
-		{ enabled: !!connection },
+		{ enabled: !!connection }
 	);
 
 	const {
@@ -328,7 +328,7 @@ export default function DatabasePage({ params }: DatabasePageProps) {
 		error: tablesError,
 	} = trpc.dbConnections.getTableStats.useQuery(
 		{ id: connectionId },
-		{ enabled: !!connection },
+		{ enabled: !!connection }
 	);
 
 	if (isLoadingConnection) {

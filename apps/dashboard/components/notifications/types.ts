@@ -56,19 +56,19 @@ export type Notification =
 
 // Type guard functions
 export function isAuditNotification(
-	notification: Notification,
+	notification: Notification
 ): notification is AuditNotification {
 	return notification.type === "audit";
 }
 
 export function isAnalyticsNotification(
-	notification: Notification,
+	notification: Notification
 ): notification is AnalyticsNotification {
 	return notification.type === "analytics";
 }
 
 export function isBillingNotification(
-	notification: Notification,
+	notification: Notification
 ): notification is BillingNotification {
 	return notification.type === "billing";
 }

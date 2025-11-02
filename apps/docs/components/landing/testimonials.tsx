@@ -250,13 +250,13 @@ export default function Testimonials(): ReactElement {
 					<SlidingTestimonials
 						testimonials={testimonials.slice(
 							0,
-							Math.floor(testimonials.length / 2),
+							Math.floor(testimonials.length / 2)
 						)}
 					/>
 					<SlidingTestimonials
 						reverse
 						testimonials={testimonials.slice(
-							Math.floor(testimonials.length / 2),
+							Math.floor(testimonials.length / 2)
 						)}
 					/>
 				</div>

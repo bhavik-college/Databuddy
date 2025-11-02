@@ -34,14 +34,14 @@ export const performanceRouter = createTRPCRouter({
 			z.object({
 				id: z.string(),
 				filters: performanceFiltersSchema.optional(),
-			}),
+			})
 		)
 		.query(async ({ ctx, input }) => {
 			// Performance monitoring only requires read access
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"read",
+				"read"
 			);
 
 			try {
@@ -59,7 +59,7 @@ export const performanceRouter = createTRPCRouter({
 
 				const statements = await getPerformanceStatements(
 					decryptedUrl,
-					input.filters,
+					input.filters
 				);
 				return statements;
 			} catch (error) {
@@ -80,7 +80,7 @@ export const performanceRouter = createTRPCRouter({
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"read",
+				"read"
 			);
 
 			try {
@@ -115,7 +115,7 @@ export const performanceRouter = createTRPCRouter({
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"update",
+				"update"
 			);
 
 			// Only admin connections can reset stats
@@ -160,7 +160,7 @@ export const performanceRouter = createTRPCRouter({
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"read",
+				"read"
 			);
 
 			try {
@@ -182,7 +182,7 @@ export const performanceRouter = createTRPCRouter({
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"read",
+				"read"
 			);
 
 			try {
@@ -204,7 +204,7 @@ export const performanceRouter = createTRPCRouter({
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"read",
+				"read"
 			);
 
 			try {
@@ -225,7 +225,7 @@ export const performanceRouter = createTRPCRouter({
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"read",
+				"read"
 			);
 
 			try {
@@ -260,7 +260,7 @@ export const performanceRouter = createTRPCRouter({
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"read",
+				"read"
 			);
 
 			try {
@@ -295,7 +295,7 @@ export const performanceRouter = createTRPCRouter({
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"read",
+				"read"
 			);
 
 			try {
@@ -330,7 +330,7 @@ export const performanceRouter = createTRPCRouter({
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"read",
+				"read"
 			);
 
 			try {
@@ -348,7 +348,7 @@ export const performanceRouter = createTRPCRouter({
 
 				const stats = await getExecutorStats(
 					decryptedUrl,
-					input.reset ?? false,
+					input.reset ?? false
 				);
 				return stats;
 			} catch (error) {
@@ -368,7 +368,7 @@ export const performanceRouter = createTRPCRouter({
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"update",
+				"update"
 			);
 
 			// Only admin connections can apply recommendations
@@ -412,7 +412,7 @@ export const performanceRouter = createTRPCRouter({
 			const connection = await authorizeDbConnectionAccess(
 				ctx,
 				input.id,
-				"update",
+				"update"
 			);
 
 			// Only admin connections can apply recommendations
@@ -439,7 +439,7 @@ export const performanceRouter = createTRPCRouter({
 
 				const result = await applyStatisticsRecommendation(
 					decryptedUrl,
-					input.sql,
+					input.sql
 				);
 				return result;
 			} catch (error) {

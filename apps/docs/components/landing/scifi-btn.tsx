@@ -25,7 +25,7 @@ const SciFiButton = forwardRef<HTMLButtonElement, SciFiButtonProps>(
 						"border border-border hover:animate-[borderGlitch_0.6s_ease-in-out]",
 						"text-center font-normal tracking-[-0.18px]",
 						"active:scale-[0.98]",
-						className,
+						className
 					)}
 					ref={ref}
 					{...(asChild
@@ -41,7 +41,7 @@ const SciFiButton = forwardRef<HTMLButtonElement, SciFiButtonProps>(
 				</Comp>
 			</SciFiCard>
 		);
-	},
+	}
 );
 
 SciFiButton.displayName = "SciFiButton";

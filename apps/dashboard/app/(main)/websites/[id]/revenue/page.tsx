@@ -22,17 +22,17 @@ import { useWebsiteRevenue } from "./hooks/use-website-revenue";
 const RevenueMetrics = lazy(() =>
 	import("./_components/revenue-metrics").then((m) => ({
 		default: m.RevenueMetrics,
-	})),
+	}))
 );
 const RevenueChart = lazy(() =>
 	import("./_components/revenue-chart").then((m) => ({
 		default: m.RevenueChart,
-	})),
+	}))
 );
 const RecentTransactions = lazy(() =>
 	import("./_components/recent-transactions").then((m) => ({
 		default: m.RecentTransactions,
-	})),
+	}))
 );
 
 const PageHeaderSkeleton = () => (
@@ -203,7 +203,7 @@ export default function WebsiteRevenuePage() {
 							window.open(
 								"https://www.databuddy.cc/docs/Integrations/stripe",
 								"_blank",
-								"noopener noreferrer",
+								"noopener noreferrer"
 							),
 					}}
 					description={`No revenue has been recorded for ${websiteData?.name || "this website"} in the selected time period. Make sure your Stripe checkout includes the correct client_id and session_id.`}

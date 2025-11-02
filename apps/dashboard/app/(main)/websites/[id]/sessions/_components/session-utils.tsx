@@ -7,7 +7,7 @@ import {
 
 export const getEventIconAndColor = (
 	eventName: string,
-	hasProperties: boolean,
+	hasProperties: boolean
 ) => {
 	if (hasProperties) {
 		return {

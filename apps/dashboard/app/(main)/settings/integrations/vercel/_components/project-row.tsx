@@ -94,7 +94,7 @@ const TriageMenu = ({
 		action: TriageAction,
 		domainName: string,
 		envVarId?: string,
-		websiteId?: string,
+		websiteId?: string
 	) => Promise<void>;
 }) => {
 	const getTriageActions = (domainStatus: any) => {
@@ -148,7 +148,7 @@ const TriageMenu = ({
 						action.action,
 						domain.name,
 						domainStatus.envVarId,
-						domainStatus.websiteId,
+						domainStatus.websiteId
 					);
 				}}
 				size="sm"
@@ -184,7 +184,7 @@ const TriageMenu = ({
 									action.action,
 									domain.name,
 									domainStatus.envVarId,
-									domainStatus.websiteId,
+									domainStatus.websiteId
 								);
 							}}
 						>
@@ -217,7 +217,7 @@ const DomainRow = ({
 		action: TriageAction,
 		domainName: string,
 		envVarId?: string,
-		websiteId?: string,
+		websiteId?: string
 	) => Promise<void>;
 	onCreateWebsite: (domain: any) => void;
 	triageIssueMutation: any;
@@ -335,7 +335,7 @@ export function ProjectRow({
 	integrationStatus,
 }: ProjectRowProps) {
 	const [selectedDomains, setSelectedDomains] = useState<Set<string>>(
-		new Set(),
+		new Set()
 	);
 
 	const { data: activeOrganization } = authClient.useActiveOrganization();
@@ -343,7 +343,7 @@ export function ProjectRow({
 	const { data: domainsData, isLoading: isLoadingDomains } =
 		trpc.vercel.getProjectDomains.useQuery(
 			{ projectId: project.id },
-			{ enabled: isExpanded },
+			{ enabled: isExpanded }
 		);
 
 	const triageIssueMutation = trpc.vercel.triageIssue.useMutation();
@@ -359,7 +359,7 @@ export function ProjectRow({
 			const redirectTargetExists = domainsData.domains.some(
 				(otherDomain) =>
 					otherDomain.name === domain.redirect &&
-					otherDomain.name !== domain.name,
+					otherDomain.name !== domain.name
 			);
 
 			return !redirectTargetExists;
@@ -378,13 +378,13 @@ export function ProjectRow({
 	const handleSelectAll = () => {
 		const allSelected = selectedDomains.size === filteredDomains.length;
 		setSelectedDomains(
-			allSelected ? new Set() : new Set(filteredDomains.map((d) => d.name)),
+			allSelected ? new Set() : new Set(filteredDomains.map((d) => d.name))
 		);
 	};
 
 	const handleCreateSelected = () => {
 		const selectedDomainObjects = filteredDomains.filter((domain) =>
-			selectedDomains.has(domain.name),
+			selectedDomains.has(domain.name)
 		);
 		if (selectedDomainObjects.length) {
 			onCreateMultipleWebsites(project, selectedDomainObjects);
@@ -397,13 +397,13 @@ export function ProjectRow({
 		action: TriageAction,
 		domainName: string,
 		envVarId?: string,
-		websiteId?: string,
+		websiteId?: string
 	) => {
 		try {
 			if (action === "unintegrate") {
 				if (!envVarId) {
 					toast.error(
-						"Environment variable ID is required for unintegrate action",
+						"Environment variable ID is required for unintegrate action"
 					);
 					return;
 				}
@@ -434,7 +434,7 @@ export function ProjectRow({
 			// Handle specific error cases
 			if (error?.data?.code === "UNAUTHORIZED") {
 				toast.error(
-					"Missing organization permissions. Please check your Vercel integration settings.",
+					"Missing organization permissions. Please check your Vercel integration settings."
 				);
 			} else if (error?.data?.code === "FORBIDDEN") {
 				toast.error("Insufficient permissions to perform this action.");
@@ -665,7 +665,7 @@ export function ProjectRow({
 															e.stopPropagation();
 															onCreateMultipleWebsites(
 																project,
-																filteredDomains,
+																filteredDomains
 															);
 														}}
 														size="sm"
@@ -682,7 +682,7 @@ export function ProjectRow({
 									{filteredDomains.map((domain) => {
 										const domainStatus =
 											integrationStatus?.integrationStatus?.find(
-												(status: any) => status.domain === domain.name,
+												(status: any) => status.domain === domain.name
 											);
 										const isIntegrated = domainStatus?.status === "integrated";
 

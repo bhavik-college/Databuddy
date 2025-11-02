@@ -77,7 +77,7 @@ export function createIconTextColumns({
 					const percentage = info.getValue() as number;
 					return <PercentageBadge percentage={percentage} />;
 				},
-			},
+			}
 		);
 	}
 

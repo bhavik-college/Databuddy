@@ -29,7 +29,7 @@ async function testMapper() {
 
 		if (!website) {
 			throw new Error(
-				"No websites found in database. Please create a website first.",
+				"No websites found in database. Please create a website first."
 			);
 		}
 
@@ -40,7 +40,7 @@ async function testMapper() {
 		console.log("📖 Reading CSV file...");
 		const csvContent = readFileSync(CSV_FILE_PATH, "utf-8");
 		console.log(
-			`📊 Read ${csvContent.length.toLocaleString()} characters from CSV`,
+			`📊 Read ${csvContent.length.toLocaleString()} characters from CSV`
 		);
 
 		// Parse CSV
@@ -52,7 +52,7 @@ async function testMapper() {
 		}) as Record<string, string>[];
 
 		console.log(
-			`✅ Parsed ${rawRows.length.toLocaleString()} raw rows from CSV`,
+			`✅ Parsed ${rawRows.length.toLocaleString()} raw rows from CSV`
 		);
 
 		// Validate CSV structure
@@ -98,11 +98,11 @@ async function testMapper() {
 			];
 
 			const missingFields = expectedFields.filter(
-				(field) => !(field in firstRow),
+				(field) => !(field in firstRow)
 			);
 			if (missingFields.length > 0) {
 				console.warn(
-					`⚠️  CSV missing expected fields: ${missingFields.join(", ")}`,
+					`⚠️  CSV missing expected fields: ${missingFields.join(", ")}`
 				);
 			}
 		}
@@ -147,18 +147,18 @@ async function testMapper() {
 				distinct_id: row.distinct_id || "",
 				created_at: row.created_at || "",
 				job_id: row.job_id || "",
-			}),
+			})
 		);
 
 		console.log(
-			`✅ Converted ${rows.length.toLocaleString()} rows to typed format`,
+			`✅ Converted ${rows.length.toLocaleString()} rows to typed format`
 		);
 
 		console.log("🔄 Mapping events using enhanced umami adapter...");
 		const events = mapEvents(adapters.umami(clientId, rows), rows);
 
 		console.log(
-			`✅ Mapped ${events.length.toLocaleString()} events for client: ${clientId}`,
+			`✅ Mapped ${events.length.toLocaleString()} events for client: ${clientId}`
 		);
 
 		// Show sample of enhanced mapped events
@@ -168,26 +168,26 @@ async function testMapper() {
 			const eventType =
 				event.event_name === "page_exit" ? "🚪 EXIT" : "👁️  VIEW";
 			console.log(
-				`  Event ${i + 1}: ${eventType} - ${event.browser_name} on ${event.os_name} - ${event.path}`,
+				`  Event ${i + 1}: ${eventType} - ${event.browser_name} on ${event.os_name} - ${event.path}`
 			);
 		});
 
 		// Show statistics of enhanced features
 		const pageExits = events.filter((e) => e.event_name === "page_exit").length;
 		const pageViews = events.filter(
-			(e) => e.event_name === "screen_view",
+			(e) => e.event_name === "screen_view"
 		).length;
 		const uniqueBrowsers = new Set(events.map((e) => e.browser_name)).size;
 		const formattedBrowsers = events.filter(
-			(e) => e.browser_name !== e.browser_name.toLowerCase(),
+			(e) => e.browser_name !== e.browser_name.toLowerCase()
 		).length;
 
 		console.log("📈 Enhanced mapping results:");
 		console.log(
-			`   • Event types: ${pageViews} page views, ${pageExits} page exits`,
+			`   • Event types: ${pageViews} page views, ${pageExits} page exits`
 		);
 		console.log(
-			`   • Browser formatting: ${formattedBrowsers} events with capitalized browsers (${uniqueBrowsers} unique)`,
+			`   • Browser formatting: ${formattedBrowsers} events with capitalized browsers (${uniqueBrowsers} unique)`
 		);
 
 		// Insert into ClickHouse
@@ -195,7 +195,7 @@ async function testMapper() {
 		await insertEventsInBatches(events, BATCH_SIZE);
 
 		console.log(
-			`🎉 Successfully processed ${events.length.toLocaleString()} events for website: ${website.domain} (${clientId})`,
+			`🎉 Successfully processed ${events.length.toLocaleString()} events for website: ${website.domain} (${clientId})`
 		);
 	} catch (error) {
 		console.error("❌ Test failed:", error);
@@ -205,13 +205,13 @@ async function testMapper() {
 
 async function insertEventsInBatches(
 	events: AnalyticsEvent[],
-	batchSize: number,
+	batchSize: number
 ) {
 	const totalBatches = Math.ceil(events.length / batchSize);
 	let totalInserted = 0;
 
 	console.log(
-		`📦 Processing ${totalBatches} batches of up to ${batchSize} events each`,
+		`📦 Processing ${totalBatches} batches of up to ${batchSize} events each`
 	);
 
 	for (let i = 0; i < totalBatches; i++) {
@@ -220,7 +220,7 @@ async function insertEventsInBatches(
 		const batch = events.slice(start, end);
 
 		console.log(
-			`🔄 Inserting batch ${i + 1}/${totalBatches} (${batch.length} events)...`,
+			`🔄 Inserting batch ${i + 1}/${totalBatches} (${batch.length} events)...`
 		);
 
 		await clickHouse.insert({
@@ -231,7 +231,7 @@ async function insertEventsInBatches(
 
 		totalInserted += batch.length;
 		console.log(
-			`✅ Batch ${i + 1}/${totalBatches} completed (${totalInserted}/${events.length} total events)`,
+			`✅ Batch ${i + 1}/${totalBatches} completed (${totalInserted}/${events.length} total events)`
 		);
 	}
 

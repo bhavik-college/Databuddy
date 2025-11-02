@@ -17,7 +17,7 @@ export default function CustomSidebar() {
 
 	const getDefaultValue = useCallback(() => {
 		const defaultValue = contents.findIndex((item) =>
-			item.list.some((listItem) => listItem.href === pathname),
+			item.list.some((listItem) => listItem.href === pathname)
 		);
 		return defaultValue === -1 ? 0 : defaultValue;
 	}, [pathname]);
@@ -138,8 +138,8 @@ function NewBadge({ isSelected }: { isSelected?: boolean }) {
 		<div className="flex w-full items-center justify-end">
 			<Badge
 				className={cn(
-					" !no-underline !decoration-transparent pointer-events-none border-dashed",
-					isSelected && "!border-solid",
+					"!no-underline !decoration-transparent pointer-events-none border-dashed",
+					isSelected && "!border-solid"
 				)}
 				variant={isSelected ? "default" : "outline"}
 			>

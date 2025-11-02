@@ -126,7 +126,7 @@ export default function FunnelAnalyticsByReferrer({
 	const totalUsers =
 		data?.referrer_analytics?.reduce(
 			(sum: number, r: FunnelAnalyticsByReferrerResult) => sum + r.total_users,
-			0,
+			0
 		) || 0;
 
 	return (

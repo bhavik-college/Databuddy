@@ -33,7 +33,7 @@ export function Estimator({
 			? 0
 			: Math.min(
 					100,
-					(Math.min(monthlyEvents, included) / monthlyEvents) * 100,
+					(Math.min(monthlyEvents, included) / monthlyEvents) * 100
 				);
 
 	const tiers = bestPlan?.eventTiers ?? [];

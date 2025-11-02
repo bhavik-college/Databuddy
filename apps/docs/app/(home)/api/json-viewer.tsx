@@ -99,7 +99,7 @@ function ArrayNode({
 
 	const itemKeys = useMemo(
 		() => data.map((_, index) => `${name || "root"}_${level}_${index}`),
-		[data, name, level],
+		[data, name, level]
 	);
 
 	if (data.length === 0) {
@@ -173,7 +173,7 @@ function ObjectNode({
 				key: `${name || "root"}_${level}_${key}`,
 				name: key,
 			})),
-		[keys, name, level],
+		[keys, name, level]
 	);
 
 	if (keys.length === 0) {

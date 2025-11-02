@@ -49,7 +49,7 @@ export default function RoadmapStatsComponent({ items, stats }: Props) {
 					inProgress: number;
 					planned: number;
 				}
-			>,
+			>
 		);
 
 		return Object.entries(categories)
@@ -84,7 +84,7 @@ export default function RoadmapStatsComponent({ items, stats }: Props) {
 			{} as Record<
 				string,
 				{ total: number; completed: number; inProgress: number }
-			>,
+			>
 		);
 
 		return Object.entries(priorities)
@@ -106,7 +106,7 @@ export default function RoadmapStatsComponent({ items, stats }: Props) {
 	const upcomingItems = useMemo(() => {
 		const now = new Date();
 		const thirtyDaysFromNow = new Date(
-			now.getTime() + 30 * 24 * 60 * 60 * 1000,
+			now.getTime() + 30 * 24 * 60 * 60 * 1000
 		);
 
 		return items
@@ -135,23 +135,20 @@ export default function RoadmapStatsComponent({ items, stats }: Props) {
 			.slice(0, 5);
 	}, [items]);
 
-	const formatCategoryName = (category: string) => {
-		return category
+	const formatCategoryName = (category: string) =>
+		category
 			.split("-")
 			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
 			.join(" ");
-	};
 
-	const formatPriorityName = (priority: string) => {
-		return priority.charAt(0).toUpperCase() + priority.slice(1);
-	};
+	const formatPriorityName = (priority: string) =>
+		priority.charAt(0).toUpperCase() + priority.slice(1);
 
-	const formatDate = (dateString: string) => {
-		return new Date(dateString).toLocaleDateString("en-US", {
+	const formatDate = (dateString: string) =>
+		new Date(dateString).toLocaleDateString("en-US", {
 			month: "short",
 			day: "numeric",
 		});
-	};
 
 	return (
 		<div className="space-y-8">

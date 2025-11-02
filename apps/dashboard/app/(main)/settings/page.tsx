@@ -20,7 +20,7 @@ const IntegrationsPage = dynamic(
 	{
 		loading: () => <Skeleton className="h-64 w-full rounded" />,
 		ssr: false,
-	},
+	}
 );
 
 const EmailForm = dynamic(
@@ -31,7 +31,7 @@ const EmailForm = dynamic(
 	{
 		loading: () => <Skeleton className="h-32 w-full rounded" />,
 		ssr: false,
-	},
+	}
 );
 
 const PasswordForm = dynamic(
@@ -42,7 +42,7 @@ const PasswordForm = dynamic(
 	{
 		loading: () => <Skeleton className="h-40 w-full rounded" />,
 		ssr: false,
-	},
+	}
 );
 
 const TwoFactorForm = dynamic(
@@ -53,7 +53,7 @@ const TwoFactorForm = dynamic(
 	{
 		loading: () => <Skeleton className="h-48 w-full rounded" />,
 		ssr: false,
-	},
+	}
 );
 
 const SessionsForm = dynamic(
@@ -64,7 +64,7 @@ const SessionsForm = dynamic(
 	{
 		loading: () => <Skeleton className="h-64 w-full rounded" />,
 		ssr: false,
-	},
+	}
 );
 
 const AccountDeletion = dynamic(
@@ -75,7 +75,7 @@ const AccountDeletion = dynamic(
 	{
 		loading: () => <Skeleton className="h-24 w-full rounded" />,
 		ssr: false,
-	},
+	}
 );
 
 const ProfileForm = dynamic(
@@ -86,7 +86,7 @@ const ProfileForm = dynamic(
 	{
 		loading: () => <Skeleton className="h-56 w-full rounded" />,
 		ssr: false,
-	},
+	}
 );
 
 const TimezonePreferences = dynamic(
@@ -97,7 +97,7 @@ const TimezonePreferences = dynamic(
 	{
 		loading: () => <Skeleton className="h-20 w-full rounded" />,
 		ssr: false,
-	},
+	}
 );
 
 export default function SettingsPage() {

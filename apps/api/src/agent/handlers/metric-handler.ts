@@ -5,7 +5,7 @@ import { executeQuery } from "../utils/query-executor";
 import { validateSQL } from "../utils/sql-validator";
 
 export async function handleMetricResponse(
-	parsedAiJson: z.infer<typeof AIResponseJsonSchema>,
+	parsedAiJson: z.infer<typeof AIResponseJsonSchema>
 ): Promise<StreamingUpdate> {
 	if (parsedAiJson.sql) {
 		if (!validateSQL(parsedAiJson.sql)) {
@@ -19,7 +19,7 @@ export async function handleMetricResponse(
 			const queryResult = await executeQuery(parsedAiJson.sql);
 			const metricValue = extractMetricValue(
 				queryResult.data,
-				parsedAiJson.metric_value,
+				parsedAiJson.metric_value
 			);
 			return sendMetricResponse(parsedAiJson, metricValue);
 		} catch {
@@ -32,7 +32,7 @@ export async function handleMetricResponse(
 
 function extractMetricValue(
 	queryData: unknown[],
-	defaultValue: unknown,
+	defaultValue: unknown
 ): unknown {
 	if (!(queryData.length && queryData[0])) {
 		return defaultValue;
@@ -49,7 +49,7 @@ function extractMetricValue(
 function generateTextResponseWithActualValue(
 	textResponse: string | undefined,
 	actualValue: unknown,
-	metricLabel: string | undefined,
+	metricLabel: string | undefined
 ): string {
 	if (!textResponse) {
 		const formattedValue =
@@ -92,12 +92,12 @@ function generateTextResponseWithActualValue(
 
 function sendMetricResponse(
 	parsedAiJson: z.infer<typeof AIResponseJsonSchema>,
-	metricValue: unknown,
+	metricValue: unknown
 ): StreamingUpdate {
 	const textResponse = generateTextResponseWithActualValue(
 		parsedAiJson.text_response,
 		metricValue,
-		parsedAiJson.metric_label,
+		parsedAiJson.metric_label
 	);
 
 	const typedMetricValue =

@@ -15,7 +15,7 @@ export type AIResponseContent = z.infer<typeof AIResponseJsonSchema>;
 export class ResponseProcessor {
 	async process(
 		aiResponse: AIResponseContent,
-		session: AssistantSession,
+		session: AssistantSession
 	): Promise<StreamingUpdate[]> {
 		session.log(`Processing ${aiResponse.response_type} response`);
 
@@ -36,7 +36,7 @@ export class ResponseProcessor {
 
 	private async processResponseByType(
 		response: AIResponseContent,
-		session: AssistantSession,
+		session: AssistantSession
 	): Promise<StreamingUpdate> {
 		const startTime = Date.now();
 
@@ -81,14 +81,14 @@ export class ResponseProcessor {
 
 			const processingTime = Date.now() - startTime;
 			session.log(
-				`Response processed in ${processingTime}ms, result: ${result.type}`,
+				`Response processed in ${processingTime}ms, result: ${result.type}`
 			);
 
 			return result;
 		} catch (error) {
 			const processingTime = Date.now() - startTime;
 			session.log(
-				`Response processing failed in ${processingTime}ms: ${error instanceof Error ? error.message : "Unknown error"}`,
+				`Response processing failed in ${processingTime}ms: ${error instanceof Error ? error.message : "Unknown error"}`
 			);
 
 			return {

@@ -32,7 +32,7 @@ export function useFilters<T extends BaseFilterType>({
 				onFiltersChange([...filters, defaultFilter]);
 			}
 		},
-		[filters, onFiltersChange, defaultFilter],
+		[filters, onFiltersChange, defaultFilter]
 	);
 
 	const removeFilter = useCallback(
@@ -40,17 +40,17 @@ export function useFilters<T extends BaseFilterType>({
 			const newFilters = filters.filter((_, i) => i !== index);
 			onFiltersChange(newFilters);
 		},
-		[filters, onFiltersChange],
+		[filters, onFiltersChange]
 	);
 
 	const updateFilter = useCallback(
 		(index: number, field: keyof T, value: T[keyof T]) => {
 			const newFilters = filters.map((filter, i) =>
-				i === index ? { ...filter, [field]: value } : filter,
+				i === index ? { ...filter, [field]: value } : filter
 			);
 			onFiltersChange(newFilters);
 		},
-		[filters, onFiltersChange],
+		[filters, onFiltersChange]
 	);
 
 	return {

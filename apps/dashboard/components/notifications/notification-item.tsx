@@ -63,7 +63,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
 		<div
 			className={cn(
 				"cursor-pointer p-4 transition-colors hover:bg-accent/50",
-				!notification.read && "bg-accent/30",
+				!notification.read && "bg-accent/30"
 			)}
 		>
 			<div className="flex items-start gap-3">
@@ -108,7 +108,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
 									environment === "staging" &&
 										"bg-yellow-500/10 text-yellow-500",
 									environment === "development" &&
-										"bg-green-500/10 text-green-500",
+										"bg-green-500/10 text-green-500"
 								)}
 							>
 								{environment}
@@ -156,7 +156,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
 										className={cn(
 											"font-medium",
 											notification.trend === "up" && "text-green-500",
-											notification.trend === "down" && "text-red-500",
+											notification.trend === "down" && "text-red-500"
 										)}
 									>
 										{formatPercentage(notification.percentageChange)}
@@ -186,7 +186,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
 													notification.usageValue / notification.usageLimit >
 														0.9
 														? "bg-red-500"
-														: "bg-primary",
+														: "bg-primary"
 												)}
 												style={{
 													width: `${Math.min(100, (notification.usageValue / notification.usageLimit) * 100)}%`,

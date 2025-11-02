@@ -56,7 +56,7 @@ function StepIndicator({
 								? "border-primary bg-primary text-primary-foreground"
 								: index === currentStep
 									? "border-primary bg-primary/10 text-primary"
-									: "border-muted bg-muted text-muted-foreground",
+									: "border-muted bg-muted text-muted-foreground"
 						)}
 					>
 						{step.completed ? (
@@ -96,7 +96,7 @@ function OnboardingStepCard({
 					? "border-primary/50 bg-primary/5 shadow-sm"
 					: step.completed
 						? "border-primary/20 bg-primary/2"
-						: "border-muted hover:border-border",
+						: "border-muted hover:border-border"
 			)}
 		>
 			<CardHeader className="pb-4">
@@ -106,7 +106,7 @@ function OnboardingStepCard({
 							"rounded-lg border p-3 transition-all duration-300",
 							isActive || step.completed
 								? "border-primary/20 bg-primary/10"
-								: "border-muted bg-muted/50",
+								: "border-muted bg-muted/50"
 						)}
 					>
 						<step.icon
@@ -114,7 +114,7 @@ function OnboardingStepCard({
 								"h-6 w-6 transition-all duration-300",
 								isActive || step.completed
 									? "text-primary"
-									: "text-muted-foreground",
+									: "text-muted-foreground"
 							)}
 							weight="duotone"
 						/>
@@ -145,7 +145,7 @@ function OnboardingStepCard({
 							"w-full rounded transition-all duration-300",
 							isActive
 								? "bg-primary hover:bg-primary/90"
-								: "bg-muted text-muted-foreground hover:bg-muted/80",
+								: "bg-muted text-muted-foreground hover:bg-muted/80"
 						)}
 						disabled={!isActive}
 						onClick={step.action}
@@ -219,7 +219,7 @@ export default function OnboardingPage() {
 
 	// Determine completion status
 	const hasOrganization = Boolean(
-		organizations?.length > 0 || !!activeOrganization,
+		organizations?.length > 0 || !!activeOrganization
 	);
 	const hasWebsite = Boolean(websites && websites.length > 0);
 

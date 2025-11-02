@@ -73,7 +73,7 @@ export function ApiKeyList({
 			refetchOnMount: true,
 			refetchOnReconnect: true,
 			staleTime: 0,
-		},
+		}
 	);
 
 	if (isLoading) {

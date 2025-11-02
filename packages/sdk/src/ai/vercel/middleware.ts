@@ -26,14 +26,14 @@ const buddyWare = (buddy: Databuddy): LanguageModelV2Middleware => {
 			const result = await doGenerate();
 
 			const isToolCall = (
-				part: (typeof result.content)[number],
+				part: (typeof result.content)[number]
 			): part is Extract<
 				(typeof result.content)[number],
 				{ type: "tool-call" }
 			> => part.type === "tool-call";
 
 			const isToolResult = (
-				part: (typeof result.content)[number],
+				part: (typeof result.content)[number]
 			): part is Extract<
 				(typeof result.content)[number],
 				{ type: "tool-result" }
@@ -42,7 +42,7 @@ const buddyWare = (buddy: Databuddy): LanguageModelV2Middleware => {
 			const toolCalls = result.content.filter(isToolCall);
 			const toolResults = result.content.filter(isToolResult);
 			const toolCallNames = Array.from(
-				new Set(toolCalls.map((c) => c.toolName)),
+				new Set(toolCalls.map((c) => c.toolName))
 			);
 
 			const costs = await computeCostUSD({
@@ -80,10 +80,9 @@ const buddyWare = (buddy: Databuddy): LanguageModelV2Middleware => {
  */
 export const wrapVercelLanguageModel = (
 	model: LanguageModelV2,
-	buddy: Databuddy,
-) => {
-	return wrapLanguageModel({
+	buddy: Databuddy
+) =>
+	wrapLanguageModel({
 		model,
 		middleware: buddyWare(buddy),
 	});
-};

@@ -128,7 +128,7 @@ export const roadmapQuarters: RoadmapQuarter[] = [
 			(item) =>
 				item.targetDate &&
 				item.targetDate >= "2024-10-01" &&
-				item.targetDate <= "2024-12-31",
+				item.targetDate <= "2024-12-31"
 		),
 	},
 	{
@@ -140,7 +140,7 @@ export const roadmapQuarters: RoadmapQuarter[] = [
 			(item) =>
 				item.targetDate &&
 				item.targetDate >= "2025-01-01" &&
-				item.targetDate <= "2025-03-31",
+				item.targetDate <= "2025-03-31"
 		),
 	},
 	{
@@ -152,7 +152,7 @@ export const roadmapQuarters: RoadmapQuarter[] = [
 			(item) =>
 				item.targetDate &&
 				item.targetDate >= "2025-04-01" &&
-				item.targetDate <= "2025-06-30",
+				item.targetDate <= "2025-06-30"
 		),
 	},
 	{
@@ -164,7 +164,7 @@ export const roadmapQuarters: RoadmapQuarter[] = [
 			(item) =>
 				item.targetDate &&
 				item.targetDate >= "2025-07-01" &&
-				item.targetDate <= "2025-09-30",
+				item.targetDate <= "2025-09-30"
 		),
 	},
 	{
@@ -176,7 +176,7 @@ export const roadmapQuarters: RoadmapQuarter[] = [
 			(item) =>
 				item.targetDate &&
 				item.targetDate >= "2025-10-01" &&
-				item.targetDate <= "2025-12-31",
+				item.targetDate <= "2025-12-31"
 		),
 	},
 ];
@@ -215,19 +215,19 @@ export const roadmapMilestones: RoadmapMilestone[] = [
 export const calculateRoadmapStats = (): RoadmapStats => {
 	const totalItems = roadmapItems.length;
 	const completedItems = roadmapItems.filter(
-		(item) => item.status === "completed",
+		(item) => item.status === "completed"
 	).length;
 	const inProgressItems = roadmapItems.filter(
-		(item) => item.status === "in-progress",
+		(item) => item.status === "in-progress"
 	).length;
 	const plannedItems = roadmapItems.filter(
-		(item) => item.status === "planned",
+		(item) => item.status === "planned"
 	).length;
 	const onHoldItems = roadmapItems.filter(
-		(item) => item.status === "on-hold",
+		(item) => item.status === "on-hold"
 	).length;
 	const cancelledItems = roadmapItems.filter(
-		(item) => item.status === "cancelled",
+		(item) => item.status === "cancelled"
 	).length;
 
 	// Calculate overall progress based on completed items and progress of in-progress items
@@ -246,7 +246,7 @@ export const calculateRoadmapStats = (): RoadmapStats => {
 
 	const upcomingMilestones = roadmapMilestones.filter(
 		(milestone) =>
-			milestone.status === "upcoming" || milestone.status === "current",
+			milestone.status === "upcoming" || milestone.status === "current"
 	).length;
 
 	return {

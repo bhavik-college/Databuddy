@@ -44,7 +44,7 @@ export interface TechnologyTableEntry {
 // Enhanced device type icons with better styling
 export const getDeviceTypeIcon = (
 	deviceType: string,
-	size: "sm" | "md" | "lg" = "md",
+	size: "sm" | "md" | "lg" = "md"
 ) => {
 	const sizeClasses = {
 		sm: "h-3 w-3",
@@ -83,7 +83,7 @@ export const getDeviceTypeIcon = (
 };
 
 export const processDeviceData = (
-	deviceTypes: DeviceTypeEntry[],
+	deviceTypes: DeviceTypeEntry[]
 ): TechnologyTableEntry[] => {
 	const deviceGroups: Record<string, number> = {};
 
@@ -97,7 +97,7 @@ export const processDeviceData = (
 
 	const totalVisitors = Object.values(deviceGroups).reduce(
 		(sum, count) => sum + count,
-		0,
+		0
 	);
 
 	return Object.entries(deviceGroups)
@@ -114,7 +114,7 @@ export const processDeviceData = (
 };
 
 export const processBrowserData = (
-	browserVersions: BrowserVersionEntry[],
+	browserVersions: BrowserVersionEntry[]
 ): TechnologyTableEntry[] => {
 	const browserGroups: Record<string, number> = {};
 
@@ -129,7 +129,7 @@ export const processBrowserData = (
 
 	const totalVisitors = Object.values(browserGroups).reduce(
 		(sum, count) => sum + count,
-		0,
+		0
 	);
 
 	return Object.entries(browserGroups)

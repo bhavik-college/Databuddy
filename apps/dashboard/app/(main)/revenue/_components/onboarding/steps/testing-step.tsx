@@ -35,7 +35,7 @@ export function TestingStep({
 								onClick={() =>
 									copyToClipboard(
 										'stripe payment_intents create --amount 2000 --currency usd --client-reference-id "sess_db_test_123" --metadata[user_id]="user_test_123"',
-										"Test command",
+										"Test command"
 									)
 								}
 								size="sm"

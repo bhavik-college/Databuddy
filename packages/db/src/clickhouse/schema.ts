@@ -788,7 +788,7 @@ export async function initClickHouseSchema() {
 					query: table.query,
 				});
 				console.info(`Created table: ${ANALYTICS_DATABASE}.${table.name}`);
-			}),
+			})
 		);
 
 		// Create observability tables
@@ -798,7 +798,7 @@ export async function initClickHouseSchema() {
 					query: table.query,
 				});
 				console.info(`Created table: ${OBSERVABILITY_DATABASE}.${table.name}`);
-			}),
+			})
 		);
 
 		console.info("ClickHouse schema initialization completed successfully");

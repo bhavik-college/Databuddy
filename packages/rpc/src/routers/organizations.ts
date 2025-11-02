@@ -88,7 +88,7 @@ export const organizationsRouter = createTRPCRouter({
 
 				const logoUrl = await s3.uploadOrganizationLogo(
 					input.organizationId,
-					file,
+					file
 				);
 
 				// Update organization with new logo URL
@@ -241,7 +241,7 @@ export const organizationsRouter = createTRPCRouter({
 			.from(session)
 			.innerJoin(
 				organization,
-				eq(session.activeOrganizationId, organization.id),
+				eq(session.activeOrganizationId, organization.id)
 			)
 			.innerJoin(member, eq(organization.id, member.organizationId))
 			.innerJoin(user, eq(member.userId, user.id))

@@ -53,7 +53,7 @@ export function hashString(str: string): number {
 }
 
 export function parseProperties(
-	propertiesJson?: string,
+	propertiesJson?: string
 ): Record<string, unknown> {
 	if (!propertiesJson) {
 		return {};
@@ -69,7 +69,7 @@ export function parseProperties(
 
 export function evaluateStringRule(
 	value: string | undefined,
-	rule: FlagRule,
+	rule: FlagRule
 ): boolean {
 	if (!value) {
 		return false;
@@ -212,7 +212,7 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 		"/evaluate",
 		async ({ query, set }) => {
 			try {
-				if (!query.key || !query.clientId) {
+				if (!(query.key && query.clientId)) {
 					set.status = 400;
 					return {
 						enabled: false,
@@ -230,7 +230,7 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 
 				const scopeCondition = or(
 					eq(flags.websiteId, query.clientId),
-					eq(flags.organizationId, query.clientId),
+					eq(flags.organizationId, query.clientId)
 				);
 
 				logger.info({
@@ -246,7 +246,7 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 						eq(flags.key, query.key),
 						isNull(flags.deletedAt),
 						eq(flags.status, "active"),
-						scopeCondition,
+						scopeCondition
 					),
 				});
 
@@ -256,7 +256,7 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 						where: and(
 							eq(flags.key, query.key),
 							isNull(flags.deletedAt),
-							eq(flags.status, "active"),
+							eq(flags.status, "active")
 						),
 					});
 
@@ -301,7 +301,7 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 				};
 			}
 		},
-		{ query: flagQuerySchema },
+		{ query: flagQuerySchema }
 	)
 
 	.get(
@@ -325,14 +325,14 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 
 				const scopeCondition = or(
 					eq(flags.websiteId, query.clientId),
-					eq(flags.organizationId, query.clientId),
+					eq(flags.organizationId, query.clientId)
 				);
 
 				const allFlags = await db.query.flags.findMany({
 					where: and(
 						isNull(flags.deletedAt),
 						eq(flags.status, "active"),
-						scopeCondition,
+						scopeCondition
 					),
 				});
 
@@ -360,7 +360,7 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 				};
 			}
 		},
-		{ query: bulkFlagQuerySchema },
+		{ query: bulkFlagQuerySchema }
 	)
 
 	.get("/health", () => ({

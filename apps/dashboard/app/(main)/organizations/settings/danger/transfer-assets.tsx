@@ -45,7 +45,7 @@ export function TransferAssets({ organizationId }: { organizationId: string }) {
 		}
 
 		const website = [...personalWebsites, ...organizationWebsites].find(
-			(w) => w.id === selectedWebsite,
+			(w) => w.id === selectedWebsite
 		);
 		if (!website) {
 			return;
@@ -74,7 +74,7 @@ export function TransferAssets({ organizationId }: { organizationId: string }) {
 					setTransferringWebsite(null);
 					toast.error(error.message || "Failed to transfer website");
 				},
-			},
+			}
 		);
 	};
 

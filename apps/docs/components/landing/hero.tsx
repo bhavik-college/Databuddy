@@ -15,7 +15,7 @@ export default function Hero() {
 		const newWindow = window.open(
 			"https://app.databuddy.cc/login",
 			"_blank",
-			"noopener,noreferrer",
+			"noopener,noreferrer"
 		);
 		if (
 			!newWindow ||

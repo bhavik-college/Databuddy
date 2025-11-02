@@ -11,13 +11,13 @@ import {
 } from "./hooks/use-billing";
 
 const OverviewTab = lazy(() =>
-	import("./components/overview-tab").then((m) => ({ default: m.OverviewTab })),
+	import("./components/overview-tab").then((m) => ({ default: m.OverviewTab }))
 );
 const PlansTab = lazy(() =>
-	import("./components/plans-tab").then((m) => ({ default: m.PlansTab })),
+	import("./components/plans-tab").then((m) => ({ default: m.PlansTab }))
 );
 const HistoryTab = lazy(() =>
-	import("./components/history-tab").then((m) => ({ default: m.HistoryTab })),
+	import("./components/history-tab").then((m) => ({ default: m.HistoryTab }))
 );
 
 function ComponentSkeleton() {

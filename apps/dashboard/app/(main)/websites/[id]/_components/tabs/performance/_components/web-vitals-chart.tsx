@@ -57,7 +57,7 @@ const WEB_VITALS_METRICS = [
 
 const getStatus = (
 	value: number,
-	metric: (typeof WEB_VITALS_METRICS)[number],
+	metric: (typeof WEB_VITALS_METRICS)[number]
 ) => {
 	if (value <= metric.good) {
 		return { label: "Good", color: "text-green-600" };

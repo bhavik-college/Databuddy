@@ -37,8 +37,8 @@ export const createTRPCRouter = t.router;
 
 export const publicProcedure = t.procedure;
 
-const createRateLimitMiddleware = (rateLimiter: RateLimiter) => {
-	return t.middleware(async ({ ctx, next }) => {
+const createRateLimitMiddleware = (rateLimiter: RateLimiter) =>
+	t.middleware(async ({ ctx, next }) => {
 		const identifier = getRateLimitIdentifier(ctx.user?.id, ctx.headers);
 
 		const { success } = await rateLimiter.checkLimit(identifier);
@@ -52,7 +52,6 @@ const createRateLimitMiddleware = (rateLimiter: RateLimiter) => {
 
 		return next({ ctx });
 	});
-};
 
 export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 	if (!(ctx.user && ctx.session)) {
@@ -69,7 +68,7 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 });
 
 export const rateLimitedProtectedProcedure = protectedProcedure.use(
-	createRateLimitMiddleware(rateLimiters.api),
+	createRateLimitMiddleware(rateLimiters.api)
 );
 
 export const rateLimitedAdminProcedure = protectedProcedure

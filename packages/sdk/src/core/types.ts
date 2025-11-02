@@ -363,7 +363,7 @@ export interface DatabuddyTracker {
 	 */
 	track<T extends EventName>(
 		eventName: T,
-		properties?: PropertiesForEvent<T>,
+		properties?: PropertiesForEvent<T>
 	): Promise<void>;
 
 	/**
@@ -424,12 +424,12 @@ export interface DataAttributes {
  */
 export type TrackFunction = <T extends EventName>(
 	eventName: T,
-	properties?: PropertiesForEvent<T>,
+	properties?: PropertiesForEvent<T>
 ) => Promise<void>;
 
 export type ScreenViewFunction = (
 	path?: string,
-	properties?: EventProperties,
+	properties?: EventProperties
 ) => void;
 
 export type SetGlobalPropertiesFunction = (properties: EventProperties) => void;

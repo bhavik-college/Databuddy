@@ -21,7 +21,7 @@ export default function Loading() {
 
 			{/* Chart skeleton */}
 			<div className="rounded border border-sidebar-border bg-sidebar shadow-sm">
-				<div className="flex flex-col items-start justify-between gap-3 border-b border-sidebar-border p-4 sm:flex-row">
+				<div className="flex flex-col items-start justify-between gap-3 border-sidebar-border border-b p-4 sm:flex-row">
 					<div className="space-y-2">
 						<Skeleton className="h-5 w-32" />
 						<Skeleton className="h-4 w-48" />
@@ -44,7 +44,7 @@ export default function Loading() {
 						className="rounded border border-sidebar-border bg-sidebar"
 						key={`table-skeleton-${tableNum}`}
 					>
-						<div className="border-b border-sidebar-border p-4">
+						<div className="border-sidebar-border border-b p-4">
 							<Skeleton className="h-5 w-24" />
 							<Skeleton className="mt-1 h-4 w-32" />
 						</div>
@@ -76,7 +76,7 @@ export default function Loading() {
 						className="rounded border border-sidebar-border bg-sidebar"
 						key={`tech-skeleton-${techNum}`}
 					>
-						<div className="border-b border-sidebar-border p-4">
+						<div className="border-sidebar-border border-b p-4">
 							<Skeleton className="h-5 w-20" />
 							<Skeleton className="mt-1 h-4 w-28" />
 						</div>

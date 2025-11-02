@@ -62,12 +62,12 @@ export class AssistantSession {
 
 	setAIMetrics(
 		responseTime: number,
-		tokenUsage: SessionMetrics["tokenUsage"],
+		tokenUsage: SessionMetrics["tokenUsage"]
 	): void {
 		this.metrics.aiResponseTime = responseTime;
 		this.metrics.tokenUsage = tokenUsage;
 		this.log(
-			`AI completed in ${responseTime}ms, tokens: ${tokenUsage.totalTokens}`,
+			`AI completed in ${responseTime}ms, tokens: ${tokenUsage.totalTokens}`
 		);
 	}
 

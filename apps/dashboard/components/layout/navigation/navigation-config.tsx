@@ -38,7 +38,6 @@ import {
 	TableIcon,
 	TargetIcon,
 	TrendUpIcon,
-	UserCircleIcon,
 	UserGearIcon,
 	UserIcon,
 	UsersThreeIcon,
@@ -50,7 +49,7 @@ const createNavItem = (
 	name: string,
 	icon: any,
 	href: string,
-	options: Record<string, any> = {},
+	options: Record<string, any> = {}
 ) => ({
 	name,
 	icon,
@@ -62,7 +61,7 @@ const createNavItem = (
 const createNavSection = (
 	title: string,
 	icon: any,
-	items: NavigationSection["items"],
+	items: NavigationSection["items"]
 ): NavigationSection => ({
 	title,
 	icon,
@@ -71,7 +70,7 @@ const createNavSection = (
 
 export const filterCategoriesForRoute = (
 	categories: Category[],
-	pathname: string,
+	pathname: string
 ) => {
 	const isDemo = pathname.startsWith("/demo");
 	return categories.filter((category) => !(category.hideFromDemo && isDemo));
@@ -86,7 +85,7 @@ const createDynamicNavigation = <T extends { id: string; name: string | null }>(
 	itemIcon: any,
 	itemHrefPrefix: string,
 	emptyText: string,
-	extraProps?: (item: T) => Record<string, any>,
+	extraProps?: (item: T) => Record<string, any>
 ): NavigationSection[] => [
 	createNavSection(title, titleIcon, [
 		createNavItem(overviewName, ChartBarIcon, overviewHref, {
@@ -101,8 +100,8 @@ const createDynamicNavigation = <T extends { id: string; name: string | null }>(
 						{
 							highlight: true,
 							...(extraProps?.(item) || {}),
-						},
-					),
+						}
+					)
 				)
 			: [
 					createNavItem(emptyText, PlusIcon, overviewHref, {
@@ -114,7 +113,7 @@ const createDynamicNavigation = <T extends { id: string; name: string | null }>(
 ];
 
 export const createWebsitesNavigation = (
-	websites: Array<{ id: string; name: string | null; domain: string }>,
+	websites: Array<{ id: string; name: string | null; domain: string }>
 ): NavigationSection[] =>
 	createDynamicNavigation(
 		websites,
@@ -125,7 +124,7 @@ export const createWebsitesNavigation = (
 		GlobeIcon,
 		"/websites",
 		"Add Your First Website",
-		(website) => ({ domain: website.domain }),
+		(website) => ({ domain: website.domain })
 	);
 
 export const personalNavigation: NavigationSection[] = [
@@ -148,19 +147,19 @@ export const resourcesNavigation: NavigationSection[] = [
 			"Video Guides",
 			PlayIcon,
 			"https://youtube.com/@trydatabuddy",
-			{ external: true, highlight: true },
+			{ external: true, highlight: true }
 		),
 		createNavItem(
 			"Roadmap",
 			RoadHorizonIcon,
 			"https://trello.com/b/SOUXD4wE/databuddy",
-			{ external: true, highlight: true },
+			{ external: true, highlight: true }
 		),
 		createNavItem(
 			"Feedback",
 			SpeakerHighIcon,
 			"https://databuddy.featurebase.app/",
-			{ external: true, highlight: true },
+			{ external: true, highlight: true }
 		),
 	]),
 ];
@@ -178,7 +177,7 @@ export const organizationNavigation: NavigationSection[] = [
 		createNavItem(
 			"Website Access",
 			GlobeSimpleIcon,
-			"/organizations/settings/websites",
+			"/organizations/settings/websites"
 		),
 		createNavItem("API Keys", KeyIcon, "/organizations/settings/api-keys"),
 		createNavItem("Danger Zone", WarningIcon, "/organizations/settings/danger"),
@@ -196,13 +195,13 @@ export const billingNavigation: NavigationSection[] = [
 			"/billing/cost-breakdown",
 			{
 				badge: { text: "Experimental", variant: "purple" as const },
-			},
+			}
 		),
 	]),
 ];
 
 export const createDatabasesNavigation = (
-	databases: Array<{ id: string; name: string; type: string }>,
+	databases: Array<{ id: string; name: string; type: string }>
 ): NavigationSection[] =>
 	createDynamicNavigation(
 		databases,
@@ -213,7 +212,7 @@ export const createDatabasesNavigation = (
 		DatabaseIcon,
 		"/observability/database",
 		"Add Your First Database",
-		(database) => ({ type: database.type }),
+		(database) => ({ type: database.type })
 	);
 
 export const observabilityNavigation: NavigationSection[] = [
@@ -221,7 +220,7 @@ export const observabilityNavigation: NavigationSection[] = [
 		createNavItem(
 			"Database Connections",
 			NetworkIcon,
-			"/observability/database",
+			"/observability/database"
 		),
 	]),
 ];
@@ -293,7 +292,7 @@ export const websiteSettingsNavigation: NavigationSection[] = [
 			"Transfer Website",
 			ArrowSquareOutIcon,
 			"/settings/transfer",
-			{ rootLevel: false },
+			{ rootLevel: false }
 		),
 		createNavItem("Data Export", FileArrowDownIcon, "/settings/export", {
 			rootLevel: false,
@@ -304,7 +303,7 @@ export const websiteSettingsNavigation: NavigationSection[] = [
 const createCategoryConfig = (
 	categories: Category[],
 	defaultCategory: string,
-	navigationMap: Record<string, NavigationSection[]>,
+	navigationMap: Record<string, NavigationSection[]>
 ) => ({ categories, defaultCategory, navigationMap });
 
 export const categoryConfig = {
@@ -356,7 +355,7 @@ export const categoryConfig = {
 			observability: observabilityNavigation,
 			settings: personalNavigation,
 			resources: resourcesNavigation,
-		},
+		}
 	),
 	website: createCategoryConfig(
 		[
@@ -378,7 +377,7 @@ export const categoryConfig = {
 		{
 			analytics: websiteNavigation,
 			settings: websiteSettingsNavigation,
-		},
+		}
 	),
 	database: createCategoryConfig(
 		[
@@ -392,7 +391,7 @@ export const categoryConfig = {
 		"monitoring",
 		{
 			monitoring: databaseNavigation,
-		},
+		}
 	),
 };
 
@@ -414,13 +413,11 @@ const CATEGORY_PATH_MAP = [
 
 export const getContextConfig = (pathname: string) => {
 	for (const item of PATH_CONFIG_MAP) {
-		if (item.pattern.some((p) => pathname.startsWith(p))) {
-			if (
-				!("exclude" in item) ||
-				!item.exclude.some((e: string) => pathname === e)
-			) {
-				return categoryConfig[item.config];
-			}
+		if (
+			item.pattern.some((p) => pathname.startsWith(p)) &&
+			!("exclude" in item && item.exclude.some((e: string) => pathname === e))
+		) {
+			return categoryConfig[item.config];
 		}
 	}
 	return categoryConfig.main;
@@ -441,7 +438,7 @@ const createLoadingNavigation = (
 	overviewName: string,
 	overviewHref: string,
 	loadingName: string,
-	loadingIcon: any,
+	loadingIcon: any
 ): NavigationSection[] => [
 	createNavSection(title, titleIcon, [
 		createNavItem(overviewName, ChartBarIcon, overviewHref, {
@@ -461,7 +458,7 @@ export const createLoadingWebsitesNavigation = (): NavigationSection[] =>
 		"Website Overview",
 		"/websites",
 		"Loading websites...",
-		GlobeIcon,
+		GlobeIcon
 	);
 
 export const createLoadingDatabasesNavigation = (): NavigationSection[] =>
@@ -471,5 +468,5 @@ export const createLoadingDatabasesNavigation = (): NavigationSection[] =>
 		"Database Overview",
 		"/observability/database",
 		"Loading databases...",
-		DatabaseIcon,
+		DatabaseIcon
 	);

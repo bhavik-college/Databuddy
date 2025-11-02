@@ -50,7 +50,7 @@ export function FlagActions({ flag, onEdit, onDeleted }: FlagActionsProps) {
 		setIsDeleting(true);
 		// optimistic removal
 		utils.flags.list.setData({ websiteId: flag.websiteId ?? "" }, (oldData) =>
-			oldData?.filter((f) => f.id !== flag.id),
+			oldData?.filter((f) => f.id !== flag.id)
 		);
 		try {
 			await deleteMutation.mutateAsync({ id: flag.id });

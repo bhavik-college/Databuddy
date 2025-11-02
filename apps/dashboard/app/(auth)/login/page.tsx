@@ -53,7 +53,7 @@ function LoginPage() {
 				onError: () => {
 					setIsLoading(false);
 					toast.error(
-						`${provider === "github" ? "GitHub" : "Google"} login failed. Please try again.`,
+						`${provider === "github" ? "GitHub" : "Google"} login failed. Please try again.`
 					);
 				},
 			},
@@ -88,12 +88,12 @@ function LoginPage() {
 						error?.error?.message?.toLowerCase().includes("not verified")
 					) {
 						router.push(
-							`/login/verification-needed?email=${encodeURIComponent(email)}`,
+							`/login/verification-needed?email=${encodeURIComponent(email)}`
 						);
 					} else {
 						toast.error(
 							error?.error?.message ||
-								"Login failed. Please check your credentials and try again.",
+								"Login failed. Please check your credentials and try again."
 						);
 					}
 				},

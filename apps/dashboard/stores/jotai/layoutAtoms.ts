@@ -6,5 +6,5 @@ export const toggleSidebarAtom = atom(
 	(get) => get(isSidebarCollapsedAtom),
 	(get, set) => {
 		set(isSidebarCollapsedAtom, !get(isSidebarCollapsedAtom));
-	},
+	}
 );

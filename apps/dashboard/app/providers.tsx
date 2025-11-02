@@ -42,7 +42,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 						staleTime: 1000 * 60 * 2, // 2 minutes
 					},
 				},
-			}),
+			})
 	);
 
 	const [trpcClient] = useState(() =>
@@ -58,7 +58,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 					transformer: superjson,
 				}),
 			],
-		}),
+		})
 	);
 
 	return (

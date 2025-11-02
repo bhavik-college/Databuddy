@@ -38,7 +38,7 @@ export interface WebsiteRevenueResponse {
 function buildParams(
 	websiteId: string,
 	dateRange?: DateRange,
-	additionalParams?: Record<string, string | number>,
+	additionalParams?: Record<string, string | number>
 ): URLSearchParams {
 	const params = new URLSearchParams({
 		website_id: websiteId,
@@ -67,7 +67,7 @@ function buildParams(
 async function fetchWebsiteRevenue(
 	websiteId: string,
 	dateRange?: DateRange,
-	signal?: AbortSignal,
+	signal?: AbortSignal
 ): Promise<WebsiteRevenueResponse> {
 	const params = buildParams(websiteId, dateRange);
 	const url = `${API_BASE_URL}/v1/revenue/analytics/website/${websiteId}?${params}`;
@@ -110,7 +110,7 @@ const defaultQueryOptions = {
 export function useWebsiteRevenue(
 	websiteId: string,
 	dateRange: DateRange,
-	options?: Partial<UseQueryOptions<WebsiteRevenueResponse>>,
+	options?: Partial<UseQueryOptions<WebsiteRevenueResponse>>
 ) {
 	const query = useQuery({
 		queryKey: [

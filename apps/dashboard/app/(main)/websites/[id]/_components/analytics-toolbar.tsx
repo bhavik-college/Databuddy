@@ -62,7 +62,7 @@ export function AnalyticsToolbar({
 	const dateRangeDays = useMemo(
 		() =>
 			dayjs(currentDateRange.endDate).diff(currentDateRange.startDate, "day"),
-		[currentDateRange],
+		[currentDateRange]
 	);
 
 	const isHourlyDisabled = dateRangeDays > MAX_HOURLY_DAYS;
@@ -72,7 +72,7 @@ export function AnalyticsToolbar({
 			from: currentDateRange.startDate,
 			to: currentDateRange.endDate,
 		}),
-		[currentDateRange],
+		[currentDateRange]
 	);
 
 	const handleQuickRangeSelect = useCallback(
@@ -80,7 +80,7 @@ export function AnalyticsToolbar({
 			const start = getStartDateForRange(range);
 			setDateRangeAction({ startDate: start, endDate: new Date() });
 		},
-		[setDateRangeAction],
+		[setDateRangeAction]
 	);
 
 	const getGranularityButtonClass = (type: "daily" | "hourly") => {
@@ -99,7 +99,7 @@ export function AnalyticsToolbar({
 
 	const isQuickRangeActive = useCallback(
 		(range: QuickRange) => {
-			if (!selectedRange?.from || !selectedRange?.to) return false;
+			if (!(selectedRange?.from && selectedRange?.to)) return false;
 
 			const now = new Date();
 			const start = getStartDateForRange(range);
@@ -109,12 +109,12 @@ export function AnalyticsToolbar({
 				dayjs(selectedRange.to).isSame(now, "day")
 			);
 		},
-		[selectedRange],
+		[selectedRange]
 	);
 
 	return (
 		<div className="flex h-22 flex-col border-b bg-card">
-			<div className="flex h-12 items-center justify-between border-b border-border pr-4">
+			<div className="flex h-12 items-center justify-between border-border border-b pr-4">
 				<div className="flex h-full items-center">
 					<Button
 						className={getGranularityButtonClass("daily")}
@@ -169,7 +169,7 @@ export function AnalyticsToolbar({
 						<div className="flex h-full items-center" key={range.label}>
 							{index > 0 && <div className="h-full w-px bg-border/50" />}
 							<Button
-								className={`h-full w-12 cursor-pointer rounded-none touch-manipulation whitespace-nowrap px-0 font-medium text-xs ${isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+								className={`h-full w-12 cursor-pointer touch-manipulation whitespace-nowrap rounded-none px-0 font-medium text-xs ${isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
 								onClick={() => handleQuickRangeSelect(range)}
 								title={range.fullLabel}
 								variant={isActive ? "secondary" : "ghost"}

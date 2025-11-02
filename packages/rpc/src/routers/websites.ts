@@ -94,7 +94,7 @@ const calculateTrend = (dataPoints: { date: string; value: number }[]) => {
 };
 
 const fetchChartData = async (
-	websiteIds: string[],
+	websiteIds: string[]
 ): Promise<Record<string, ProcessedMiniChartData>> => {
 	if (!websiteIds.length) {
 		return {};
@@ -140,7 +140,7 @@ const fetchChartData = async (
 			acc[id] = [];
 			return acc;
 		},
-		{} as Record<string, { date: string; value: number }[]>,
+		{} as Record<string, { date: string; value: number }[]>
 	);
 
 	for (const row of queryResults) {
@@ -191,7 +191,7 @@ export const websitesRouter = createTRPCRouter({
 					}
 					const whereClause = buildWebsiteFilter(
 						ctx.user.id,
-						input.organizationId,
+						input.organizationId
 					);
 					return ctx.db.query.websites.findMany({
 						where: whereClause,
@@ -225,7 +225,7 @@ export const websitesRouter = createTRPCRouter({
 					}
 					const whereClause = buildWebsiteFilter(
 						ctx.user.id,
-						input.organizationId,
+						input.organizationId
 					);
 
 					const websitesList = await ctx.db.query.websites.findMany({
@@ -297,7 +297,7 @@ export const websitesRouter = createTRPCRouter({
 						message: error.message,
 					});
 				}),
-				Effect.runPromise,
+				Effect.runPromise
 			);
 
 			return result;
@@ -309,7 +309,7 @@ export const websitesRouter = createTRPCRouter({
 			const websiteToUpdate = await authorizeWebsiteAccess(
 				ctx,
 				input.id,
-				"update",
+				"update"
 			);
 
 			const serviceInput = {
@@ -322,7 +322,7 @@ export const websitesRouter = createTRPCRouter({
 					input.id,
 					serviceInput,
 					ctx.user.id,
-					websiteToUpdate.organizationId,
+					websiteToUpdate.organizationId
 				),
 				Effect.mapError((error: WebsiteError) => {
 					if (error instanceof ValidationError) {
@@ -342,7 +342,7 @@ export const websitesRouter = createTRPCRouter({
 						message: error.message,
 					});
 				}),
-				Effect.runPromise,
+				Effect.runPromise
 			);
 
 			const changes: string[] = [];
@@ -351,7 +351,7 @@ export const websitesRouter = createTRPCRouter({
 			}
 			if (input.domain && input.domain !== websiteToUpdate.domain) {
 				changes.push(
-					`domain: "${websiteToUpdate.domain}" → "${updatedWebsite.domain}"`,
+					`domain: "${websiteToUpdate.domain}" → "${updatedWebsite.domain}"`
 				);
 			}
 
@@ -374,7 +374,7 @@ export const websitesRouter = createTRPCRouter({
 				new WebsiteService(ctx.db).toggleWebsitePublic(
 					input.id,
 					input.isPublic,
-					ctx.user.id,
+					ctx.user.id
 				),
 				Effect.mapError((error: WebsiteError) => {
 					if (error instanceof WebsiteNotFoundError) {
@@ -385,7 +385,7 @@ export const websitesRouter = createTRPCRouter({
 						message: error.message,
 					});
 				}),
-				Effect.runPromise,
+				Effect.runPromise
 			);
 
 			logger.info(
@@ -395,7 +395,7 @@ export const websitesRouter = createTRPCRouter({
 					websiteId: input.id,
 					isPublic: input.isPublic,
 					userId: ctx.user.id,
-				},
+				}
 			);
 
 			return updatedWebsite;
@@ -407,18 +407,19 @@ export const websitesRouter = createTRPCRouter({
 			const websiteToDelete = await authorizeWebsiteAccess(
 				ctx,
 				input.id,
-				"delete",
+				"delete"
 			);
 
 			await pipe(
 				new WebsiteService(ctx.db).deleteWebsite(input.id, ctx.user.id),
-				Effect.mapError((error: WebsiteError) => {
-					return new TRPCError({
-						code: "INTERNAL_SERVER_ERROR",
-						message: error.message,
-					});
-				}),
-				Effect.runPromise,
+				Effect.mapError(
+					(error: WebsiteError) =>
+						new TRPCError({
+							code: "INTERNAL_SERVER_ERROR",
+							message: error.message,
+						})
+				),
+				Effect.runPromise
 			);
 
 			logger.warning(
@@ -429,7 +430,7 @@ export const websitesRouter = createTRPCRouter({
 					websiteName: websiteToDelete.name,
 					domain: websiteToDelete.domain,
 					userId: ctx.user.id,
-				},
+				}
 			);
 
 			return { success: true };
@@ -460,7 +461,7 @@ export const websitesRouter = createTRPCRouter({
 				new WebsiteService(ctx.db).transferWebsite(
 					input.websiteId,
 					input.organizationId ?? null,
-					ctx.user.id,
+					ctx.user.id
 				),
 				Effect.mapError((error: WebsiteError) => {
 					if (error instanceof WebsiteNotFoundError) {
@@ -471,7 +472,7 @@ export const websitesRouter = createTRPCRouter({
 						message: error.message,
 					});
 				}),
-				Effect.runPromise,
+				Effect.runPromise
 			);
 
 			return result;
@@ -501,7 +502,7 @@ export const websitesRouter = createTRPCRouter({
 				new WebsiteService(ctx.db).transferWebsiteToOrganization(
 					input.websiteId,
 					input.targetOrganizationId,
-					ctx.user.id,
+					ctx.user.id
 				),
 				Effect.mapError((error: WebsiteError) => {
 					if (error instanceof WebsiteNotFoundError) {
@@ -512,7 +513,7 @@ export const websitesRouter = createTRPCRouter({
 						message: error.message,
 					});
 				}),
-				Effect.runPromise,
+				Effect.runPromise
 			);
 
 			return result;
@@ -533,9 +534,9 @@ export const websitesRouter = createTRPCRouter({
 						new TRPCError({
 							code: "INTERNAL_SERVER_ERROR",
 							message: "Failed to invalidate caches",
-						}),
+						})
 				),
-				Effect.runPromise,
+				Effect.runPromise
 			);
 
 			return { success: true };
@@ -547,7 +548,7 @@ export const websitesRouter = createTRPCRouter({
 			const website = await authorizeWebsiteAccess(
 				ctx,
 				input.websiteId,
-				"read",
+				"read"
 			);
 
 			const hasVercelIntegration = !!(
@@ -558,7 +559,7 @@ export const websitesRouter = createTRPCRouter({
 
 			const trackingCheckResult = await chQuery<{ count: number }>(
 				`SELECT COUNT(*) as count FROM analytics.events WHERE client_id = {websiteId:String} AND event_name = 'screen_view' LIMIT 1`,
-				{ websiteId: input.websiteId },
+				{ websiteId: input.websiteId }
 			);
 
 			const hasTrackingEvents = (trackingCheckResult[0]?.count ?? 0) > 0;

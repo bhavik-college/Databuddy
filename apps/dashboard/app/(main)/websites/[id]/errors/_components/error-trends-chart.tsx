@@ -11,11 +11,11 @@ import { ErrorChartTooltip } from "./error-chart-tooltip";
 // Dynamically import chart components for better performance
 const ResponsiveContainer = dynamic(
 	() => import("recharts").then((mod) => mod.ResponsiveContainer),
-	{ ssr: false },
+	{ ssr: false }
 );
 const AreaChart = dynamic(
 	() => import("recharts").then((mod) => mod.AreaChart),
-	{ ssr: false },
+	{ ssr: false }
 );
 const Brush = dynamic(() => import("recharts").then((mod) => mod.Brush), {
 	ssr: false,
@@ -55,7 +55,7 @@ export const ErrorTrendsChart = ({ errorChartData }: ErrorTrendsChartProps) => {
 				setIsZoomed(true);
 			}
 		},
-		[],
+		[]
 	);
 
 	if (!errorChartData.length) {

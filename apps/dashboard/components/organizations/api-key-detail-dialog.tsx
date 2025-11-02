@@ -234,7 +234,7 @@ export function ApiKeyDetailDialog({
 	const utils = trpc.useUtils();
 	const { data, isLoading } = trpc.apikeys.getById.useQuery(
 		{ id: keyId ?? "" },
-		{ enabled: !!keyId },
+		{ enabled: !!keyId }
 	);
 	const rotateMutation = trpc.apikeys.rotate.useMutation({
 		onSuccess: async () => {
@@ -262,7 +262,7 @@ export function ApiKeyDetailDialog({
 
 	const effectiveStatus = useMemo(
 		() => (detail?.enabled && !detail?.revokedAt ? "Enabled" : "Disabled"),
-		[detail],
+		[detail]
 	);
 
 	// form schema for inline updates

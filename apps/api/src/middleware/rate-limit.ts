@@ -21,7 +21,7 @@ const getCachedAuthSession = cacheable(
 		prefix: "rate-limit-auth",
 		staleWhileRevalidate: true,
 		staleTime: 15,
-	},
+	}
 );
 
 export function createRateLimitMiddleware(options: RateLimitMiddlewareOptions) {
@@ -48,7 +48,7 @@ export function createRateLimitMiddleware(options: RateLimitMiddlewareOptions) {
 			set.headers["X-RateLimit-Limit"] = result.limit.toString();
 			set.headers["X-RateLimit-Remaining"] = result.remaining.toString();
 			set.headers["X-RateLimit-Reset"] = Math.ceil(
-				result.reset.getTime() / 1000,
+				result.reset.getTime() / 1000
 			).toString();
 		}
 
@@ -70,7 +70,7 @@ export function createRateLimitMiddleware(options: RateLimitMiddlewareOptions) {
 					"X-RateLimit-Limit": result.limit.toString(),
 					"X-RateLimit-Remaining": result.remaining.toString(),
 					"X-RateLimit-Reset": Math.ceil(
-						result.reset.getTime() / 1000,
+						result.reset.getTime() / 1000
 					).toString(),
 				},
 			});
@@ -123,7 +123,7 @@ export function createCustomRateLimitMiddleware(
 	requests: number,
 	window: string,
 	type: RateLimitOptions["type"] = "api",
-	options?: Partial<RateLimitMiddlewareOptions>,
+	options?: Partial<RateLimitMiddlewareOptions>
 ) {
 	return createRateLimitMiddleware({
 		type,

@@ -22,7 +22,7 @@ export function SessionsList({ websiteId }: SessionsListProps) {
 	const [filters] = useAtom(dynamicQueryFiltersAtom);
 
 	const [expandedSessionId, setExpandedSessionId] = useAtom(
-		expandedSessionIdAtom,
+		expandedSessionIdAtom
 	);
 	const [page, setPage] = useAtom(getSessionPageAtom(websiteId));
 	const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -40,7 +40,7 @@ export function SessionsList({ websiteId }: SessionsListProps) {
 		{
 			staleTime: 5 * 60 * 1000,
 			gcTime: 10 * 60 * 1000,
-		},
+		}
 	);
 
 	const [allSessions, setAllSessions] = useState<Session[]>([]);
@@ -59,7 +59,7 @@ export function SessionsList({ websiteId }: SessionsListProps) {
 			setAllSessions((prev) => {
 				const existingIds = new Set(prev.map((session) => session.session_id));
 				const newSessions = sessions.filter(
-					(session) => !existingIds.has(session.session_id),
+					(session) => !existingIds.has(session.session_id)
 				);
 				return [...prev, ...newSessions];
 			});
@@ -79,7 +79,7 @@ export function SessionsList({ websiteId }: SessionsListProps) {
 					setPage(page + 1);
 				}
 			},
-			{ threshold: 0.1 },
+			{ threshold: 0.1 }
 		);
 
 		const currentRef = loadMoreRef.current;
@@ -97,10 +97,10 @@ export function SessionsList({ websiteId }: SessionsListProps) {
 	const toggleSession = useCallback(
 		(sessionId: string) => {
 			setExpandedSessionId((currentId) =>
-				currentId === sessionId ? null : sessionId,
+				currentId === sessionId ? null : sessionId
 			);
 		},
-		[setExpandedSessionId],
+		[setExpandedSessionId]
 	);
 
 	// Loading state for first page

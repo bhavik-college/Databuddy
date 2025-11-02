@@ -7,7 +7,7 @@ export type { Logger };
  * Return null to drop the event, or return a modified event
  */
 export type Middleware = (
-	event: BatchEventInput,
+	event: BatchEventInput
 ) => BatchEventInput | null | Promise<BatchEventInput | null>;
 
 export interface DatabuddyConfig {

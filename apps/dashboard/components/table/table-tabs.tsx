@@ -38,7 +38,7 @@ export function TableTabs<TData>({
 								"cursor-pointer border-b-2 px-3 py-2 text-sm transition-all duration-100 hover:text-foreground",
 								isActive
 									? "border-foreground text-foreground"
-									: "border-transparent text-muted-foreground",
+									: "border-transparent text-muted-foreground"
 							)}
 							key={tab.id}
 							onClick={() => onTabChange(tab.id)}

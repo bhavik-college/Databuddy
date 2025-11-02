@@ -39,7 +39,7 @@ export function DateRangePicker({
 	const [isOpen, setIsOpen] = useState(false);
 	const [tempRange, setTempRange] = useState<DateRange | undefined>(value);
 	const [appliedRange, setAppliedRange] = useState<DateRange | undefined>(
-		value,
+		value
 	);
 
 	useEffect(() => {
@@ -113,7 +113,7 @@ export function DateRangePicker({
 					<Button
 						className={cn(
 							"h-8 justify-start gap-2 whitespace-nowrap rounded border px-3 text-left font-medium text-xs shadow-sm transition-colors hover:bg-accent/50",
-							!hasSelection && "text-muted-foreground",
+							!hasSelection && "text-muted-foreground"
 						)}
 						disabled={disabled}
 						variant="outline"

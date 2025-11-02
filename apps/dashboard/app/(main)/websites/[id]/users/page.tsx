@@ -16,7 +16,7 @@ const UsersList = dynamic(
 			</div>
 		),
 		ssr: false,
-	},
+	}
 );
 
 export default function UsersPage() {

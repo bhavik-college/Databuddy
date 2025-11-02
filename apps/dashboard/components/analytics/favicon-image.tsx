@@ -63,7 +63,7 @@ export function FaviconImage({
 	return (
 		<Image
 			alt={altText || `${domain} favicon`}
-			className={`${className} ${isGitHub ? "dark:invert " : ""}`}
+			className={`${className} ${isGitHub ? "dark:invert" : ""}`}
 			height={size}
 			onError={() => setError(true)}
 			src={`https://icons.duckduckgo.com/ip3/${hostname}.ico`}

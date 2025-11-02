@@ -61,7 +61,7 @@ export function PricingTiersTooltip({
 					className={cn(
 						"inline-flex cursor-help items-center gap-1 text-muted-foreground text-xs transition-colors hover:text-foreground",
 						!showText && "rounded-full p-1 hover:bg-muted/50",
-						className,
+						className
 					)}
 					type="button"
 				>

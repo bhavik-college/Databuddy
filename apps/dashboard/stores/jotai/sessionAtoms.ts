@@ -34,7 +34,7 @@ export const getSessionPageAtom = (websiteId: string) =>
 			}
 			const current = get(sessionPageAtom);
 			set(sessionPageAtom, { ...current, [websiteId]: page });
-		},
+		}
 	);
 
 // Auto-reset atoms when filters change
@@ -44,5 +44,5 @@ export const autoResetSessionStateAtom = atom(
 		// Reset all session state when filters change
 		set(expandedSessionIdAtom, RESET);
 		set(sessionPageAtom, RESET);
-	},
+	}
 );

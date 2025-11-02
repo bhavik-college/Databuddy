@@ -137,7 +137,7 @@ function determineDeviceType(resolution: Resolution): DeviceType {
  * @returns DeviceType
  */
 export function mapScreenResolutionToDeviceType(
-	screenResolution: string,
+	screenResolution: string
 ): DeviceType {
 	const resolution = parseResolution(screenResolution);
 	return resolution ? determineDeviceType(resolution) : "unknown";

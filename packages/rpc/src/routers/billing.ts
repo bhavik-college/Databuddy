@@ -115,7 +115,7 @@ export const billingRouter = createTRPCRouter({
 			try {
 				const whereClause = buildWebsiteFilter(
 					ctx.user.id,
-					organizationId ?? undefined,
+					organizationId ?? undefined
 				);
 
 				const userWebsites = await ctx.db.query.websites.findMany({
@@ -144,7 +144,7 @@ export const billingRouter = createTRPCRouter({
 						websiteIds,
 						startDate,
 						endDate,
-					},
+					}
 				);
 
 				const dailyUsageMap = new Map<string, number>();
@@ -159,20 +159,20 @@ export const billingRouter = createTRPCRouter({
 						eventTypeBreakdownMap.get(row.event_category) || 0;
 					eventTypeBreakdownMap.set(
 						row.event_category,
-						currentTypeTotal + row.event_count,
+						currentTypeTotal + row.event_count
 					);
 
 					totalEvents += row.event_count;
 				}
 
 				const dailyUsageResults: DailyUsageRow[] = Array.from(
-					dailyUsageMap.entries(),
+					dailyUsageMap.entries()
 				)
 					.map(([date, event_count]) => ({ date, event_count }))
 					.sort((a, b) => a.date.localeCompare(b.date));
 
 				const eventTypeBreakdownResults: EventTypeBreakdown[] = Array.from(
-					eventTypeBreakdownMap.entries(),
+					eventTypeBreakdownMap.entries()
 				)
 					.map(([event_category, event_count]) => ({
 						event_category,
@@ -188,7 +188,7 @@ export const billingRouter = createTRPCRouter({
 						websiteCount: websiteIds.length,
 						totalEvents,
 						dateRange: { startDate, endDate },
-					},
+					}
 				);
 
 				return {
@@ -206,7 +206,7 @@ export const billingRouter = createTRPCRouter({
 						error: error instanceof Error ? error.message : String(error),
 						userId: ctx.user.id,
 						organizationId,
-					},
+					}
 				);
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",

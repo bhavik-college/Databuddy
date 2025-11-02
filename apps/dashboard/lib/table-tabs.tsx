@@ -30,7 +30,7 @@ export function addPercentages<T extends BaseTabItem>(data: T[]): T[] {
 
 	const totalVisitors = data.reduce(
 		(sum: number, item: T) => sum + (item.visitors || 0),
-		0,
+		0
 	);
 
 	return data.map((item: T) => ({
@@ -55,7 +55,7 @@ const formatNumber = (value: number | null | undefined): string => {
 export function createTabColumns<T extends BaseTabItem>(
 	primaryField: string,
 	primaryHeader: string,
-	customCell?: (info: CellContext<T, unknown>) => React.ReactNode,
+	customCell?: (info: CellContext<T, unknown>) => React.ReactNode
 ): ColumnDef<T, unknown>[] {
 	return [
 		{
@@ -109,17 +109,19 @@ export interface SimpleTabConfig<T extends BaseTabItem> {
 
 // Hook to create tabs from simple data configuration
 export function useTableTabs(tabsData: Record<string, SimpleTabConfig<any>>) {
-	return useMemo(() => {
-		return Object.entries(tabsData).map(([id, config]) => ({
-			id,
-			label: config.label,
-			data: addPercentages(config.data || []),
-			columns: createTabColumns(
-				config.primaryField,
-				config.primaryHeader,
-				config.customCell,
-			),
-			getFilter: config.getFilter,
-		}));
-	}, [tabsData]);
+	return useMemo(
+		() =>
+			Object.entries(tabsData).map(([id, config]) => ({
+				id,
+				label: config.label,
+				data: addPercentages(config.data || []),
+				columns: createTabColumns(
+					config.primaryField,
+					config.primaryHeader,
+					config.customCell
+				),
+				getFilter: config.getFilter,
+			})),
+		[tabsData]
+	);
 }

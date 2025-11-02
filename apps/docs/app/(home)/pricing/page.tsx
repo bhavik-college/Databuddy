@@ -17,12 +17,12 @@ export default function PricingPage() {
 
 	const bestPlan = useMemo(
 		() => selectBestPlan(monthlyEvents, PLANS),
-		[monthlyEvents],
+		[monthlyEvents]
 	);
 
 	const bestPlanDisplayName = useMemo(
 		() => displayNameForPlan(monthlyEvents, PLANS, bestPlan),
-		[monthlyEvents, bestPlan],
+		[monthlyEvents, bestPlan]
 	);
 
 	const estimatedOverage = useMemo(() => {
@@ -36,7 +36,7 @@ export default function PricingPage() {
 
 	const estimatedMonthly = useMemo(
 		() => (bestPlan ? bestPlan.priceMonthly : 0) + estimatedOverage,
-		[bestPlan, estimatedOverage],
+		[bestPlan, estimatedOverage]
 	);
 
 	return (

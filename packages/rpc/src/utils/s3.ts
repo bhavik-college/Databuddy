@@ -61,7 +61,7 @@ export class S3UploadManager {
 
 		if (!allowedTypes.includes(file.type)) {
 			throw new Error(
-				"Invalid file type. Only JPEG, PNG, and WebP images are allowed.",
+				"Invalid file type. Only JPEG, PNG, and WebP images are allowed."
 			);
 		}
 
@@ -72,7 +72,7 @@ export class S3UploadManager {
 
 	async uploadOrganizationLogo(
 		organizationId: string,
-		file: File,
+		file: File
 	): Promise<string> {
 		this.validateLogoFile(file);
 
@@ -110,13 +110,13 @@ export class S3UploadManager {
 		organizationId: string,
 		fileName: string,
 		contentType: string,
-		expiresIn = 3600,
+		expiresIn = 3600
 	): { uploadUrl: string; publicUrl: string; fileKey: string } {
 		// Validate content type
 		const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 		if (!allowedTypes.includes(contentType)) {
 			throw new Error(
-				"Invalid file type. Only JPEG, PNG, and WebP images are allowed.",
+				"Invalid file type. Only JPEG, PNG, and WebP images are allowed."
 			);
 		}
 

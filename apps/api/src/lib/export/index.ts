@@ -22,7 +22,7 @@ export interface ExportResult {
 }
 
 export async function processExport(
-	request: ExportRequest,
+	request: ExportRequest
 ): Promise<ExportResult> {
 	const { website_id: websiteId, format = "json" } = request;
 

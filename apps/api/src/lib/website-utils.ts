@@ -38,7 +38,7 @@ const getCachedWebsite = cacheable(
 		prefix: "website-cache",
 		staleWhileRevalidate: true,
 		staleTime: 60,
-	},
+	}
 );
 
 const getWebsiteDomain = cacheable(
@@ -57,7 +57,7 @@ const getWebsiteDomain = cacheable(
 		prefix: "website-domain",
 		staleWhileRevalidate: true,
 		staleTime: 60,
-	},
+	}
 );
 
 const getCachedWebsiteDomain = cacheable(
@@ -67,7 +67,7 @@ const getCachedWebsiteDomain = cacheable(
 		await Promise.all(
 			websiteIds.map(async (id) => {
 				results[id] = await getWebsiteDomain(id);
-			}),
+			})
 		);
 
 		return results;
@@ -77,7 +77,7 @@ const getCachedWebsiteDomain = cacheable(
 		prefix: "website-domains-batch",
 		staleWhileRevalidate: true,
 		staleTime: 60,
-	},
+	}
 );
 
 const userPreferencesCache = cacheable(
@@ -95,14 +95,14 @@ const userPreferencesCache = cacheable(
 		prefix: "user-prefs",
 		staleWhileRevalidate: true,
 		staleTime: 120,
-	},
+	}
 );
 
 // Removed unused cached session helper to satisfy linter rules
 
 export async function getTimezone(
 	request: Request,
-	session: { user?: { id: string } } | null,
+	session: { user?: { id: string } } | null
 ): Promise<string> {
 	const url = new URL(request.url);
 	const headerTimezone = request.headers.get("x-timezone");
@@ -194,7 +194,7 @@ async function deriveWithSession(request: Request) {
 }
 
 export async function validateWebsite(
-	websiteId: string,
+	websiteId: string
 ): Promise<WebsiteValidationResult> {
 	const website = await getCachedWebsite(websiteId);
 

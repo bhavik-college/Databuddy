@@ -17,20 +17,19 @@ interface NavigationSectionProps {
 
 const buildCurrentUrl = (
 	pathname: string,
-	searchParams: URLSearchParams | null,
+	searchParams: URLSearchParams | null
 ) => {
 	const search = searchParams ? `?${searchParams.toString()}` : "";
 	return `${pathname}${search}`;
 };
 
-const buildFullPath = (basePath: string, itemHref: string) => {
-	return itemHref === "" ? basePath : `${basePath}${itemHref}`;
-};
+const buildFullPath = (basePath: string, itemHref: string) =>
+	itemHref === "" ? basePath : `${basePath}${itemHref}`;
 
 const checkRootLevelMatch = (
 	item: NavigationSectionType["items"][0],
 	pathname: string,
-	searchParams: URLSearchParams | null,
+	searchParams: URLSearchParams | null
 ) => {
 	if (item.href.includes("?")) {
 		const currentUrl = buildCurrentUrl(pathname, searchParams);
@@ -41,7 +40,7 @@ const checkRootLevelMatch = (
 
 const checkSandboxMatch = (
 	item: NavigationSectionType["items"][0],
-	pathname: string,
+	pathname: string
 ) => {
 	const fullPath = buildFullPath("/sandbox", item.href);
 	return pathname === fullPath;
@@ -50,7 +49,7 @@ const checkSandboxMatch = (
 const checkDemoMatch = (
 	item: NavigationSectionType["items"][0],
 	pathname: string,
-	currentWebsiteId: string | null | undefined,
+	currentWebsiteId: string | null | undefined
 ) => {
 	const fullPath = buildFullPath(`/demo/${currentWebsiteId}`, item.href);
 	return pathname === fullPath;
@@ -59,7 +58,7 @@ const checkDemoMatch = (
 const checkWebsiteMatch = (
 	item: NavigationSectionType["items"][0],
 	pathname: string,
-	currentWebsiteId: string | null | undefined,
+	currentWebsiteId: string | null | undefined
 ) => {
 	const fullPath = buildFullPath(`/websites/${currentWebsiteId}`, item.href);
 	return pathname === fullPath;
@@ -68,11 +67,11 @@ const checkWebsiteMatch = (
 const checkDatabaseMatch = (
 	item: NavigationSectionType["items"][0],
 	pathname: string,
-	currentDatabaseId: string | null | undefined,
+	currentDatabaseId: string | null | undefined
 ) => {
 	const fullPath = buildFullPath(
 		`/observability/database/${currentDatabaseId}`,
-		item.href,
+		item.href
 	);
 	return pathname === fullPath;
 };
@@ -81,7 +80,7 @@ const getPathInfo = (
 	item: NavigationSectionType["items"][0],
 	pathname: string,
 	searchParams: URLSearchParams | null,
-	currentWebsiteId?: string | null,
+	currentWebsiteId?: string | null
 ) => {
 	if (item.rootLevel) {
 		return { isActive: checkRootLevelMatch(item, pathname, searchParams) };
@@ -181,7 +180,7 @@ export const NavigationSection = memo(function NavigationSectionComponent({
 										item,
 										pathname,
 										searchParams,
-										currentWebsiteId,
+										currentWebsiteId
 									);
 
 									return (

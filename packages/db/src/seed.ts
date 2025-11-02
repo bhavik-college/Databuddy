@@ -273,7 +273,7 @@ function generateCustomProperties(eventName: string) {
 				filters_applied: faker.helpers.maybe(
 					() =>
 						faker.helpers.arrayElements(PRODUCT_CATEGORIES, { min: 1, max: 3 }),
-					{ probability: 0.4 },
+					{ probability: 0.4 }
 				),
 			};
 		case "video_play":
@@ -430,7 +430,7 @@ const SESSION_POOL = Array.from({ length: TOTAL_SESSIONS }, () => {
 function createSingleEvent(
 	client: string,
 	websiteDomain: string,
-	eventIndex = 0,
+	eventIndex = 0
 ) {
 	// Pick a session based on event distribution
 	const sessionIndex = Math.floor(eventIndex / (eventCount / TOTAL_SESSIONS));
@@ -539,11 +539,11 @@ function createSingleEvent(
 		utm_source: faker.helpers.maybe(
 			() =>
 				faker.helpers.arrayElement(["google", "facebook", "twitter", "email"]),
-			{ probability: 0.3 },
+			{ probability: 0.3 }
 		),
 		utm_medium: faker.helpers.maybe(
 			() => faker.helpers.arrayElement(["cpc", "organic", "social", "email"]),
-			{ probability: 0.3 },
+			{ probability: 0.3 }
 		),
 		utm_campaign: faker.helpers.maybe(() => faker.lorem.slug(), {
 			probability: 0.2,
@@ -643,14 +643,14 @@ function createSingleEvent(
 
 (async () => {
 	console.log(
-		`Generating ${eventCount} events for client: ${clientId} on domain: ${domain}`,
+		`Generating ${eventCount} events for client: ${clientId} on domain: ${domain}`
 	);
 	console.log(
-		`Creating realistic journeys: ${UNIQUE_USERS} users across ${TOTAL_SESSIONS} sessions`,
+		`Creating realistic journeys: ${UNIQUE_USERS} users across ${TOTAL_SESSIONS} sessions`
 	);
 
 	const events = Array.from({ length: eventCount }, (_, index) =>
-		createSingleEvent(clientId, domain, index),
+		createSingleEvent(clientId, domain, index)
 	);
 
 	// Sort events by time to ensure chronological order

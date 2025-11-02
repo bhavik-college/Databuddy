@@ -40,7 +40,7 @@ const getWebsiteById = cacheable(
 		prefix: "website_by_id",
 		staleWhileRevalidate: true,
 		staleTime: 60,
-	},
+	}
 );
 
 /**
@@ -49,7 +49,7 @@ const getWebsiteById = cacheable(
 async function authorizeWebsiteAccess(
 	headers: Headers,
 	websiteId: string,
-	permission: "read" | "update" | "delete" | "transfer",
+	permission: "read" | "update" | "delete" | "transfer"
 ) {
 	const website = await getWebsiteById(websiteId);
 
@@ -104,27 +104,27 @@ export const exportRoute = new Elysia({ prefix: "/v1/export" })
 					return createErrorResponse(
 						400,
 						"MISSING_WEBSITE_ID",
-						"Website ID is required",
+						"Website ID is required"
 					);
 				}
 
 				const _website = await authorizeWebsiteAccess(
 					request.headers,
 					websiteId,
-					"read",
+					"read"
 				);
 
 				if (!_website) {
 					return createErrorResponse(
 						403,
 						"ACCESS_DENIED",
-						"Access denied. You may not have permission to export data for this website.",
+						"Access denied. You may not have permission to export data for this website."
 					);
 				}
 
 				const { validatedDates, error: dateError } = validateDateRange(
 					body.start_date,
-					body.end_date,
+					body.end_date
 				);
 
 				if (dateError) {
@@ -150,7 +150,7 @@ export const exportRoute = new Elysia({ prefix: "/v1/export" })
 					return createErrorResponse(
 						400,
 						"INVALID_FORMAT",
-						"Invalid export format. Supported formats: csv, json, txt, proto",
+						"Invalid export format. Supported formats: csv, json, txt, proto"
 					);
 				}
 
@@ -216,7 +216,7 @@ export const exportRoute = new Elysia({ prefix: "/v1/export" })
 							404,
 							"WEBSITE_NOT_FOUND",
 							"Website not found",
-							requestId,
+							requestId
 						);
 					}
 					if (error.message.includes("Authentication is required")) {
@@ -224,7 +224,7 @@ export const exportRoute = new Elysia({ prefix: "/v1/export" })
 							401,
 							"AUTH_REQUIRED",
 							"Authentication required",
-							requestId,
+							requestId
 						);
 					}
 					if (
@@ -235,7 +235,7 @@ export const exportRoute = new Elysia({ prefix: "/v1/export" })
 							403,
 							"ACCESS_DENIED",
 							"Access denied. You may not have permission to export data for this website.",
-							requestId,
+							requestId
 						);
 					}
 				}
@@ -244,7 +244,7 @@ export const exportRoute = new Elysia({ prefix: "/v1/export" })
 					500,
 					"EXPORT_FAILED",
 					"Export failed. Please try again later.",
-					requestId,
+					requestId
 				);
 			}
 		},
@@ -260,13 +260,13 @@ export const exportRoute = new Elysia({ prefix: "/v1/export" })
 					t.String({
 						pattern: "^\\d{4}-\\d{2}-\\d{2}$",
 						error: "Start date must be in YYYY-MM-DD format",
-					}),
+					})
 				),
 				end_date: t.Optional(
 					t.String({
 						pattern: "^\\d{4}-\\d{2}-\\d{2}$",
 						error: "End date must be in YYYY-MM-DD format",
-					}),
+					})
 				),
 				format: t.Optional(
 					t.Union(
@@ -278,11 +278,11 @@ export const exportRoute = new Elysia({ prefix: "/v1/export" })
 						],
 						{
 							error: "Format must be one of: csv, json, txt, proto",
-						},
-					),
+						}
+					)
 				),
 			}),
-		},
+		}
 	);
 
 /**
@@ -292,7 +292,7 @@ function createErrorResponse(
 	status: number,
 	code: string,
 	message: string,
-	requestId?: string,
+	requestId?: string
 ) {
 	return new Response(
 		JSON.stringify({
@@ -304,7 +304,7 @@ function createErrorResponse(
 		{
 			status,
 			headers: { "Content-Type": "application/json" },
-		},
+		}
 	);
 }
 
@@ -314,7 +314,7 @@ function createErrorResponse(
  */
 function validateDateRange(
 	startDate?: string,
-	endDate?: string,
+	endDate?: string
 ): {
 	validatedDates: { startDate?: string; endDate?: string };
 	error?: string;

@@ -62,7 +62,7 @@ export interface ReferrerAnalytics {
 export const getTotalWebsiteUsers = async (
 	websiteId: string,
 	startDate: string,
-	endDate: string,
+	endDate: string
 ): Promise<number> => {
 	const params = {
 		websiteId,
@@ -85,7 +85,7 @@ export const getTotalWebsiteUsers = async (
 
 const buildWhereCondition = (
 	step: AnalyticsStep,
-	params: Record<string, unknown>,
+	params: Record<string, unknown>
 ): string => {
 	const targetKey = `target_${step.step_number - 1}`;
 
@@ -104,7 +104,7 @@ const buildStepQuery = (
 	stepIndex: number,
 	filterConditions: string,
 	params: Record<string, unknown>,
-	includeReferrer = false,
+	includeReferrer = false
 ): string => {
 	const stepNameKey = `step_name_${stepIndex}`;
 	params[stepNameKey] = step.name;
@@ -190,7 +190,7 @@ const processVisitorEvents = (
 		anonymous_id: string;
 		first_occurrence: number;
 		referrer?: string;
-	}>,
+	}>
 ): Map<
 	string,
 	Array<{
@@ -239,7 +239,7 @@ const calculateStepCounts = (
 			first_occurrence: number;
 			referrer?: string;
 		}>
-	>,
+	>
 ): Map<number, Set<string>> => {
 	const stepCounts = new Map<number, Set<string>>();
 
@@ -267,12 +267,12 @@ export const processGoalAnalytics = async (
 	steps: AnalyticsStep[],
 	filters: Array<{ field: string; operator: string; value: string | string[] }>,
 	params: Record<string, unknown>,
-	totalWebsiteUsers: number,
+	totalWebsiteUsers: number
 ): Promise<ProcessedAnalytics> => {
 	const { conditions: filterConditions, errors } = buildFilterConditions(
 		filters,
 		"f",
-		params,
+		params
 	);
 
 	if (errors.length > 0) {
@@ -434,16 +434,15 @@ const validateFilter = (filter: Filter): string | null => {
 	return null;
 };
 
-const escapeSqlWildcards = (value: string): string => {
-	return value.replace(/[%_]/g, "\\$&");
-};
+const escapeSqlWildcards = (value: string): string =>
+	value.replace(/[%_]/g, "\\$&");
 
 const buildStringCondition = (
 	field: string,
 	operator: AllowedOperator,
 	value: string,
 	prefix: string,
-	params: Record<string, unknown>,
+	params: Record<string, unknown>
 ): string => {
 	const paramKey = `${prefix}_${field}_${operator}`;
 
@@ -488,7 +487,7 @@ const buildArrayCondition = (
 	operator: AllowedOperator,
 	values: string[],
 	prefix: string,
-	params: Record<string, unknown>,
+	params: Record<string, unknown>
 ): string => {
 	const paramKey = `${prefix}_${field}_${operator}`;
 	params[paramKey] = values;
@@ -507,7 +506,7 @@ const buildArrayCondition = (
 const buildFilterCondition = (
 	filter: Filter,
 	prefix: string,
-	params: Record<string, unknown>,
+	params: Record<string, unknown>
 ): string => {
 	const validationError = validateFilter(filter);
 	if (validationError) {
@@ -520,7 +519,7 @@ const buildFilterCondition = (
 			filter.operator as AllowedOperator,
 			filter.value,
 			prefix,
-			params,
+			params
 		);
 		if (condition) {
 			return condition;
@@ -532,14 +531,14 @@ const buildFilterCondition = (
 		filter.operator as AllowedOperator,
 		filter.value as string,
 		prefix,
-		params,
+		params
 	);
 };
 
 export const buildFilterConditions = (
 	filters: Filter[],
 	prefix: string,
-	params: Record<string, unknown>,
+	params: Record<string, unknown>
 ): { conditions: string; errors: string[] } => {
 	const conditions: string[] = [];
 	const errors: string[] = [];
@@ -552,7 +551,7 @@ export const buildFilterConditions = (
 			}
 		} catch (error) {
 			errors.push(
-				error instanceof Error ? error.message : "Unknown filter error",
+				error instanceof Error ? error.message : "Unknown filter error"
 			);
 		}
 	}
@@ -584,12 +583,12 @@ const parseReferrer = (referrer: string) => {
 export const processFunnelAnalytics = async (
 	steps: AnalyticsStep[],
 	filters: Array<{ field: string; operator: string; value: string | string[] }>,
-	params: Record<string, unknown>,
+	params: Record<string, unknown>
 ): Promise<FunnelAnalytics> => {
 	const { conditions: filterConditions, errors } = buildFilterConditions(
 		filters,
 		"f",
-		params,
+		params
 	);
 
 	if (errors.length > 0) {
@@ -600,7 +599,7 @@ export const processFunnelAnalytics = async (
 	}
 
 	const stepQueries = steps.map((step, index) =>
-		buildStepQuery(step, index, filterConditions, params),
+		buildStepQuery(step, index, filterConditions, params)
 	);
 
 	const analysisQuery = `
@@ -660,7 +659,7 @@ export const processFunnelAnalytics = async (
 	const lastStep = analyticsResults.at(-1);
 	const biggestDropoff = analyticsResults.reduce(
 		(max, step) => (step.dropoff_rate > max.dropoff_rate ? step : max),
-		analyticsResults[1] || analyticsResults[0],
+		analyticsResults[1] || analyticsResults[0]
 	);
 
 	let overall_conversion_rate = 0;
@@ -697,7 +696,7 @@ const calculateReferrerStepCounts = (
 			first_occurrence: number;
 			referrer?: string;
 		}>
-	>,
+	>
 ): Map<number, Set<string>> => {
 	const stepCounts = new Map<number, Set<string>>();
 
@@ -729,7 +728,7 @@ const calculateReferrerStepCounts = (
 
 const calculateReferrerConversionRate = (
 	total_users: number,
-	completed_users: number,
+	completed_users: number
 ): number => {
 	if (total_users === 0) {
 		return 0;
@@ -752,7 +751,7 @@ const processReferrerGroup = (
 			referrer?: string;
 		}>
 	>,
-	steps: AnalyticsStep[],
+	steps: AnalyticsStep[]
 ): ReferrerAnalytics | null => {
 	const stepCounts = calculateReferrerStepCounts(group, visitorEvents);
 
@@ -764,7 +763,7 @@ const processReferrerGroup = (
 	const completed_users = stepCounts.get(steps.length)?.size || 0;
 	const conversion_rate = calculateReferrerConversionRate(
 		total_users,
-		completed_users,
+		completed_users
 	);
 
 	return {
@@ -777,7 +776,7 @@ const processReferrerGroup = (
 };
 
 const aggregateReferrerAnalytics = (
-	referrerAnalytics: ReferrerAnalytics[],
+	referrerAnalytics: ReferrerAnalytics[]
 ): ReferrerAnalytics[] => {
 	const aggregated = new Map<
 		string,
@@ -822,7 +821,7 @@ const aggregateReferrerAnalytics = (
 			if (agg.conversion_rate_count > 0) {
 				conversion_rate =
 					Math.round(
-						(agg.conversion_rate_sum / agg.conversion_rate_count) * 100,
+						(agg.conversion_rate_sum / agg.conversion_rate_count) * 100
 					) / 100;
 			}
 
@@ -840,12 +839,12 @@ const aggregateReferrerAnalytics = (
 export const processFunnelAnalyticsByReferrer = async (
 	steps: AnalyticsStep[],
 	filters: Array<{ field: string; operator: string; value: string | string[] }>,
-	params: Record<string, unknown>,
+	params: Record<string, unknown>
 ): Promise<{ referrer_analytics: ReferrerAnalytics[] }> => {
 	const { conditions: filterConditions, errors } = buildFilterConditions(
 		filters,
 		"f",
-		params,
+		params
 	);
 
 	if (errors.length > 0) {
@@ -856,7 +855,7 @@ export const processFunnelAnalyticsByReferrer = async (
 	}
 
 	const stepQueries = steps.map((step, index) =>
-		buildStepQuery(step, index, filterConditions, params, true),
+		buildStepQuery(step, index, filterConditions, params, true)
 	);
 
 	const sessionReferrerQuery = `
@@ -912,7 +911,7 @@ export const processFunnelAnalyticsByReferrer = async (
 			groupKey,
 			group,
 			visitorEvents,
-			steps,
+			steps
 		);
 		if (analytics) {
 			referrerAnalytics.push(analytics);

@@ -108,7 +108,7 @@ const getAutocompleteQuery = () => `
 `;
 
 const categorizeAutocompleteResults = (
-	results: Array<{ category: string; value: string }>,
+	results: Array<{ category: string; value: string }>
 ) => ({
 	customEvents: results
 		.filter((r) => r.category === "customEvents")

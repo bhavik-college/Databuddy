@@ -40,13 +40,12 @@ const CustomTooltip = ({
 		return null;
 	}
 
-	const formatDate = (dateStr: string) => {
-		return new Date(dateStr).toLocaleDateString("en-US", {
+	const formatDate = (dateStr: string) =>
+		new Date(dateStr).toLocaleDateString("en-US", {
 			month: "short",
 			day: "numeric",
 			year: "numeric",
 		});
-	};
 
 	return (
 		<div className="min-w-[200px] rounded border border-border/50 bg-background/95 p-3 shadow-lg backdrop-blur-sm">

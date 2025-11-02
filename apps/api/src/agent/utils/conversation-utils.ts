@@ -12,7 +12,7 @@ export async function createNewConversation(
 	userId: string,
 	title: string,
 	modelType: string,
-	messages: AssistantMessageInput[],
+	messages: AssistantMessageInput[]
 ) {
 	const messagesToInsert = messages.map((message) => ({
 		...message,
@@ -50,7 +50,7 @@ export async function createNewConversation(
 export async function addMessageToConversation(
 	conversationId: string,
 	modelType: string,
-	messages: AssistantMessageInput[],
+	messages: AssistantMessageInput[]
 ) {
 	const messagesToInsert = messages.map((message) => ({
 		...message,

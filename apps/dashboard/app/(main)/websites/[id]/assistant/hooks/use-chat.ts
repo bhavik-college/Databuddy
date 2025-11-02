@@ -30,7 +30,7 @@ export function useChat() {
 	const addFeedback = trpc.assistant.addFeedback.useMutation({
 		onError: (error) => {
 			toast.error(
-				error.message || "Failed to submit feedback. Please try again.",
+				error.message || "Failed to submit feedback. Please try again."
 			);
 		},
 	});
@@ -43,7 +43,7 @@ export function useChat() {
 				return newMessages;
 			});
 		},
-		[setMessages],
+		[setMessages]
 	);
 
 	const processStreamingUpdate = useCallback(
@@ -106,13 +106,13 @@ export function useChat() {
 				}
 			}
 		},
-		[],
+		[]
 	);
 
 	const readStreamChunk = useCallback(
 		async (
 			reader: ReadableStreamDefaultReader<Uint8Array>,
-			assistantMessage: Message,
+			assistantMessage: Message
 		): Promise<Message> => {
 			const { done, value } = await reader.read();
 
@@ -138,13 +138,13 @@ export function useChat() {
 
 			return readStreamChunk(reader, updatedMessage);
 		},
-		[processStreamingUpdate, updateAiMessage],
+		[processStreamingUpdate, updateAiMessage]
 	);
 
 	const processStreamReader = useCallback(
 		async (
 			reader: ReadableStreamDefaultReader<Uint8Array>,
-			initialAssistantMessage: Message,
+			initialAssistantMessage: Message
 		) => {
 			try {
 				return await readStreamChunk(reader, initialAssistantMessage);
@@ -152,7 +152,7 @@ export function useChat() {
 				reader.releaseLock();
 			}
 		},
-		[readStreamChunk],
+		[readStreamChunk]
 	);
 
 	const sendMessage = useCallback(
@@ -204,7 +204,7 @@ export function useChat() {
 							conversationId,
 							model,
 						}),
-					},
+					}
 				);
 
 				if (!response.ok) {
@@ -239,7 +239,7 @@ export function useChat() {
 			setInputValue,
 			setIsLoading,
 			setMessages,
-		],
+		]
 	);
 
 	const handleKeyPress = useCallback(
@@ -249,7 +249,7 @@ export function useChat() {
 				sendMessage();
 			}
 		},
-		[sendMessage],
+		[sendMessage]
 	);
 
 	const resetChat = useCallback(() => {
@@ -263,7 +263,7 @@ export function useChat() {
 		(messageId: string, type: Vote) => {
 			addFeedback.mutate({ messageId, type });
 		},
-		[addFeedback],
+		[addFeedback]
 	);
 
 	const handleFeedbackComment = useCallback(
@@ -277,10 +277,10 @@ export function useChat() {
 					onError: () => {
 						toast.error("Failed to submit feedback");
 					},
-				},
+				}
 			);
 		},
-		[addFeedback],
+		[addFeedback]
 	);
 
 	return {

@@ -27,7 +27,7 @@ const goalSchema = z.object({
 				field: z.string(),
 				operator: z.enum(["equals", "contains", "not_equals", "in", "not_in"]),
 				value: z.union([z.string(), z.array(z.string())]),
-			}),
+			})
 		)
 		.optional(),
 });
@@ -49,7 +49,7 @@ const updateGoalSchema = z.object({
 				field: z.string(),
 				operator: z.enum(["equals", "contains", "not_equals", "in", "not_in"]),
 				value: z.union([z.string(), z.array(z.string())]),
-			}),
+			})
 		)
 		.optional(),
 	isActive: z.boolean().optional(),
@@ -86,10 +86,7 @@ export const goalsRouter = createTRPCRouter({
 						.select()
 						.from(goals)
 						.where(
-							and(
-								eq(goals.websiteId, input.websiteId),
-								isNull(goals.deletedAt),
-							),
+							and(eq(goals.websiteId, input.websiteId), isNull(goals.deletedAt))
 						)
 						.orderBy(desc(goals.createdAt));
 				},
@@ -114,8 +111,8 @@ export const goalsRouter = createTRPCRouter({
 							and(
 								eq(goals.id, input.id),
 								eq(goals.websiteId, input.websiteId),
-								isNull(goals.deletedAt),
-							),
+								isNull(goals.deletedAt)
+							)
 						)
 						.limit(1);
 					if (result.length === 0) {
@@ -179,7 +176,7 @@ export const goalsRouter = createTRPCRouter({
 			await Promise.all([
 				drizzleCache.invalidateByTables(["goals"]),
 				drizzleCache.invalidateByKey(
-					`goals:byId:${id}:${existingGoal[0].websiteId}`,
+					`goals:byId:${id}:${existingGoal[0].websiteId}`
 				),
 			]);
 
@@ -209,7 +206,7 @@ export const goalsRouter = createTRPCRouter({
 			await Promise.all([
 				drizzleCache.invalidateByTables(["goals"]),
 				drizzleCache.invalidateByKey(
-					`goals:byId:${input.id}:${existingGoal[0].websiteId}`,
+					`goals:byId:${input.id}:${existingGoal[0].websiteId}`
 				),
 			]);
 
@@ -239,8 +236,8 @@ export const goalsRouter = createTRPCRouter({
 							and(
 								eq(goals.id, input.goalId),
 								eq(goals.websiteId, input.websiteId),
-								isNull(goals.deletedAt),
-							),
+								isNull(goals.deletedAt)
+							)
 						)
 						.limit(1);
 					if (goal.length === 0) {
@@ -267,7 +264,7 @@ export const goalsRouter = createTRPCRouter({
 					const totalWebsiteUsers = await getTotalWebsiteUsers(
 						input.websiteId,
 						startDate,
-						endDate,
+						endDate
 					);
 					const params: Record<string, unknown> = {
 						websiteId: input.websiteId,
@@ -278,7 +275,7 @@ export const goalsRouter = createTRPCRouter({
 						steps,
 						filters,
 						params,
-						totalWebsiteUsers,
+						totalWebsiteUsers
 					);
 				},
 			});
@@ -291,7 +288,7 @@ export const goalsRouter = createTRPCRouter({
 				goalIds: z.array(z.string()),
 				startDate: z.string().optional(),
 				endDate: z.string().optional(),
-			}),
+			})
 		)
 		.query(({ ctx, input }) => {
 			const { startDate, endDate } =
@@ -316,14 +313,14 @@ export const goalsRouter = createTRPCRouter({
 								isNull(goals.deletedAt),
 								input.goalIds.length > 0
 									? inArray(goals.id, input.goalIds)
-									: sql`1=0`,
-							),
+									: sql`1=0`
+							)
 						)
 						.orderBy(desc(goals.createdAt));
 					const totalWebsiteUsers = await getTotalWebsiteUsers(
 						input.websiteId,
 						startDate,
-						endDate,
+						endDate
 					);
 
 					const analyticsPromises = goalsList.map(async (goalData) => {
@@ -351,7 +348,7 @@ export const goalsRouter = createTRPCRouter({
 								steps,
 								filters,
 								localParams,
-								totalWebsiteUsers,
+								totalWebsiteUsers
 							);
 							return { id: goalData.id, result: processedAnalytics };
 						} catch (error) {

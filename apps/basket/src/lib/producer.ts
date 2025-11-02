@@ -83,16 +83,16 @@ export class EventProducer {
 		this.config = {
 			selfHost: false,
 			semaphoreLimit: 15,
-			reconnectCooldown: 60000,
-			kafkaTimeout: 10000,
+			reconnectCooldown: 60_000,
+			kafkaTimeout: 10_000,
 			maxProducerRetries: 3,
 			producerRetryDelay: 300,
 			bufferInterval: 5000,
 			bufferMax: 1000,
-			bufferHardMax: 10000,
+			bufferHardMax: 10_000,
 			maxRetries: 3,
 			chunkSize: 5000,
-			flushTimeout: 30000,
+			flushTimeout: 30_000,
 			...config,
 		};
 		this.dependencies = dependencies;
@@ -120,9 +120,9 @@ export class EventProducer {
 	}
 
 	private initializeProducer(): void {
-		if (!this.config.username || !this.config.password) {
+		if (!(this.config.username && this.config.password)) {
 			console.error(
-				"REDPANDA_BROKER set but credentials missing. Kafka producer disabled.",
+				"REDPANDA_BROKER set but credentials missing. Kafka producer disabled."
 			);
 			return;
 		}
@@ -152,7 +152,7 @@ export class EventProducer {
 	}
 
 	private async connect(): Promise<boolean> {
-		if (!this.isEnabled() || !this.producer || this.connected) {
+		if (!(this.isEnabled() && this.producer) || this.connected) {
 			return this.connected;
 		}
 
@@ -177,7 +177,7 @@ export class EventProducer {
 			const error = err instanceof Error ? err : new Error(String(err));
 			console.error(
 				"Redpanda connection failed, using ClickHouse fallback:",
-				error,
+				error
 			);
 			if (this.dependencies.onError) {
 				this.dependencies.onError(error);
@@ -202,7 +202,7 @@ export class EventProducer {
 				{} as Record<
 					string,
 					Array<{ event: unknown; retries: number; timestamp: number }>
-				>,
+				>
 			);
 
 			const results = await Promise.allSettled(
@@ -210,7 +210,7 @@ export class EventProducer {
 					const controller = new AbortController();
 					const timeout = setTimeout(
 						() => controller.abort(),
-						this.config.flushTimeout,
+						this.config.flushTimeout
 					);
 
 					try {
@@ -233,7 +233,7 @@ export class EventProducer {
 
 						items.forEach(({ event, retries, timestamp }) => {
 							const age = Date.now() - timestamp;
-							if (retries < this.config.maxRetries && age < 300000) {
+							if (retries < this.config.maxRetries && age < 300_000) {
 								this.buffer.push({
 									table,
 									event,
@@ -247,14 +247,14 @@ export class EventProducer {
 									{
 										table,
 										eventId: (event as { event_id?: string }).event_id,
-									},
+									}
 								);
 							}
 						});
 					} finally {
 						clearTimeout(timeout);
 					}
-				}),
+				})
 			);
 
 			const failures = results.filter((r) => r.status === "rejected");
@@ -299,7 +299,7 @@ export class EventProducer {
 		if (this.buffer.length >= this.config.bufferHardMax) {
 			this.stats.dropped++;
 			console.error(
-				`Buffer overflow, dropping event (size: ${this.buffer.length})`,
+				`Buffer overflow, dropping event (size: ${this.buffer.length})`
 			);
 			return;
 		}
@@ -372,7 +372,7 @@ export class EventProducer {
 	async sendEventSync(
 		topic: string,
 		event: unknown,
-		key?: string,
+		key?: string
 	): Promise<void> {
 		await this.send(topic, event, key);
 	}
@@ -511,7 +511,7 @@ function getDefaultProducer(): EventProducer {
 export const sendEvent = (
 	topic: string,
 	event: unknown,
-	key?: string,
+	key?: string
 ): void => {
 	getDefaultProducer().sendEvent(topic, event, key);
 };
@@ -519,14 +519,14 @@ export const sendEvent = (
 export const sendEventSync = async (
 	topic: string,
 	event: unknown,
-	key?: string,
+	key?: string
 ): Promise<void> => {
 	await getDefaultProducer().sendEventSync(topic, event, key);
 };
 
 export const sendEventBatch = async (
 	topic: string,
-	events: unknown[],
+	events: unknown[]
 ): Promise<void> => {
 	await getDefaultProducer().sendEventBatch(topic, events);
 };
@@ -537,9 +537,7 @@ export const disconnectProducer = async (): Promise<void> => {
 	}
 };
 
-export const getProducerStats = () => {
-	return getDefaultProducer().getStats();
-};
+export const getProducerStats = () => getDefaultProducer().getStats();
 
 process.on("SIGTERM", async () => {
 	await disconnectProducer().catch(console.error);

@@ -79,7 +79,7 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
 			date: formatDateOnly(point.date),
 			"Total Errors": point.totalErrors || 0,
 			"Affected Users": point.affectedUsers || 0,
-		}),
+		})
 	);
 
 	if (error) {
@@ -166,7 +166,7 @@ function ErrorsLoadingSkeleton() {
 							</div>
 							<div className="grid grid-cols-2 gap-4">
 								{[1, 2, 3, 4].map((num) => (
-									<div key={`summary-skeleton-${num}`} className="space-y-2">
+									<div className="space-y-2" key={`summary-skeleton-${num}`}>
 										<Skeleton className="h-4 w-16" />
 										<Skeleton className="h-6 w-12" />
 									</div>

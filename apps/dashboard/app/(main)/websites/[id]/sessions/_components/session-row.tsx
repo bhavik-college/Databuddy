@@ -28,7 +28,7 @@ const SessionEventTimeline = lazy(
 				<div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
 			</div>
 		),
-	},
+	}
 );
 
 import type {
@@ -42,7 +42,7 @@ import { BrowserIcon, CountryFlag, OSIcon } from "@/components/icon";
 import { getDeviceIcon } from "@/lib/utils";
 
 function transformSessionEvents(
-	events: RawSessionEventTuple[],
+	events: RawSessionEventTuple[]
 ): SessionEvent[] {
 	return events
 		.map((tuple) => {
@@ -121,8 +121,8 @@ function SessionRowInternal({
 		events?.filter(
 			(event) =>
 				!["screen_view", "page_exit", "web_vitals", "link_out"].includes(
-					event.event_name,
-				),
+					event.event_name
+				)
 		).length || 0;
 	const referrerInfo = getReferrerInfo(session);
 

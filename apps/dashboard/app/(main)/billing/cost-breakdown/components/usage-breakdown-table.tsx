@@ -89,8 +89,7 @@ export function UsageBreakdownTable({
 	}
 
 	if (
-		!usageData ||
-		!usageData.eventTypeBreakdown ||
+		!(usageData && usageData.eventTypeBreakdown) ||
 		usageData.eventTypeBreakdown.length === 0
 	) {
 		return (
@@ -109,7 +108,7 @@ export function UsageBreakdownTable({
 	const { eventTypeBreakdown } = usageData;
 
 	const sortedBreakdown = [...eventTypeBreakdown].sort(
-		(a, b) => b.event_count - a.event_count,
+		(a, b) => b.event_count - a.event_count
 	);
 
 	return (
@@ -137,7 +136,7 @@ export function UsageBreakdownTable({
 							? calculateOverageCost(
 									item.event_count,
 									usageData.totalEvents,
-									overageInfo,
+									overageInfo
 								)
 							: 0;
 

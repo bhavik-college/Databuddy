@@ -36,7 +36,7 @@ export function useOrganizationInvitations(organizationId: string) {
 		refetch,
 	} = trpc.organizations.getPendingInvitations.useQuery(
 		{ organizationId, includeExpired: true },
-		{ enabled: !!organizationId },
+		{ enabled: !!organizationId }
 	);
 
 	useEffect(() => {
@@ -74,14 +74,14 @@ export function useOrganizationInvitations(organizationId: string) {
 				fetchInvitations();
 			} catch (error) {
 				toast.error(
-					error instanceof Error ? error.message : "Failed to invite member",
+					error instanceof Error ? error.message : "Failed to invite member"
 				);
 				throw error;
 			} finally {
 				setIsInviting(false);
 			}
 		},
-		[organizationId, setIsInviting, fetchInvitations],
+		[organizationId, setIsInviting, fetchInvitations]
 	);
 
 	// Cancel invitation
@@ -102,23 +102,21 @@ export function useOrganizationInvitations(organizationId: string) {
 				await fetchInvitations();
 			} catch (error) {
 				toast.error(
-					error instanceof Error
-						? error.message
-						: "Failed to cancel invitation",
+					error instanceof Error ? error.message : "Failed to cancel invitation"
 				);
 				throw error;
 			} finally {
 				setIsCancelling(false);
 			}
 		},
-		[setIsCancelling, fetchInvitations],
+		[setIsCancelling, fetchInvitations]
 	);
 
 	const setTab = useCallback(
 		(tab: InvitationTab | string) => {
 			setSelectedTab(tab as InvitationTab);
 		},
-		[setSelectedTab],
+		[setSelectedTab]
 	);
 
 	return {

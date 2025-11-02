@@ -22,7 +22,7 @@ export const domainSchema = z.preprocess(
 		}
 		return domain;
 	},
-	z.string().min(1).max(253).regex(DOMAIN_REGEX, "Invalid domain format"),
+	z.string().min(1).max(253).regex(DOMAIN_REGEX, "Invalid domain format")
 );
 
 export const subdomainSchema = z

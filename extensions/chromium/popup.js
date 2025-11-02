@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			() => {
 				updateSwitchState(newState);
 				updateStatus(newState);
-			},
+			}
 		);
 	});
 
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		optOutToggle.checked = isOptedOut;
 		optOutSwitch.setAttribute(
 			"data-state",
-			isOptedOut ? "checked" : "unchecked",
+			isOptedOut ? "checked" : "unchecked"
 		);
 		optOutSwitch.setAttribute("aria-checked", isOptedOut.toString());
 	}

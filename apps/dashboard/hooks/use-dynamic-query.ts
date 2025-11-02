@@ -30,7 +30,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 function buildParams(
 	websiteId: string,
 	dateRange?: DateRange,
-	additionalParams?: Record<string, string | number>,
+	additionalParams?: Record<string, string | number>
 ): URLSearchParams {
 	const params = new URLSearchParams({
 		website_id: websiteId,
@@ -87,7 +87,7 @@ async function fetchDynamicQuery(
 	websiteId: string,
 	dateRange: DateRange,
 	queryData: DynamicQueryRequest | DynamicQueryRequest[],
-	signal?: AbortSignal,
+	signal?: AbortSignal
 ): Promise<DynamicQueryResponse | BatchQueryResponse> {
 	const timezone = getUserTimezone();
 	const params = buildParams(websiteId, dateRange, { timezone });
@@ -130,7 +130,7 @@ async function fetchDynamicQuery(
 
 	if (!response.ok) {
 		throw new Error(
-			`Failed to fetch dynamic query data: ${response.statusText}`,
+			`Failed to fetch dynamic query data: ${response.statusText}`
 		);
 	}
 
@@ -150,7 +150,7 @@ export function useDynamicQuery<T extends (keyof ParameterDataMap)[]>(
 	websiteId: string,
 	dateRange: DateRange,
 	queryData: DynamicQueryRequest,
-	options?: Partial<UseQueryOptions<DynamicQueryResponse>>,
+	options?: Partial<UseQueryOptions<DynamicQueryResponse>>
 ) {
 	const fetchData = useCallback(
 		async ({ signal }: { signal?: AbortSignal }) => {
@@ -158,11 +158,11 @@ export function useDynamicQuery<T extends (keyof ParameterDataMap)[]>(
 				websiteId,
 				dateRange,
 				queryData,
-				signal,
+				signal
 			);
 			return result as DynamicQueryResponse;
 		},
-		[websiteId, dateRange, queryData],
+		[websiteId, dateRange, queryData]
 	);
 
 	const query = useQuery({
@@ -177,8 +177,8 @@ export function useDynamicQuery<T extends (keyof ParameterDataMap)[]>(
 	});
 
 	// Process data into a more usable format
-	const processedData = useMemo(() => {
-		return (
+	const processedData = useMemo(
+		() =>
 			query.data?.data.reduce(
 				(acc, result) => {
 					if (result.success) {
@@ -186,22 +186,22 @@ export function useDynamicQuery<T extends (keyof ParameterDataMap)[]>(
 					}
 					return acc;
 				},
-				{} as Record<string, any>,
-			) || {}
-		);
-	}, [query.data]);
+				{} as Record<string, any>
+			) || {},
+		[query.data]
+	);
 
 	// Extract errors
-	const errors = useMemo(() => {
-		return (
+	const errors = useMemo(
+		() =>
 			query.data?.data
 				.filter((result) => !result.success)
 				.map((result) => ({
 					parameter: result.parameter,
 					error: result.error,
-				})) || []
-		);
-	}, [query.data]);
+				})) || [],
+		[query.data]
+	);
 
 	return {
 		data: processedData as ExtractDataTypes<T>,
@@ -223,7 +223,7 @@ export function useBatchDynamicQuery(
 	websiteId: string,
 	dateRange: DateRange,
 	queries: DynamicQueryRequest[],
-	options?: Partial<UseQueryOptions<BatchQueryResponse>>,
+	options?: Partial<UseQueryOptions<BatchQueryResponse>>
 ) {
 	const fetchData = useCallback(
 		async ({ signal }: { signal?: AbortSignal }) => {
@@ -231,12 +231,12 @@ export function useBatchDynamicQuery(
 				websiteId,
 				dateRange,
 				queries,
-				signal,
+				signal
 			);
 			// Ensure we return a batch query response
 			return result as BatchQueryResponse;
 		},
-		[websiteId, dateRange, queries],
+		[websiteId, dateRange, queries]
 	);
 
 	const query = useQuery({
@@ -308,7 +308,7 @@ export function useBatchDynamicQuery(
 			}
 			return data;
 		},
-		[processedResults],
+		[processedResults]
 	);
 
 	const hasDataForQuery = useCallback(
@@ -321,7 +321,7 @@ export function useBatchDynamicQuery(
 				result.data[parameter].length > 0
 			);
 		},
-		[processedResults],
+		[processedResults]
 	);
 
 	const getErrorsForQuery = useCallback(
@@ -329,7 +329,7 @@ export function useBatchDynamicQuery(
 			const result = processedResults.find((r) => r.queryId === queryId);
 			return result?.errors || [];
 		},
-		[processedResults],
+		[processedResults]
 	);
 
 	return {
@@ -352,14 +352,14 @@ export function useBatchDynamicQuery(
 			failedQueries: processedResults.filter((r) => !r.success).length,
 			totalParameters: processedResults.reduce(
 				(sum, r) => sum + Object.keys(r.data).length,
-				0,
+				0
 			),
 		},
 	};
 }
 
 export function useQueryOptions(
-	options?: Partial<UseQueryOptions<QueryOptionsResponse>>,
+	options?: Partial<UseQueryOptions<QueryOptionsResponse>>
 ) {
 	return useQuery({
 		queryKey: ["query-options"],
@@ -382,7 +382,7 @@ export function useEnhancedPerformanceData(
 	websiteId: string,
 	dateRange: DateRange,
 	filters: DynamicQueryFilter[],
-	options?: Partial<UseQueryOptions<BatchQueryResponse>>,
+	options?: Partial<UseQueryOptions<BatchQueryResponse>>
 ) {
 	const queries: DynamicQueryRequest[] = [
 		{
@@ -469,7 +469,7 @@ export function useEnhancedPerformanceData(
 export function useEnhancedGeographicData(
 	websiteId: string,
 	dateRange: DateRange,
-	options?: Partial<UseQueryOptions<BatchQueryResponse>>,
+	options?: Partial<UseQueryOptions<BatchQueryResponse>>
 ) {
 	const queries: DynamicQueryRequest[] = [
 		{
@@ -504,7 +504,7 @@ export function useMapLocationData(
 	websiteId: string,
 	dateRange: DateRange,
 	filters?: DynamicQueryFilter[],
-	options?: Partial<UseQueryOptions<BatchQueryResponse>>,
+	options?: Partial<UseQueryOptions<BatchQueryResponse>>
 ) {
 	const queries: DynamicQueryRequest[] = [
 		{
@@ -529,7 +529,7 @@ export function useEnhancedErrorData(
 	dateRange: DateRange,
 	options?: Partial<UseQueryOptions<BatchQueryResponse>> & {
 		filters?: DynamicQueryFilter[];
-	},
+	}
 ) {
 	const filters = options?.filters || [];
 
@@ -553,7 +553,7 @@ export function useEnhancedErrorData(
 		],
 		{
 			...options,
-		},
+		}
 	);
 }
 
@@ -564,7 +564,7 @@ export function useInfiniteSessionsData(
 	websiteId: string,
 	dateRange: DateRange,
 	limit = 25,
-	options?: Partial<UseInfiniteQueryOptions<DynamicQueryResponse>>,
+	options?: Partial<UseInfiniteQueryOptions<DynamicQueryResponse>>
 ) {
 	return useInfiniteQuery({
 		queryKey: ["sessions-infinite", websiteId, dateRange, limit],
@@ -578,7 +578,7 @@ export function useInfiniteSessionsData(
 					limit,
 					page: pageParam as number,
 				},
-				signal,
+				signal
 			);
 			// Ensure we return DynamicQueryResponse
 			if ("batch" in result) {
@@ -594,9 +594,8 @@ export function useInfiniteSessionsData(
 			const sessions = (lastPage.data as any)?.session_list || [];
 			return sessions.length === limit ? lastPage.meta.page + 1 : undefined;
 		},
-		getPreviousPageParam: (firstPage) => {
-			return firstPage.meta.page > 1 ? firstPage.meta.page - 1 : undefined;
-		},
+		getPreviousPageParam: (firstPage) =>
+			firstPage.meta.page > 1 ? firstPage.meta.page - 1 : undefined,
 		...options,
 	});
 }
@@ -724,7 +723,7 @@ export function useSessionsData(
 	dateRange: DateRange,
 	limit = 50,
 	page = 1,
-	options?: Partial<UseQueryOptions<DynamicQueryResponse>>,
+	options?: Partial<UseQueryOptions<DynamicQueryResponse>>
 ) {
 	const queryResult = useDynamicQuery(
 		websiteId,
@@ -739,7 +738,7 @@ export function useSessionsData(
 			...options,
 			staleTime: 5 * 60 * 1000, // 5 minutes
 			gcTime: 10 * 60 * 1000, // 10 minutes
-		},
+		}
 	);
 
 	const sessions = useMemo(() => {
@@ -747,13 +746,12 @@ export function useSessionsData(
 		return transformSessionsData(rawSessions);
 	}, [queryResult.data]);
 
-	const hasNextPage = useMemo(() => {
-		return sessions.length === limit;
-	}, [sessions.length, limit]);
+	const hasNextPage = useMemo(
+		() => sessions.length === limit,
+		[sessions.length, limit]
+	);
 
-	const hasPrevPage = useMemo(() => {
-		return page > 1;
-	}, [page]);
+	const hasPrevPage = useMemo(() => page > 1, [page]);
 
 	return {
 		...queryResult,
@@ -809,10 +807,10 @@ function transformProfilesData(profiles: any[]): ProfileData[] {
 				browser: profile.session_browser_name || profile.browser_name,
 				os: profile.session_os_name || profile.os_name,
 				country: getCountryCode(
-					profile.session_country || profile.country || "",
+					profile.session_country || profile.country || ""
 				),
 				country_name: getCountryName(
-					profile.session_country || profile.country || "",
+					profile.session_country || profile.country || ""
 				),
 				region: profile.session_region || profile.region,
 				referrer: profile.session_referrer || profile.referrer,
@@ -867,7 +865,7 @@ function transformProfilesData(profiles: any[]): ProfileData[] {
 		...profile,
 		sessions: profile.sessions.sort(
 			(a: any, b: any) =>
-				new Date(b.first_visit).getTime() - new Date(a.first_visit).getTime(),
+				new Date(b.first_visit).getTime() - new Date(a.first_visit).getTime()
 		),
 	}));
 }
@@ -881,7 +879,7 @@ export function useProfilesData(
 	limit = 50,
 	page = 1,
 	filters?: DynamicQueryFilter[],
-	options?: Partial<UseQueryOptions<DynamicQueryResponse>>,
+	options?: Partial<UseQueryOptions<DynamicQueryResponse>>
 ) {
 	const queryResult = useDynamicQuery(
 		websiteId,
@@ -897,7 +895,7 @@ export function useProfilesData(
 			...options,
 			staleTime: 5 * 60 * 1000, // 5 minutes
 			gcTime: 10 * 60 * 1000, // 10 minutes
-		},
+		}
 	);
 
 	const profiles = useMemo(() => {
@@ -905,13 +903,12 @@ export function useProfilesData(
 		return transformProfilesData(rawProfiles);
 	}, [queryResult.data]);
 
-	const hasNextPage = useMemo(() => {
-		return profiles.length === limit;
-	}, [profiles.length, limit]);
+	const hasNextPage = useMemo(
+		() => profiles.length === limit,
+		[profiles.length, limit]
+	);
 
-	const hasPrevPage = useMemo(() => {
-		return page > 1;
-	}, [page]);
+	const hasPrevPage = useMemo(() => page > 1, [page]);
 
 	return {
 		...queryResult,
@@ -933,7 +930,7 @@ export function useUserProfile(
 	websiteId: string,
 	userId: string,
 	dateRange: DateRange,
-	options?: Partial<UseQueryOptions<DynamicQueryResponse>>,
+	options?: Partial<UseQueryOptions<DynamicQueryResponse>>
 ) {
 	const profileQuery = useDynamicQuery(
 		websiteId,
@@ -954,7 +951,7 @@ export function useUserProfile(
 			staleTime: 5 * 60 * 1000,
 			gcTime: 10 * 60 * 1000,
 			enabled: Boolean(userId && websiteId),
-		},
+		}
 	);
 
 	const sessionsQuery = useDynamicQuery(
@@ -977,7 +974,7 @@ export function useUserProfile(
 			staleTime: 5 * 60 * 1000,
 			gcTime: 10 * 60 * 1000,
 			enabled: Boolean(userId && websiteId),
-		},
+		}
 	);
 
 	const userProfile = useMemo(() => {
@@ -1047,7 +1044,7 @@ export function useUserProfile(
  */
 export function useRealTimeStats(
 	websiteId: string,
-	options?: Partial<UseQueryOptions<DynamicQueryResponse>>,
+	options?: Partial<UseQueryOptions<DynamicQueryResponse>>
 ) {
 	const dateRange = useMemo(() => {
 		const now = new Date();
@@ -1072,7 +1069,7 @@ export function useRealTimeStats(
 			gcTime: 10_000,
 			refetchOnWindowFocus: true,
 			refetchOnMount: true,
-		},
+		}
 	);
 
 	const activeUsers = useMemo(() => {

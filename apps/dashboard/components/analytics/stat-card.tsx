@@ -55,7 +55,7 @@ interface StatCardProps {
 
 const formatTrendValue = (
 	value: string | number,
-	formatter?: (v: number) => string,
+	formatter?: (v: number) => string
 ) => {
 	if (typeof value === "number") {
 		if (formatter) {
@@ -178,7 +178,7 @@ const MiniChart = memo(
 				</ResponsiveContainer>
 			</div>
 		);
-	},
+	}
 );
 
 MiniChart.displayName = "MiniChart";
@@ -228,7 +228,7 @@ export function StatCard({
 					"group overflow-hidden pt-0",
 					"border-border/50",
 					"bg-card",
-					className,
+					className
 				)}
 				id={id}
 			>
@@ -280,7 +280,7 @@ export function StatCard({
 				"border-border/50 hover:border-primary/20",
 				"bg-card",
 				getVariantClasses(),
-				className,
+				className
 			)}
 			id={id}
 		>
@@ -304,7 +304,7 @@ export function StatCard({
 										: "text-lg sm:text-xl md:text-2xl",
 									typeof value === "string" && value.length > 8
 										? "text-base sm:text-lg md:text-xl"
-										: "",
+										: ""
 								)}
 							>
 								{displayValue}

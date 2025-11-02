@@ -46,13 +46,13 @@ export const executeSqlQueryTool = tool({
 		sql: z
 			.string()
 			.describe(
-				"The SQL query to execute. Must be a SELECT or WITH statement.",
+				"The SQL query to execute. Must be a SELECT or WITH statement."
 			),
 	}),
 	execute: async ({ sql }) => {
 		if (!validateSQL(sql)) {
 			throw new Error(
-				"Query failed security validation. Only SELECT and WITH statements are allowed.",
+				"Query failed security validation. Only SELECT and WITH statements are allowed."
 			);
 		}
 
@@ -79,7 +79,7 @@ export const executeSqlQueryTool = tool({
 			});
 
 			throw new Error(
-				error instanceof Error ? error.message : "Unknown query error",
+				error instanceof Error ? error.message : "Unknown query error"
 			);
 		}
 	},

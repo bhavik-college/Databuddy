@@ -178,8 +178,8 @@ export default async function PostPage({
 									key={author.id}
 								>
 									<AvatarImage
-										src={author.image ?? undefined}
 										alt={author.name}
+										src={author.image ?? undefined}
 									/>
 									<AvatarFallback>{author.name[0]}</AvatarFallback>
 								</Avatar>
@@ -188,8 +188,8 @@ export default async function PostPage({
 						{post.authors[0]?.socials?.[0]?.url ? (
 							<Link
 								href={post.authors[0].socials[0].url}
-								target="_blank"
 								rel="noopener noreferrer"
+								target="_blank"
 							>
 								<span>{post.authors[0].name}</span>
 							</Link>

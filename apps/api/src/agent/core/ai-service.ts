@@ -38,7 +38,7 @@ export class AIService {
 			context.website.id,
 			context.website.domain,
 			"execute_chat",
-			context.model,
+			context.model
 		);
 
 		try {
@@ -64,7 +64,7 @@ export class AIService {
 			};
 		} catch (error) {
 			session.log(
-				`AI generation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+				`AI generation failed: ${error instanceof Error ? error.message : "Unknown error"}`
 			);
 			throw error;
 		}

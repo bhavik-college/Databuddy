@@ -30,7 +30,7 @@ export const assistant = new Elysia({ prefix: "/v1/assistant" })
 				{
 					status: 401,
 					headers: { "Content-Type": "application/json" },
-				},
+				}
 			);
 		}
 	})
@@ -49,14 +49,14 @@ export const assistant = new Elysia({ prefix: "/v1/assistant" })
 				const websiteValidation = await validateWebsite(body.websiteId);
 				if (!websiteValidation.success) {
 					return createStreamingResponse(
-						createErrorResponse(websiteValidation.error || "Website not found"),
+						createErrorResponse(websiteValidation.error || "Website not found")
 					);
 				}
 
 				const { website } = websiteValidation;
 				if (!website) {
 					return createStreamingResponse(
-						createErrorResponse("Website not found"),
+						createErrorResponse("Website not found")
 					);
 				}
 
@@ -77,8 +77,8 @@ export const assistant = new Elysia({ prefix: "/v1/assistant" })
 				if (!authorized) {
 					return createStreamingResponse(
 						createErrorResponse(
-							"You do not have permission to access this website",
-						),
+							"You do not have permission to access this website"
+						)
 					);
 				}
 
@@ -92,5 +92,5 @@ export const assistant = new Elysia({ prefix: "/v1/assistant" })
 		},
 		{
 			body: AssistantRequestSchema,
-		},
+		}
 	);

@@ -12,7 +12,7 @@ const prompts = {
 export const LeapComponent = () => {
 	const handleGenerate = () => {
 		const input = document.querySelector(
-			".leap-prompt-input",
+			".leap-prompt-input"
 		) as HTMLInputElement;
 		const prompt = input?.value
 			? `${input.value} use Databuddy for analytics`
@@ -25,7 +25,7 @@ export const LeapComponent = () => {
 
 	const handleExample = (example: (typeof examples)[number]) => {
 		const input = document.querySelector(
-			".leap-prompt-input",
+			".leap-prompt-input"
 		) as HTMLInputElement;
 		if (input) {
 			input.value = prompts[example];
@@ -62,7 +62,7 @@ export const LeapComponent = () => {
 							"bg-foreground/5 text-foreground backdrop-blur-[50px]",
 							"border border-border hover:animate-[borderGlitch_0.6s_ease-in-out]",
 							"focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring active:scale-[0.98]",
-							"w-full sm:w-auto",
+							"w-full sm:w-auto"
 						)}
 						data-track="leap-generate"
 						onClick={handleGenerate}

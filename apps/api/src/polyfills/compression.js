@@ -18,7 +18,7 @@ globalThis.CompressionStream ??= class CompressionStream {
 				? zlib.createDeflate()
 				: format === "gzip"
 					? zlib.createGzip()
-					: zlib.createDeflateRaw(),
+					: zlib.createDeflateRaw()
 		);
 	}
 };
@@ -34,7 +34,7 @@ globalThis.DecompressionStream ??= class DecompressionStream {
 				? zlib.createInflate()
 				: format === "gzip"
 					? zlib.createGunzip()
-					: zlib.createInflateRaw(),
+					: zlib.createInflateRaw()
 		);
 	}
 };

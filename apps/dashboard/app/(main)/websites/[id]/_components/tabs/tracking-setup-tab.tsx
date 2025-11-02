@@ -53,7 +53,7 @@ export function WebsiteTrackingSetupTab({ websiteId }: WebsiteDataTabProps) {
 	const { data: trackingSetupData, refetch: refetchTrackingSetup } =
 		trpc.websites.isTrackingSetup.useQuery(
 			{ websiteId },
-			{ enabled: !!websiteId },
+			{ enabled: !!websiteId }
 		);
 
 	const handleRefresh = async () => {
@@ -74,11 +74,11 @@ export function WebsiteTrackingSetupTab({ websiteId }: WebsiteDataTabProps) {
 				const integrationType = result.data?.integration_type;
 				if (integrationType === "vercel") {
 					toast.error(
-						"Vercel integration detected but no events yet. Make sure your site is deployed and receiving traffic.",
+						"Vercel integration detected but no events yet. Make sure your site is deployed and receiving traffic."
 					);
 				} else {
 					toast.error(
-						"Tracking not found. Please verify the script installation.",
+						"Tracking not found. Please verify the script installation."
 					);
 				}
 			}
@@ -126,7 +126,7 @@ export function WebsiteTrackingSetupTab({ websiteId }: WebsiteDataTabProps) {
 									handleCopyCode(
 										generateVercelNpmCode(trackingOptions),
 										"vercel-setup",
-										"Vercel setup code copied to clipboard!",
+										"Vercel setup code copied to clipboard!"
 									)
 								}
 							/>

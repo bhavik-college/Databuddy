@@ -12,7 +12,7 @@ async function getGithubStars(): Promise<number | null> {
 					Accept: "application/vnd.github+json",
 				},
 				next: { revalidate: 3600 },
-			},
+			}
 		);
 
 		if (!response.ok) {

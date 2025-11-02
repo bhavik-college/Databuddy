@@ -29,7 +29,7 @@ interface FullScreenModalProps<TData extends { name: string | number }> {
 	renderSubRow?: (
 		subRow: TData,
 		parentRow: TData,
-		index: number,
+		index: number
 	) => React.ReactNode;
 	onAddFilter?: (field: string, value: string, tableTitle?: string) => void;
 	onRowAction?: (row: TData) => void;

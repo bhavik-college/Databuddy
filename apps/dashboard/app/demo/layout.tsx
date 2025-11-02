@@ -37,14 +37,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
 					<div
 						className={cn(
 							"mx-auto flex h-full max-w-[1600px] flex-col",
-							"p-3 sm:p-4 lg:p-6",
+							"p-3 sm:p-4 lg:p-6"
 						)}
 					>
 						<div className="flex-shrink-0 space-y-4">
 							<AnalyticsToolbar
-								websiteId={id as string}
 								isRefreshing={isRefreshing}
 								onRefresh={handleRefresh}
+								websiteId={id as string}
 							/>
 						</div>
 

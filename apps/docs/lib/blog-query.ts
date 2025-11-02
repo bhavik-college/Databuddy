@@ -11,10 +11,10 @@ type FetchError = { error: true; status: number; statusText: string };
 
 async function fetchFromMarble<T>(
 	endpoint: string,
-	options?: { returnStatusOnError?: boolean },
+	options?: { returnStatusOnError?: boolean }
 ): Promise<T | FetchError> {
 	try {
-		if (!process.env.MARBLE_API_URL || !process.env.MARBLE_WORKSPACE_KEY) {
+		if (!(process.env.MARBLE_API_URL && process.env.MARBLE_WORKSPACE_KEY)) {
 			if (options?.returnStatusOnError) {
 				return {
 					error: true,
@@ -23,12 +23,12 @@ async function fetchFromMarble<T>(
 				};
 			}
 			throw new Error(
-				"MARBLE_API_URL and MARBLE_WORKSPACE_KEY environment variables are required",
+				"MARBLE_API_URL and MARBLE_WORKSPACE_KEY environment variables are required"
 			);
 		}
 
 		const response = await fetch(
-			`${process.env.MARBLE_API_URL}/${process.env.MARBLE_WORKSPACE_KEY}/${endpoint}`,
+			`${process.env.MARBLE_API_URL}/${process.env.MARBLE_WORKSPACE_KEY}/${endpoint}`
 		);
 		if (!response.ok) {
 			if (options?.returnStatusOnError) {
@@ -39,7 +39,7 @@ async function fetchFromMarble<T>(
 				};
 			}
 			throw new Error(
-				`Failed to fetch ${endpoint}: ${response.status} ${response.statusText}`,
+				`Failed to fetch ${endpoint}: ${response.status} ${response.statusText}`
 			);
 		}
 		return (await response.json()) as T;
@@ -56,26 +56,26 @@ async function fetchFromMarble<T>(
 	}
 }
 
-export const getPosts = cache(() => {
-	return fetchFromMarble<MarblePostList>("posts", {
+export const getPosts = cache(() =>
+	fetchFromMarble<MarblePostList>("posts", {
 		returnStatusOnError: true,
-	});
-});
+	})
+);
 
-export const getTags = cache(() => {
-	return fetchFromMarble<MarbleTagList>("tags", { returnStatusOnError: true });
-});
+export const getTags = cache(() =>
+	fetchFromMarble<MarbleTagList>("tags", { returnStatusOnError: true })
+);
 
-export const getSinglePost = cache((slug: string) => {
-	return fetchFromMarble<MarblePost>(`posts/${slug}`, {
+export const getSinglePost = cache((slug: string) =>
+	fetchFromMarble<MarblePost>(`posts/${slug}`, {
 		returnStatusOnError: true,
-	});
-});
+	})
+);
 
-export const getCategories = cache(() => {
-	return fetchFromMarble<MarbleCategoryList>("categories");
-});
+export const getCategories = cache(() =>
+	fetchFromMarble<MarbleCategoryList>("categories")
+);
 
-export const getAuthors = cache(() => {
-	return fetchFromMarble<MarbleAuthorList>("authors");
-});
+export const getAuthors = cache(() =>
+	fetchFromMarble<MarbleAuthorList>("authors")
+);

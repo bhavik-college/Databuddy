@@ -67,7 +67,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 async function apiRequest<T>(
 	endpoint: string,
-	options: RequestInit = {},
+	options: RequestInit = {}
 ): Promise<{ success: boolean; data?: T; error?: string; code?: string }> {
 	const controller = new AbortController();
 	const timeoutId = setTimeout(() => controller.abort(), 30_000); // 30s timeout
@@ -93,15 +93,15 @@ async function apiRequest<T>(
 			switch (response.status) {
 				case 429:
 					throw new Error(
-						"Rate limit exceeded. Please wait before making another request.",
+						"Rate limit exceeded. Please wait before making another request."
 					);
 				case 503:
 					throw new Error(
-						"Reddit API is temporarily unavailable. Please try again later.",
+						"Reddit API is temporarily unavailable. Please try again later."
 					);
 				case 401:
 					throw new Error(
-						"Authentication failed. Please check your Reddit credentials.",
+						"Authentication failed. Please check your Reddit credentials."
 					);
 				case 404:
 					throw new Error("API endpoint not found. Please contact support.");
@@ -136,7 +136,7 @@ async function apiRequest<T>(
 // API functions
 const redditApi = {
 	getMentions: async (
-		filters: SearchFilters,
+		filters: SearchFilters
 	): Promise<RedditMentionsResponse> => {
 		const params = new URLSearchParams({
 			keywords: filters.keywords.join(","),
@@ -150,7 +150,7 @@ const redditApi = {
 		});
 
 		const result = await apiRequest<RedditMentionsResponse>(
-			`/reddit/mentions?${params}`,
+			`/reddit/mentions?${params}`
 		);
 		if (result.error) {
 			throw new Error(result.error);
@@ -203,7 +203,7 @@ const redditApi = {
 
 	exportData: async (
 		format: "json" | "csv",
-		filters: SearchFilters,
+		filters: SearchFilters
 	): Promise<Blob> => {
 		const params = new URLSearchParams({
 			keywords: filters.keywords.join(","),
@@ -257,7 +257,7 @@ export function useRedditMentions(
 		enabled?: boolean;
 		refetchInterval?: number;
 		backgroundSync?: boolean;
-	},
+	}
 ) {
 	console.log("useRedditMentions called with:", { filters, options });
 
@@ -277,7 +277,7 @@ export function useRedditMentions(
 							data: result,
 							timestamp: Date.now(),
 							filters,
-						}),
+						})
 					);
 				}
 
@@ -327,7 +327,7 @@ export function useRedditMentions(
 				() => {
 					queryResult.refetch();
 				},
-				options.refetchInterval || 10 * 60 * 1000,
+				options.refetchInterval || 10 * 60 * 1000
 			);
 
 			return () => clearInterval(interval);
@@ -366,9 +366,7 @@ export function useRefreshRedditMentions() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: async () => {
-			return await redditApi.refresh();
-		},
+		mutationFn: async () => await redditApi.refresh(),
 		onSuccess: () => {
 			toast.success("Reddit mentions refreshed successfully");
 			// Invalidate all Reddit queries to trigger refetch
@@ -462,13 +460,13 @@ export function useSearchHistory() {
 			// Remove duplicates and limit to 10 entries
 			const filtered = history.filter(
 				(entry: any) =>
-					JSON.stringify(entry.keywords) !== JSON.stringify(filters.keywords),
+					JSON.stringify(entry.keywords) !== JSON.stringify(filters.keywords)
 			);
 
 			const updated = [newEntry, ...filtered].slice(0, 10);
 			localStorage.setItem("reddit-search-history", JSON.stringify(updated));
 		},
-		[getHistory],
+		[getHistory]
 	);
 
 	const clearHistory = useCallback(() => {

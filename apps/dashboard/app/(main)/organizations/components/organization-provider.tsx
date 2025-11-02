@@ -163,7 +163,7 @@ export function OrganizationProvider({
 									/>
 								</div>
 								<div>
-									<h1 className="truncate font-bold text-xl text-foreground tracking-tight sm:text-2xl lg:text-3xl">
+									<h1 className="truncate font-bold text-foreground text-xl tracking-tight sm:text-2xl lg:text-3xl">
 										{title}
 									</h1>
 									<p className="mt-1 text-muted-foreground text-xs sm:text-sm lg:text-base">
@@ -222,7 +222,7 @@ export function OrganizationProvider({
 
 	return (
 		<div className="flex h-full flex-col">
-			<div className="border-b bg-gradient-to-r from-background via-background to-muted/20 h-22">
+			<div className="h-22 border-b bg-gradient-to-r from-background via-background to-muted/20">
 				<div className="flex flex-col justify-between gap-2.5 p-3 sm:flex-row sm:items-center sm:gap-0 sm:px-5 sm:py-4">
 					<div className="min-w-0 flex-1">
 						<div className="flex items-center gap-2.5">
@@ -234,7 +234,7 @@ export function OrganizationProvider({
 								/>
 							</div>
 							<div>
-								<h1 className="truncate font-bold text-lg text-foreground tracking-tight sm:text-xl">
+								<h1 className="truncate font-bold text-foreground text-lg tracking-tight sm:text-xl">
 									{title}
 								</h1>
 								<p className="mt-0.5 text-muted-foreground text-xs sm:text-sm">

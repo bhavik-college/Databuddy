@@ -37,28 +37,25 @@ export type Country = {
 	}>;
 };
 
-export const useSubdivisions = () => {
-	return useQuery<Subdivisions>({
+export const useSubdivisions = () =>
+	useQuery<Subdivisions>({
 		queryKey: ["subdivisions"],
 		queryFn: () => fetch(subdivisionsGeoUrl).then((res) => res.json()),
 	});
-};
 
-export const useCountries = () => {
-	return useQuery<Country>({
+export const useCountries = () =>
+	useQuery<Country>({
 		queryKey: ["countries"],
 		queryFn: () => fetch(countriesGeoUrl).then((res) => res.json()),
 	});
-};
 
 export const useGetRegionName = () => {
 	const { data: subdivisions } = useSubdivisions();
 
 	return {
-		getRegionName: (region: string) => {
-			return subdivisions?.features.find(
-				(feature) => feature.properties.iso_3166_2 === region,
-			)?.properties.name;
-		},
+		getRegionName: (region: string) =>
+			subdivisions?.features.find(
+				(feature) => feature.properties.iso_3166_2 === region
+			)?.properties.name,
 	};
 };

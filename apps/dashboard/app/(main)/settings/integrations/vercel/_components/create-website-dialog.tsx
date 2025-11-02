@@ -85,11 +85,11 @@ export function CreateWebsiteDialog({
 		(index: number, updates: Partial<WebsiteConfig>) => {
 			setWebsiteConfigs((prev) =>
 				prev.map((config, i) =>
-					i === index ? { ...config, ...updates } : config,
-				),
+					i === index ? { ...config, ...updates } : config
+				)
 			);
 		},
-		[],
+		[]
 	);
 
 	const handleClose = useCallback(() => {
@@ -104,12 +104,12 @@ export function CreateWebsiteDialog({
 
 		// Each domain must have exactly one target environment
 		const hasValidTargets = websiteConfigs.every(
-			(config) => config.target.length === 1,
+			(config) => config.target.length === 1
 		);
 
 		// Only production environment can be used once, preview can be used multiple times
 		const productionCount = websiteConfigs.filter((config) =>
-			config.target.includes("production"),
+			config.target.includes("production")
 		).length;
 		const hasValidProductionUsage = productionCount <= 1;
 
@@ -236,7 +236,7 @@ export function CreateWebsiteDialog({
 											websiteConfigs.some(
 												(otherConfig, otherIndex) =>
 													otherIndex !== index &&
-													otherConfig.target.includes(env),
+													otherConfig.target.includes(env)
 											);
 										const isSelected = config.target.includes(env);
 

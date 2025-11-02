@@ -46,7 +46,7 @@ async function checkAuth(request: Request): Promise<Response | null> {
 		{
 			status: 401,
 			headers: { "Content-Type": "application/json" },
-		},
+		}
 	);
 }
 
@@ -73,8 +73,8 @@ async function getAccessibleWebsites(request: Request) {
 			.where(
 				and(
 					eq(websites.userId, sessionUser.id),
-					isNull(websites.organizationId),
-				),
+					isNull(websites.organizationId)
+				)
 			)
 			.orderBy((table) => table.createdAt);
 	}
@@ -87,8 +87,8 @@ async function getAccessibleWebsites(request: Request) {
 			.where(
 				and(
 					eq(apikeyAccess.apikeyId, apiKey.id),
-					eq(apikeyAccess.resourceType, "global"),
-				),
+					eq(apikeyAccess.resourceType, "global")
+				)
 			)
 			.limit(1);
 
@@ -99,7 +99,7 @@ async function getAccessibleWebsites(request: Request) {
 				: apiKey.userId
 					? and(
 							eq(websites.userId, apiKey.userId),
-							isNull(websites.organizationId),
+							isNull(websites.organizationId)
 						)
 					: eq(websites.id, ""); // No matches if no user/org
 
@@ -119,8 +119,8 @@ async function getAccessibleWebsites(request: Request) {
 				and(
 					eq(apikeyAccess.resourceId, websites.id),
 					eq(apikeyAccess.resourceType, "website"),
-					eq(apikeyAccess.apikeyId, apiKey.id),
-				),
+					eq(apikeyAccess.apikeyId, apiKey.id)
+				)
 			)
 			.orderBy((table) => table.createdAt);
 	}
@@ -153,7 +153,7 @@ export const query = new Elysia({ prefix: "/v1/query" })
 				{
 					status: 500,
 					headers: { "Content-Type": "application/json" },
-				},
+				}
 			);
 		}
 	})
@@ -188,7 +188,7 @@ export const query = new Elysia({ prefix: "/v1/query" })
 					}
 
 					return [key, baseConfig];
-				}),
+				})
 			);
 
 			return {
@@ -196,7 +196,7 @@ export const query = new Elysia({ prefix: "/v1/query" })
 				types: Object.keys(QueryBuilders),
 				configs,
 			};
-		},
+		}
 	)
 
 	.post(
@@ -218,7 +218,7 @@ export const query = new Elysia({ prefix: "/v1/query" })
 				const result = compileQuery(
 					body as QueryRequest,
 					websiteDomain,
-					timezone,
+					timezone
 				);
 				return {
 					success: true,
@@ -233,7 +233,7 @@ export const query = new Elysia({ prefix: "/v1/query" })
 		},
 		{
 			body: CompileRequestSchema,
-		},
+		}
 	)
 
 	.post(
@@ -253,9 +253,9 @@ export const query = new Elysia({ prefix: "/v1/query" })
 						...new Set(
 							body.flatMap((req) =>
 								req.parameters.map((param) =>
-									typeof param === "string" ? param : param.name,
-								),
-							),
+									typeof param === "string" ? param : param.name
+								)
+							)
 						),
 					];
 					const domainCache = await getCachedWebsiteDomain(uniqueWebsiteIds);
@@ -269,7 +269,7 @@ export const query = new Elysia({ prefix: "/v1/query" })
 										...queryParams,
 										timezone,
 									},
-									domainCache,
+									domainCache
 								);
 							} catch (error) {
 								return {
@@ -278,7 +278,7 @@ export const query = new Elysia({ prefix: "/v1/query" })
 										error instanceof Error ? error.message : "Query failed",
 								};
 							}
-						}),
+						})
 					);
 
 					return {
@@ -308,13 +308,13 @@ export const query = new Elysia({ prefix: "/v1/query" })
 				DynamicQueryRequestSchema,
 				t.Array(DynamicQueryRequestSchema),
 			]),
-		},
+		}
 	);
 
 async function executeDynamicQuery(
 	request: DynamicQueryRequestType,
 	queryParams: QueryParams,
-	domainCache?: Record<string, string | null>,
+	domainCache?: Record<string, string | null>
 ) {
 	const startDate = queryParams.start_date || queryParams.startDate;
 	const endDate = queryParams.end_date || queryParams.endDate;
@@ -329,12 +329,12 @@ async function executeDynamicQuery(
 
 	const validateHourlyDateRange = (start: string, end: string) => {
 		const rangeDays = Math.ceil(
-			(new Date(end).getTime() - new Date(start).getTime()) / MS_PER_DAY,
+			(new Date(end).getTime() - new Date(start).getTime()) / MS_PER_DAY
 		);
 
 		if (rangeDays > MAX_HOURLY_DAYS) {
 			throw new Error(
-				`Hourly granularity only supports ranges up to ${MAX_HOURLY_DAYS} days. Use daily granularity for longer periods.`,
+				`Hourly granularity only supports ranges up to ${MAX_HOURLY_DAYS} days. Use daily granularity for longer periods.`
 			);
 		}
 	};
@@ -342,7 +342,7 @@ async function executeDynamicQuery(
 	const getTimeUnit = (
 		granularity?: string,
 		startDate?: string,
-		endDate?: string,
+		endDate?: string
 	): "hour" | "day" => {
 		const isHourly = ["hourly", "hour"].includes(granularity || "");
 
@@ -360,7 +360,7 @@ async function executeDynamicQuery(
 		parameter: string,
 		siteId: string | undefined,
 		start: string | undefined,
-		end: string | undefined,
+		end: string | undefined
 	):
 		| { success: true; siteId: string; start: string; end: string }
 		| { success: false; error: string } {
@@ -397,7 +397,7 @@ async function executeDynamicQuery(
 		siteId: string | undefined,
 		defaultStart: string | undefined,
 		defaultEnd: string | undefined,
-		domain: string | null,
+		domain: string | null
 	) {
 		const isObject = typeof parameterInput === "object";
 		const parameterName = isObject ? parameterInput.name : parameterInput;
@@ -420,7 +420,7 @@ async function executeDynamicQuery(
 			parameterName,
 			siteId,
 			paramStart,
-			paramEnd,
+			paramEnd
 		);
 		if (!validation.success) {
 			return {
@@ -440,7 +440,7 @@ async function executeDynamicQuery(
 				timeUnit: getTimeUnit(
 					paramGranularity,
 					validation.start,
-					validation.end,
+					validation.end
 				),
 				filters: dynamicRequest.filters || [],
 				limit: dynamicRequest.limit || 100,
@@ -468,17 +468,17 @@ async function executeDynamicQuery(
 	}
 
 	const parameterResults = await Promise.all(
-		request.parameters.map((param) => {
-			return processParameter(
+		request.parameters.map((param) =>
+			processParameter(
 				param,
 				request,
 				queryParams,
 				websiteId,
 				startDate,
 				endDate,
-				websiteDomain,
-			);
-		}),
+				websiteDomain
+			)
+		)
 	);
 
 	return {

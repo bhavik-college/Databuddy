@@ -25,7 +25,7 @@ function getBrowserTimezone() {
 
 function formatDate(
 	date: Date,
-	options: { timezone?: string; dateFormat?: string; timeFormat?: string },
+	options: { timezone?: string; dateFormat?: string; timeFormat?: string }
 ) {
 	const { timezone = getBrowserTimezone(), timeFormat = "h:mm a" } = options;
 
@@ -121,7 +121,7 @@ export function TimezonePreferences() {
 	// Check for changes
 	useEffect(() => {
 		setHasChanges(
-			JSON.stringify(localPreferences) !== JSON.stringify(originalPreferences),
+			JSON.stringify(localPreferences) !== JSON.stringify(originalPreferences)
 		);
 	}, [localPreferences, originalPreferences]);
 
@@ -171,14 +171,13 @@ export function TimezonePreferences() {
 				acc[tz.offset].push(tz);
 				return acc;
 			},
-			{} as Record<string, typeof TIMEZONES>,
-		),
-	).sort((a, b) => {
-		return (
+			{} as Record<string, typeof TIMEZONES>
+		)
+	).sort(
+		(a, b) =>
 			Number.parseFloat(a[0].replace("UTC", "").replace("+", "")) -
 			Number.parseFloat(b[0].replace("UTC", "").replace("+", ""))
-		);
-	});
+	);
 
 	if (loading) {
 		return (
@@ -301,7 +300,7 @@ export function TimezonePreferences() {
 														"mx-1 my-0.5 cursor-pointer rounded-md px-3 py-2 text-sm transition-all duration-200",
 														"hover:bg-accent hover:text-accent-foreground",
 														localPreferences.timezone === tz.region &&
-															"bg-primary text-primary-foreground",
+															"bg-primary text-primary-foreground"
 													)}
 													key={tz.region}
 													onClick={() =>
@@ -350,7 +349,7 @@ export function TimezonePreferences() {
 										"hover:border-accent-foreground/20 hover:bg-accent",
 										localPreferences.dateFormat === option.value
 											? "border-primary bg-primary/5 ring-1 ring-primary/20"
-											: "",
+											: ""
 									)}
 									key={option.value}
 									onClick={() =>
@@ -400,7 +399,7 @@ export function TimezonePreferences() {
 										"hover:border-accent-foreground/20 hover:bg-accent",
 										localPreferences.timeFormat === option.value
 											? "border-primary bg-primary/5 ring-1 ring-primary/20"
-											: "",
+											: ""
 									)}
 									key={option.value}
 									onClick={() =>

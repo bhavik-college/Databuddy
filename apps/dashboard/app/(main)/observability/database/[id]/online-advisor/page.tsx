@@ -162,18 +162,18 @@ export default function OnlineAdvisorPage({ params }: OnlineAdvisorPageProps) {
 	const { data: indexRecommendations, isLoading: indexLoading } =
 		trpc.performance.getIndexRecommendations.useQuery(
 			{ id: connectionId },
-			{ enabled: advisorStatus?.enabled },
+			{ enabled: advisorStatus?.enabled }
 		);
 
 	const { data: statisticsRecommendations, isLoading: statsLoading } =
 		trpc.performance.getStatisticsRecommendations.useQuery(
 			{ id: connectionId },
-			{ enabled: advisorStatus?.enabled },
+			{ enabled: advisorStatus?.enabled }
 		);
 
 	const { data: executorStats } = trpc.performance.getExecutorStats.useQuery(
 		{ id: connectionId },
-		{ enabled: advisorStatus?.enabled },
+		{ enabled: advisorStatus?.enabled }
 	);
 
 	const activateMutation = trpc.performance.activateOnlineAdvisor.useMutation({
@@ -429,7 +429,7 @@ export default function OnlineAdvisorPage({ params }: OnlineAdvisorPageProps) {
 											<RecommendationCard
 												impact={`${rec.elapsed_sec?.toFixed(2)}s`}
 												isApplying={applyingRecommendations.has(
-													rec.create_index,
+													rec.create_index
 												)}
 												key={index.toString()}
 												metric="Time Saved"
@@ -475,7 +475,7 @@ export default function OnlineAdvisorPage({ params }: OnlineAdvisorPageProps) {
 											<RecommendationCard
 												impact={`${rec.misestimation?.toFixed(1)}x`}
 												isApplying={applyingRecommendations.has(
-													rec.create_statistics,
+													rec.create_statistics
 												)}
 												key={index.toString()}
 												metric="Misestimation Ratio"

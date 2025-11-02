@@ -45,9 +45,9 @@ export default function MagicLinkPage() {
 	return (
 		<div className="relative mx-auto mt-12 w-full max-w-md overflow-hidden p-6">
 			<div className="mb-12 text-center">
-				<div className="relative mb-10 inline-flex h-16 w-16 items-center justify-center ">
+				<div className="relative mb-10 inline-flex h-16 w-16 items-center justify-center">
 					<div className="-inset-1 absolute rounded-full bg-gradient-to-tr from-blue-200 to-blue-100 opacity-20 blur-md" />
-					<div className="relative ">
+					<div className="relative">
 						<Sparkles className="h-8 w-8 animate-pulse text-foreground" />
 					</div>
 				</div>

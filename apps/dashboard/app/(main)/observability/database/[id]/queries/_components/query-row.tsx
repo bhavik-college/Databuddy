@@ -51,12 +51,11 @@ const getPerformanceLevel = (time: number) => {
 	return { level: "Critical", color: "border-red-500 bg-red-50 text-red-700" };
 };
 
-const cleanQueryComments = (query: string): string => {
-	return query
+const cleanQueryComments = (query: string): string =>
+	query
 		.replace(/--.*$/gm, "")
 		.replace(/\/\*[\s\S]*?\*\//g, "")
 		.trim();
-};
 
 export const QueryRow = ({ query, onClick }: QueryRowProps) => {
 	const performance = getPerformanceLevel(query.mean_exec_time);

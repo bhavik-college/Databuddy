@@ -9,7 +9,7 @@ import {
 	UsersIcon,
 	WarningIcon,
 } from "@phosphor-icons/react";
-import type { CellContext, ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import dynamic from "next/dynamic";
@@ -31,10 +31,7 @@ import {
 } from "@/components/table/rows";
 import { useDateFilters } from "@/hooks/use-date-filters";
 import { useBatchDynamicQuery } from "@/hooks/use-dynamic-query";
-import {
-	metricVisibilityAtom,
-	toggleMetricAtom,
-} from "@/stores/jotai/chartAtoms";
+import { metricVisibilityAtom } from "@/stores/jotai/chartAtoms";
 import {
 	calculatePercentChange,
 	formatDateByGranularity,
@@ -46,7 +43,7 @@ import type { FullTabProps, MetricPoint } from "../utils/types";
 const CustomEventsSection = dynamic(() =>
 	import("./overview/_components/custom-events-section").then((mod) => ({
 		default: mod.CustomEventsSection,
-	})),
+	}))
 );
 
 interface ChartDataPoint {
@@ -139,14 +136,14 @@ export function WebsiteOverviewTab({
 				granularity: currentRange.granularity,
 			};
 		},
-		[],
+		[]
 	);
 
 	const { setDateRangeAction } = useDateFilters();
 
 	const previousPeriodRange = useMemo(
 		() => calculatePreviousPeriod(dateRange),
-		[dateRange, calculatePreviousPeriod],
+		[dateRange, calculatePreviousPeriod]
 	);
 
 	const [visibleMetrics] = useAtom(metricVisibilityAtom);
@@ -210,7 +207,7 @@ export function WebsiteOverviewTab({
 	const { isLoading, error, getDataForQuery } = useBatchDynamicQuery(
 		websiteId,
 		dateRange,
-		queries,
+		queries
 	);
 
 	const analytics = {
@@ -259,12 +256,10 @@ export function WebsiteOverviewTab({
 				AnalyticsRowData,
 				unknown
 			>[],
-			getFilter: (row: AnalyticsRowData) => {
-				return {
-					field: "referrer",
-					value: row.referrer || "",
-				};
-			},
+			getFilter: (row: AnalyticsRowData) => ({
+				field: "referrer",
+				value: row.referrer || "",
+			}),
 		},
 		{
 			id: "utm_sources",
@@ -335,7 +330,7 @@ export function WebsiteOverviewTab({
 				return (
 					eventDate.isBefore(endOfToday) || eventDate.isSame(endOfToday, "day")
 				);
-			},
+			}
 		);
 
 		// Step 2: Create lookup map
@@ -370,7 +365,7 @@ export function WebsiteOverviewTab({
 							bounce_rate: 0,
 							avg_session_duration: 0,
 							pages_per_session: 0,
-						},
+						}
 					);
 				}
 				current = current.add(1, "day");
@@ -389,7 +384,7 @@ export function WebsiteOverviewTab({
 						bounce_rate: 0,
 						avg_session_duration: 0,
 						pages_per_session: 0,
-					},
+					}
 				);
 
 				current = current.add(1, "day");
@@ -404,35 +399,39 @@ export function WebsiteOverviewTab({
 		dateRange.granularity,
 	]);
 
-	const chartData = useMemo(() => {
-		return processedEventsData.map(
-			(event: MetricPoint): ChartDataPoint => ({
-				date: formatDateByGranularity(event.date, dateRange.granularity),
-				rawDate: event.date,
-				...(visibleMetrics.pageviews && {
-					pageviews: event.pageviews as number,
-				}),
-				...(visibleMetrics.visitors && {
-					visitors:
-						(event.visitors as number) ||
-						(event.unique_visitors as number) ||
-						0,
-				}),
-				...(visibleMetrics.sessions && { sessions: event.sessions as number }),
-				...(visibleMetrics.bounce_rate && {
-					bounce_rate: event.bounce_rate as number,
-				}),
-				...(visibleMetrics.avg_session_duration && {
-					avg_session_duration: event.avg_session_duration as number,
-				}),
-			}),
-		);
-	}, [processedEventsData, dateRange.granularity, visibleMetrics]);
+	const chartData = useMemo(
+		() =>
+			processedEventsData.map(
+				(event: MetricPoint): ChartDataPoint => ({
+					date: formatDateByGranularity(event.date, dateRange.granularity),
+					rawDate: event.date,
+					...(visibleMetrics.pageviews && {
+						pageviews: event.pageviews as number,
+					}),
+					...(visibleMetrics.visitors && {
+						visitors:
+							(event.visitors as number) ||
+							(event.unique_visitors as number) ||
+							0,
+					}),
+					...(visibleMetrics.sessions && {
+						sessions: event.sessions as number,
+					}),
+					...(visibleMetrics.bounce_rate && {
+						bounce_rate: event.bounce_rate as number,
+					}),
+					...(visibleMetrics.avg_session_duration && {
+						avg_session_duration: event.avg_session_duration as number,
+					}),
+				})
+			),
+		[processedEventsData, dateRange.granularity, visibleMetrics]
+	);
 
 	const miniChartData = useMemo(() => {
 		const createChartSeries = (
 			field: keyof MetricPoint,
-			transform?: (value: number) => number,
+			transform?: (value: number) => number
 		) =>
 			processedEventsData.map((event: MetricPoint) => ({
 				date:
@@ -459,7 +458,7 @@ export function WebsiteOverviewTab({
 			bounceRate: createChartSeries("bounce_rate"),
 			sessionDuration: createChartSeries(
 				"avg_session_duration",
-				formatSessionDuration,
+				formatSessionDuration
 			),
 		};
 	}, [processedEventsData, dateRange.granularity]);
@@ -485,7 +484,7 @@ export function WebsiteOverviewTab({
 				maximumFractionDigits: 1,
 			}).format(value);
 		},
-		[],
+		[]
 	);
 
 	const formatTimeSeconds = useCallback((seconds: number): string => {
@@ -554,7 +553,7 @@ export function WebsiteOverviewTab({
 			analytics.entry_pages,
 			analytics.exit_pages,
 			analytics.page_time_analysis,
-		],
+		]
 	);
 
 	const deviceColumns = [
@@ -659,8 +658,7 @@ export function WebsiteOverviewTab({
 
 	const todayDate = dayjs().format("YYYY-MM-DD");
 	const todayEvent = analytics.events_by_date.find(
-		(event: MetricPoint) =>
-			dayjs(event.date).format("YYYY-MM-DD") === todayDate,
+		(event: MetricPoint) => dayjs(event.date).format("YYYY-MM-DD") === todayDate
 	);
 	const todayVisitors = todayEvent?.visitors ?? 0;
 	const todaySessions = todayEvent?.sessions ?? 0;
@@ -670,7 +668,7 @@ export function WebsiteOverviewTab({
 		const currentSummary = analytics.summary;
 		const previousSummary = getDataForQuery(
 			"overview-summary",
-			"previous_summary_metrics",
+			"previous_summary_metrics"
 		)?.[0];
 
 		if (!(currentSummary && previousSummary)) {
@@ -705,7 +703,7 @@ export function WebsiteOverviewTab({
 		const calculateTrendPercentage = (
 			current: number,
 			previous: number,
-			minimumBase = 0,
+			minimumBase = 0
 		) => {
 			if (previous < minimumBase && !(previous === 0 && current === 0)) {
 				return;
@@ -722,12 +720,12 @@ export function WebsiteOverviewTab({
 		const createDetailedTrend = (
 			currentVal: number,
 			previousVal: number,
-			minimumBase = 0,
+			minimumBase = 0
 		) => {
 			const change = calculateTrendPercentage(
 				currentVal,
 				previousVal,
-				minimumBase,
+				minimumBase
 			);
 			if (change === undefined) {
 				return change;
@@ -749,34 +747,34 @@ export function WebsiteOverviewTab({
 			visitors: createDetailedTrend(
 				currentMetrics.visitors,
 				previousMetrics.visitors,
-				MIN_PREVIOUS_VISITORS_FOR_TREND,
+				MIN_PREVIOUS_VISITORS_FOR_TREND
 			),
 			sessions: createDetailedTrend(
 				currentMetrics.sessions,
 				previousMetrics.sessions,
-				MIN_PREVIOUS_SESSIONS_FOR_TREND,
+				MIN_PREVIOUS_SESSIONS_FOR_TREND
 			),
 			pageviews: createDetailedTrend(
 				currentMetrics.pageviews,
 				previousMetrics.pageviews,
-				MIN_PREVIOUS_PAGEVIEWS_FOR_TREND,
+				MIN_PREVIOUS_PAGEVIEWS_FOR_TREND
 			),
 			pages_per_session: canShowSessionBasedTrend
 				? createDetailedTrend(
 						currentMetrics.pagesPerSession,
-						previousMetrics.pagesPerSession,
+						previousMetrics.pagesPerSession
 					)
 				: undefined,
 			bounce_rate: canShowSessionBasedTrend
 				? createDetailedTrend(
 						currentMetrics.bounceRate,
-						previousMetrics.bounceRate,
+						previousMetrics.bounceRate
 					)
 				: undefined,
 			session_duration: canShowSessionBasedTrend
 				? createDetailedTrend(
 						currentMetrics.sessionDuration,
-						previousMetrics.sessionDuration,
+						previousMetrics.sessionDuration
 					)
 				: undefined,
 		};
@@ -793,7 +791,7 @@ export function WebsiteOverviewTab({
 
 			addFilter(filter);
 		},
-		[addFilter],
+		[addFilter]
 	);
 
 	if (error instanceof Error && error.message === "UNAUTHORIZED_ACCESS") {
@@ -863,7 +861,7 @@ export function WebsiteOverviewTab({
 						variant: getColorVariant(
 							analytics.summary?.bounce_rate || 0,
 							70,
-							50,
+							50
 						),
 					},
 					{
@@ -963,12 +961,8 @@ export function WebsiteOverviewTab({
 				</div>
 				<div>
 					<MetricsChartWithAnnotations
-						websiteId={websiteId}
 						className="rounded border-0"
 						data={chartData}
-						height={350}
-						isLoading={isLoading}
-						onRangeSelect={setDateRangeAction}
 						dateRange={{
 							startDate: new Date(dateRange.start_date),
 							endDate: new Date(dateRange.end_date),
@@ -978,6 +972,10 @@ export function WebsiteOverviewTab({
 								| "weekly"
 								| "monthly",
 						}}
+						height={350}
+						isLoading={isLoading}
+						onRangeSelect={setDateRangeAction}
+						websiteId={websiteId}
 					/>
 				</div>
 			</div>

@@ -80,7 +80,7 @@ export class RateLimiter {
 		} catch (error) {
 			logger.error(
 				"[Rate Limiter] Redis error:",
-				error instanceof Error ? error.message : String(error),
+				error instanceof Error ? error.message : String(error)
 			);
 			return {
 				success: true,
@@ -134,7 +134,7 @@ export class RateLimiter {
 		} catch (error) {
 			logger.error(
 				"[Rate Limiter] Redis error:",
-				error instanceof Error ? error.message : String(error),
+				error instanceof Error ? error.message : String(error)
 			);
 			return {
 				success: true,
@@ -162,7 +162,7 @@ export class RateLimiter {
 		} catch (error) {
 			logger.error(
 				"[Rate Limiter] Reset error:",
-				error instanceof Error ? error.message : String(error),
+				error instanceof Error ? error.message : String(error)
 			);
 		}
 	}
@@ -198,7 +198,7 @@ export const rateLimiters = {
 
 export function getRateLimitIdentifier(
 	userId?: string,
-	headers?: Headers,
+	headers?: Headers
 ): string {
 	if (userId) {
 		return userId;

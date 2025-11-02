@@ -19,7 +19,7 @@ export default function ApiTestingPage() {
 	const [endpoint, setEndpoint] = useState("/api/v1/analytics");
 	const [method, setMethod] = useState("GET");
 	const [headers, setHeaders] = useState(
-		'{\n  "Content-Type": "application/json"\n}',
+		'{\n  "Content-Type": "application/json"\n}'
 	);
 	const [body, setBody] = useState("");
 	const [response, setResponse] = useState("");
@@ -67,8 +67,8 @@ export default function ApiTestingPage() {
 				JSON.stringify(
 					{ error: "API test failed", message: String(error) },
 					null,
-					2,
-				),
+					2
+				)
 			);
 		} finally {
 			setIsLoading(false);

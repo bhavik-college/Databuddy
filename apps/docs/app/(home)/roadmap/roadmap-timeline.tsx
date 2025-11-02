@@ -122,13 +122,12 @@ const getPriorityConfig = (priority: RoadmapPriority) => {
 	}
 };
 
-const formatDate = (dateString: string) => {
-	return new Date(dateString).toLocaleDateString("en-US", {
+const formatDate = (dateString: string) =>
+	new Date(dateString).toLocaleDateString("en-US", {
 		year: "numeric",
 		month: "short",
 		day: "numeric",
 	});
-};
 
 const getTimeSince = (dateString: string) => {
 	const date = new Date(dateString);

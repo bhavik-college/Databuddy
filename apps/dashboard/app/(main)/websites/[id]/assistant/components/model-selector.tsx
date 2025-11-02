@@ -46,7 +46,7 @@ export function ModelSelector({
 					className={cn(
 						"h-8 border border-border/50 bg-background/70 px-3 font-semibold text-xs",
 						"hover:bg-accent hover:text-accent-foreground",
-						"transition-colors duration-200",
+						"transition-colors duration-200"
 					)}
 					disabled={disabled}
 					size="sm"
@@ -69,7 +69,7 @@ export function ModelSelector({
 								? "cursor-pointer hover:bg-muted/60 hover:text-foreground"
 								: "cursor-not-allowed opacity-50",
 							selectedModel === config.id &&
-								"border border-primary bg-accent/80 text-accent-foreground",
+								"border border-primary bg-accent/80 text-accent-foreground"
 						)}
 						disabled={!config.isEnabled}
 						key={config.id}

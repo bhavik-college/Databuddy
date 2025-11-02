@@ -93,7 +93,7 @@ export async function updateUserProfile(formData: FormData) {
 				userId: currentUser.id,
 				userName: currentUser.name || currentUser.email,
 				error: error instanceof Error ? error.message : "Unknown error",
-			},
+			}
 		);
 
 		if (error instanceof z.ZodError) {
@@ -144,7 +144,7 @@ export async function deactivateUserAccount(formData: FormData) {
 				userName: currentUser.name || currentUser.email,
 				email: currentUser.email,
 				deactivatedAt: new Date().toISOString(),
-			},
+			}
 		);
 
 		revalidatePath("/settings");
@@ -160,7 +160,7 @@ export async function deactivateUserAccount(formData: FormData) {
 				userId: currentUser.id,
 				userName: currentUser.name || currentUser.email,
 				error: error instanceof Error ? error.message : "Unknown error",
-			},
+			}
 		);
 
 		return { error: "Failed to process account deletion" };

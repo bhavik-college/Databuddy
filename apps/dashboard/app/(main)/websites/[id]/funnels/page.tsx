@@ -22,25 +22,25 @@ import { WebsitePageHeader } from "../_components/website-page-header";
 const FunnelsList = lazy(() =>
 	import("./_components/funnels-list").then((m) => ({
 		default: m.FunnelsList,
-	})),
+	}))
 );
 const FunnelAnalytics = lazy(() =>
 	import("./_components/funnel-analytics").then((m) => ({
 		default: m.FunnelAnalytics,
-	})),
+	}))
 );
 const FunnelAnalyticsByReferrer = lazy(
-	() => import("./_components/funnel-analytics-by-referrer"),
+	() => import("./_components/funnel-analytics-by-referrer")
 );
 const EditFunnelDialog = lazy(() =>
 	import("./_components/edit-funnel-dialog").then((m) => ({
 		default: m.EditFunnelDialog,
-	})),
+	}))
 );
 const DeleteFunnelDialog = lazy(() =>
 	import("./_components/delete-funnel-dialog").then((m) => ({
 		default: m.DeleteFunnelDialog,
-	})),
+	}))
 );
 
 const FunnelsListSkeleton = () => (
@@ -131,7 +131,7 @@ export default function FunnelsPage() {
 			start_date: formattedDateRangeState.startDate,
 			end_date: formattedDateRangeState.endDate,
 		},
-		{ enabled: !!expandedFunnelId },
+		{ enabled: !!expandedFunnelId }
 	);
 
 	const autocompleteQuery = useAutocompleteData(websiteId);

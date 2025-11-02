@@ -17,7 +17,7 @@ const DataTable = dynamic(
 	{
 		ssr: false,
 		loading: () => <div className="h-96 animate-pulse rounded bg-muted/20" />,
-	},
+	}
 );
 
 interface ErrorDataTableProps {

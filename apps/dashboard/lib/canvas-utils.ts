@@ -5,7 +5,7 @@ import type { PixelCrop } from "react-image-crop";
 export function getCroppedImage(
 	image: HTMLImageElement,
 	crop: PixelCrop,
-	fileName: string,
+	fileName: string
 ): Promise<File> {
 	const canvas = document.createElement("canvas");
 	const ctx = canvas.getContext("2d");
@@ -44,7 +44,7 @@ export function getCroppedImage(
 		0,
 		0,
 		canvas.width / pixelRatio,
-		canvas.height / pixelRatio,
+		canvas.height / pixelRatio
 	);
 
 	ctx.restore();

@@ -24,11 +24,11 @@ export async function insertError(
 	errorData: any,
 	clientId: string,
 	userAgent: string,
-	ip: string,
+	ip: string
 ): Promise<void> {
 	let eventId = sanitizeString(
 		errorData.payload.eventId,
-		VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+		VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 	);
 
 	if (!eventId) {
@@ -52,25 +52,25 @@ export async function insertError(
 		event_id: eventId,
 		anonymous_id: sanitizeString(
 			payload.anonymousId,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 		),
 		session_id: validateSessionId(payload.sessionId),
 		timestamp: typeof payload.timestamp === "number" ? payload.timestamp : now,
 		path: sanitizeString(payload.path, VALIDATION_LIMITS.STRING_MAX_LENGTH),
 		message: sanitizeString(
 			payload.message,
-			VALIDATION_LIMITS.STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.STRING_MAX_LENGTH
 		),
 		filename: sanitizeString(
 			payload.filename,
-			VALIDATION_LIMITS.STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.STRING_MAX_LENGTH
 		),
 		lineno: payload.lineno,
 		colno: payload.colno,
 		stack: sanitizeString(payload.stack, VALIDATION_LIMITS.STRING_MAX_LENGTH),
 		error_type: sanitizeString(
 			payload.errorType,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 		),
 		// Enriched fields
 		ip: anonymizedIP || "",
@@ -101,11 +101,11 @@ export async function insertWebVitals(
 	vitalsData: any,
 	clientId: string,
 	userAgent: string,
-	ip: string,
+	ip: string
 ): Promise<void> {
 	let eventId = sanitizeString(
 		vitalsData.payload.eventId,
-		VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+		VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 	);
 
 	if (!eventId) {
@@ -129,7 +129,7 @@ export async function insertWebVitals(
 		event_id: eventId,
 		anonymous_id: sanitizeString(
 			payload.anonymousId,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 		),
 		session_id: validateSessionId(payload.sessionId),
 		timestamp: typeof payload.timestamp === "number" ? payload.timestamp : now,
@@ -168,11 +168,11 @@ export async function insertCustomEvent(
 	customData: any,
 	clientId: string,
 	_userAgent: string,
-	_ip: string,
+	_ip: string
 ): Promise<void> {
 	let eventId = sanitizeString(
 		customData.eventId,
-		VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+		VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 	);
 
 	if (!eventId) {
@@ -190,11 +190,11 @@ export async function insertCustomEvent(
 		client_id: clientId,
 		event_name: sanitizeString(
 			customData.name,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 		),
 		anonymous_id: sanitizeString(
 			customData.anonymousId,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 		),
 		session_id: validateSessionId(customData.sessionId),
 		properties: customData.properties
@@ -222,11 +222,11 @@ export async function insertOutgoingLink(
 	linkData: any,
 	clientId: string,
 	_userAgent: string,
-	_ip: string,
+	_ip: string
 ): Promise<void> {
 	let eventId = sanitizeString(
 		linkData.eventId,
-		VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+		VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 	);
 
 	if (!eventId) {
@@ -244,7 +244,7 @@ export async function insertOutgoingLink(
 		client_id: clientId,
 		anonymous_id: sanitizeString(
 			linkData.anonymousId,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 		),
 		session_id: validateSessionId(linkData.sessionId),
 		href: sanitizeString(linkData.href, VALIDATION_LIMITS.PATH_MAX_LENGTH),
@@ -273,11 +273,11 @@ export async function insertTrackEvent(
 	trackData: any,
 	clientId: string,
 	userAgent: string,
-	ip: string,
+	ip: string
 ): Promise<void> {
 	let eventId = sanitizeString(
 		trackData.eventId,
-		VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+		VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 	);
 
 	if (!eventId) {
@@ -305,11 +305,11 @@ export async function insertTrackEvent(
 		client_id: clientId,
 		event_name: sanitizeString(
 			trackData.name,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 		),
 		anonymous_id: sanitizeString(
 			trackData.anonymousId,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 		),
 		time: typeof trackData.timestamp === "number" ? trackData.timestamp : now,
 		session_id: validateSessionId(trackData.sessionId),
@@ -324,7 +324,7 @@ export async function insertTrackEvent(
 
 		referrer: sanitizeString(
 			trackData.referrer,
-			VALIDATION_LIMITS.STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.STRING_MAX_LENGTH
 		),
 		url: sanitizeString(trackData.path, VALIDATION_LIMITS.STRING_MAX_LENGTH),
 		path: sanitizeString(trackData.path, VALIDATION_LIMITS.STRING_MAX_LENGTH),
@@ -389,7 +389,7 @@ export async function insertTrackEvent(
 }
 
 export async function insertTrackEventsBatch(
-	events: AnalyticsEvent[],
+	events: AnalyticsEvent[]
 ): Promise<void> {
 	if (events.length === 0) return;
 
@@ -418,7 +418,7 @@ export async function insertErrorsBatch(events: ErrorEvent[]): Promise<void> {
 }
 
 export async function insertWebVitalsBatch(
-	events: WebVitalsEvent[],
+	events: WebVitalsEvent[]
 ): Promise<void> {
 	if (events.length === 0) return;
 
@@ -433,7 +433,7 @@ export async function insertWebVitalsBatch(
 }
 
 export async function insertCustomEventsBatch(
-	events: CustomEvent[],
+	events: CustomEvent[]
 ): Promise<void> {
 	if (events.length === 0) return;
 
@@ -448,7 +448,7 @@ export async function insertCustomEventsBatch(
 }
 
 export async function insertOutgoingLinksBatch(
-	events: CustomOutgoingLink[],
+	events: CustomOutgoingLink[]
 ): Promise<void> {
 	if (events.length === 0) return;
 

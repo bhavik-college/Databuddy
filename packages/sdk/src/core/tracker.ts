@@ -32,7 +32,7 @@ export function getTracker(): DatabuddyTracker | null {
  */
 export const track: TrackFunction = async <T extends EventName>(
 	eventName: T,
-	properties?: PropertiesForEvent<T>,
+	properties?: PropertiesForEvent<T>
 ): Promise<void> => {
 	if (typeof window === "undefined") {
 		return;
@@ -105,7 +105,7 @@ export function trackError(
 		stack?: string;
 		error_type?: string;
 		[key: string]: string | number | boolean | null | undefined;
-	},
+	}
 ): Promise<void> {
 	return track("error", { message, ...properties });
 }

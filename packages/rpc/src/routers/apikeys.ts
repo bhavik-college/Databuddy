@@ -68,7 +68,7 @@ const jsonValue: z.ZodType<unknown> = z.lazy(() =>
 		z.null(),
 		z.array(jsonValue),
 		z.record(z.string(), jsonValue),
-	]),
+	])
 );
 
 const createApiKeySchema = z.object({
@@ -136,7 +136,7 @@ const hashSecretScrypt = (secret: string) => {
 
 async function assertOrgPermission(
 	ctx: Context,
-	requiredScopes: string[] = [],
+	requiredScopes: string[] = []
 ) {
 	if (ctx.user.role === "ADMIN") {
 		logger.info("Organization permission granted via admin role", {
@@ -200,7 +200,7 @@ function assertUserOwnershipOrAdmin(ctx: Context, userId: string | null) {
 
 async function assertCanManageKey(
 	ctx: Context,
-	key: InferSelectModel<typeof apikey>,
+	key: InferSelectModel<typeof apikey>
 ) {
 	if (key.organizationId) {
 		// Organization API key - requires organization permissions
@@ -247,8 +247,8 @@ export const apikeysRouter = createTRPCRouter({
 							? eq(apikey.organizationId, input.organizationId)
 							: and(
 									eq(apikey.userId, ctx.user.id),
-									isNull(apikey.organizationId),
-								),
+									isNull(apikey.organizationId)
+								)
 					)
 					.orderBy(desc(apikey.createdAt));
 
@@ -651,8 +651,8 @@ export const apikeysRouter = createTRPCRouter({
 							eq(apikeyAccess.resourceType, input.resourceType),
 							input.resourceId
 								? eq(apikeyAccess.resourceId, input.resourceId)
-								: sql`1=1`,
-						),
+								: sql`1=1`
+						)
 					);
 				return { success: true };
 			} catch (error) {

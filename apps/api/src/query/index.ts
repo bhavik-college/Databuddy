@@ -19,7 +19,7 @@ const QuerySchema = z.object({
 					z.number(),
 					z.array(z.union([z.string(), z.number()])),
 				]),
-			}),
+			})
 		)
 		.optional(),
 	groupBy: z.array(z.string()).optional(),
@@ -32,7 +32,7 @@ const QuerySchema = z.object({
 export const executeQuery = async (
 	request: QueryRequest,
 	websiteDomain?: string | null,
-	timezone?: string,
+	timezone?: string
 ) => {
 	const validated = QuerySchema.parse(request);
 
@@ -44,7 +44,7 @@ export const executeQuery = async (
 	const builder = new SimpleQueryBuilder(
 		config,
 		{ ...validated, timezone: timezone ?? validated.timezone },
-		websiteDomain,
+		websiteDomain
 	);
 	return await builder.execute();
 };
@@ -52,7 +52,7 @@ export const executeQuery = async (
 export const compileQuery = (
 	request: QueryRequest,
 	websiteDomain?: string | null,
-	timezone?: string,
+	timezone?: string
 ) => {
 	const validated = QuerySchema.parse(request);
 
@@ -64,7 +64,7 @@ export const compileQuery = (
 	const builder = new SimpleQueryBuilder(
 		config,
 		{ ...validated, timezone: timezone ?? validated.timezone },
-		websiteDomain,
+		websiteDomain
 	);
 	return builder.compile();
 };

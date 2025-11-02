@@ -20,7 +20,7 @@ export class ConversationRepository {
 		aiResponse: AIResponseContent,
 		aiMessageId: string,
 		finalResult: StreamingUpdate,
-		metrics: SessionMetrics,
+		metrics: SessionMetrics
 	): Promise<void> {
 		const context = session.getContext();
 		const messages = session.getMessages();
@@ -95,17 +95,17 @@ export class ConversationRepository {
 					context.website.id,
 					userId,
 					"New Conversation",
-					conversationMessages,
+					conversationMessages
 				);
 			} else {
 				await this.addMessagesToConversation(
 					context.conversationId,
-					conversationMessages,
+					conversationMessages
 				);
 			}
 		} catch (error) {
 			throw new Error(
-				`Failed to save conversation: ${error instanceof Error ? error.message : "Unknown error"}`,
+				`Failed to save conversation: ${error instanceof Error ? error.message : "Unknown error"}`
 			);
 		}
 	}
@@ -115,7 +115,7 @@ export class ConversationRepository {
 		websiteId: string,
 		userId: string,
 		title: string,
-		messages: AssistantMessageInput[],
+		messages: AssistantMessageInput[]
 	): Promise<void> {
 		await db.transaction(async (tx) => {
 			await tx.insert(assistantConversations).values({
@@ -145,7 +145,7 @@ export class ConversationRepository {
 
 	private async addMessagesToConversation(
 		conversationId: string,
-		messages: AssistantMessageInput[],
+		messages: AssistantMessageInput[]
 	): Promise<void> {
 		await db.transaction(async (tx) => {
 			if (messages.length === 1) {

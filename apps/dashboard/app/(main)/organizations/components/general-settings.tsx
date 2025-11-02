@@ -21,13 +21,12 @@ export function GeneralSettings({ organization }: GeneralSettingsProps) {
 
 	const { updateOrganizationAsync } = useOrganizations();
 
-	const cleanSlug = (value: string) => {
-		return value
+	const cleanSlug = (value: string) =>
+		value
 			.toLowerCase()
 			.replace(/[^a-z0-9-]/g, "-")
 			.replace(/-+/g, "-")
 			.replace(/^-|-$/g, "");
-	};
 
 	const handleSlugChange = (value: string) => {
 		setSlug(cleanSlug(value));
@@ -94,7 +93,7 @@ export function GeneralSettings({ organization }: GeneralSettingsProps) {
 								</p>
 							</div>
 
-							<div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
+							<div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
 								<div className="space-y-2 sm:space-y-3">
 									<Label
 										className="font-medium text-xs sm:text-sm"

@@ -50,7 +50,7 @@ export const Databuddy = defineComponent({
 				removeScript();
 				injectScript();
 			},
-			{ deep: true },
+			{ deep: true }
 		);
 
 		return () => null;

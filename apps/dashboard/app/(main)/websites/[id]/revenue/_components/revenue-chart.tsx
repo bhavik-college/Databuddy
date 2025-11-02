@@ -268,7 +268,7 @@ export function RevenueChart({
 										"cursor-pointer font-medium text-xs transition-all duration-200",
 										hoveredMetric === value
 											? "text-primary"
-											: "text-muted-foreground hover:text-foreground",
+											: "text-muted-foreground hover:text-foreground"
 									)}
 									onMouseEnter={() => setHoveredMetric(value)}
 									onMouseLeave={() => setHoveredMetric(null)}

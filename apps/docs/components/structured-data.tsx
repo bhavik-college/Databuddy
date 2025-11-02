@@ -63,7 +63,7 @@ function planToOffer(plan: RawPlan, baseUrl: string) {
 	// Included features → additionalProperty
 	const included = plan.items
 		.filter(
-			(i): i is Extract<RawItem, { type: "feature" }> => i.type === "feature",
+			(i): i is Extract<RawItem, { type: "feature" }> => i.type === "feature"
 		)
 		.map((i) => ({
 			"@type": "PropertyValue",
@@ -89,7 +89,7 @@ function planToOffer(plan: RawPlan, baseUrl: string) {
 
 	const items = plan.items.filter(
 		(i): i is Extract<RawItem, { type: "priced_feature" }> =>
-			i.type === "priced_feature",
+			i.type === "priced_feature"
 	);
 
 	// priced_feature with tiers (events, extra websites, etc.)
@@ -312,10 +312,10 @@ export function StructuredData({
 					"@type": "AggregateOffer",
 					offerCount: offers.length,
 					lowPrice: Math.min(
-						...offers.map((o) => Number(o.price ?? 0)),
+						...offers.map((o) => Number(o.price ?? 0))
 					).toFixed(2),
 					highPrice: Math.max(
-						...offers.map((o) => Number(o.price ?? 0)),
+						...offers.map((o) => Number(o.price ?? 0))
 					).toFixed(2),
 					priceCurrency: "USD",
 					offers,

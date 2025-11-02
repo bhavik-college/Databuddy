@@ -123,7 +123,7 @@ const webVitalsColumns = [
 const createNameColumn = (
 	header: string,
 	iconRenderer?: (name: string) => React.ReactNode,
-	nameFormatter?: (name: string) => string,
+	nameFormatter?: (name: string) => string
 ) => ({
 	id: "name",
 	accessorKey: "name",
@@ -149,7 +149,7 @@ export function WebsitePerformanceTab({
 	addFilter,
 }: FullTabProps) {
 	const [activeFilter, setActiveFilter] = useState<"fast" | "slow" | null>(
-		null,
+		null
 	);
 
 	const {
@@ -183,14 +183,14 @@ export function WebsitePerformanceTab({
 				return filter === "fast" ? loadTime < 1500 : loadTime >= 3000;
 			});
 		},
-		[],
+		[]
 	);
 
 	const onAddFilter = useCallback(
 		(field: string, value: string) => {
 			addFilter({ field, operator: "eq" as const, value });
 		},
-		[addFilter],
+		[addFilter]
 	);
 
 	const { processedData, performanceSummary } = useMemo(() => {
@@ -263,7 +263,7 @@ export function WebsitePerformanceTab({
 
 		const getCountryIcon = (name: string) => {
 			const countryItem = processedData.countries.find(
-				(item) => (item as { country_name?: string }).country_name === name,
+				(item) => (item as { country_name?: string }).country_name === name
 			);
 			return (
 				<CountryFlag
@@ -373,7 +373,7 @@ export function WebsitePerformanceTab({
 				createNameColumn(
 					config.label,
 					config.iconRenderer,
-					config.nameFormatter,
+					config.nameFormatter
 				),
 				...performanceColumns,
 			],
@@ -392,7 +392,7 @@ export function WebsitePerformanceTab({
 
 		const getCountryIcon = (name: string) => {
 			const countryItem = processedData.webVitalsByCountry.find(
-				(item) => (item as { country_name?: string }).country_name === name,
+				(item) => (item as { country_name?: string }).country_name === name
 			);
 			return (
 				<CountryFlag
@@ -502,7 +502,7 @@ export function WebsitePerformanceTab({
 				createNameColumn(
 					config.label,
 					config.iconRenderer,
-					config.nameFormatter,
+					config.nameFormatter
 				),
 				...webVitalsColumns,
 			],

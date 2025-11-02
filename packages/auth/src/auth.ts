@@ -35,7 +35,7 @@ export const auth = betterAuth({
 				after: async (user: { id: string; name: string; email: string }) => {
 					logger.info(
 						"User Created",
-						`User ${user.id}, ${user.name}, ${user.email} created`,
+						`User ${user.id}, ${user.name}, ${user.email} created`
 					);
 					// const resend = new Resend(process.env.RESEND_API_KEY as string);
 					// await resend.emails.send({
@@ -54,7 +54,7 @@ export const auth = betterAuth({
 			beforeDelete: async (user) => {
 				logger.info(
 					"User Deletion Started",
-					`Starting deletion process for user ${user.id}`,
+					`Starting deletion process for user ${user.id}`
 				);
 
 				try {
@@ -65,18 +65,18 @@ export const auth = betterAuth({
 					if (userWebsites.length > 0) {
 						logger.info(
 							"Deleting Websites",
-							`Deleting websites for user ${user.id}`,
+							`Deleting websites for user ${user.id}`
 						);
 						await db.delete(websites).where(
 							inArray(
 								websites.id,
-								userWebsites.map((w) => w.id),
-							),
+								userWebsites.map((w) => w.id)
+							)
 						);
 					}
 					logger.info(
 						"User Deletion Finished",
-						`Finished deletion process for user ${user.id}`,
+						`Finished deletion process for user ${user.id}`
 					);
 				} catch (error) {
 					logger.exception(error as Error, { user: user.id });
@@ -151,7 +151,7 @@ export const auth = betterAuth({
 		}) => {
 			logger.info(
 				"Email Verification",
-				`Sending verification email to ${user.email}`,
+				`Sending verification email to ${user.email}`
 			);
 			const resend = new Resend(process.env.RESEND_API_KEY as string);
 			await resend.emails.send({
@@ -246,7 +246,7 @@ export const auth = betterAuth({
 				logger.info(
 					"Organization Invitation",
 					`Inviting ${email} to ${organization.name}`,
-					{ inviter: inviter.user.name, organizationId: organization.id },
+					{ inviter: inviter.user.name, organizationId: organization.id }
 				);
 				const invitationLink = `https://app.databuddy.cc/invitations/${invitation.id}`;
 				const resend = new Resend(process.env.RESEND_API_KEY as string);

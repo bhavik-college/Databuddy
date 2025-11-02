@@ -10,7 +10,6 @@ import {
 	CursorClickIcon,
 	DevicesIcon,
 	EyeIcon,
-	GlobeIcon,
 	MapPinIcon,
 	SpinnerIcon,
 	UserIcon,
@@ -32,13 +31,13 @@ export default function UserDetailPage() {
 	const router = useRouter();
 	const { dateRange } = useDateFilters();
 	const [expandedSessions, setExpandedSessions] = useState<Set<string>>(
-		new Set(),
+		new Set()
 	);
 
 	const { userProfile, isLoading, isError, error } = useUserProfile(
 		websiteId as string,
 		userId as string,
-		dateRange,
+		dateRange
 	);
 
 	const handleToggleSession = useCallback((sessionId: string) => {
@@ -73,19 +72,19 @@ export default function UserDetailPage() {
 				session_name: session.session_name,
 			} as Session;
 		},
-		[userId],
+		[userId]
 	);
 
 	const totalEvents =
 		userProfile?.sessions?.reduce(
 			(acc: number, s: any) =>
 				acc + (Array.isArray(s.events) ? s.events.length : 0),
-			0,
+			0
 		) || 0;
 	const totalPages =
 		userProfile?.sessions?.reduce(
 			(acc: number, s: any) => acc + (Number(s.page_views) || 0),
-			0,
+			0
 		) || 0;
 	const avgPagesPerSession = userProfile?.total_sessions
 		? totalPages / userProfile.total_sessions
@@ -438,11 +437,11 @@ export default function UserDetailPage() {
 								<div className="divide-y">
 									{userProfile.sessions.map((session, index: number) => (
 										<SessionRow
-											key={session.session_id}
-											session={transformSession(session)}
 											index={index}
 											isExpanded={expandedSessions.has(session.session_id)}
+											key={session.session_id}
 											onToggle={handleToggleSession}
+											session={transformSession(session)}
 										/>
 									))}
 								</div>

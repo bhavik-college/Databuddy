@@ -86,7 +86,7 @@ export function useFunnels(websiteId: string, enabled = true) {
 
 	const query = trpc.funnels.list.useQuery(
 		{ websiteId },
-		{ enabled: enabled && !!websiteId },
+		{ enabled: enabled && !!websiteId }
 	);
 
 	const funnelsData = useMemo(
@@ -96,7 +96,7 @@ export function useFunnels(websiteId: string, enabled = true) {
 				steps: f.steps as FunnelStep[],
 				filters: (f.filters as FunnelFilter[]) || [],
 			})),
-		[query.data],
+		[query.data]
 	);
 
 	const createMutation = trpc.funnels.create.useMutation({
@@ -129,27 +129,24 @@ export function useFunnels(websiteId: string, enabled = true) {
 		error: query.error,
 		refetch: query.refetch,
 
-		createFunnel: (funnelData: CreateFunnelData) => {
-			return createMutation.mutateAsync({
+		createFunnel: (funnelData: CreateFunnelData) =>
+			createMutation.mutateAsync({
 				websiteId,
 				...funnelData,
-			});
-		},
+			}),
 		updateFunnel: ({
 			funnelId,
 			updates,
 		}: {
 			funnelId: string;
 			updates: Partial<CreateFunnelData>;
-		}) => {
-			return updateMutation.mutateAsync({
+		}) =>
+			updateMutation.mutateAsync({
 				id: funnelId,
 				...updates,
-			});
-		},
-		deleteFunnel: (funnelId: string) => {
-			return deleteMutation.mutateAsync({ id: funnelId });
-		},
+			}),
+		deleteFunnel: (funnelId: string) =>
+			deleteMutation.mutateAsync({ id: funnelId }),
 
 		isCreating: createMutation.isPending,
 		isUpdating: updateMutation.isPending,
@@ -164,7 +161,7 @@ export function useFunnels(websiteId: string, enabled = true) {
 export function useFunnel(websiteId: string, funnelId: string, enabled = true) {
 	return trpc.funnels.getById.useQuery(
 		{ id: funnelId, websiteId },
-		{ enabled: enabled && !!websiteId && !!funnelId },
+		{ enabled: enabled && !!websiteId && !!funnelId }
 	);
 }
 
@@ -172,7 +169,7 @@ export function useFunnelAnalytics(
 	websiteId: string,
 	funnelId: string,
 	dateRange: DateRange,
-	options: { enabled: boolean } = { enabled: true },
+	options: { enabled: boolean } = { enabled: true }
 ) {
 	return trpc.funnels.getAnalytics.useQuery(
 		{
@@ -181,7 +178,7 @@ export function useFunnelAnalytics(
 			startDate: dateRange?.start_date,
 			endDate: dateRange?.end_date,
 		},
-		{ enabled: options.enabled && !!websiteId && !!funnelId },
+		{ enabled: options.enabled && !!websiteId && !!funnelId }
 	);
 }
 
@@ -189,7 +186,7 @@ export function useFunnelAnalyticsByReferrer(
 	websiteId: string,
 	funnelId: string,
 	dateRange?: DateRange,
-	options: { enabled: boolean } = { enabled: true },
+	options: { enabled: boolean } = { enabled: true }
 ) {
 	return trpc.funnels.getAnalyticsByReferrer.useQuery(
 		{
@@ -198,7 +195,7 @@ export function useFunnelAnalyticsByReferrer(
 			startDate: dateRange?.start_date,
 			endDate: dateRange?.end_date,
 		},
-		{ enabled: options.enabled && !!websiteId && !!funnelId },
+		{ enabled: options.enabled && !!websiteId && !!funnelId }
 	);
 }
 
@@ -206,7 +203,7 @@ export function useEnhancedFunnelAnalytics(
 	websiteId: string,
 	funnelId: string,
 	dateRange: DateRange,
-	enabled = true,
+	enabled = true
 ) {
 	const funnelQuery = useFunnel(websiteId, funnelId, enabled);
 
@@ -259,7 +256,7 @@ export function useFunnelComparison(
 	websiteId: string,
 	funnelIds: string[],
 	dateRange: DateRange,
-	enabled = true,
+	enabled = true
 ) {
 	const funnels = useQueries({
 		queries: funnelIds.map((funnelId) => ({
@@ -276,17 +273,19 @@ export function useFunnelComparison(
 		})),
 	});
 
-	const comparisonData = useMemo(() => {
-		return funnels.map((query, index) => {
-			const data = query.data;
-			return {
-				funnelId: funnelIds[index],
-				data: data ? data : null,
-				isLoading: query.isLoading,
-				error: query.error,
-			};
-		});
-	}, [funnels, funnelIds]);
+	const comparisonData = useMemo(
+		() =>
+			funnels.map((query, index) => {
+				const data = query.data;
+				return {
+					funnelId: funnelIds[index],
+					data: data ? data : null,
+					isLoading: query.isLoading,
+					error: query.error,
+				};
+			}),
+		[funnels, funnelIds]
+	);
 
 	return {
 		data: comparisonData,
@@ -297,11 +296,11 @@ export function useFunnelComparison(
 export function useFunnelPerformance(
 	websiteId: string,
 	dateRange: DateRange,
-	enabled = true,
+	enabled = true
 ) {
 	const { data: funnels, isLoading: funnelsLoading } = useFunnels(
 		websiteId,
-		enabled,
+		enabled
 	);
 
 	const results = useQueries({
@@ -323,20 +322,22 @@ export function useFunnelPerformance(
 		})),
 	});
 
-	const performanceData = useMemo(() => {
-		return results
-			.map((result, index) => {
-				if (!result.data) {
-					return null;
-				}
-				return {
-					funnelId: funnels[index].id,
-					funnelName: funnels[index].name,
-					...result.data,
-				};
-			})
-			.filter(Boolean);
-	}, [results, funnels]);
+	const performanceData = useMemo(
+		() =>
+			results
+				.map((result, index) => {
+					if (!result.data) {
+						return null;
+					}
+					return {
+						funnelId: funnels[index].id,
+						funnelName: funnels[index].name,
+						...result.data,
+					};
+				})
+				.filter(Boolean),
+		[results, funnels]
+	);
 
 	return {
 		data: performanceData,
@@ -352,6 +353,6 @@ export function useAutocompleteData(websiteId: string, enabled = true) {
 		{
 			enabled: enabled && !!websiteId,
 			staleTime: 1000 * 60 * 5, // 5 minutes
-		},
+		}
 	);
 }

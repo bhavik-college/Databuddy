@@ -7,7 +7,7 @@ export const SCORE_THRESHOLDS = {
 };
 
 export function calculatePerformanceSummary(
-	pages: PerformanceEntry[],
+	pages: PerformanceEntry[]
 ): PerformanceSummary {
 	if (!pages.length) {
 		return {

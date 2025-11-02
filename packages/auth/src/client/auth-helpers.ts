@@ -23,7 +23,7 @@ export async function loginWithEmail(
 		redirectUrl?: string;
 		router?: any; // Next.js router
 		onError?: (error: any) => void;
-	},
+	}
 ) {
 	try {
 		const result = await signIn.email({
@@ -59,7 +59,7 @@ export async function registerWithEmail(
 		redirectUrl?: string;
 		router?: any; // Next.js router
 		onError?: (error: any) => void;
-	},
+	}
 ) {
 	try {
 		const result = await signUp.email({
@@ -173,7 +173,7 @@ export async function enableTwoFactor(
 	options?: {
 		onSuccess?: (data: TwoFactorResponse["data"]) => void;
 		onError?: (error: any) => void;
-	},
+	}
 ) {
 	try {
 		const result = await authClient.twoFactor.enable({
@@ -205,7 +205,7 @@ export async function verifyTwoFactorCode(
 		trustDevice?: boolean;
 		onSuccess?: () => void;
 		onError?: (error: any) => void;
-	},
+	}
 ) {
 	try {
 		const result = await authClient.twoFactor.verifyTotp({
@@ -234,7 +234,7 @@ export async function verifyBackupCode(
 	options?: {
 		onSuccess?: () => void;
 		onError?: (error: any) => void;
-	},
+	}
 ) {
 	try {
 		const result = await authClient.twoFactor.verifyBackupCode({
@@ -285,7 +285,7 @@ export async function verifyOTP(
 	options?: {
 		onSuccess?: () => void;
 		onError?: (error: any) => void;
-	},
+	}
 ) {
 	try {
 		const result = await authClient.twoFactor.verifyOtp({
@@ -313,7 +313,7 @@ export async function generateBackupCodes(
 	options?: {
 		onSuccess?: (backupCodes: string[]) => void;
 		onError?: (error: any) => void;
-	},
+	}
 ) {
 	try {
 		const result = await authClient.twoFactor.generateBackupCodes({

@@ -12,7 +12,7 @@ export const organizationSlugSchema = z
 	.max(50, "Organization slug must be less than 50 characters")
 	.regex(
 		/^[a-z0-9-]+$/,
-		"Slug can only contain lowercase letters, numbers, and hyphens",
+		"Slug can only contain lowercase letters, numbers, and hyphens"
 	)
 	.trim();
 

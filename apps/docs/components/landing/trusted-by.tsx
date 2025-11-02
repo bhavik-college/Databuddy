@@ -107,13 +107,11 @@ const logos = [
 
 import { LogoCarousel } from "./logo-carousel";
 
-export const TrustedBy = () => {
-	return (
-		<div className="space-y-6 sm:space-y-8">
-			<h2 className="mx-auto max-w-md text-center font-medium text-foreground text-lg leading-tight tracking-tight sm:text-xl md:text-2xl">
-				Trusted by teams and developers worldwide
-			</h2>
-			<LogoCarousel columns={4} logos={logos} />
-		</div>
-	);
-};
+export const TrustedBy = () => (
+	<div className="space-y-6 sm:space-y-8">
+		<h2 className="mx-auto max-w-md text-center font-medium text-foreground text-lg leading-tight tracking-tight sm:text-xl md:text-2xl">
+			Trusted by teams and developers worldwide
+		</h2>
+		<LogoCarousel columns={4} logos={logos} />
+	</div>
+);

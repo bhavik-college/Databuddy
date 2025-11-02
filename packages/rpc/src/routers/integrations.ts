@@ -51,7 +51,7 @@ export const integrationsRouter = createTRPCRouter({
 			// Map integrations with connection status
 			const integrations = availableIntegrations.map((integration) => {
 				const connectedAccount = connectedAccounts.find(
-					(acc) => acc.providerId === integration.id,
+					(acc) => acc.providerId === integration.id
 				);
 
 				return {
@@ -101,8 +101,8 @@ export const integrationsRouter = createTRPCRouter({
 					.where(
 						and(
 							eq(account.userId, userId),
-							eq(account.providerId, input.provider),
-						),
+							eq(account.providerId, input.provider)
+						)
 					)
 					.limit(1);
 
@@ -156,8 +156,8 @@ export const integrationsRouter = createTRPCRouter({
 					.where(
 						and(
 							eq(account.userId, userId),
-							eq(account.providerId, input.provider),
-						),
+							eq(account.providerId, input.provider)
+						)
 					)
 					.limit(1);
 
@@ -209,12 +209,12 @@ export const integrationsRouter = createTRPCRouter({
 						acc[account.providerId] = (acc[account.providerId] || 0) + 1;
 						return acc;
 					},
-					{} as Record<string, number>,
+					{} as Record<string, number>
 				),
 				recentConnections: connectedAccounts
 					.sort(
 						(a, b) =>
-							new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+							new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
 					)
 					.slice(0, 5)
 					.map((account) => ({

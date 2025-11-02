@@ -20,7 +20,7 @@ function WebsiteCard({
 				"flex w-full items-center gap-3 rounded border p-2 text-left transition-all duration-200",
 				selected
 					? "border-primary/30 bg-primary/10 shadow-sm ring-1 ring-primary/20"
-					: "border-border/30 bg-background/50 hover:border-border/60 hover:bg-muted/60",
+					: "border-border/30 bg-background/50 hover:border-border/60 hover:bg-muted/60"
 			)}
 			onClick={onClick}
 			type="button"
@@ -65,7 +65,7 @@ export function WebsiteSelector({
 						key={website.id}
 						onClick={() =>
 							onSelectWebsiteAction(
-								website.id === selectedWebsite ? null : website.id,
+								website.id === selectedWebsite ? null : website.id
 							)
 						}
 						selected={selectedWebsite === website.id}

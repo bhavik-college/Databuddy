@@ -13,7 +13,7 @@ const getCachedApiKeyBySecret = cacheable(
 				where: and(
 					eq(apikey.key, secret),
 					eq(apikey.enabled, true),
-					isNull(apikey.revokedAt),
+					isNull(apikey.revokedAt)
 				),
 			});
 			return key ?? null;
@@ -26,7 +26,7 @@ const getCachedApiKeyBySecret = cacheable(
 		prefix: "api-key-by-secret",
 		staleWhileRevalidate: true,
 		staleTime: 30,
-	},
+	}
 );
 
 const getCachedAccessEntries = cacheable(
@@ -45,11 +45,11 @@ const getCachedAccessEntries = cacheable(
 		prefix: "api-key-access-entries",
 		staleWhileRevalidate: true,
 		staleTime: 30,
-	},
+	}
 );
 
 export async function getApiKeyFromHeader(
-	headers: Headers,
+	headers: Headers
 ): Promise<ApiKeyRow | null> {
 	const xApiKey = headers.get("x-api-key")?.trim();
 	const auth = headers.get("authorization");
@@ -109,7 +109,7 @@ export function isApiKeyPresent(headers: Headers): boolean {
 
 export async function resolveEffectiveScopesForWebsite(
 	key: ApiKeyRow | null,
-	websiteId: string,
+	websiteId: string
 ): Promise<Set<ApiScope>> {
 	if (!key) {
 		logger.debug("Cannot resolve scopes for null API key", { websiteId });
@@ -148,7 +148,7 @@ export async function resolveEffectiveScopesForWebsite(
 export async function hasWebsiteScope(
 	key: ApiKeyRow | null,
 	websiteId: string,
-	required: ApiScope,
+	required: ApiScope
 ): Promise<boolean> {
 	if (!key) {
 		logger.debug("Scope check failed: null API key", {

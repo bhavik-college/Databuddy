@@ -93,8 +93,8 @@ export default function Layout({ children }: { children: ReactNode }) {
 		>
 			<Databuddy
 				clientId="OXmNQsViBT-FOS_wZCTHc"
-				trackErrors
 				trackAttributes
+				trackErrors
 				trackOutgoingLinks
 				trackWebVitals
 			/>

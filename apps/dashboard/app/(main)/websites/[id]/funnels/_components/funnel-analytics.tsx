@@ -49,7 +49,7 @@ export function FunnelAnalytics({
 			(r) =>
 				r.referrer === selectedReferrer ||
 				(selectedReferrer === "direct" &&
-					(r.referrer === "direct" || r.referrer === "")),
+					(r.referrer === "direct" || r.referrer === ""))
 		);
 
 		return referrer || null;

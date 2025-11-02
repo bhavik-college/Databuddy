@@ -20,7 +20,7 @@ export function useDateFilters() {
 			end_date: formattedDateRangeState.endDate,
 			granularity: currentGranularity,
 		}),
-		[formattedDateRangeState, currentGranularity],
+		[formattedDateRangeState, currentGranularity]
 	);
 
 	return {

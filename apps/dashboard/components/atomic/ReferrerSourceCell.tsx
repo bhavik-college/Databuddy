@@ -41,7 +41,7 @@ export const ReferrerSourceCell: React.FC<ReferrerSourceCellProps> = ({
 		<a
 			className={cn(
 				"flex cursor-pointer items-center gap-2 font-medium text-sm transition-colors hover:text-foreground hover:underline",
-				className,
+				className
 			)}
 			href={`https://${domain.trim()}`}
 			id={id}

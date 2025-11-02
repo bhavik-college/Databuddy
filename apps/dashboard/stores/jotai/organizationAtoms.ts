@@ -15,29 +15,29 @@ export const isCancellingInvitationAtom = atom<boolean>(false);
 // Derived atoms for each status
 export const pendingInvitationsAtom = atom((get) =>
 	get(invitationsAtom).filter(
-		(inv) => inv.status === "pending" && dayjs(inv.expiresAt).isAfter(dayjs()),
-	),
+		(inv) => inv.status === "pending" && dayjs(inv.expiresAt).isAfter(dayjs())
+	)
 );
 
 export const expiredInvitationsAtom = atom((get) =>
 	get(invitationsAtom).filter(
-		(inv) => inv.status === "pending" && dayjs(inv.expiresAt).isBefore(dayjs()),
-	),
+		(inv) => inv.status === "pending" && dayjs(inv.expiresAt).isBefore(dayjs())
+	)
 );
 
 export const acceptedInvitationsAtom = atom((get) =>
-	get(invitationsAtom).filter((inv) => inv.status === "accepted"),
+	get(invitationsAtom).filter((inv) => inv.status === "accepted")
 );
 
 // Count atoms for tabs
 export const pendingCountAtom = atom(
-	(get) => get(pendingInvitationsAtom).length,
+	(get) => get(pendingInvitationsAtom).length
 );
 export const expiredCountAtom = atom(
-	(get) => get(expiredInvitationsAtom).length,
+	(get) => get(expiredInvitationsAtom).length
 );
 export const acceptedCountAtom = atom(
-	(get) => get(acceptedInvitationsAtom).length,
+	(get) => get(acceptedInvitationsAtom).length
 );
 
 export const filteredInvitationsAtom = atom((get) => {

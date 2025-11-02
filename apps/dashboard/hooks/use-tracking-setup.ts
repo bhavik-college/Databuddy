@@ -9,7 +9,7 @@ export function useTrackingSetup(websiteId: string) {
 		refetch: refetchTrackingSetup,
 	} = trpc.websites.isTrackingSetup.useQuery(
 		{ websiteId },
-		{ enabled: !!websiteId },
+		{ enabled: !!websiteId }
 	);
 
 	const isTrackingSetup = isTrackingSetupLoading

@@ -16,7 +16,7 @@ const SessionsList = dynamic(
 			</div>
 		),
 		ssr: false,
-	},
+	}
 );
 
 export default function SessionsPage() {

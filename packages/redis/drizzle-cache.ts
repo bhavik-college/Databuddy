@@ -50,7 +50,7 @@ export function createDrizzleCache({
 	async function setCacheWithTtl(
 		cacheKey: string,
 		result: unknown,
-		ttl: number,
+		ttl: number
 	) {
 		const start = Date.now();
 		try {
@@ -65,12 +65,12 @@ export function createDrizzleCache({
 	async function setupInvalidationTracking(
 		key: string,
 		tables: string[],
-		tag?: string,
+		tag?: string
 	) {
 		const start = Date.now();
 		try {
 			const operations: Promise<unknown>[] = tables.map((table) =>
-				redis.sadd(formatDependencyKey(table), key),
+				redis.sadd(formatDependencyKey(table), key)
 			);
 
 			if (tag) {
@@ -91,7 +91,7 @@ export function createDrizzleCache({
 			const duration = Date.now() - start;
 			debugLog(
 				"info",
-				`TRACKING: tables=[${tables.join(",")}] tag=${tag ?? ""} (${duration}ms)`,
+				`TRACKING: tables=[${tables.join(",")}] tag=${tag ?? ""} (${duration}ms)`
 			);
 		} catch (error) {
 			debugLog("error", `Invalidation tracking failed for key ${key}`, error);
@@ -214,7 +214,7 @@ export function createDrizzleCache({
 			const containingSets = await redis.smembers(byKeyIndexKey);
 			if (containingSets.length > 0) {
 				await Promise.all(
-					containingSets.map((setKey) => redis.srem(setKey, key)),
+					containingSets.map((setKey) => redis.srem(setKey, key))
 				);
 			}
 

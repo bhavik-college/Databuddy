@@ -137,7 +137,7 @@ export function ApiKeyCreateDialog({
 							scopes: [],
 						},
 					]
-				: [],
+				: []
 		);
 		setWebsiteToAdd(undefined);
 		setCreatedInfo(null);
@@ -179,16 +179,16 @@ export function ApiKeyCreateDialog({
 						scopes: [],
 					},
 				]
-			: [],
+			: []
 	);
 	const { data: websites } = trpc.websites.list.useQuery({ organizationId });
 	const [websiteToAdd, setWebsiteToAdd] = useState<string | undefined>(
-		undefined,
+		undefined
 	);
 
 	const toggleGlobalScope = (scope: ApiScope) => {
 		setGlobalScopes((prev) =>
-			prev.includes(scope) ? prev.filter((x) => x !== scope) : [...prev, scope],
+			prev.includes(scope) ? prev.filter((x) => x !== scope) : [...prev, scope]
 		);
 	};
 
@@ -197,7 +197,7 @@ export function ApiKeyCreateDialog({
 			return;
 		}
 		const exists = scopedAccess.some(
-			(e) => e.resourceType === "website" && e.resourceId === websiteToAdd,
+			(e) => e.resourceType === "website" && e.resourceId === websiteToAdd
 		);
 		if (exists) {
 			return;
@@ -223,7 +223,7 @@ export function ApiKeyCreateDialog({
 					? entry.scopes.filter((s) => s !== scope)
 					: [...entry.scopes, scope];
 				return { ...entry, scopes };
-			}),
+			})
 		);
 	};
 
@@ -364,7 +364,7 @@ export function ApiKeyCreateDialog({
 												<div className="space-y-2">
 													{scopedAccess.map((entry, idx) => {
 														const website = websites.find(
-															(w) => w.id === entry.resourceId,
+															(w) => w.id === entry.resourceId
 														);
 														return (
 															<div
@@ -396,7 +396,7 @@ export function ApiKeyCreateDialog({
 																		>
 																			<Checkbox
 																				checked={entry.scopes.includes(
-																					scope.value,
+																					scope.value
 																				)}
 																				id={`resource-${idx}-${scope.value}`}
 																				onCheckedChange={() =>

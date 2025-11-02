@@ -31,7 +31,7 @@ const config = {
 function getPrompt(
 	mode: Mode,
 	websiteId: string,
-	websiteHostname: string,
+	websiteHostname: string
 ): string {
 	switch (mode) {
 		case "chat":
@@ -48,7 +48,7 @@ export function handleMessage(
 	messages: ModelMessage[],
 	mode: Mode,
 	websiteId: string,
-	websiteHostname: string,
+	websiteHostname: string
 ) {
 	const prompt = getPrompt(mode, websiteId, websiteHostname);
 	const modeConfig = config[mode];

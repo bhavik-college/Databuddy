@@ -14,7 +14,7 @@ export async function validateEventSchema<T>(
 	event: unknown,
 	request: Request,
 	query: unknown,
-	clientId: string,
+	clientId: string
 ): Promise<ParseResult<T>> {
 	if (process.env.NODE_ENV === "development") {
 		return { success: true, data: event as T };
@@ -30,7 +30,7 @@ export async function validateEventSchema<T>(
 			"invalid_schema",
 			"Schema Validation",
 			undefined,
-			clientId,
+			clientId
 		);
 		return {
 			success: false,
@@ -96,7 +96,7 @@ export interface BotCheckResult {
  */
 export function parseEventId(
 	eventId: unknown,
-	generateFn: () => string,
+	generateFn: () => string
 ): string {
 	const sanitizeString = (str: unknown, maxLength: number): string => {
 		if (typeof str !== "string") return "";
@@ -105,7 +105,7 @@ export function parseEventId(
 
 	const sanitized = sanitizeString(
 		eventId,
-		VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+		VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 	);
 	return sanitized || generateFn();
 }

@@ -63,7 +63,7 @@ export const usePromptInputAttachments = () => {
 
 	if (!context) {
 		throw new Error(
-			"usePromptInputAttachments must be used within a PromptInput",
+			"usePromptInputAttachments must be used within a PromptInput"
 		);
 	}
 
@@ -149,7 +149,7 @@ export function PromptInputAttachments({
 			aria-live="polite"
 			className={cn(
 				"overflow-hidden transition-[height] duration-200 ease-out",
-				className,
+				className
 			)}
 			style={{ height: attachments.files.length ? height : 0 }}
 			{...props}
@@ -212,7 +212,7 @@ export type PromptInputProps = Omit<
 	}) => void;
 	onSubmit: (
 		message: PromptInputMessage,
-		event: FormEvent<HTMLFormElement>,
+		event: FormEvent<HTMLFormElement>
 	) => void;
 };
 
@@ -256,7 +256,7 @@ export const PromptInput = ({
 			}
 			return true;
 		},
-		[accept],
+		[accept]
 	);
 
 	const add = useCallback(
@@ -306,7 +306,7 @@ export const PromptInput = ({
 				return prev.concat(next);
 			});
 		},
-		[matchesAccept, maxFiles, maxFileSize, onError],
+		[matchesAccept, maxFiles, maxFileSize, onError]
 	);
 
 	const remove = useCallback((id: string) => {
@@ -415,7 +415,7 @@ export const PromptInput = ({
 			openFileDialog,
 			fileInputRef: inputRef,
 		}),
-		[items, add, remove, clear, openFileDialog],
+		[items, add, remove, clear, openFileDialog]
 	);
 
 	return (
@@ -432,7 +432,7 @@ export const PromptInput = ({
 			<form
 				className={cn(
 					"w-full divide-y overflow-hidden rounded-xl border bg-background shadow-sm",
-					className,
+					className
 				)}
 				onSubmit={handleSubmit}
 				{...props}
@@ -486,7 +486,7 @@ export const PromptInputTextarea = ({
 				"field-sizing-content bg-transparent dark:bg-transparent",
 				"max-h-48 min-h-16",
 				"focus-visible:ring-0",
-				className,
+				className
 			)}
 			name="message"
 			onChange={(e) => {
@@ -521,7 +521,7 @@ export const PromptInputTools = ({
 		className={cn(
 			"flex items-center gap-1",
 			"[&_button:first-child]:rounded-bl-xl",
-			className,
+			className
 		)}
 		{...props}
 	/>
@@ -544,7 +544,7 @@ export const PromptInputButton = ({
 				"shrink-0 gap-1.5 rounded-lg",
 				variant === "ghost" && "text-muted-foreground",
 				newSize === "default" && "px-3",
-				className,
+				className
 			)}
 			size={newSize}
 			type="button"
@@ -650,7 +650,7 @@ export const PromptInputModelSelectTrigger = ({
 		className={cn(
 			"border-none bg-transparent font-medium text-muted-foreground shadow-none transition-colors",
 			'hover:bg-accent hover:text-foreground [&[aria-expanded="true"]]:bg-accent [&[aria-expanded="true"]]:text-foreground',
-			className,
+			className
 		)}
 		{...props}
 	/>

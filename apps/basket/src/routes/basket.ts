@@ -7,7 +7,6 @@ import type {
 	WebVitalsEvent,
 } from "@databuddy/db";
 import { Elysia } from "elysia";
-import { logBlockedTraffic } from "../lib/blocked-traffic";
 import {
 	insertCustomEvent,
 	insertCustomEventsBatch,
@@ -51,7 +50,7 @@ async function processTrackEventData(
 	trackData: any,
 	clientId: string,
 	userAgent: string,
-	ip: string,
+	ip: string
 ): Promise<AnalyticsEvent> {
 	const eventId = parseEventId(trackData.eventId, randomUUID);
 	const { anonymizedIP, country, region, city } = await getGeo(ip);
@@ -73,11 +72,11 @@ async function processTrackEventData(
 		client_id: clientId,
 		event_name: sanitizeString(
 			trackData.name,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 		),
 		anonymous_id: sanitizeString(
 			trackData.anonymousId,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 		),
 		time: timestamp,
 		session_id: validateSessionId(trackData.sessionId),
@@ -87,7 +86,7 @@ async function processTrackEventData(
 		timestamp,
 		referrer: sanitizeString(
 			trackData.referrer,
-			VALIDATION_LIMITS.STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.STRING_MAX_LENGTH
 		),
 		url: sanitizeString(trackData.path, VALIDATION_LIMITS.STRING_MAX_LENGTH),
 		path: sanitizeString(trackData.path, VALIDATION_LIMITS.STRING_MAX_LENGTH),
@@ -137,7 +136,7 @@ async function processErrorEventData(
 	errorData: any,
 	clientId: string,
 	userAgent: string,
-	ip: string,
+	ip: string
 ): Promise<ErrorEvent> {
 	const payload = errorData.payload;
 	const eventId = parseEventId(payload.eventId, randomUUID);
@@ -154,25 +153,25 @@ async function processErrorEventData(
 		event_id: eventId,
 		anonymous_id: sanitizeString(
 			payload.anonymousId,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 		),
 		session_id: validateSessionId(payload.sessionId),
 		timestamp,
 		path: sanitizeString(payload.path, VALIDATION_LIMITS.STRING_MAX_LENGTH),
 		message: sanitizeString(
 			payload.message,
-			VALIDATION_LIMITS.STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.STRING_MAX_LENGTH
 		),
 		filename: sanitizeString(
 			payload.filename,
-			VALIDATION_LIMITS.STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.STRING_MAX_LENGTH
 		),
 		lineno: payload.lineno,
 		colno: payload.colno,
 		stack: sanitizeString(payload.stack, VALIDATION_LIMITS.STRING_MAX_LENGTH),
 		error_type: sanitizeString(
 			payload.errorType,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 		),
 		ip: anonymizedIP || "",
 		user_agent: "",
@@ -191,7 +190,7 @@ async function processWebVitalsEventData(
 	vitalsData: any,
 	clientId: string,
 	userAgent: string,
-	ip: string,
+	ip: string
 ): Promise<WebVitalsEvent> {
 	const payload = vitalsData.payload;
 	const eventId = parseEventId(payload.eventId, randomUUID);
@@ -208,7 +207,7 @@ async function processWebVitalsEventData(
 		event_id: eventId,
 		anonymous_id: sanitizeString(
 			payload.anonymousId,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 		),
 		session_id: validateSessionId(payload.sessionId),
 		timestamp,
@@ -233,7 +232,7 @@ async function processWebVitalsEventData(
 
 async function processCustomEventData(
 	customData: any,
-	clientId: string,
+	clientId: string
 ): Promise<CustomEvent> {
 	const eventId = parseEventId(customData.eventId, randomUUID);
 	const timestamp = parseTimestamp(customData.timestamp);
@@ -243,11 +242,11 @@ async function processCustomEventData(
 		client_id: clientId,
 		event_name: sanitizeString(
 			customData.name,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 		),
 		anonymous_id: sanitizeString(
 			customData.anonymousId,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 		),
 		session_id: validateSessionId(customData.sessionId),
 		properties: parseProperties(customData.properties),
@@ -257,7 +256,7 @@ async function processCustomEventData(
 
 async function processOutgoingLinkData(
 	linkData: any,
-	clientId: string,
+	clientId: string
 ): Promise<CustomOutgoingLink> {
 	const eventId = parseEventId(linkData.eventId, randomUUID);
 	const timestamp = parseTimestamp(linkData.timestamp);
@@ -267,7 +266,7 @@ async function processOutgoingLinkData(
 		client_id: clientId,
 		anonymous_id: sanitizeString(
 			linkData.anonymousId,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 		),
 		session_id: validateSessionId(linkData.sessionId),
 		href: sanitizeString(linkData.href, VALIDATION_LIMITS.PATH_MAX_LENGTH),
@@ -306,7 +305,7 @@ const app = new Elysia()
 					body,
 					query,
 					clientId,
-					userAgent,
+					userAgent
 				);
 				if (botError) {
 					return botError.error;
@@ -317,7 +316,7 @@ const app = new Elysia()
 					body,
 					request,
 					query,
-					clientId,
+					clientId
 				);
 
 				if (!parseResult.success) {
@@ -342,7 +341,7 @@ const app = new Elysia()
 					body,
 					query,
 					clientId,
-					userAgent,
+					userAgent
 				);
 				if (botError) {
 					return botError.error;
@@ -353,7 +352,7 @@ const app = new Elysia()
 					body,
 					request,
 					query,
-					clientId,
+					clientId
 				);
 
 				if (!parseResult.success) {
@@ -370,7 +369,7 @@ const app = new Elysia()
 					body,
 					query,
 					clientId,
-					userAgent,
+					userAgent
 				);
 				if (botError) {
 					return botError.error;
@@ -381,7 +380,7 @@ const app = new Elysia()
 					body,
 					request,
 					query,
-					clientId,
+					clientId
 				);
 
 				if (!parseResult.success) {
@@ -398,7 +397,7 @@ const app = new Elysia()
 					body,
 					request,
 					query,
-					clientId,
+					clientId
 				);
 
 				if (!parseResult.success) {
@@ -418,7 +417,7 @@ const app = new Elysia()
 					body,
 					query,
 					clientId,
-					userAgent,
+					userAgent
 				);
 				if (botError) {
 					return botError.error;
@@ -429,7 +428,7 @@ const app = new Elysia()
 					body,
 					request,
 					query,
-					clientId,
+					clientId
 				);
 
 				if (!parseResult.success) {
@@ -497,7 +496,7 @@ const app = new Elysia()
 							event,
 							query,
 							clientId,
-							userAgent,
+							userAgent
 						);
 						if (botError) {
 							results.push(createBotDetectedResponse(eventType));
@@ -509,7 +508,7 @@ const app = new Elysia()
 							event,
 							request,
 							query,
-							clientId,
+							clientId
 						);
 
 						if (!parseResult.success) {
@@ -525,7 +524,7 @@ const app = new Elysia()
 							event,
 							clientId,
 							userAgent,
-							ip,
+							ip
 						);
 						trackEvents.push(trackEvent);
 						results.push({
@@ -548,7 +547,7 @@ const app = new Elysia()
 							event,
 							query,
 							clientId,
-							userAgent,
+							userAgent
 						);
 						if (botError) {
 							results.push(createBotDetectedResponse(eventType));
@@ -560,7 +559,7 @@ const app = new Elysia()
 							event,
 							request,
 							query,
-							clientId,
+							clientId
 						);
 
 						if (!parseResult.success) {
@@ -576,7 +575,7 @@ const app = new Elysia()
 							event,
 							clientId,
 							userAgent,
-							ip,
+							ip
 						);
 						errorEvents.push(errorEvent);
 						results.push({
@@ -590,7 +589,7 @@ const app = new Elysia()
 							event,
 							query,
 							clientId,
-							userAgent,
+							userAgent
 						);
 						if (botError) {
 							results.push(createBotDetectedResponse(eventType));
@@ -602,7 +601,7 @@ const app = new Elysia()
 							event,
 							request,
 							query,
-							clientId,
+							clientId
 						);
 
 						if (!parseResult.success) {
@@ -618,7 +617,7 @@ const app = new Elysia()
 							event,
 							clientId,
 							userAgent,
-							ip,
+							ip
 						);
 						webVitalsEvents.push(vitalsEvent);
 						results.push({
@@ -632,7 +631,7 @@ const app = new Elysia()
 							event,
 							request,
 							query,
-							clientId,
+							clientId
 						);
 
 						if (!parseResult.success) {
@@ -657,7 +656,7 @@ const app = new Elysia()
 							event,
 							query,
 							clientId,
-							userAgent,
+							userAgent
 						);
 						if (botError) {
 							results.push(createBotDetectedResponse(eventType));
@@ -669,7 +668,7 @@ const app = new Elysia()
 							event,
 							request,
 							query,
-							clientId,
+							clientId
 						);
 
 						if (!parseResult.success) {

@@ -67,7 +67,7 @@ export const LinksBuilders: Record<string, SimpleQueryConfig> = {
 			_offset?: number,
 			_timezone?: string,
 			filterConditions?: string[],
-			filterParams?: Record<string, Filter["value"]>,
+			filterParams?: Record<string, Filter["value"]>
 		) => {
 			const limit = _limit || 100;
 			const combinedWhereClause = filterConditions?.length
@@ -213,7 +213,7 @@ export const LinksBuilders: Record<string, SimpleQueryConfig> = {
 			_offset?: number,
 			_timezone?: string,
 			filterConditions?: string[],
-			filterParams?: Record<string, Filter["value"]>,
+			filterParams?: Record<string, Filter["value"]>
 		) => {
 			const limit = _limit || 100;
 			const combinedWhereClause = filterConditions?.length

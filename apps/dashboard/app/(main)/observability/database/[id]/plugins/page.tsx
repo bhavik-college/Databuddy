@@ -102,7 +102,7 @@ function InstallDialog({
 	const [schema, setSchema] = useState("public");
 
 	const selectedExt = availableExtensions.find(
-		(ext) => ext.name === selectedExtension,
+		(ext) => ext.name === selectedExtension
 	);
 
 	const handleInstall = () => {
@@ -278,7 +278,7 @@ function ConfigurationRequiredDialog({
 										className="absolute top-1 right-1"
 										onClick={() =>
 											copyToClipboard(
-												`shared_preload_libraries = '${extensionName}'`,
+												`shared_preload_libraries = '${extensionName}'`
 											)
 										}
 										size="sm"
@@ -478,7 +478,7 @@ export default function ExtensionsPage({ params }: ExtensionsPageProps) {
 				setInstallDialog(false);
 				setError(null);
 				setSuccess(
-					`Extension "${variables.extensionName}" installed successfully`,
+					`Extension "${variables.extensionName}" installed successfully`
 				);
 				setTimeout(() => setSuccess(null), 5000);
 			} else if (result.warnings) {
@@ -486,7 +486,7 @@ export default function ExtensionsPage({ params }: ExtensionsPageProps) {
 				const isConfigRequired = result.warnings.some(
 					(warning) =>
 						warning.includes("shared_preload_libraries") ||
-						warning.includes("restart"),
+						warning.includes("restart")
 				);
 
 				if (isConfigRequired) {
@@ -532,7 +532,7 @@ export default function ExtensionsPage({ params }: ExtensionsPageProps) {
 				setForceCascade(false);
 				setError(null);
 				setSuccess(
-					`Extension "${variables.extensionName}" removed successfully`,
+					`Extension "${variables.extensionName}" removed successfully`
 				);
 				setTimeout(() => setSuccess(null), 5000);
 			} else if (result.warnings) {
@@ -568,12 +568,12 @@ export default function ExtensionsPage({ params }: ExtensionsPageProps) {
 	const filteredInstalled = extensions.filter(
 		(ext) =>
 			ext.name.toLowerCase().includes(search.toLowerCase()) ||
-			ext.description.toLowerCase().includes(search.toLowerCase()),
+			ext.description.toLowerCase().includes(search.toLowerCase())
 	);
 	const filteredAvailable = availableExtensions.filter(
 		(ext) =>
 			ext.name.toLowerCase().includes(search.toLowerCase()) ||
-			ext.description.toLowerCase().includes(search.toLowerCase()),
+			ext.description.toLowerCase().includes(search.toLowerCase())
 	);
 
 	const stats = {

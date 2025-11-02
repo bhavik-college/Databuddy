@@ -67,7 +67,7 @@ export const SummaryBuilders: Record<string, SimpleQueryConfig> = {
 			helpers?: {
 				sessionAttributionCTE: (timeField?: string) => string;
 				sessionAttributionJoin: (alias?: string) => string;
-			},
+			}
 		) => {
 			const tz = timezone || "UTC";
 			const combinedWhereClause = filterConditions?.length
@@ -292,7 +292,7 @@ export const SummaryBuilders: Record<string, SimpleQueryConfig> = {
 			helpers?: {
 				sessionAttributionCTE: (timeField?: string) => string;
 				sessionAttributionJoin: (alias?: string) => string;
-			},
+			}
 		) => {
 			const tz = timezone || "UTC";
 			const isHourly = _granularity === "hour" || _granularity === "hourly";
@@ -538,7 +538,7 @@ export const SummaryBuilders: Record<string, SimpleQueryConfig> = {
 			_offset?: number,
 			_timezone?: string,
 			filterConditions?: string[],
-			filterParams?: Record<string, Filter["value"]>,
+			filterParams?: Record<string, Filter["value"]>
 		) => {
 			const combinedWhereClause = filterConditions?.length
 				? `AND ${filterConditions.join(" AND ")}`

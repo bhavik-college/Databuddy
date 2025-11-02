@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
 		if (!code) {
 			return NextResponse.redirect(
-				`${process.env.BETTER_AUTH_URL}/auth/error?error=missing_code`,
+				`${process.env.BETTER_AUTH_URL}/auth/error?error=missing_code`
 			);
 		}
 
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
 			const completeIntegrationUrl = `${env.BETTER_AUTH_URL}${callbackUrl.pathname}${callbackUrl.search}`;
 
 			return NextResponse.redirect(
-				`${env.BETTER_AUTH_URL}/register?callback=${encodeURIComponent(completeIntegrationUrl)}`,
+				`${env.BETTER_AUTH_URL}/register?callback=${encodeURIComponent(completeIntegrationUrl)}`
 			);
 		}
 
@@ -60,12 +60,12 @@ export async function GET(request: NextRequest) {
 					client_secret: env.VERCEL_CLIENT_SECRET as string,
 					redirect_uri: redirectUri,
 				}),
-			},
+			}
 		);
 
 		if (!tokenResponse.ok) {
 			return NextResponse.redirect(
-				`${env.BETTER_AUTH_URL}/auth/error?error=token_exchange_failed`,
+				`${env.BETTER_AUTH_URL}/auth/error?error=token_exchange_failed`
 			);
 		}
 
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
 
 		if (!userResponse.ok) {
 			return NextResponse.redirect(
-				`${env.BETTER_AUTH_URL}/auth/error?error=user_fetch_failed`,
+				`${env.BETTER_AUTH_URL}/auth/error?error=user_fetch_failed`
 			);
 		}
 
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
 
 		if (!(userInfo.email && userInfo.id)) {
 			return NextResponse.redirect(
-				`${env.BETTER_AUTH_URL}/auth/error?error=invalid_user_info`,
+				`${env.BETTER_AUTH_URL}/auth/error?error=invalid_user_info`
 			);
 		}
 
@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
 	} catch (error) {
 		console.error("Vercel OAuth callback error:", error);
 		return NextResponse.redirect(
-			`${env.BETTER_AUTH_URL}/auth/error?error=internal_error`,
+			`${env.BETTER_AUTH_URL}/auth/error?error=internal_error`
 		);
 	}
 }

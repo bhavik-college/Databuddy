@@ -64,7 +64,7 @@ function validateFormData(data: unknown): { valid: boolean; errors: string[] } {
 		formData.whyAmbassador.trim().length < 10
 	) {
 		errors.push(
-			"Please explain why you want to be an ambassador (minimum 10 characters)",
+			"Please explain why you want to be an ambassador (minimum 10 characters)"
 		);
 	}
 
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
 			await logger.warning(
 				"Ambassador Form Rate Limited",
 				`IP ${clientIP} exceeded rate limit for ambassador form submissions`,
-				{ ip: clientIP, resetTime: rateLimitResult.resetTime },
+				{ ip: clientIP, resetTime: rateLimitResult.resetTime }
 			);
 
 			return NextResponse.json(
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
 					error: "Too many submissions. Please try again later.",
 					resetTime: rateLimitResult.resetTime,
 				},
-				{ status: 429 },
+				{ status: 429 }
 			);
 		}
 
@@ -138,12 +138,12 @@ export async function POST(request: NextRequest) {
 			await logger.warning(
 				"Ambassador Form Validation Failed",
 				"Form submission failed validation",
-				{ errors: validation.errors, ip: clientIP },
+				{ errors: validation.errors, ip: clientIP }
 			);
 
 			return NextResponse.json(
 				{ error: "Validation failed", details: validation.errors },
-				{ status: 400 },
+				{ status: 400 }
 			);
 		}
 
@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
 				ip: clientIP,
 				userAgent: request.headers.get("user-agent"),
 				timestamp: new Date().toISOString(),
-			},
+			}
 		);
 
 		return NextResponse.json({
@@ -180,12 +180,12 @@ export async function POST(request: NextRequest) {
 			{
 				ip: getClientIP(request),
 				userAgent: request.headers.get("user-agent"),
-			},
+			}
 		);
 
 		return NextResponse.json(
 			{ error: "Internal server error" },
-			{ status: 500 },
+			{ status: 500 }
 		);
 	}
 }

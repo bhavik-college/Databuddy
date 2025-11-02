@@ -15,7 +15,7 @@ const createColorSet = (
 	primary: string,
 	secondary: string,
 	light: string,
-	gradient: string,
+	gradient: string
 ) => ({
 	primary,
 	secondary,
@@ -28,105 +28,105 @@ export const METRIC_COLORS = {
 		"#3b82f6",
 		"#1d4ed8",
 		"#dbeafe",
-		"from-blue-500/20 to-blue-600/5",
+		"from-blue-500/20 to-blue-600/5"
 	),
 	visitors: createColorSet(
 		"#10b981",
 		"#059669",
 		"#d1fae5",
-		"from-emerald-500/20 to-emerald-600/5",
+		"from-emerald-500/20 to-emerald-600/5"
 	),
 	sessions: createColorSet(
 		"#8b5cf6",
 		"#7c3aed",
 		"#ede9fe",
-		"from-violet-500/20 to-violet-600/5",
+		"from-violet-500/20 to-violet-600/5"
 	),
 	bounce_rate: createColorSet(
 		"#f59e0b",
 		"#d97706",
 		"#fef3c7",
-		"from-amber-500/20 to-amber-600/5",
+		"from-amber-500/20 to-amber-600/5"
 	),
 	session_duration: createColorSet(
 		"#ef4444",
 		"#dc2626",
 		"#fee2e2",
-		"from-red-500/20 to-red-600/5",
+		"from-red-500/20 to-red-600/5"
 	),
 	// Core Web Vitals
 	avg_fcp: createColorSet(
 		"#06b6d4",
 		"#0891b2",
 		"#cffafe",
-		"from-cyan-500/20 to-cyan-600/5",
+		"from-cyan-500/20 to-cyan-600/5"
 	),
 	p50_fcp: createColorSet(
 		"#0ea5e9",
 		"#0284c7",
 		"#e0f2fe",
-		"from-sky-500/20 to-sky-600/5",
+		"from-sky-500/20 to-sky-600/5"
 	),
 	avg_lcp: createColorSet(
 		"#10b981",
 		"#059669",
 		"#d1fae5",
-		"from-emerald-500/20 to-emerald-600/5",
+		"from-emerald-500/20 to-emerald-600/5"
 	),
 	p50_lcp: createColorSet(
 		"#22c55e",
 		"#16a34a",
 		"#dcfce7",
-		"from-green-500/20 to-green-600/5",
+		"from-green-500/20 to-green-600/5"
 	),
 	avg_cls: createColorSet(
 		"#f59e0b",
 		"#d97706",
 		"#fef3c7",
-		"from-amber-500/20 to-amber-600/5",
+		"from-amber-500/20 to-amber-600/5"
 	),
 	p50_cls: createColorSet(
 		"#eab308",
 		"#ca8a04",
 		"#fefce8",
-		"from-yellow-500/20 to-yellow-600/5",
+		"from-yellow-500/20 to-yellow-600/5"
 	),
 	avg_fid: createColorSet(
 		"#8b5cf6",
 		"#7c3aed",
 		"#ede9fe",
-		"from-violet-500/20 to-violet-600/5",
+		"from-violet-500/20 to-violet-600/5"
 	),
 	p50_fid: createColorSet(
 		"#a855f7",
 		"#9333ea",
 		"#f3e8ff",
-		"from-purple-500/20 to-purple-600/5",
+		"from-purple-500/20 to-purple-600/5"
 	),
 	avg_inp: createColorSet(
 		"#ec4899",
 		"#db2777",
 		"#fce7f3",
-		"from-pink-500/20 to-pink-600/5",
+		"from-pink-500/20 to-pink-600/5"
 	),
 	p50_inp: createColorSet(
 		"#f43f5e",
 		"#e11d48",
 		"#ffe4e6",
-		"from-rose-500/20 to-rose-600/5",
+		"from-rose-500/20 to-rose-600/5"
 	),
 	// Load time metrics
 	avg_load_time: createColorSet(
 		"#3b82f6",
 		"#1d4ed8",
 		"#dbeafe",
-		"from-blue-500/20 to-blue-600/5",
+		"from-blue-500/20 to-blue-600/5"
 	),
 	p50_load_time: createColorSet(
 		"#06b6d4",
 		"#0891b2",
 		"#cffafe",
-		"from-cyan-500/20 to-cyan-600/5",
+		"from-cyan-500/20 to-cyan-600/5"
 	),
 } as const;
 
@@ -197,7 +197,7 @@ const createMetric = (
 	colorKey: keyof typeof METRIC_COLORS,
 	icon: React.ComponentType<{ className?: string }>,
 	formatValue?: (value: number, row: ChartDataRow) => string,
-	category: "analytics" | "performance" | "core_web_vitals" = "analytics",
+	category: "analytics" | "performance" | "core_web_vitals" = "analytics"
 ): MetricConfig => ({
 	key,
 	label,
@@ -211,20 +211,20 @@ const createMetric = (
 
 export const ANALYTICS_METRICS: MetricConfig[] = [
 	createMetric("pageviews", "Pageviews", "pageviews", Eye, (value) =>
-		value.toLocaleString(),
+		value.toLocaleString()
 	),
 	createMetric("visitors", "Visitors", "visitors", Users, (value) =>
-		value.toLocaleString(),
+		value.toLocaleString()
 	),
 	createMetric("sessions", "Sessions", "sessions", TrendingUp, (value) =>
-		value.toLocaleString(),
+		value.toLocaleString()
 	),
 	createMetric(
 		"bounce_rate",
 		"Bounce Rate",
 		"bounce_rate",
 		MousePointer,
-		(value) => `${value.toFixed(1)}%`,
+		(value) => `${value.toFixed(1)}%`
 	),
 	createMetric(
 		"avg_session_duration",
@@ -234,7 +234,7 @@ export const ANALYTICS_METRICS: MetricConfig[] = [
 		(value, row) =>
 			typeof row.avg_session_duration_formatted === "string"
 				? row.avg_session_duration_formatted
-				: formatDuration(value),
+				: formatDuration(value)
 	),
 ];
 
@@ -246,7 +246,7 @@ export const PERFORMANCE_METRICS: MetricConfig[] = [
 		"avg_load_time",
 		Clock,
 		formatPerformanceTime,
-		"performance",
+		"performance"
 	),
 	createMetric(
 		"p50_load_time",
@@ -254,7 +254,7 @@ export const PERFORMANCE_METRICS: MetricConfig[] = [
 		"p50_load_time",
 		Clock,
 		formatPerformanceTime,
-		"performance",
+		"performance"
 	),
 ];
 
@@ -266,7 +266,7 @@ export const CORE_WEB_VITALS_METRICS: MetricConfig[] = [
 		"avg_fcp",
 		Zap,
 		formatPerformanceTime,
-		"core_web_vitals",
+		"core_web_vitals"
 	),
 	createMetric(
 		"p50_fcp",
@@ -274,7 +274,7 @@ export const CORE_WEB_VITALS_METRICS: MetricConfig[] = [
 		"p50_fcp",
 		Zap,
 		formatPerformanceTime,
-		"core_web_vitals",
+		"core_web_vitals"
 	),
 	// LCP metrics
 	createMetric(
@@ -283,7 +283,7 @@ export const CORE_WEB_VITALS_METRICS: MetricConfig[] = [
 		"avg_lcp",
 		Activity,
 		formatPerformanceTime,
-		"core_web_vitals",
+		"core_web_vitals"
 	),
 	createMetric(
 		"p50_lcp",
@@ -291,7 +291,7 @@ export const CORE_WEB_VITALS_METRICS: MetricConfig[] = [
 		"p50_lcp",
 		Activity,
 		formatPerformanceTime,
-		"core_web_vitals",
+		"core_web_vitals"
 	),
 	// CLS metrics
 	createMetric(
@@ -300,7 +300,7 @@ export const CORE_WEB_VITALS_METRICS: MetricConfig[] = [
 		"avg_cls",
 		Gauge,
 		formatCLS,
-		"core_web_vitals",
+		"core_web_vitals"
 	),
 	createMetric(
 		"p50_cls",
@@ -308,7 +308,7 @@ export const CORE_WEB_VITALS_METRICS: MetricConfig[] = [
 		"p50_cls",
 		Gauge,
 		formatCLS,
-		"core_web_vitals",
+		"core_web_vitals"
 	),
 	// FID metrics
 	createMetric(
@@ -317,7 +317,7 @@ export const CORE_WEB_VITALS_METRICS: MetricConfig[] = [
 		"avg_fid",
 		MousePointer,
 		formatPerformanceTime,
-		"core_web_vitals",
+		"core_web_vitals"
 	),
 	createMetric(
 		"p50_fid",
@@ -325,7 +325,7 @@ export const CORE_WEB_VITALS_METRICS: MetricConfig[] = [
 		"p50_fid",
 		MousePointer,
 		formatPerformanceTime,
-		"core_web_vitals",
+		"core_web_vitals"
 	),
 	// INP metrics
 	createMetric(
@@ -334,7 +334,7 @@ export const CORE_WEB_VITALS_METRICS: MetricConfig[] = [
 		"avg_inp",
 		Activity,
 		formatPerformanceTime,
-		"core_web_vitals",
+		"core_web_vitals"
 	),
 	createMetric(
 		"p50_inp",
@@ -342,21 +342,21 @@ export const CORE_WEB_VITALS_METRICS: MetricConfig[] = [
 		"p50_inp",
 		Activity,
 		formatPerformanceTime,
-		"core_web_vitals",
+		"core_web_vitals"
 	),
 ];
 
 // Error metrics
 export const ERROR_METRICS: MetricConfig[] = [
 	createMetric("total_errors", "Total Errors", "bounce_rate", Bug, (value) =>
-		value.toLocaleString(),
+		value.toLocaleString()
 	),
 	createMetric(
 		"affected_users",
 		"Affected Users",
 		"session_duration",
 		Users,
-		(value) => value.toLocaleString(),
+		(value) => value.toLocaleString()
 	),
 ];
 

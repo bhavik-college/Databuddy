@@ -6,7 +6,7 @@ import type { TrackingOptions } from "./types";
  */
 export function generateScriptTag(
 	websiteId: string,
-	trackingOptions: TrackingOptions,
+	trackingOptions: TrackingOptions
 ): string {
 	const isLocalhost = process.env.NODE_ENV === "development";
 	const scriptUrl = isLocalhost
@@ -30,7 +30,7 @@ export function generateScriptTag(
 		})
 		.map(
 			([key, value]) =>
-				`data-${key.replace(/([A-Z])/g, "-$1").toLowerCase()}="${value}"`,
+				`data-${key.replace(/([A-Z])/g, "-$1").toLowerCase()}="${value}"`
 		)
 		.join("\n    ");
 
@@ -49,7 +49,7 @@ ${optionsLine}    crossorigin="anonymous"
  */
 export function generateNpmCode(
 	websiteId: string,
-	trackingOptions: TrackingOptions,
+	trackingOptions: TrackingOptions
 ): string {
 	const meaningfulProps = Object.entries(trackingOptions)
 		.filter(([key, value]) => {
@@ -94,7 +94,7 @@ function AppLayout({ children }) {
  */
 export function generateNpmComponentCode(
 	websiteId: string,
-	trackingOptions: TrackingOptions,
+	trackingOptions: TrackingOptions
 ): string {
 	const meaningfulProps = Object.entries(trackingOptions)
 		.filter(([key, value]) => {
@@ -129,7 +129,7 @@ export function generateNpmComponentCode(
  * Generate NPM code for Vercel integration (auto-detects clientId)
  */
 export function generateVercelNpmCode(
-	trackingOptions: TrackingOptions,
+	trackingOptions: TrackingOptions
 ): string {
 	const meaningfulProps = Object.entries(trackingOptions)
 		.filter(([key, value]) => {

@@ -31,7 +31,7 @@ type DateInput = Date | string | number | null;
  */
 export function formatDate(
 	date: DateInput,
-	options?: DateFormatOptions,
+	options?: DateFormatOptions
 ): string {
 	if (!date) {
 		return "";
@@ -59,7 +59,7 @@ export function formatDate(
  */
 export function convertToTimezone(
 	date: Exclude<DateInput, null>,
-	timezone = "UTC",
+	timezone = "UTC"
 ): Date {
 	return dayjs(date).tz(timezone).toDate();
 }

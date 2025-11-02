@@ -19,13 +19,13 @@ interface ExtendedRedis extends Redis {
 	setJson: <T = any>(
 		key: string,
 		value: T,
-		expireInSec: number,
+		expireInSec: number
 	) => Promise<void>;
 }
 
 const createRedisClient = (
 	url: string,
-	overrides: RedisOptions = {},
+	overrides: RedisOptions = {}
 ): ExtendedRedis => {
 	const client = new Redis(url, {
 		...options,
@@ -75,7 +75,7 @@ const createRedisClient = (
 	client.setJson = async <T = any>(
 		key: string,
 		value: T,
-		expireInSec: number,
+		expireInSec: number
 	): Promise<void> => {
 		await client.setex(key, expireInSec, SuperJSON.stringify(value));
 	};
@@ -127,7 +127,7 @@ export const getRawRedis = () => {
 export async function getLock(
 	key: string,
 	value: string,
-	timeout: number,
+	timeout: number
 ): Promise<boolean> {
 	const lock = await redis.set(key, value, "PX", timeout, "NX");
 	return lock === "OK";
@@ -136,7 +136,7 @@ export async function getLock(
 // Helper to release lock
 export async function releaseLock(
 	key: string,
-	value: string,
+	value: string
 ): Promise<boolean> {
 	const script = `
     if redis.call("get", KEYS[1]) == ARGV[1] then

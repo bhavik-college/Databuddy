@@ -73,7 +73,7 @@ function FilterEditorForm({
 	const [searchValue, setSearchValue] = useState("");
 	const [isOpen, setIsOpen] = useState(false);
 	const [filteredSuggestions, setFilteredSuggestions] = useState(
-		suggestions.slice(0, MAX_SUGGESTIONS),
+		suggestions.slice(0, MAX_SUGGESTIONS)
 	);
 
 	const handleInputChange = useCallback(
@@ -91,7 +91,7 @@ function FilterEditorForm({
 				setFilteredSuggestions(suggestions.slice(0, MAX_SUGGESTIONS));
 			}
 		},
-		[suggestions],
+		[suggestions]
 	);
 
 	const handleSelect = (suggestion: string) => {
@@ -107,8 +107,8 @@ function FilterEditorForm({
 					onValueChange={(operatorValue) =>
 						setOperator(
 							operatorOptions.find(
-								(o) => o.value === operatorValue,
-							) as OperatorOption,
+								(o) => o.value === operatorValue
+							) as OperatorOption
 						)
 					}
 					value={operator.value}
@@ -245,7 +245,7 @@ function FilterForm({
 					return [];
 			}
 		},
-		[autocompleteData],
+		[autocompleteData]
 	);
 
 	if (isAutocompleteDataError) {

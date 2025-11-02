@@ -44,7 +44,7 @@ class DiscordWebhook {
 
 			if (!response.ok) {
 				console.error(
-					`Discord webhook failed: ${response.status} ${response.statusText}`,
+					`Discord webhook failed: ${response.status} ${response.statusText}`
 				);
 				return false;
 			}
@@ -59,7 +59,7 @@ class DiscordWebhook {
 	async logSuccess(
 		title: string,
 		message: string,
-		metadata?: Record<string, unknown>,
+		metadata?: Record<string, unknown>
 	): Promise<boolean> {
 		return await this.sendMessage({
 			embeds: [
@@ -80,7 +80,7 @@ class DiscordWebhook {
 	async logWarning(
 		title: string,
 		message: string,
-		metadata?: Record<string, unknown>,
+		metadata?: Record<string, unknown>
 	): Promise<boolean> {
 		return await this.sendMessage({
 			embeds: [
@@ -101,7 +101,7 @@ class DiscordWebhook {
 	async logError(
 		title: string,
 		message: string,
-		metadata?: Record<string, unknown>,
+		metadata?: Record<string, unknown>
 	): Promise<boolean> {
 		return await this.sendMessage({
 			embeds: [
@@ -121,7 +121,7 @@ class DiscordWebhook {
 
 	async logException(
 		error: Error,
-		context?: Record<string, unknown>,
+		context?: Record<string, unknown>
 	): Promise<boolean> {
 		const errorMetadata = {
 			error: error.message,
@@ -132,7 +132,7 @@ class DiscordWebhook {
 		return await this.logError(
 			"Exception Occurred",
 			error.message,
-			errorMetadata,
+			errorMetadata
 		);
 	}
 
@@ -156,12 +156,12 @@ export const logger = {
 	success: (
 		title: string,
 		message: string,
-		metadata?: Record<string, unknown>,
+		metadata?: Record<string, unknown>
 	) => discordWebhook.logSuccess(title, message, metadata),
 	warning: (
 		title: string,
 		message: string,
-		metadata?: Record<string, unknown>,
+		metadata?: Record<string, unknown>
 	) => discordWebhook.logWarning(title, message, metadata),
 	error: (title: string, message: string, metadata?: Record<string, unknown>) =>
 		discordWebhook.logError(title, message, metadata),

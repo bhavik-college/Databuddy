@@ -37,7 +37,7 @@ function downloadFile(blob: Blob, filename: string) {
 // Helper function to extract filename from response
 function getFilenameFromResponse(
 	response: Response,
-	websiteName?: string,
+	websiteName?: string
 ): string {
 	const contentDisposition = response.headers.get("Content-Disposition");
 	const defaultFilename = `${websiteName || "website"}-export-${new Date().toISOString().split("T")[0]}.zip`;
@@ -56,7 +56,7 @@ function getFilenameFromResponse(
 async function exportDataFromAPI(
 	websiteId: string,
 	websiteName: string | undefined,
-	{ format = "csv", startDate, endDate }: ExportParams,
+	{ format = "csv", startDate, endDate }: ExportParams
 ): Promise<{ filename: string }> {
 	const response = await fetch(`${API_BASE_URL}/v1/export/data`, {
 		method: "POST",

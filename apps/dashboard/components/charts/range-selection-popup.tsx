@@ -15,13 +15,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -70,10 +63,10 @@ export function RangeSelectionPopup({
 	const [selectedTags, setSelectedTags] = useState<string[]>([]);
 	const [customTag, setCustomTag] = useState("");
 	const [selectedColor, setSelectedColor] = useState<string>(
-		DEFAULT_ANNOTATION_VALUES.color,
+		DEFAULT_ANNOTATION_VALUES.color
 	);
 	const [isPublic, setIsPublic] = useState<boolean>(
-		DEFAULT_ANNOTATION_VALUES.isPublic,
+		DEFAULT_ANNOTATION_VALUES.isPublic
 	);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -162,10 +155,10 @@ export function RangeSelectionPopup({
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-sidebar-foreground/5">
 			<div className="mx-4 w-full max-w-md">
 				<div
+					aria-describedby="range-selection-description"
+					aria-labelledby="range-selection-title"
 					className="rounded border border-sidebar-border bg-sidebar shadow-sm"
 					role="dialog"
-					aria-labelledby="range-selection-title"
-					aria-describedby="range-selection-description"
 				>
 					<div className="flex items-center justify-between border-sidebar-border border-b px-4 py-3">
 						<div className="flex items-center gap-3">
@@ -177,14 +170,14 @@ export function RangeSelectionPopup({
 							</div>
 							<div>
 								<h2
-									id="range-selection-title"
 									className="font-semibold text-lg text-sidebar-foreground tracking-tight"
+									id="range-selection-title"
 								>
 									{showAnnotationForm ? "Add Annotation" : "Point Selected"}
 								</h2>
 								<p
-									id="range-selection-description"
 									className="text-sidebar-foreground/70 text-sm"
+									id="range-selection-description"
 								>
 									{dateRange.startDate.toLocaleDateString("en-US", {
 										month: "short",
@@ -200,81 +193,24 @@ export function RangeSelectionPopup({
 							</div>
 						</div>
 						<Button
-							variant="ghost"
-							size="sm"
-							onClick={onClose}
 							className="h-8 w-8 p-0 hover:bg-sidebar-accent"
+							onClick={onClose}
+							size="sm"
+							variant="ghost"
 						>
 							<XIcon className="h-4 w-4" />
 						</Button>
 					</div>
 
 					<div className="space-y-6 p-4">
-						{!showAnnotationForm ? (
-							<>
-								{/* Action Buttons */}
-								<div className="space-y-3">
-									<Button
-										onClick={handleZoom}
-										className="w-full h-auto py-3 flex items-center justify-start gap-3 border-sidebar-border hover:bg-sidebar-accent"
-										variant="outline"
-										size="lg"
-										aria-label="Zoom to range (Ctrl+Z)"
-									>
-										<div className="flex h-10 w-10 items-center justify-center rounded bg-sidebar-accent">
-											<MagnifyingGlassIcon
-												className="h-5 w-5 text-sidebar-ring"
-												weight="duotone"
-											/>
-										</div>
-										<div className="text-left flex-1">
-											<div className="font-semibold text-sm text-sidebar-foreground">
-												Zoom to Range
-											</div>
-											<div className="text-xs text-sidebar-foreground/70 font-normal">
-												Focus on this period for detailed analysis
-											</div>
-										</div>
-										<div className="text-xs text-sidebar-foreground/50">
-											Ctrl+Z
-										</div>
-									</Button>
-
-									<Button
-										onClick={() => setShowAnnotationForm(true)}
-										className="w-full h-auto py-3 flex items-center justify-start gap-3 border-sidebar-border hover:bg-sidebar-accent"
-										variant="outline"
-										size="lg"
-										aria-label="Add annotation (Ctrl+A)"
-									>
-										<div className="flex h-10 w-10 items-center justify-center rounded bg-sidebar-accent">
-											<NoteIcon
-												className="h-5 w-5 text-sidebar-ring"
-												weight="duotone"
-											/>
-										</div>
-										<div className="text-left flex-1">
-											<div className="font-semibold text-sm text-sidebar-foreground">
-												Add Annotation
-											</div>
-											<div className="text-xs text-sidebar-foreground/70 font-normal">
-												Mark this period with a note or label
-											</div>
-										</div>
-										<div className="text-xs text-sidebar-foreground/50">
-											Ctrl+A
-										</div>
-									</Button>
-								</div>
-							</>
-						) : (
+						{showAnnotationForm ? (
 							<>
 								{/* Back Button */}
 								<Button
-									variant="ghost"
-									size="sm"
-									onClick={() => setShowAnnotationForm(false)}
 									className="mb-2"
+									onClick={() => setShowAnnotationForm(false)}
+									size="sm"
+									variant="ghost"
 								>
 									← Back to options
 								</Button>
@@ -289,36 +225,36 @@ export function RangeSelectionPopup({
 												weight="duotone"
 											/>
 											<Label
-												htmlFor="annotation-text"
 												className="font-medium text-sidebar-foreground"
+												htmlFor="annotation-text"
 											>
 												What happened during this period?
 											</Label>
 										</div>
 										<Textarea
-											id="annotation-text"
-											placeholder="e.g., Product launch, marketing campaign, bug fix, holiday impact..."
-											value={annotationText}
-											onChange={(e) => setAnnotationText(e.target.value)}
-											rows={3}
-											maxLength={DEFAULT_ANNOTATION_VALUES.maxTextLength}
+											aria-describedby="annotation-text-help annotation-text-count"
+											autoFocus
 											className="resize-none"
 											disabled={isSubmitting}
-											autoFocus
-											aria-describedby="annotation-text-help annotation-text-count"
+											id="annotation-text"
+											maxLength={DEFAULT_ANNOTATION_VALUES.maxTextLength}
+											onChange={(e) => setAnnotationText(e.target.value)}
+											placeholder="e.g., Product launch, marketing campaign, bug fix, holiday impact..."
+											rows={3}
+											value={annotationText}
 										/>
-										<div className="flex justify-between items-center text-xs text-sidebar-foreground/70">
+										<div className="flex items-center justify-between text-sidebar-foreground/70 text-xs">
 											<span id="annotation-text-help">
 												Keep it concise and descriptive
 											</span>
 											<span
-												id="annotation-text-count"
 												className={
 													annotationText.length >
 													DEFAULT_ANNOTATION_VALUES.maxTextLength * 0.9
 														? "text-warning"
 														: ""
 												}
+												id="annotation-text-count"
 											>
 												{annotationText.length}/
 												{DEFAULT_ANNOTATION_VALUES.maxTextLength}
@@ -330,8 +266,8 @@ export function RangeSelectionPopup({
 											<div className="space-y-1">
 												{validationErrors.map((error, index) => (
 													<div
+														className="flex items-center gap-1 text-destructive text-xs"
 														key={index}
-														className="text-xs text-destructive flex items-center gap-1"
 													>
 														<span>⚠</span>
 														{error}
@@ -354,13 +290,13 @@ export function RangeSelectionPopup({
 										</div>
 
 										{selectedTags.length > 0 && (
-											<div className="flex flex-wrap gap-2 mb-3">
+											<div className="mb-3 flex flex-wrap gap-2">
 												{selectedTags.map((tag) => (
 													<Badge
+														className="cursor-pointer transition-colors hover:bg-destructive hover:text-destructive-foreground"
 														key={tag}
-														variant="secondary"
-														className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-colors"
 														onClick={() => removeTag(tag)}
+														variant="secondary"
 													>
 														{tag} ×
 													</Badge>
@@ -371,8 +307,8 @@ export function RangeSelectionPopup({
 										<div className="space-y-3">
 											<div className="flex gap-2">
 												<Input
-													placeholder="Add custom tag"
-													value={customTag}
+													className="flex-1"
+													disabled={isSubmitting}
 													onChange={(e) => setCustomTag(e.target.value)}
 													onKeyDown={(e) => {
 														if (e.key === "Enter") {
@@ -380,33 +316,33 @@ export function RangeSelectionPopup({
 															handleCustomTagSubmit();
 														}
 													}}
-													className="flex-1"
-													disabled={isSubmitting}
+													placeholder="Add custom tag"
+													value={customTag}
 												/>
 												<Button
-													variant="outline"
-													size="sm"
-													onClick={handleCustomTagSubmit}
 													disabled={!customTag.trim() || isSubmitting}
+													onClick={handleCustomTagSubmit}
+													size="sm"
+													variant="outline"
 												>
 													<PlusIcon className="h-4 w-4" />
 												</Button>
 											</div>
 
 											<div className="space-y-2">
-												<div className="text-xs text-sidebar-foreground/70">
+												<div className="text-sidebar-foreground/70 text-xs">
 													Quick add:
 												</div>
 												<div className="flex flex-wrap gap-2">
 													{COMMON_ANNOTATION_TAGS.filter(
-														(tag) => !selectedTags.includes(tag.value),
+														(tag) => !selectedTags.includes(tag.value)
 													).map((tag) => (
 														<button
+															className="flex items-center gap-1 rounded border border-sidebar-border bg-sidebar px-3 py-1 text-sidebar-foreground text-xs transition-colors hover:bg-sidebar-accent disabled:cursor-not-allowed disabled:opacity-50"
+															disabled={isSubmitting}
 															key={tag.value}
 															onClick={() => addTag(tag.value)}
-															className="flex items-center gap-1 rounded border border-sidebar-border bg-sidebar px-3 py-1 text-xs text-sidebar-foreground hover:bg-sidebar-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 															style={{ borderColor: tag.color }}
-															disabled={isSubmitting}
 														>
 															<div
 																className="h-2 w-2 rounded-full"
@@ -428,17 +364,17 @@ export function RangeSelectionPopup({
 										<div className="flex gap-2">
 											{ANNOTATION_COLORS.map((color) => (
 												<button
-													key={color.value}
 													className={cn(
-														"w-10 h-10 rounded-full border-2 transition-all hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
+														"h-10 w-10 rounded-full border-2 transition-all hover:scale-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
 														selectedColor === color.value
-															? "border-sidebar-ring scale-110 shadow-sm"
-															: "border-sidebar-border hover:border-sidebar-ring/50",
+															? "scale-110 border-sidebar-ring shadow-sm"
+															: "border-sidebar-border hover:border-sidebar-ring/50"
 													)}
-													style={{ backgroundColor: color.value }}
-													onClick={() => setSelectedColor(color.value)}
-													title={color.label}
 													disabled={isSubmitting}
+													key={color.value}
+													onClick={() => setSelectedColor(color.value)}
+													style={{ backgroundColor: color.value }}
+													title={color.label}
 												/>
 											))}
 										</div>
@@ -460,58 +396,115 @@ export function RangeSelectionPopup({
 											)}
 											<div>
 												<Label
+													className="font-medium text-sidebar-foreground text-sm"
 													htmlFor="is-public"
-													className="font-medium text-sm text-sidebar-foreground"
 												>
 													Public annotation
 												</Label>
-												<div className="text-xs text-sidebar-foreground/70">
+												<div className="text-sidebar-foreground/70 text-xs">
 													Visible to other team members
 												</div>
 											</div>
 										</div>
 										<Switch
-											id="is-public"
 											checked={isPublic}
-											onCheckedChange={setIsPublic}
 											disabled={isSubmitting}
+											id="is-public"
+											onCheckedChange={setIsPublic}
 										/>
 									</div>
 
 									{/* Action Buttons */}
 									<div className="flex gap-3 pt-2">
 										<Button
-											variant="outline"
-											onClick={onClose}
 											className="flex-1"
-											size="lg"
 											disabled={isSubmitting}
+											onClick={onClose}
+											size="lg"
+											variant="outline"
 										>
 											Cancel
 										</Button>
 										<Button
-											onClick={handleCreateAnnotation}
-											disabled={!annotationText.trim() || isSubmitting}
-											className="flex-1"
-											size="lg"
 											aria-label="Create annotation (Ctrl+Enter)"
+											className="flex-1"
+											disabled={!annotationText.trim() || isSubmitting}
+											onClick={handleCreateAnnotation}
+											size="lg"
 										>
 											{isSubmitting ? (
 												<>
-													<div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
+													<div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
 													Creating...
 												</>
 											) : (
 												<>
-													<NoteIcon className="h-4 w-4 mr-2" />
+													<NoteIcon className="mr-2 h-4 w-4" />
 													Create Annotation
 												</>
 											)}
-											<span className="text-xs ml-2 opacity-60">
+											<span className="ml-2 text-xs opacity-60">
 												Ctrl+Enter
 											</span>
 										</Button>
 									</div>
+								</div>
+							</>
+						) : (
+							<>
+								{/* Action Buttons */}
+								<div className="space-y-3">
+									<Button
+										aria-label="Zoom to range (Ctrl+Z)"
+										className="flex h-auto w-full items-center justify-start gap-3 border-sidebar-border py-3 hover:bg-sidebar-accent"
+										onClick={handleZoom}
+										size="lg"
+										variant="outline"
+									>
+										<div className="flex h-10 w-10 items-center justify-center rounded bg-sidebar-accent">
+											<MagnifyingGlassIcon
+												className="h-5 w-5 text-sidebar-ring"
+												weight="duotone"
+											/>
+										</div>
+										<div className="flex-1 text-left">
+											<div className="font-semibold text-sidebar-foreground text-sm">
+												Zoom to Range
+											</div>
+											<div className="font-normal text-sidebar-foreground/70 text-xs">
+												Focus on this period for detailed analysis
+											</div>
+										</div>
+										<div className="text-sidebar-foreground/50 text-xs">
+											Ctrl+Z
+										</div>
+									</Button>
+
+									<Button
+										aria-label="Add annotation (Ctrl+A)"
+										className="flex h-auto w-full items-center justify-start gap-3 border-sidebar-border py-3 hover:bg-sidebar-accent"
+										onClick={() => setShowAnnotationForm(true)}
+										size="lg"
+										variant="outline"
+									>
+										<div className="flex h-10 w-10 items-center justify-center rounded bg-sidebar-accent">
+											<NoteIcon
+												className="h-5 w-5 text-sidebar-ring"
+												weight="duotone"
+											/>
+										</div>
+										<div className="flex-1 text-left">
+											<div className="font-semibold text-sidebar-foreground text-sm">
+												Add Annotation
+											</div>
+											<div className="font-normal text-sidebar-foreground/70 text-xs">
+												Mark this period with a note or label
+											</div>
+										</div>
+										<div className="text-sidebar-foreground/50 text-xs">
+											Ctrl+A
+										</div>
+									</Button>
 								</div>
 							</>
 						)}

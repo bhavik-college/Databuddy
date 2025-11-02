@@ -110,14 +110,14 @@ export function ChatHistorySheet({ isOpen, onClose }: ChatHistorySheetProps) {
 						} catch (error) {
 							console.error(
 								`Failed to load messages for ${chat.websiteId}:`,
-								error,
+								error
 							);
 							return {
 								...chat,
 								lastMessage: "Error loading messages",
 							};
 						}
-					}),
+					})
 				);
 
 				setChatHistory(chatsWithPreview);
@@ -137,7 +137,7 @@ export function ChatHistorySheet({ isOpen, onClose }: ChatHistorySheetProps) {
 		try {
 			await chatDB.deleteChat(websiteId);
 			setChatHistory((prev) =>
-				prev.filter((chat) => chat.websiteId !== websiteId),
+				prev.filter((chat) => chat.websiteId !== websiteId)
 			);
 			setDeleteConfirm(null);
 		} catch (error) {
@@ -167,7 +167,7 @@ export function ChatHistorySheet({ isOpen, onClose }: ChatHistorySheetProps) {
 	const handleSelectChat = (websiteId: string, websiteName?: string) => {
 		setWebsiteId(websiteId);
 		setWebsiteData((prev: any) =>
-			prev ? { ...prev, name: websiteName } : prev,
+			prev ? { ...prev, name: websiteName } : prev
 		);
 		onClose();
 	};
@@ -176,7 +176,7 @@ export function ChatHistorySheet({ isOpen, onClose }: ChatHistorySheetProps) {
 		(chat: ChatHistoryItem) =>
 			chat.websiteName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
 			chat.lastMessage?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			chat.websiteId.toLowerCase().includes(searchQuery.toLowerCase()),
+			chat.websiteId.toLowerCase().includes(searchQuery.toLowerCase())
 	);
 
 	return (
@@ -254,7 +254,7 @@ export function ChatHistorySheet({ isOpen, onClose }: ChatHistorySheetProps) {
 												"flex items-start gap-4 rounded-xl border border-border/50 bg-background p-4 shadow-sm",
 												"hover:border-primary/30 hover:bg-primary/5",
 												chat.websiteId === websiteId &&
-													"border-primary/40 bg-primary/10",
+													"border-primary/40 bg-primary/10"
 											)}
 											key={chat.websiteId}
 											onClick={(e: React.MouseEvent) => {
@@ -299,7 +299,7 @@ export function ChatHistorySheet({ isOpen, onClose }: ChatHistorySheetProps) {
 																	e.stopPropagation();
 																	handleExportChat(
 																		chat.websiteId,
-																		chat.websiteName,
+																		chat.websiteName
 																	);
 																}}
 															>

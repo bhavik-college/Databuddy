@@ -46,12 +46,12 @@ export function MetricsChartWithAnnotations({
 	dateRange,
 }: MetricsChartWithAnnotationsProps) {
 	const [editingAnnotation, setEditingAnnotation] = useState<Annotation | null>(
-		null,
+		null
 	);
 	const [isEditing, setIsEditing] = useState(false);
 	const [showAnnotations, setShowAnnotations] = usePersistentState(
 		ANNOTATION_STORAGE_KEYS.visibility(websiteId),
-		true,
+		true
 	);
 
 	const createAnnotation = trpc.annotations.create.useMutation();
@@ -59,7 +59,7 @@ export function MetricsChartWithAnnotations({
 	const deleteAnnotation = trpc.annotations.delete.useMutation();
 
 	const chartContext = useMemo((): ChartContext | null => {
-		if (!dateRange || !data?.length) return null;
+		if (!(dateRange && data?.length)) return null;
 
 		return {
 			dateRange: {
@@ -80,11 +80,11 @@ export function MetricsChartWithAnnotations({
 			},
 			{
 				enabled: !!websiteId && !!chartContext,
-			},
+			}
 		);
 
 	const annotations = useMemo(() => {
-		if (!allAnnotations || !dateRange) return [];
+		if (!(allAnnotations && dateRange)) return [];
 
 		const { startDate, endDate } = dateRange;
 
@@ -111,7 +111,7 @@ export function MetricsChartWithAnnotations({
 		color: string;
 		isPublic: boolean;
 	}) => {
-		if (!websiteId || !chartContext) {
+		if (!(websiteId && chartContext)) {
 			toast.error("Missing required data for annotation creation");
 			return;
 		}
@@ -175,7 +175,7 @@ export function MetricsChartWithAnnotations({
 
 	const handleSaveAnnotation = async (
 		id: string,
-		updates: AnnotationFormData,
+		updates: AnnotationFormData
 	) => {
 		const promise = updateAnnotation.mutateAsync({ id, ...updates });
 
@@ -199,34 +199,34 @@ export function MetricsChartWithAnnotations({
 	return (
 		<>
 			<MetricsChart
-				data={data}
-				isLoading={isLoading}
-				height={height}
-				title={title}
-				description={description}
-				className={className}
-				metricsFilter={metricsFilter}
-				showLegend={showLegend}
-				onRangeSelect={onRangeSelect}
-				onCreateAnnotation={handleCreateAnnotation}
 				annotations={(annotations || []) as Annotation[]}
-				onEditAnnotation={handleEditAnnotation}
-				onDeleteAnnotation={handleDeleteAnnotation}
-				showAnnotations={showAnnotations}
-				onToggleAnnotations={setShowAnnotations}
-				websiteId={websiteId}
+				className={className}
+				data={data}
+				description={description}
 				granularity={dateRange?.granularity}
+				height={height}
+				isLoading={isLoading}
+				metricsFilter={metricsFilter}
+				onCreateAnnotation={handleCreateAnnotation}
+				onDeleteAnnotation={handleDeleteAnnotation}
+				onEditAnnotation={handleEditAnnotation}
+				onRangeSelect={onRangeSelect}
+				onToggleAnnotations={setShowAnnotations}
+				showAnnotations={showAnnotations}
+				showLegend={showLegend}
+				title={title}
+				websiteId={websiteId}
 			/>
 
 			<EditAnnotationModal
-				isOpen={isEditing}
 				annotation={editingAnnotation}
+				isOpen={isEditing}
+				isSaving={updateAnnotation.isPending}
 				onClose={() => {
 					setIsEditing(false);
 					setEditingAnnotation(null);
 				}}
 				onSave={handleSaveAnnotation}
-				isSaving={updateAnnotation.isPending}
 			/>
 		</>
 	);

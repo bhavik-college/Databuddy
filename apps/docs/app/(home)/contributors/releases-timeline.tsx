@@ -25,13 +25,13 @@ function calculateAverageDaysBetween(releases: ProcessedRelease[]): number {
 	const daysDiffs: number[] = [];
 	for (let i = 0; i < releases.length - 1; i++) {
 		const diff = Math.abs(
-			releases[i].date.getTime() - releases[i + 1].date.getTime(),
+			releases[i].date.getTime() - releases[i + 1].date.getTime()
 		);
 		daysDiffs.push(diff / (1000 * 60 * 60 * 24));
 	}
 
 	return Math.round(
-		daysDiffs.reduce((sum, days) => sum + days, 0) / daysDiffs.length,
+		daysDiffs.reduce((sum, days) => sum + days, 0) / daysDiffs.length
 	);
 }
 
@@ -73,7 +73,7 @@ export default function ReleasesTimeline({ data }: Props) {
 
 		// Sort releases by date (newest first)
 		const sortedReleases = [...data].sort(
-			(a, b) => b.date.getTime() - a.date.getTime(),
+			(a, b) => b.date.getTime() - a.date.getTime()
 		);
 
 		// Calculate insights
@@ -117,13 +117,12 @@ export default function ReleasesTimeline({ data }: Props) {
 		);
 	}
 
-	const formatDate = (dateString: string) => {
-		return new Date(dateString).toLocaleDateString("en-US", {
+	const formatDate = (dateString: string) =>
+		new Date(dateString).toLocaleDateString("en-US", {
 			year: "numeric",
 			month: "short",
 			day: "numeric",
 		});
-	};
 
 	const getTimeSince = (dateString: string) => {
 		const date = new Date(dateString);

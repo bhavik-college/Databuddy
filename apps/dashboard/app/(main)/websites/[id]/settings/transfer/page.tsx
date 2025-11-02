@@ -47,7 +47,7 @@ function TransferPageContent() {
 	const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
 	const handleTransfer = useCallback(() => {
-		if (!selectedOrgId || !websiteData) {
+		if (!(selectedOrgId && websiteData)) {
 			return;
 		}
 
@@ -65,7 +65,7 @@ function TransferPageContent() {
 			{
 				onSuccess: () => {
 					toast.success(
-						`Website "${websiteData.name}" has been transferred to "${targetOrg.name}"`,
+						`Website "${websiteData.name}" has been transferred to "${targetOrg.name}"`
 					);
 					setShowConfirmDialog(false);
 					setSelectedOrgId("");
@@ -76,10 +76,10 @@ function TransferPageContent() {
 				},
 				onError: (error) => {
 					toast.error(
-						error?.message || "Failed to transfer website. Please try again.",
+						error?.message || "Failed to transfer website. Please try again."
 					);
 				},
-			},
+			}
 		);
 	}, [
 		selectedOrgId,
@@ -126,7 +126,7 @@ function TransferPageContent() {
 
 	const currentOrg = websiteData.organizationId
 		? organizations?.find(
-				(org: Organization) => org.id === websiteData.organizationId,
+				(org: Organization) => org.id === websiteData.organizationId
 			) || {
 				id: websiteData.organizationId,
 				name: "Organization",
@@ -137,7 +137,7 @@ function TransferPageContent() {
 
 	const availableOrgs =
 		organizations?.filter(
-			(org: Organization) => org.id !== websiteData.organizationId,
+			(org: Organization) => org.id !== websiteData.organizationId
 		) || [];
 
 	const selectedOrg = selectedOrgId
@@ -220,7 +220,7 @@ function TransferPageContent() {
 				<section className="border-b px-4 py-5 sm:px-6">
 					<div className="space-y-3">
 						<div className="space-y-2">
-							<Label htmlFor="target-org" className="font-medium text-sm">
+							<Label className="font-medium text-sm" htmlFor="target-org">
 								Select Target Organization
 							</Label>
 							<Select

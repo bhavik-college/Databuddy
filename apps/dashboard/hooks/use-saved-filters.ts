@@ -47,8 +47,8 @@ function loadSavedFilters(websiteId: string): SavedFilter[] {
 		}
 
 		// Validate and filter valid saved filters
-		return parsed.filter((filter: unknown): filter is SavedFilter => {
-			return (
+		return parsed.filter(
+			(filter: unknown): filter is SavedFilter =>
 				typeof filter === "object" &&
 				filter !== null &&
 				"id" in filter &&
@@ -61,8 +61,7 @@ function loadSavedFilters(websiteId: string): SavedFilter[] {
 				Array.isArray(filter.filters) &&
 				typeof filter.createdAt === "string" &&
 				typeof filter.updatedAt === "string"
-			);
-		});
+		);
 	} catch (error) {
 		console.error("Failed to load saved filters:", error);
 		return [];
@@ -71,7 +70,7 @@ function loadSavedFilters(websiteId: string): SavedFilter[] {
 
 function saveSavedFilters(
 	websiteId: string,
-	savedFilters: SavedFilter[],
+	savedFilters: SavedFilter[]
 ): { success: boolean; error?: SavedFilterError } {
 	if (typeof window === "undefined") {
 		return {
@@ -131,7 +130,7 @@ export function useSavedFilters(websiteId: string) {
 	useEffect(() => {
 		if (!isLoading && savedFilters.length > 0) {
 			const validFieldValues = new Set(
-				filterOptions.map((option) => option.value as string),
+				filterOptions.map((option) => option.value as string)
 			);
 
 			const cleanedFilters = savedFilters
@@ -157,7 +156,7 @@ export function useSavedFilters(websiteId: string) {
 				cleanedFilters.length !== savedFilters.length ||
 				cleanedFilters.some(
 					(cleaned, index) =>
-						cleaned.filters.length !== savedFilters[index]?.filters.length,
+						cleaned.filters.length !== savedFilters[index]?.filters.length
 				)
 			) {
 				setSavedFilters(cleanedFilters);
@@ -195,7 +194,7 @@ export function useSavedFilters(websiteId: string) {
 			const isDuplicate = savedFilters.some(
 				(filter) =>
 					filter.id !== excludeId &&
-					filter.name.toLowerCase() === trimmedName.toLowerCase(),
+					filter.name.toLowerCase() === trimmedName.toLowerCase()
 			);
 
 			if (isDuplicate) {
@@ -207,7 +206,7 @@ export function useSavedFilters(websiteId: string) {
 
 			return null;
 		},
-		[savedFilters],
+		[savedFilters]
 	);
 
 	const validateFilters = useCallback(
@@ -221,7 +220,7 @@ export function useSavedFilters(websiteId: string) {
 
 			// Validate each filter against current filter options
 			const validFieldValues = new Set(
-				filterOptions.map((option) => option.value as string),
+				filterOptions.map((option) => option.value as string)
 			);
 
 			for (const filter of filters) {
@@ -242,13 +241,13 @@ export function useSavedFilters(websiteId: string) {
 
 			return null;
 		},
-		[],
+		[]
 	);
 
 	const saveFilter = useCallback(
 		(
 			name: string,
-			filters: DynamicQueryFilter[],
+			filters: DynamicQueryFilter[]
 		): { success: boolean; data?: SavedFilter; error?: SavedFilterError } => {
 			// Validate inputs
 			const nameError = validateFilterName(name);
@@ -284,14 +283,14 @@ export function useSavedFilters(websiteId: string) {
 			toast.success(`Filter "${newFilter.name}" saved successfully`);
 			return { success: true, data: newFilter };
 		},
-		[savedFilters, validateFilterName, validateFilters],
+		[savedFilters, validateFilterName, validateFilters]
 	);
 
 	const updateFilter = useCallback(
 		(
 			id: string,
 			name: string,
-			filters: DynamicQueryFilter[],
+			filters: DynamicQueryFilter[]
 		): { success: boolean; data?: SavedFilter; error?: SavedFilterError } => {
 			const existing = savedFilters.find((f) => f.id === id);
 			if (!existing) {
@@ -309,12 +308,12 @@ export function useSavedFilters(websiteId: string) {
 			};
 
 			setSavedFilters((prev) =>
-				prev.map((f) => (f.id === id ? updatedFilter : f)),
+				prev.map((f) => (f.id === id ? updatedFilter : f))
 			);
 			toast.success(`Filter "${updatedFilter.name}" updated successfully`);
 			return { success: true, data: updatedFilter };
 		},
-		[savedFilters],
+		[savedFilters]
 	);
 
 	const deleteFilter = useCallback(
@@ -331,19 +330,18 @@ export function useSavedFilters(websiteId: string) {
 			toast.success(`Filter "${filterToDelete.name}" deleted successfully`);
 			return { success: true };
 		},
-		[savedFilters],
+		[savedFilters]
 	);
 
 	const getFilter = useCallback(
-		(id: string): SavedFilter | null => {
-			return savedFilters.find((f) => f.id === id) || null;
-		},
-		[savedFilters],
+		(id: string): SavedFilter | null =>
+			savedFilters.find((f) => f.id === id) || null,
+		[savedFilters]
 	);
 
 	const duplicateFilter = useCallback(
 		(
-			id: string,
+			id: string
 		): { success: boolean; data?: SavedFilter; error?: SavedFilterError } => {
 			const existing = savedFilters.find((f) => f.id === id);
 			if (!existing) {
@@ -370,7 +368,7 @@ export function useSavedFilters(websiteId: string) {
 
 			while (
 				savedFilters.some(
-					(filter) => filter.name.toLowerCase() === copyName.toLowerCase(),
+					(filter) => filter.name.toLowerCase() === copyName.toLowerCase()
 				)
 			) {
 				copyName = `${existing.name} (Copy ${copyIndex})`;
@@ -389,7 +387,7 @@ export function useSavedFilters(websiteId: string) {
 			toast.success(`Filter duplicated as "${duplicatedFilter.name}"`);
 			return { success: true, data: duplicatedFilter };
 		},
-		[savedFilters],
+		[savedFilters]
 	);
 
 	const deleteAllFilters = useCallback(() => {

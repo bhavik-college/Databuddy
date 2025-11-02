@@ -67,12 +67,12 @@ export const setDateRangeAndAdjustGranularityAtom = atom(
 		} else if (rangeDays <= AUTO_HOURLY_DAYS) {
 			set(timeGranularityAtom, "hourly");
 		}
-	},
+	}
 );
 
 // --- Timezone ---
 export const timezoneAtom = atom<string>(
-	Intl.DateTimeFormat().resolvedOptions().timeZone,
+	Intl.DateTimeFormat().resolvedOptions().timeZone
 );
 
 // --- Basic Filters ---
@@ -139,7 +139,7 @@ export const setBasicFilterAtom = atom(
 			}
 			return { ...prev, [key]: value };
 		});
-	},
+	}
 );
 
 /**
@@ -175,7 +175,7 @@ export const upsertComplexFilterAtom = atom(
 			}
 			return [...prev, filter];
 		});
-	},
+	}
 );
 
 /**
@@ -185,7 +185,7 @@ export const removeComplexFilterAtom = atom(
 	null,
 	(_get, set, filterId: string) => {
 		set(complexFiltersAtom, (prev) => prev.filter((f) => f.id !== filterId));
-	},
+	}
 );
 
 /**
@@ -211,7 +211,7 @@ export const clearAllFiltersAtom = atom(null, (_get, set) => {
  */
 export const activeFiltersForApiAtom = atom((get) => {
 	const { startDate: fmtStartDate, endDate: fmtEndDate } = get(
-		formattedDateRangeAtom,
+		formattedDateRangeAtom
 	);
 	const granularityValue = get(timeGranularityAtom);
 	const basicFiltersValue = get(basicFiltersAtom);
@@ -256,7 +256,7 @@ export const selectBasicFilterValueAtom = (key: string) =>
  */
 export const selectComplexFilterByIdAtom = (id: string) =>
 	atom<ComplexFilter | undefined>((get) =>
-		get(complexFiltersAtom).find((filter) => filter.id === id),
+		get(complexFiltersAtom).find((filter) => filter.id === id)
 	);
 
 /**
@@ -296,7 +296,7 @@ export const addDynamicFilterAtom = atom(
 				(existing) =>
 					existing.field === filter.field &&
 					existing.value === filter.value &&
-					existing.operator === filter.operator,
+					existing.operator === filter.operator
 			);
 
 			if (isDuplicate) {
@@ -305,7 +305,7 @@ export const addDynamicFilterAtom = atom(
 
 			return [...prev, filter];
 		});
-	},
+	}
 );
 
 /**
@@ -322,10 +322,10 @@ export const removeDynamicFilterAtom = atom(
 						existing.field === filter.field &&
 						existing.value === filter.value &&
 						existing.operator === filter.operator
-					),
-			),
+					)
+			)
 		);
-	},
+	}
 );
 
 /**
@@ -349,7 +349,7 @@ export const setTrackingOptionsAtom = atom(
 	null,
 	(_get, set, newOptions: TrackingOptions) => {
 		set(trackingOptionsAtom, newOptions);
-	},
+	}
 );
 
 /**
@@ -363,7 +363,7 @@ export const toggleTrackingOptionAtom = atom(
 			...current,
 			[option]: !current[option],
 		});
-	},
+	}
 );
 
 /**

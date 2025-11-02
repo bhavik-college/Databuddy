@@ -1,6 +1,5 @@
 "use client";
 
-import type { ErrorEvent } from "@databuddy/shared/types/errors";
 import { BugIcon, CopyIcon, GlobeIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { toast } from "sonner";

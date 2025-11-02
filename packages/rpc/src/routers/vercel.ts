@@ -19,7 +19,7 @@ const buildDomainIntegrationStatus = (
 	domain: any,
 	databeddyEnvVars: any[],
 	websiteMap: Map<string, any>,
-	domainMap: Map<string, any>,
+	domainMap: Map<string, any>
 ) => {
 	const domainName = domain.name;
 
@@ -118,21 +118,21 @@ const buildDomainIntegrationStatus = (
 
 			if (!websiteDomainMatches) {
 				domainStatus.issues.push(
-					`Domain mismatch: integration points to "${website.domain}"`,
+					`Domain mismatch: integration points to "${website.domain}"`
 				);
 				domainStatus.status = "invalid";
 			}
 
 			if (domainWebsite && domainWebsite.id !== websiteId) {
 				domainStatus.issues.push(
-					`Conflicting integrations: domain has website "${domainWebsite.name}" but integration points to "${website.name}"`,
+					`Conflicting integrations: domain has website "${domainWebsite.name}" but integration points to "${website.name}"`
 				);
 				domainStatus.status = "invalid";
 			}
 
 			const otherDomainsUsingThisWebsite = databeddyEnvVars.filter(
 				(envVar) =>
-					envVar.value === websiteId && envVar.id !== relevantEnvVars[0].id,
+					envVar.value === websiteId && envVar.id !== relevantEnvVars[0].id
 			);
 
 			if (
@@ -140,7 +140,7 @@ const buildDomainIntegrationStatus = (
 				website.domain !== domainName
 			) {
 				domainStatus.issues.push(
-					`Shared website: multiple domains are using the same website "${website.name}"`,
+					`Shared website: multiple domains are using the same website "${website.name}"`
 				);
 				if (domainStatus.status === "integrated") {
 					domainStatus.status = "invalid";
@@ -149,20 +149,20 @@ const buildDomainIntegrationStatus = (
 		} else {
 			domainStatus.status = "orphaned";
 			domainStatus.issues.push(
-				"Integration points to a website that no longer exists",
+				"Integration points to a website that no longer exists"
 			);
 		}
 
 		if (relevantEnvVars.length > 1) {
 			domainStatus.issues.push(
-				`Multiple integrations found (${relevantEnvVars.length} environment variables)`,
+				`Multiple integrations found (${relevantEnvVars.length} environment variables)`
 			);
 			domainStatus.status = "invalid";
 		}
 
 		if (!envVar.target?.length) {
 			domainStatus.issues.push(
-				"Integration is missing deployment environments",
+				"Integration is missing deployment environments"
 			);
 			domainStatus.status = "invalid";
 		}
@@ -176,7 +176,7 @@ const buildDomainIntegrationStatus = (
 				status: "invalid",
 			});
 			domainStatus.issues.push(
-				"Website exists, but isn't integrated with Vercel yet",
+				"Website exists, but isn't integrated with Vercel yet"
 			);
 		}
 	}
@@ -189,7 +189,7 @@ const buildIntegrationSummary = (integrationStatus: any[]) => ({
 	integratedCount: integrationStatus.filter((d) => d.status === "integrated")
 		.length,
 	notIntegratedCount: integrationStatus.filter(
-		(d) => d.status === "not_integrated",
+		(d) => d.status === "not_integrated"
 	).length,
 	orphanedCount: integrationStatus.filter((d) => d.status === "orphaned")
 		.length,
@@ -259,7 +259,7 @@ const createProjectEnvBatchSchema = z.object({
 			gitBranch: z.string().nullable().optional(),
 			comment: z.string().optional(),
 			customEnvironmentIds: z.array(z.string()).optional(),
-		}),
+		})
 	),
 	upsert: z.boolean().optional(),
 	teamId: z.string().optional(),
@@ -345,7 +345,7 @@ const integrateWebsitesSchema = z.object({
 			domainId: z.string().optional(),
 			verified: z.boolean().optional(),
 			gitBranch: z.string().nullable().optional(),
-		}),
+		})
 	),
 	organizationId: z.string().optional(),
 	teamId: z.string().optional(),
@@ -437,8 +437,8 @@ export const vercelRouter = createTRPCRouter({
 								domain,
 								databeddyEnvVars,
 								websiteMap,
-								domainMap,
-							),
+								domainMap
+							)
 						);
 
 						const summary = buildIntegrationSummary(integrationStatus);
@@ -477,7 +477,7 @@ export const vercelRouter = createTRPCRouter({
 							integrationStatus: null,
 						};
 					}
-				}),
+				})
 			);
 
 			return {
@@ -693,7 +693,7 @@ export const vercelRouter = createTRPCRouter({
 						const website = websiteMap.get(envVar.value);
 						const domainMatches = website?.domain === domainName;
 						const targetMatches = envVar.target?.some((target) =>
-							websiteConfig.target.includes(target as any),
+							websiteConfig.target.includes(target as any)
 						);
 						return domainMatches && targetMatches;
 					});
@@ -717,7 +717,7 @@ export const vercelRouter = createTRPCRouter({
 									source: "vercel-integration",
 									vercelProjectId: projectId,
 								},
-							},
+							}
 						);
 						isNewWebsite = true;
 					}
@@ -725,8 +725,8 @@ export const vercelRouter = createTRPCRouter({
 					if (!existingEnvVar || existingEnvVar.value !== websiteToUse.id) {
 						const conflictingEnvVar = existingEnvVars.find((envVar) =>
 							envVar.target?.some((target) =>
-								websiteConfig.target.includes(target as any),
-							),
+								websiteConfig.target.includes(target as any)
+							)
 						);
 
 						if (conflictingEnvVar) {
@@ -740,7 +740,7 @@ export const vercelRouter = createTRPCRouter({
 								{
 									...(teamId && { teamId }),
 									...(slug && { slug }),
-								},
+								}
 							);
 						} else {
 							envVarResult = await vercel.createProjectEnv(
@@ -755,7 +755,7 @@ export const vercelRouter = createTRPCRouter({
 								{
 									...(teamId && { teamId }),
 									...(slug && { slug }),
-								},
+								}
 							);
 						}
 
@@ -767,7 +767,7 @@ export const vercelRouter = createTRPCRouter({
 								target: websiteConfig.target,
 							} as any;
 							const idx = existingEnvVars.findIndex(
-								(e) => e.id === (conflictingEnvVar?.id || updated.id),
+								(e) => e.id === (conflictingEnvVar?.id || updated.id)
 							);
 							if (idx >= 0) {
 								existingEnvVars[idx] = updated;
@@ -808,7 +808,7 @@ export const vercelRouter = createTRPCRouter({
 								integrations: integrationData,
 							},
 							ctx.user.id,
-							organizationId,
+							organizationId
 						);
 					}
 
@@ -871,13 +871,13 @@ export const vercelRouter = createTRPCRouter({
 
 				const integrationStatus = domainsToCheck.map((domainName) => {
 					const domain = projectDomains.domains.find(
-						(d) => d.name === domainName,
+						(d) => d.name === domainName
 					) || { name: domainName, verified: false };
 					return buildDomainIntegrationStatus(
 						domain,
 						databeddyEnvVars,
 						websiteMap,
-						domainMap,
+						domainMap
 					);
 				});
 
@@ -960,12 +960,12 @@ export const vercelRouter = createTRPCRouter({
 							{
 								...(teamId && { teamId }),
 								...(slug && { slug }),
-							},
+							}
 						);
 
-						const duplicates = databeddyEnvVars.filter((_envVar, index) => {
-							return index > 0;
-						});
+						const duplicates = databeddyEnvVars.filter(
+							(_envVar, index) => index > 0
+						);
 
 						for (const duplicate of duplicates) {
 							await vercel.removeProjectEnv(projectId, duplicate.id, {
@@ -1036,7 +1036,7 @@ export const vercelRouter = createTRPCRouter({
 								domainName: vercelIntegration.domainName,
 								environments: vercelIntegration.environments || {},
 								environmentCount: Object.keys(
-									vercelIntegration.environments || {},
+									vercelIntegration.environments || {}
 								).length,
 								updatedAt: vercelIntegration.updatedAt,
 							}
@@ -1099,7 +1099,7 @@ export const vercelRouter = createTRPCRouter({
 							};
 
 							for (const [envKey, envData] of Object.entries(
-								updatedEnvironments,
+								updatedEnvironments
 							)) {
 								if ((envData as any)?.envVarId === envVarId) {
 									delete updatedEnvironments[envKey];
@@ -1120,8 +1120,8 @@ export const vercelRouter = createTRPCRouter({
 									: Object.keys(existingIntegrations).length > 1
 										? Object.fromEntries(
 												Object.entries(existingIntegrations).filter(
-													([key]) => key !== "vercel",
-												),
+													([key]) => key !== "vercel"
+												)
 											)
 										: null;
 
@@ -1131,7 +1131,7 @@ export const vercelRouter = createTRPCRouter({
 									integrations: updatedIntegrations,
 								},
 								ctx.user.id,
-								organizationId,
+								organizationId
 							);
 						}
 					}

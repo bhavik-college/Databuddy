@@ -21,7 +21,7 @@ const formatNumber = (value: number | null | undefined): string => {
 };
 
 export function createLanguageColumns(
-	displayNames?: Intl.DisplayNames | null,
+	displayNames?: Intl.DisplayNames | null
 ): ColumnDef<LanguageEntry>[] {
 	// Use provided displayNames or create fallback
 	const effectiveDisplayNames =

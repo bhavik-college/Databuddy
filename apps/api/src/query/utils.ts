@@ -15,7 +15,7 @@ export interface ParsedReferrer {
 
 function parseReferrer(
 	referrerUrl: string | null | undefined,
-	currentDomain?: string | null,
+	currentDomain?: string | null
 ): ParsedReferrer {
 	if (!referrerUrl) {
 		return { type: "direct", name: "Direct", url: "", domain: "" };
@@ -67,7 +67,7 @@ function parseReferrer(
 }
 
 function getReferrerByDomain(
-	domain: string,
+	domain: string
 ): { type: string; name: string } | null {
 	if (domain in referrers) {
 		const match = referrers[domain];
@@ -106,7 +106,7 @@ const getString = (value: unknown): string =>
 export function applyPlugins(
 	data: DataRow[],
 	config: SimpleQueryConfig,
-	websiteDomain?: string | null,
+	websiteDomain?: string | null
 ): DataRow[] {
 	let result = data;
 
@@ -178,7 +178,7 @@ function shouldApplyReferrerParsing(config: SimpleQueryConfig): boolean {
 
 function applyReferrerParsing(
 	data: DataRow[],
-	websiteDomain?: string | null,
+	websiteDomain?: string | null
 ): DataRow[] {
 	return data.map((row) => {
 		const referrerUrl = getString(row.name) || getString(row.referrer);
@@ -214,7 +214,7 @@ function applyGeoNormalization(data: DataRow[]): DataRow[] {
 }
 
 function shouldAutoParseReferrers(
-	config: SimpleQueryConfig | { type?: string; name?: string },
+	config: SimpleQueryConfig | { type?: string; name?: string }
 ): boolean {
 	const referrerConfigs = ["top_referrers", "referrer", "traffic_sources"];
 	const typeOrName =
@@ -295,7 +295,7 @@ export function buildWhereClause(conditions?: string[]): string {
 	}
 
 	const safeClauses = conditions.filter(
-		(clause) => !UNSAFE_CLAUSE_REGEX.test(clause),
+		(clause) => !UNSAFE_CLAUSE_REGEX.test(clause)
 	);
 	return `WHERE (${safeClauses.join(" AND ")})`;
 }

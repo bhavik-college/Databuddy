@@ -24,7 +24,7 @@ export const formatMetricNumber = (num: number | undefined | null): string => {
 // Format currency values
 export const formatCurrency = (
 	amount: number | undefined | null,
-	currency = "USD",
+	currency = "USD"
 ): string => {
 	if (amount === undefined || amount === null || Number.isNaN(amount)) {
 		return "$0.00";
@@ -63,7 +63,7 @@ export const DATE_FORMATS = {
 // Global date formatting functions
 export const formatDate = (
 	dateString: string | Date | undefined | null,
-	format: string = DATE_FORMATS.DATE_ONLY,
+	format: string = DATE_FORMATS.DATE_ONLY
 ): string => {
 	if (!dateString) {
 		return "";
@@ -84,42 +84,42 @@ export const formatDate = (
 
 // Specific format functions for common use cases
 export const formatDateOnly = (
-	dateString: string | Date | undefined | null,
+	dateString: string | Date | undefined | null
 ): string => formatDate(dateString, DATE_FORMATS.DATE_ONLY);
 
 export const formatDateTime = (
-	dateString: string | Date | undefined | null,
+	dateString: string | Date | undefined | null
 ): string => formatDate(dateString, DATE_FORMATS.DATE_TIME);
 
 export const formatDateTimeSeconds = (
-	dateString: string | Date | undefined | null,
+	dateString: string | Date | undefined | null
 ): string => formatDate(dateString, DATE_FORMATS.DATE_TIME_SECONDS);
 
 export const formatMonthDay = (
-	dateString: string | Date | undefined | null,
+	dateString: string | Date | undefined | null
 ): string => formatDate(dateString, DATE_FORMATS.DATE_MONTH_DAY);
 
 export const formatISODate = (
-	dateString: string | Date | undefined | null,
+	dateString: string | Date | undefined | null
 ): string => formatDate(dateString, DATE_FORMATS.ISO_DATE);
 
 export const formatTimeOnly = (
-	dateString: string | Date | undefined | null,
+	dateString: string | Date | undefined | null
 ): string => formatDate(dateString, DATE_FORMATS.TIME_ONLY);
 
 export const formatDateTimeNoYear = (
-	dateString: string | Date | undefined | null,
+	dateString: string | Date | undefined | null
 ): string => formatDate(dateString, DATE_FORMATS.DATE_TIME_NO_YEAR);
 
 export const formatDateTime12H = (
-	dateString: string | Date | undefined | null,
+	dateString: string | Date | undefined | null
 ): string => formatDate(dateString, DATE_FORMATS.DATE_TIME_12H);
 
 // Helper function for date ranges
 export const formatDateRange = (
 	startDate: string | Date | undefined | null,
 	endDate: string | Date | undefined | null,
-	format: string = DATE_FORMATS.DATE_ONLY,
+	format: string = DATE_FORMATS.DATE_ONLY
 ): string => {
 	const start = formatDate(startDate, format);
 	const end = formatDate(endDate, format);

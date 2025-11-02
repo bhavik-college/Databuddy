@@ -14,7 +14,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 async function apiRequest<T>(
 	endpoint: string,
-	options: RequestInit = {},
+	options: RequestInit = {}
 ): Promise<{ success: boolean; data?: T; error?: string }> {
 	const response = await fetch(`${API_BASE_URL}/v1${endpoint}`, {
 		credentials: "include",
@@ -45,7 +45,7 @@ const revenueApi = {
 	},
 
 	createOrUpdateConfig: async (
-		data: CreateRevenueConfigData,
+		data: CreateRevenueConfigData
 	): Promise<RevenueConfig> => {
 		const result = await apiRequest<RevenueConfig>("/revenue/config", {
 			method: "POST",
@@ -65,7 +65,7 @@ const revenueApi = {
 			"/revenue/config/regenerate-webhook-token",
 			{
 				method: "POST",
-			},
+			}
 		);
 		if (result.error) {
 			throw new Error(result.error);
@@ -124,20 +124,15 @@ export function useRevenueConfig() {
 
 	// Create or update config mutation
 	const createOrUpdateMutation = useMutation({
-		mutationFn: async (
-			data: CreateRevenueConfigData,
-		): Promise<RevenueConfig> => {
-			return await revenueApi.createOrUpdateConfig(data);
-		},
+		mutationFn: async (data: CreateRevenueConfigData): Promise<RevenueConfig> =>
+			await revenueApi.createOrUpdateConfig(data),
 		onSuccess: (newData) => {
 			toast.success("Revenue configuration saved successfully");
 
 			queryClient.setQueryData(revenueKeys.config(), newData);
 
 			queryClient.invalidateQueries({
-				predicate: (query) => {
-					return query.queryKey[0] === "batch-dynamic-query";
-				},
+				predicate: (query) => query.queryKey[0] === "batch-dynamic-query",
 			});
 		},
 		onError: (error: Error) => {
@@ -147,9 +142,7 @@ export function useRevenueConfig() {
 
 	// Regenerate webhook token mutation
 	const regenerateTokenMutation = useMutation({
-		mutationFn: async () => {
-			return await revenueApi.regenerateWebhookToken();
-		},
+		mutationFn: async () => await revenueApi.regenerateWebhookToken(),
 		onSuccess: () => {
 			toast.success("Webhook token regenerated successfully");
 			queryClient.invalidateQueries({ queryKey: revenueKeys.config() });
@@ -161,9 +154,7 @@ export function useRevenueConfig() {
 
 	// Delete config mutation
 	const deleteMutation = useMutation({
-		mutationFn: async () => {
-			return await revenueApi.deleteConfig();
-		},
+		mutationFn: async () => await revenueApi.deleteConfig(),
 		onSuccess: () => {
 			toast.success("Revenue configuration deleted successfully");
 			queryClient.invalidateQueries({ queryKey: revenueKeys.config() });
@@ -177,11 +168,13 @@ export function useRevenueConfig() {
 	const webhookToken = config?.webhookToken || "";
 	const webhookSecret = config?.webhookSecret || "";
 	const isLiveMode = config?.isLiveMode ?? false;
-	const webhookUrl = useMemo(() => {
-		return webhookToken
-			? `https://basket.databuddy.cc/stripe/webhook/${webhookToken}`
-			: "";
-	}, [webhookToken]);
+	const webhookUrl = useMemo(
+		() =>
+			webhookToken
+				? `https://basket.databuddy.cc/stripe/webhook/${webhookToken}`
+				: "",
+		[webhookToken]
+	);
 
 	const copyToClipboard = useCallback((text: string, label: string) => {
 		navigator.clipboard.writeText(text);
@@ -204,21 +197,21 @@ export function useRevenueConfig() {
 
 			createOrUpdateMutation.mutate(updateData);
 		},
-		[createOrUpdateMutation, config?.isLiveMode],
+		[createOrUpdateMutation, config?.isLiveMode]
 	);
 
 	const setWebhookSecret = useCallback(
 		(secret: string) => {
 			updateConfig({ webhookSecret: secret });
 		},
-		[updateConfig],
+		[updateConfig]
 	);
 
 	const setIsLiveMode = useCallback(
 		(mode: boolean) => {
 			updateConfig({ isLiveMode: mode });
 		},
-		[updateConfig],
+		[updateConfig]
 	);
 
 	// Computed states for setup completion

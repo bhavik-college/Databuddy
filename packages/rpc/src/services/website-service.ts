@@ -41,7 +41,7 @@ export const domainSchema = z.preprocess(
 		}
 		return domain;
 	},
-	z.string().min(1).max(253).regex(DOMAIN_REGEX, "Invalid domain format"),
+	z.string().min(1).max(253).regex(DOMAIN_REGEX, "Invalid domain format")
 );
 
 export const subdomainSchema = z
@@ -113,7 +113,7 @@ export class WebsiteService {
 	}
 
 	private performDBOperation<T>(
-		operation: () => Promise<T>,
+		operation: () => Promise<T>
 	): Effect.Effect<T, WebsiteError> {
 		return Effect.tryPromise({
 			try: operation,
@@ -123,7 +123,7 @@ export class WebsiteService {
 	}
 
 	private performTransaction<T>(
-		fn: (tx: any) => Promise<T>,
+		fn: (tx: any) => Promise<T>
 	): Effect.Effect<T, WebsiteError> {
 		return Effect.tryPromise({
 			try: () => this.db.transaction(fn),
@@ -133,7 +133,7 @@ export class WebsiteService {
 	}
 
 	private validateNameAndFlow(
-		input: CreateWebsiteInput,
+		input: CreateWebsiteInput
 	): Effect.Effect<CreateWebsiteInput, ValidationError> {
 		const validation = websiteNameSchema.safeParse(input.name);
 		return validation.success
@@ -142,7 +142,7 @@ export class WebsiteService {
 	}
 
 	private validateDomainAndFlow(
-		input: CreateWebsiteInput,
+		input: CreateWebsiteInput
 	): Effect.Effect<CreateWebsiteInput, ValidationError> {
 		const domainToCreate = buildFullDomain(input.domain, input.subdomain);
 		const validation = domainSchema.safeParse(domainToCreate);
@@ -153,30 +153,30 @@ export class WebsiteService {
 
 	private checkDuplicateAndFlow(
 		input: CreateWebsiteInput,
-		skipDuplicateCheck: boolean,
+		skipDuplicateCheck: boolean
 	): Effect.Effect<CreateWebsiteInput, DuplicateDomainError | ValidationError> {
 		if (skipDuplicateCheck) {
 			return Effect.succeed(input);
 		}
 		const websiteFilter = and(
 			eq(websites.domain, input.domain),
-			buildWebsiteFilter(input.userId, input.organizationId),
+			buildWebsiteFilter(input.userId, input.organizationId)
 		);
 		return pipe(
 			this.performDBOperation<Website | null>(() =>
-				this.db.query.websites.findFirst({ where: websiteFilter }),
+				this.db.query.websites.findFirst({ where: websiteFilter })
 			),
 			Effect.flatMap((dup) =>
 				dup
 					? Effect.fail(new DuplicateDomainError(input.domain))
-					: Effect.succeed(input),
-			),
+					: Effect.succeed(input)
+			)
 		);
 	}
 
 	private logCreationAndFlow(
 		createdWebsite: Website,
-		logContext: Record<string, unknown>,
+		logContext: Record<string, unknown>
 	): Effect.Effect<Website, WebsiteError> {
 		return pipe(
 			Effect.try({
@@ -190,39 +190,39 @@ export class WebsiteService {
 							userId: createdWebsite.userId,
 							organizationId: createdWebsite.organizationId,
 							...logContext,
-						},
+						}
 					),
 				catch: (error) =>
 					new Error(`Logging failed: ${String(error)}`) as WebsiteError,
 			}),
-			Effect.as(createdWebsite),
+			Effect.as(createdWebsite)
 		);
 	}
 
 	private invalidateCachesAndFlow(
 		website: Website,
-		userId: string,
+		userId: string
 	): Effect.Effect<Website, WebsiteError> {
 		return pipe(
 			Effect.tryPromise({
 				try: () => invalidateWebsiteCaches(website.id, userId),
 				catch: (error) =>
 					new Error(
-						`Cache invalidation failed: ${String(error)}`,
+						`Cache invalidation failed: ${String(error)}`
 					) as WebsiteError,
 			}),
-			Effect.as(website),
+			Effect.as(website)
 		);
 	}
 
 	createWebsite(
 		input: CreateWebsiteInput,
-		options: CreateWebsiteOptions = {},
+		options: CreateWebsiteOptions = {}
 	): Effect.Effect<Website, WebsiteError> {
 		const { skipDuplicateCheck = false, logContext = {} } = options;
 
-		const insertFn = async (tx: any) => {
-			return tx
+		const insertFn = async (tx: any) =>
+			tx
 				.insert(websites)
 				.values({
 					id: nanoid(),
@@ -234,7 +234,6 @@ export class WebsiteService {
 				})
 				.returning()
 				.then(([website]) => website as Website);
-		};
 
 		return pipe(
 			Effect.succeed(input),
@@ -243,23 +242,23 @@ export class WebsiteService {
 			Effect.flatMap((validatedInput) =>
 				skipDuplicateCheck
 					? Effect.succeed(validatedInput)
-					: this.checkDuplicateAndFlow(validatedInput, skipDuplicateCheck),
+					: this.checkDuplicateAndFlow(validatedInput, skipDuplicateCheck)
 			),
 			Effect.flatMap(() => this.performTransaction<Website>(insertFn)),
 			Effect.flatMap((createdWebsite) =>
 				pipe(
 					this.logCreationAndFlow(createdWebsite, logContext),
 					Effect.flatMap(() =>
-						this.invalidateCachesAndFlow(createdWebsite, input.userId),
+						this.invalidateCachesAndFlow(createdWebsite, input.userId)
 					),
-					Effect.as(createdWebsite),
-				),
-			),
+					Effect.as(createdWebsite)
+				)
+			)
 		);
 	}
 
 	private validateNameIfPresentAndFlow(
-		updates: Updates,
+		updates: Updates
 	): Effect.Effect<Updates, ValidationError> {
 		if (!updates.name) {
 			return Effect.succeed(updates);
@@ -273,7 +272,7 @@ export class WebsiteService {
 	private validateDomainIfPresentAndFlow(
 		updates: Updates,
 		userId: string,
-		organizationId?: string,
+		organizationId?: string
 	): Effect.Effect<Updates, WebsiteError> {
 		if (!updates.domain) {
 			return Effect.succeed(updates);
@@ -281,24 +280,24 @@ export class WebsiteService {
 		const domainToUpdate = buildFullDomain(updates.domain as string);
 		const websiteFilter = and(
 			eq(websites.domain, domainToUpdate),
-			buildWebsiteFilter(userId, organizationId),
+			buildWebsiteFilter(userId, organizationId)
 		);
 		return pipe(
 			this.performDBOperation<Website | null>(() =>
-				this.db.query.websites.findFirst({ where: websiteFilter }),
+				this.db.query.websites.findFirst({ where: websiteFilter })
 			),
 			Effect.flatMap((dup) =>
 				dup
 					? Effect.fail(new DuplicateDomainError(domainToUpdate))
-					: Effect.succeed({ ...updates, domain: domainToUpdate }),
-			),
+					: Effect.succeed({ ...updates, domain: domainToUpdate })
+			)
 		);
 	}
 	updateWebsite(
 		websiteId: string,
 		updates: Updates,
 		userId: string,
-		organizationId?: string,
+		organizationId?: string
 	): Effect.Effect<Website, WebsiteError> {
 		const updateFn = (finalUpdates: Updates) =>
 			this.db
@@ -312,10 +311,10 @@ export class WebsiteService {
 			Effect.succeed(updates),
 			Effect.flatMap(this.validateNameIfPresentAndFlow),
 			Effect.flatMap((u) =>
-				this.validateDomainIfPresentAndFlow(u, userId, organizationId),
+				this.validateDomainIfPresentAndFlow(u, userId, organizationId)
 			),
 			Effect.flatMap((finalUpdates) =>
-				this.performDBOperation<Website | null>(() => updateFn(finalUpdates)),
+				this.performDBOperation<Website | null>(() => updateFn(finalUpdates))
 			),
 			Effect.flatMap((updatedWebsite) =>
 				updatedWebsite
@@ -324,19 +323,19 @@ export class WebsiteService {
 								try: () => invalidateWebsiteCaches(websiteId, userId),
 								catch: (error) =>
 									new Error(
-										`Cache invalidation failed: ${String(error)}`,
+										`Cache invalidation failed: ${String(error)}`
 									) as WebsiteError,
 							}),
-							Effect.as(updatedWebsite),
+							Effect.as(updatedWebsite)
 						)
-					: Effect.fail(new WebsiteNotFoundError()),
-			),
+					: Effect.fail(new WebsiteNotFoundError())
+			)
 		);
 	}
 
 	deleteWebsite(
 		websiteId: string,
-		userId: string,
+		userId: string
 	): Effect.Effect<{ success: true }, WebsiteError> {
 		const deleteFn = (tx: any) =>
 			tx.delete(websites).where(eq(websites.id, websiteId));
@@ -348,18 +347,18 @@ export class WebsiteService {
 					try: () => invalidateWebsiteCaches(websiteId, userId),
 					catch: (error) =>
 						new Error(
-							`Cache invalidation failed: ${String(error)}`,
+							`Cache invalidation failed: ${String(error)}`
 						) as WebsiteError,
-				}),
+				})
 			),
-			Effect.map(() => ({ success: true })),
+			Effect.map(() => ({ success: true }))
 		);
 	}
 
 	toggleWebsitePublic(
 		websiteId: string,
 		isPublic: boolean,
-		userId: string,
+		userId: string
 	): Effect.Effect<Website, WebsiteError> {
 		const updateFn = () =>
 			this.db
@@ -378,20 +377,20 @@ export class WebsiteService {
 								try: () => invalidateWebsiteCaches(websiteId, userId),
 								catch: (error) =>
 									new Error(
-										`Cache invalidation failed: ${String(error)}`,
+										`Cache invalidation failed: ${String(error)}`
 									) as WebsiteError,
 							}),
-							Effect.as(updatedWebsite),
+							Effect.as(updatedWebsite)
 						)
-					: Effect.fail(new WebsiteNotFoundError()),
-			),
+					: Effect.fail(new WebsiteNotFoundError())
+			)
 		);
 	}
 
 	transferWebsite(
 		websiteId: string,
 		organizationId: string | null,
-		userId: string,
+		userId: string
 	): Effect.Effect<Website, WebsiteError> {
 		const updateFn = () =>
 			this.db
@@ -418,7 +417,7 @@ export class WebsiteService {
 											websiteId: transferredWebsite.id,
 											organizationId,
 											userId,
-										},
+										}
 									),
 								catch: (error) =>
 									new Error(`Logging failed: ${String(error)}`) as WebsiteError,
@@ -428,21 +427,21 @@ export class WebsiteService {
 									try: () => invalidateWebsiteCaches(websiteId, userId),
 									catch: (error) =>
 										new Error(
-											`Cache invalidation failed: ${String(error)}`,
+											`Cache invalidation failed: ${String(error)}`
 										) as WebsiteError,
-								}),
+								})
 							),
-							Effect.as(transferredWebsite),
+							Effect.as(transferredWebsite)
 						)
-					: Effect.fail(new WebsiteNotFoundError()),
-			),
+					: Effect.fail(new WebsiteNotFoundError())
+			)
 		);
 	}
 
 	transferWebsiteToOrganization(
 		websiteId: string,
 		targetOrganizationId: string,
-		userId: string,
+		userId: string
 	): Effect.Effect<Website, WebsiteError> {
 		const updateFn = () =>
 			this.db
@@ -469,7 +468,7 @@ export class WebsiteService {
 											websiteId: transferredWebsite.id,
 											targetOrganizationId,
 											userId,
-										},
+										}
 									),
 								catch: (error) =>
 									new Error(`Logging failed: ${String(error)}`) as WebsiteError,
@@ -479,14 +478,14 @@ export class WebsiteService {
 									try: () => invalidateWebsiteCaches(websiteId, userId),
 									catch: (error) =>
 										new Error(
-											`Cache invalidation failed: ${String(error)}`,
+											`Cache invalidation failed: ${String(error)}`
 										) as WebsiteError,
-								}),
+								})
 							),
-							Effect.as(transferredWebsite),
+							Effect.as(transferredWebsite)
 						)
-					: Effect.fail(new WebsiteNotFoundError()),
-			),
+					: Effect.fail(new WebsiteNotFoundError())
+			)
 		);
 	}
 }

@@ -41,7 +41,7 @@ const PerformanceContent = dynamic(
 			</div>
 		),
 		ssr: false,
-	},
+	}
 );
 
 export default function PerformancePage() {
@@ -60,7 +60,7 @@ export default function PerformancePage() {
 		(filter: DynamicQueryFilter) => {
 			addFilterAction(filter);
 		},
-		[addFilterAction],
+		[addFilterAction]
 	);
 
 	if (isTrackingSetupLoading) {

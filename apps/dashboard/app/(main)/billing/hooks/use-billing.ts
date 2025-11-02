@@ -64,7 +64,7 @@ export function useBilling(refetch?: () => void) {
 			toast.success(
 				immediate
 					? "Subscription cancelled immediately."
-					: "Subscription cancelled.",
+					: "Subscription cancelled."
 			);
 			if (refetch) {
 				setTimeout(() => refetch(), 500);
@@ -83,7 +83,7 @@ export function useBilling(refetch?: () => void) {
 	const handleCancelClick = (
 		planId: string,
 		planName: string,
-		currentPeriodEnd?: number,
+		currentPeriodEnd?: number
 	) => {
 		setCancellingPlan({ id: planId, name: planName, currentPeriodEnd });
 		setShowCancelDialog(true);

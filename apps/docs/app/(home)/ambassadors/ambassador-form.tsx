@@ -64,7 +64,7 @@ export default function AmbassadorForm() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isSubmitted, setIsSubmitted] = useState(false);
 	const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
-		{},
+		{}
 	);
 
 	const validateForm = (): boolean => {
@@ -114,7 +114,7 @@ export default function AmbassadorForm() {
 	};
 
 	const handleInputChange = (
-		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
 	) => {
 		const { name, value } = e.target;
 		setFormData((prev) => ({ ...prev, [name]: value }));
@@ -165,7 +165,7 @@ export default function AmbassadorForm() {
 						? new Date(data.resetTime).toLocaleTimeString()
 						: "soon";
 					throw new Error(
-						`Too many submissions. Please try again after ${resetTime}.`,
+						`Too many submissions. Please try again after ${resetTime}.`
 					);
 				}
 
@@ -175,7 +175,7 @@ export default function AmbassadorForm() {
 						? data.details.join("\n• ")
 						: data.error || "Validation failed";
 					throw new Error(
-						`Please fix the following issues:\n• ${errorMessage}`,
+						`Please fix the following issues:\n• ${errorMessage}`
 					);
 				}
 
@@ -195,7 +195,7 @@ export default function AmbassadorForm() {
 				// Handle specific error types
 				if (error.name === "AbortError") {
 					toast.error(
-						"Request timed out. Please check your connection and try again.",
+						"Request timed out. Please check your connection and try again."
 					);
 				} else {
 					// Handle multi-line error messages

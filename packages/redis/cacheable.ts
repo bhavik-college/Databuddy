@@ -26,7 +26,7 @@ const defaultDeserialize = (data: string): unknown =>
 export async function getCache<T>(
 	key: string,
 	options: CacheOptions | number,
-	fn: () => Promise<T>,
+	fn: () => Promise<T>
 ): Promise<T> {
 	const {
 		expireInSec,
@@ -59,7 +59,7 @@ export async function getCache<T>(
 							.catch((error: unknown) => {
 								logger.error(
 									`Background revalidation failed for key ${key}:`,
-									error,
+									error
 								);
 							});
 					}
@@ -78,7 +78,7 @@ export async function getCache<T>(
 			if (retries === maxRetries) {
 				logger.error(
 					`Cache error for key ${key} after ${maxRetries} retries:`,
-					error,
+					error
 				);
 				return fn();
 			}
@@ -91,7 +91,7 @@ export async function getCache<T>(
 
 export function cacheable<T extends (...args: any) => any>(
 	fn: T,
-	options: CacheOptions | number,
+	options: CacheOptions | number
 ) {
 	const {
 		expireInSec,
@@ -169,7 +169,7 @@ export function cacheable<T extends (...args: any) => any>(
 								.catch((error: unknown) => {
 									logger.error(
 										`Background revalidation failed for function ${fn.name}:`,
-										error,
+										error
 									);
 								});
 						}
@@ -188,7 +188,7 @@ export function cacheable<T extends (...args: any) => any>(
 				if (retries === maxRetries) {
 					logger.error(
 						`Cache error for function ${fn.name} after ${maxRetries} retries:`,
-						error,
+						error
 					);
 					return fn(...args);
 				}

@@ -83,27 +83,27 @@ export const account = pgTable(
 	(table) => [
 		index("accounts_userId_idx").using(
 			"btree",
-			table.userId.asc().nullsLast().op("text_ops"),
+			table.userId.asc().nullsLast().op("text_ops")
 		),
 		index("accounts_accountId_idx").using(
 			"btree",
-			table.accountId.asc().nullsLast().op("text_ops"),
+			table.accountId.asc().nullsLast().op("text_ops")
 		),
 		index("accounts_providerId_idx").using(
 			"btree",
-			table.providerId.asc().nullsLast().op("text_ops"),
+			table.providerId.asc().nullsLast().op("text_ops")
 		),
 		uniqueIndex("accounts_provider_account_unique").using(
 			"btree",
 			table.providerId.asc().nullsLast().op("text_ops"),
-			table.accountId.asc().nullsLast().op("text_ops"),
+			table.accountId.asc().nullsLast().op("text_ops")
 		),
 		foreignKey({
 			columns: [table.userId],
 			foreignColumns: [user.id],
 			name: "account_user_id_user_id_fk",
 		}).onDelete("cascade"),
-	],
+	]
 );
 
 export const session = pgTable(
@@ -124,11 +124,11 @@ export const session = pgTable(
 	(table) => [
 		uniqueIndex("sessions_token_key").using(
 			"btree",
-			table.token.asc().nullsLast().op("text_ops"),
+			table.token.asc().nullsLast().op("text_ops")
 		),
 		index("sessions_userId_idx").using(
 			"btree",
-			table.userId.asc().nullsLast().op("text_ops"),
+			table.userId.asc().nullsLast().op("text_ops")
 		),
 		foreignKey({
 			columns: [table.userId],
@@ -137,7 +137,7 @@ export const session = pgTable(
 		})
 			.onUpdate("cascade")
 			.onDelete("cascade"),
-	],
+	]
 );
 
 export const invitation = pgTable(
@@ -155,15 +155,15 @@ export const invitation = pgTable(
 	(table) => [
 		index("invitations_email_idx").using(
 			"btree",
-			table.email.asc().nullsLast().op("text_ops"),
+			table.email.asc().nullsLast().op("text_ops")
 		),
 		index("invitations_organizationId_idx").using(
 			"btree",
-			table.organizationId.asc().nullsLast().op("text_ops"),
+			table.organizationId.asc().nullsLast().op("text_ops")
 		),
 		index("invitations_teamId_idx").using(
 			"btree",
-			table.teamId.asc().nullsLast().op("text_ops"),
+			table.teamId.asc().nullsLast().op("text_ops")
 		),
 		foreignKey({
 			columns: [table.organizationId],
@@ -175,7 +175,7 @@ export const invitation = pgTable(
 			foreignColumns: [user.id],
 			name: "invitation_inviter_id_user_id_fk",
 		}).onDelete("cascade"),
-	],
+	]
 );
 
 export const member = pgTable(
@@ -191,11 +191,11 @@ export const member = pgTable(
 	(table) => [
 		index("members_userId_idx").using(
 			"btree",
-			table.userId.asc().nullsLast().op("text_ops"),
+			table.userId.asc().nullsLast().op("text_ops")
 		),
 		index("members_organizationId_idx").using(
 			"btree",
-			table.organizationId.asc().nullsLast().op("text_ops"),
+			table.organizationId.asc().nullsLast().op("text_ops")
 		),
 		foreignKey({
 			columns: [table.organizationId],
@@ -207,7 +207,7 @@ export const member = pgTable(
 			foreignColumns: [user.id],
 			name: "member_user_id_user_id_fk",
 		}).onDelete("cascade"),
-	],
+	]
 );
 
 export const verification = pgTable(
@@ -223,13 +223,13 @@ export const verification = pgTable(
 	(table) => [
 		index("verifications_identifier_idx").using(
 			"btree",
-			table.identifier.asc().nullsLast().op("text_ops"),
+			table.identifier.asc().nullsLast().op("text_ops")
 		),
 		index("verifications_expiresAt_idx").using(
 			"btree",
-			table.expiresAt.asc().nullsLast(),
+			table.expiresAt.asc().nullsLast()
 		),
-	],
+	]
 );
 
 export const twoFactor = pgTable(
@@ -243,14 +243,14 @@ export const twoFactor = pgTable(
 	(table) => [
 		index("twoFactor_secret_idx").using(
 			"btree",
-			table.secret.asc().nullsLast().op("text_ops"),
+			table.secret.asc().nullsLast().op("text_ops")
 		),
 		foreignKey({
 			columns: [table.userId],
 			foreignColumns: [user.id],
 			name: "two_factor_user_id_user_id_fk",
 		}).onDelete("cascade"),
-	],
+	]
 );
 
 export const userPreferences = pgTable(
@@ -267,7 +267,7 @@ export const userPreferences = pgTable(
 	(table) => [
 		uniqueIndex("user_preferences_userId_key").using(
 			"btree",
-			table.userId.asc().nullsLast().op("text_ops"),
+			table.userId.asc().nullsLast().op("text_ops")
 		),
 		foreignKey({
 			columns: [table.userId],
@@ -276,7 +276,7 @@ export const userPreferences = pgTable(
 		})
 			.onUpdate("cascade")
 			.onDelete("cascade"),
-	],
+	]
 );
 
 export const websites = pgTable(
@@ -313,7 +313,7 @@ export const websites = pgTable(
 			foreignColumns: [organization.id],
 			name: "websites_organization_id_organization_id_fk",
 		}).onDelete("cascade"),
-	],
+	]
 );
 
 export const user = pgTable(
@@ -337,9 +337,9 @@ export const user = pgTable(
 		unique("users_email_unique").on(table.email),
 		index("users_emailVerified_idx").using(
 			"btree",
-			table.emailVerified.asc().nullsLast(),
+			table.emailVerified.asc().nullsLast()
 		),
-	],
+	]
 );
 
 export const userStripeConfig = pgTable(
@@ -361,11 +361,11 @@ export const userStripeConfig = pgTable(
 	(table) => [
 		uniqueIndex("user_stripe_config_userId_key").using(
 			"btree",
-			table.userId.asc().nullsLast().op("text_ops"),
+			table.userId.asc().nullsLast().op("text_ops")
 		),
 		uniqueIndex("user_stripe_config_webhookToken_key").using(
 			"btree",
-			table.webhookToken.asc().nullsLast().op("text_ops"),
+			table.webhookToken.asc().nullsLast().op("text_ops")
 		),
 		foreignKey({
 			columns: [table.userId],
@@ -374,7 +374,7 @@ export const userStripeConfig = pgTable(
 		})
 			.onUpdate("cascade")
 			.onDelete("cascade"),
-	],
+	]
 );
 
 export const funnelGoals = pgTable(
@@ -397,7 +397,7 @@ export const funnelGoals = pgTable(
 		})
 			.onUpdate("cascade")
 			.onDelete("cascade"),
-	],
+	]
 );
 
 export const funnelDefinitions = pgTable(
@@ -418,7 +418,7 @@ export const funnelDefinitions = pgTable(
 	(table) => [
 		index("funnel_definitions_websiteId_idx").using(
 			"btree",
-			table.websiteId.asc().nullsLast().op("text_ops"),
+			table.websiteId.asc().nullsLast().op("text_ops")
 		),
 		foreignKey({
 			columns: [table.websiteId],
@@ -434,7 +434,7 @@ export const funnelDefinitions = pgTable(
 		})
 			.onUpdate("cascade")
 			.onDelete("restrict"),
-	],
+	]
 );
 
 export const goals = pgTable(
@@ -458,7 +458,7 @@ export const goals = pgTable(
 			"btree",
 			table.websiteId.asc().nullsLast().op("text_ops"),
 			table.deletedAt.asc().nullsLast(),
-			table.createdAt.desc().nullsLast(),
+			table.createdAt.desc().nullsLast()
 		),
 		foreignKey({
 			columns: [table.websiteId],
@@ -474,7 +474,7 @@ export const goals = pgTable(
 		})
 			.onUpdate("cascade")
 			.onDelete("restrict"),
-	],
+	]
 );
 
 export const team = pgTable(
@@ -489,14 +489,14 @@ export const team = pgTable(
 	(table) => [
 		index("team_organizationId_idx").using(
 			"btree",
-			table.organizationId.asc().nullsLast().op("text_ops"),
+			table.organizationId.asc().nullsLast().op("text_ops")
 		),
 		foreignKey({
 			columns: [table.organizationId],
 			foreignColumns: [organization.id],
 			name: "team_organization_id_organization_id_fk",
 		}).onDelete("cascade"),
-	],
+	]
 );
 
 export const apiKeyType = pgEnum("api_key_type", ["user", "sdk", "automation"]);
@@ -579,22 +579,22 @@ export const apikey = pgTable(
 		}).onDelete("cascade"),
 		uniqueIndex("apikey_key_unique").using(
 			"btree",
-			table.key.asc().nullsLast().op("text_ops"),
+			table.key.asc().nullsLast().op("text_ops")
 		),
 		index("apikey_user_id_idx").using(
 			"btree",
-			table.userId.asc().nullsLast().op("text_ops"),
+			table.userId.asc().nullsLast().op("text_ops")
 		),
 		index("apikey_organization_id_idx").using(
 			"btree",
-			table.organizationId.asc().nullsLast().op("text_ops"),
+			table.organizationId.asc().nullsLast().op("text_ops")
 		),
 		index("apikey_prefix_idx").using(
 			"btree",
-			table.prefix.asc().nullsLast().op("text_ops"),
+			table.prefix.asc().nullsLast().op("text_ops")
 		),
 		index("apikey_enabled_idx").using("btree", table.enabled.asc().nullsLast()),
-	],
+	]
 );
 
 // Mapping table for per-resource access and granular scopes
@@ -618,20 +618,20 @@ export const apikeyAccess = pgTable(
 		}).onDelete("cascade"),
 		index("apikey_access_apikey_id_idx").using(
 			"btree",
-			table.apikeyId.asc().nullsLast().op("text_ops"),
+			table.apikeyId.asc().nullsLast().op("text_ops")
 		),
 		index("apikey_access_resource_idx").using(
 			"btree",
 			table.resourceType.asc().nullsLast(),
-			table.resourceId.asc().nullsLast().op("text_ops"),
+			table.resourceId.asc().nullsLast().op("text_ops")
 		),
 		uniqueIndex("apikey_access_unique").using(
 			"btree",
 			table.apikeyId.asc().nullsLast().op("text_ops"),
 			table.resourceType.asc().nullsLast(),
-			table.resourceId.asc().nullsLast().op("text_ops"),
+			table.resourceId.asc().nullsLast().op("text_ops")
 		),
-	],
+	]
 );
 export const organization = pgTable(
 	"organization",
@@ -643,7 +643,7 @@ export const organization = pgTable(
 		createdAt: timestamp("created_at").notNull(),
 		metadata: text(),
 	},
-	(table) => [unique("organizations_slug_unique").on(table.slug)],
+	(table) => [unique("organizations_slug_unique").on(table.slug)]
 );
 
 export const abTestStatus = pgEnum("ab_test_status", [
@@ -679,11 +679,11 @@ export const abExperiments = pgTable(
 	(table) => [
 		index("ab_experiments_websiteId_idx").using(
 			"btree",
-			table.websiteId.asc().nullsLast(),
+			table.websiteId.asc().nullsLast()
 		),
 		index("ab_experiments_status_idx").using(
 			"btree",
-			table.status.asc().nullsLast(),
+			table.status.asc().nullsLast()
 		),
 		foreignKey({
 			columns: [table.websiteId],
@@ -699,7 +699,7 @@ export const abExperiments = pgTable(
 		})
 			.onUpdate("cascade")
 			.onDelete("restrict"),
-	],
+	]
 );
 
 export const abVariants = pgTable(
@@ -718,7 +718,7 @@ export const abVariants = pgTable(
 	(table) => [
 		index("ab_variants_experimentId_idx").using(
 			"btree",
-			table.experimentId.asc().nullsLast(),
+			table.experimentId.asc().nullsLast()
 		),
 		foreignKey({
 			columns: [table.experimentId],
@@ -727,7 +727,7 @@ export const abVariants = pgTable(
 		})
 			.onUpdate("cascade")
 			.onDelete("cascade"),
-	],
+	]
 );
 
 export const abGoals = pgTable(
@@ -745,11 +745,11 @@ export const abGoals = pgTable(
 	(table) => [
 		index("ab_goals_experimentId_idx").using(
 			"btree",
-			table.experimentId.asc().nullsLast(),
+			table.experimentId.asc().nullsLast()
 		),
 		index("ab_goals_type_idx").using(
 			"btree",
-			table.type.asc().nullsLast().op("text_ops"),
+			table.type.asc().nullsLast().op("text_ops")
 		),
 		foreignKey({
 			columns: [table.experimentId],
@@ -758,7 +758,7 @@ export const abGoals = pgTable(
 		})
 			.onUpdate("cascade")
 			.onDelete("cascade"),
-	],
+	]
 );
 
 export const assistantConversations = pgTable(
@@ -774,7 +774,7 @@ export const assistantConversations = pgTable(
 	(table) => [
 		index("assistant_conversations_website_id_idx").using(
 			"btree",
-			table.websiteId.asc().nullsLast().op("text_ops"),
+			table.websiteId.asc().nullsLast().op("text_ops")
 		),
 		foreignKey({
 			columns: [table.userId],
@@ -786,7 +786,7 @@ export const assistantConversations = pgTable(
 			foreignColumns: [websites.id],
 			name: "assistant_conversations_website_id_fkey",
 		}).onDelete("cascade"),
-	],
+	]
 );
 
 export const assistantMessages = pgTable(
@@ -820,18 +820,18 @@ export const assistantMessages = pgTable(
 	(table) => [
 		index("assistant_messages_conversation_id_idx").using(
 			"btree",
-			table.conversationId.asc().nullsLast().op("text_ops"),
+			table.conversationId.asc().nullsLast().op("text_ops")
 		),
 		index("assistant_messages_createdAt_idx").using(
 			"btree",
-			table.createdAt.asc().nullsLast(),
+			table.createdAt.asc().nullsLast()
 		),
 		foreignKey({
 			columns: [table.conversationId],
 			foreignColumns: [assistantConversations.id],
 			name: "assistant_messages_conversation_id_fkey",
 		}).onDelete("cascade"),
-	],
+	]
 );
 
 export const dbPermissionLevel = pgEnum("db_permission_level", [
@@ -880,15 +880,15 @@ export const dbConnections = pgTable(
 	(table) => [
 		index("db_connections_user_id_idx").using(
 			"btree",
-			table.userId.asc().nullsLast().op("text_ops"),
+			table.userId.asc().nullsLast().op("text_ops")
 		),
 		index("db_connections_type_idx").using(
 			"btree",
-			table.type.asc().nullsLast().op("text_ops"),
+			table.type.asc().nullsLast().op("text_ops")
 		),
 		index("db_connections_organization_id_idx").using(
 			"btree",
-			table.organizationId.asc().nullsLast().op("text_ops"),
+			table.organizationId.asc().nullsLast().op("text_ops")
 		),
 		foreignKey({
 			columns: [table.userId],
@@ -902,7 +902,7 @@ export const dbConnections = pgTable(
 			foreignColumns: [organization.id],
 			name: "db_connections_organization_id_fkey",
 		}).onDelete("cascade"),
-	],
+	]
 );
 
 export const flags = pgTable(
@@ -939,7 +939,7 @@ export const flags = pgTable(
 			.where(isNotNull(table.userId)),
 		index("flags_website_id_idx").using(
 			"btree",
-			table.websiteId.asc().nullsLast().op("text_ops"),
+			table.websiteId.asc().nullsLast().op("text_ops")
 		),
 		foreignKey({
 			columns: [table.websiteId],
@@ -969,7 +969,7 @@ export const flags = pgTable(
 		})
 			.onUpdate("cascade")
 			.onDelete("restrict"),
-	],
+	]
 );
 
 export const annotations = pgTable(
@@ -995,7 +995,7 @@ export const annotations = pgTable(
 	(table) => [
 		index("annotations_website_id_idx").using(
 			"btree",
-			table.websiteId.asc().nullsLast().op("text_ops"),
+			table.websiteId.asc().nullsLast().op("text_ops")
 		),
 		foreignKey({
 			columns: [table.websiteId],
@@ -1011,5 +1011,5 @@ export const annotations = pgTable(
 		})
 			.onUpdate("cascade")
 			.onDelete("restrict"),
-	],
+	]
 );

@@ -113,8 +113,8 @@ export const experimentsRouter = createTRPCRouter({
 						.where(
 							and(
 								eq(abExperiments.websiteId, input.websiteId),
-								isNull(abExperiments.deletedAt),
-							),
+								isNull(abExperiments.deletedAt)
+							)
 						)
 						.orderBy(desc(abExperiments.createdAt));
 
@@ -139,7 +139,7 @@ export const experimentsRouter = createTRPCRouter({
 								variants,
 								goals,
 							};
-						}),
+						})
 					);
 
 					return experimentsWithDetails;
@@ -168,8 +168,8 @@ export const experimentsRouter = createTRPCRouter({
 							and(
 								eq(abExperiments.id, input.id),
 								eq(abExperiments.websiteId, input.websiteId),
-								isNull(abExperiments.deletedAt),
-							),
+								isNull(abExperiments.deletedAt)
+							)
 						)
 						.limit(1);
 
@@ -235,7 +235,7 @@ export const experimentsRouter = createTRPCRouter({
 								experimentId: experiment.id,
 								createdAt: new Date(),
 								updatedAt: new Date(),
-							})),
+							}))
 						);
 					}
 
@@ -248,7 +248,7 @@ export const experimentsRouter = createTRPCRouter({
 								experimentId: experiment.id,
 								createdAt: new Date(),
 								updatedAt: new Date(),
-							})),
+							}))
 						);
 					}
 
@@ -313,7 +313,7 @@ export const experimentsRouter = createTRPCRouter({
 				await Promise.all([
 					drizzleCache.invalidateByTables(["abExperiments"]),
 					drizzleCache.invalidateByKey(
-						`experiments:byId:${id}:${existing[0].websiteId}`,
+						`experiments:byId:${id}:${existing[0].websiteId}`
 					),
 				]);
 
@@ -352,10 +352,7 @@ export const experimentsRouter = createTRPCRouter({
 					.select({ websiteId: abExperiments.websiteId })
 					.from(abExperiments)
 					.where(
-						and(
-							eq(abExperiments.id, input.id),
-							isNull(abExperiments.deletedAt),
-						),
+						and(eq(abExperiments.id, input.id), isNull(abExperiments.deletedAt))
 					)
 					.limit(1);
 
@@ -380,7 +377,7 @@ export const experimentsRouter = createTRPCRouter({
 				await Promise.all([
 					drizzleCache.invalidateByTables(["abExperiments"]),
 					drizzleCache.invalidateByKey(
-						`experiments:byId:${input.id}:${existing[0].websiteId}`,
+						`experiments:byId:${input.id}:${existing[0].websiteId}`
 					),
 				]);
 
@@ -423,8 +420,8 @@ export const experimentsRouter = createTRPCRouter({
 						.where(
 							and(
 								eq(abExperiments.id, input.experimentId),
-								isNull(abExperiments.deletedAt),
-							),
+								isNull(abExperiments.deletedAt)
+							)
 						)
 						.limit(1);
 
@@ -449,7 +446,7 @@ export const experimentsRouter = createTRPCRouter({
 
 					// Invalidate cache
 					await drizzleCache.invalidateByKey(
-						`experiments:byId:${input.experimentId}:${experiment[0].websiteId}`,
+						`experiments:byId:${input.experimentId}:${experiment[0].websiteId}`
 					);
 
 					return variant;
@@ -481,7 +478,7 @@ export const experimentsRouter = createTRPCRouter({
 						.from(abVariants)
 						.innerJoin(
 							abExperiments,
-							eq(abVariants.experimentId, abExperiments.id),
+							eq(abVariants.experimentId, abExperiments.id)
 						)
 						.where(eq(abVariants.id, id))
 						.limit(1);
@@ -506,7 +503,7 @@ export const experimentsRouter = createTRPCRouter({
 
 					// Invalidate cache
 					await drizzleCache.invalidateByKey(
-						`experiments:byId:${existing[0].experimentId}:${existing[0].websiteId}`,
+						`experiments:byId:${existing[0].experimentId}:${existing[0].websiteId}`
 					);
 
 					return updated;
@@ -536,7 +533,7 @@ export const experimentsRouter = createTRPCRouter({
 						.from(abVariants)
 						.innerJoin(
 							abExperiments,
-							eq(abVariants.experimentId, abExperiments.id),
+							eq(abVariants.experimentId, abExperiments.id)
 						)
 						.where(eq(abVariants.id, input.id))
 						.limit(1);
@@ -554,7 +551,7 @@ export const experimentsRouter = createTRPCRouter({
 
 					// Invalidate cache
 					await drizzleCache.invalidateByKey(
-						`experiments:byId:${existing[0].experimentId}:${existing[0].websiteId}`,
+						`experiments:byId:${existing[0].experimentId}:${existing[0].websiteId}`
 					);
 
 					return { success: true };
@@ -585,8 +582,8 @@ export const experimentsRouter = createTRPCRouter({
 						.where(
 							and(
 								eq(abExperiments.id, input.experimentId),
-								isNull(abExperiments.deletedAt),
-							),
+								isNull(abExperiments.deletedAt)
+							)
 						)
 						.limit(1);
 
@@ -611,7 +608,7 @@ export const experimentsRouter = createTRPCRouter({
 
 					// Invalidate cache
 					await drizzleCache.invalidateByKey(
-						`experiments:byId:${input.experimentId}:${experiment[0].websiteId}`,
+						`experiments:byId:${input.experimentId}:${experiment[0].websiteId}`
 					);
 
 					return goal;
@@ -643,7 +640,7 @@ export const experimentsRouter = createTRPCRouter({
 						.from(abGoals)
 						.innerJoin(
 							abExperiments,
-							eq(abGoals.experimentId, abExperiments.id),
+							eq(abGoals.experimentId, abExperiments.id)
 						)
 						.where(eq(abGoals.id, id))
 						.limit(1);
@@ -668,7 +665,7 @@ export const experimentsRouter = createTRPCRouter({
 
 					// Invalidate cache
 					await drizzleCache.invalidateByKey(
-						`experiments:byId:${existing[0].experimentId}:${existing[0].websiteId}`,
+						`experiments:byId:${existing[0].experimentId}:${existing[0].websiteId}`
 					);
 
 					return updated;
@@ -698,7 +695,7 @@ export const experimentsRouter = createTRPCRouter({
 						.from(abGoals)
 						.innerJoin(
 							abExperiments,
-							eq(abGoals.experimentId, abExperiments.id),
+							eq(abGoals.experimentId, abExperiments.id)
 						)
 						.where(eq(abGoals.id, input.id))
 						.limit(1);
@@ -716,7 +713,7 @@ export const experimentsRouter = createTRPCRouter({
 
 					// Invalidate cache
 					await drizzleCache.invalidateByKey(
-						`experiments:byId:${existing[0].experimentId}:${existing[0].websiteId}`,
+						`experiments:byId:${existing[0].experimentId}:${existing[0].websiteId}`
 					);
 
 					return { success: true };

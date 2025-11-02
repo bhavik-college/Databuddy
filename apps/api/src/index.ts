@@ -24,7 +24,7 @@ const app = new Elysia()
 					? ["http://localhost:3000"]
 					: []),
 			],
-		}),
+		})
 	)
 	.use(health)
 	.use(
@@ -42,20 +42,20 @@ const app = new Elysia()
 					},
 				};
 			},
-		}),
+		})
 	)
 	.use(query)
 	// .use(customSQL)
 	.use(assistant)
 	.use(exportRoute)
-	.all("/trpc/*", ({ request }) => {
-		return fetchRequestHandler({
+	.all("/trpc/*", ({ request }) =>
+		fetchRequestHandler({
 			endpoint: "/trpc",
 			router: appRouter,
 			req: request,
 			createContext: () => createTRPCContext({ headers: request.headers }),
-		});
-	})
+		})
+	)
 	.onError(({ error, code }) => {
 		const errorMessage = error instanceof Error ? error.message : String(error);
 		logger.error({ message: errorMessage, code, error });
@@ -66,7 +66,7 @@ const app = new Elysia()
 				error: errorMessage,
 				code: code ?? "INTERNAL_SERVER_ERROR",
 			}),
-			{ status: 500, headers: { "Content-Type": "application/json" } },
+			{ status: 500, headers: { "Content-Type": "application/json" } }
 		);
 	});
 

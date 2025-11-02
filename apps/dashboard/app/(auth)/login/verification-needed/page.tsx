@@ -27,7 +27,7 @@ export default function VerificationNeededPage() {
 				onError: () => {
 					setIsLoading(false);
 					toast.error(
-						"Failed to send verification email. Please try again later.",
+						"Failed to send verification email. Please try again later."
 					);
 				},
 			},

@@ -39,7 +39,7 @@ export function Prose({ children, html, className }: ProseProps) {
 				"prose-blockquote:border-border",
 				"prose-blockquote:text-muted-foreground",
 				"prose-hr:border-border",
-				className,
+				className
 			)}
 		>
 			{html ? (

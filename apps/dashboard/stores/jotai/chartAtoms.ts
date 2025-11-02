@@ -19,7 +19,7 @@ const defaultVisibleMetrics: MetricVisibilityState = {
 
 export const metricVisibilityAtom = atomWithStorage<MetricVisibilityState>(
 	"databuddy-metric-visibility",
-	defaultVisibleMetrics,
+	defaultVisibleMetrics
 );
 
 export const toggleMetricAtom = atom(
@@ -29,7 +29,7 @@ export const toggleMetricAtom = atom(
 			...prev,
 			[metric]: !prev[metric],
 		}));
-	},
+	}
 );
 
 export const visibleMetricsAtom = atom((get) => {

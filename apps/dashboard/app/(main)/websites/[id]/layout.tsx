@@ -59,7 +59,7 @@ export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
 	return (
 		<div className="flex h-full flex-col overflow-hidden">
 			{isTrackingSetup && !isAssistantPage && (
-				<div className="fixed top-12 left-0 right-0 z-50 flex-shrink-0 space-y-0 bg-background md:top-0 md:left-84">
+				<div className="fixed top-12 right-0 left-0 z-50 flex-shrink-0 space-y-0 bg-background md:top-0 md:left-84">
 					<AnalyticsToolbar
 						isRefreshing={isRefreshing}
 						onRefresh={handleRefresh}

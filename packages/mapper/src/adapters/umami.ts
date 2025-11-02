@@ -78,7 +78,7 @@ function formatBrowserName(browser: string): string {
 
 function determineEventType(
 	_row: UmamiCsvRow,
-	isLastInSession = false,
+	isLastInSession = false
 ): "screen_view" | "page_exit" {
 	if (isLastInSession) {
 		return "page_exit";
@@ -88,7 +88,7 @@ function determineEventType(
 
 export const umamiAdapter = (
 	clientId: string,
-	rows?: UmamiCsvRow[],
+	rows?: UmamiCsvRow[]
 ): AnalyticsEventAdapter<UmamiCsvRow> => {
 	// Pre-analyze sessions for page exit detection if rows are provided
 	let isLastInSessionMap: Map<string, boolean> | undefined;
@@ -98,7 +98,7 @@ export const umamiAdapter = (
 	}
 
 	function analyzeSessionsForPageExits(
-		sessionRows: UmamiCsvRow[],
+		sessionRows: UmamiCsvRow[]
 	): Map<string, boolean> {
 		const sessionGroups = new Map<string, UmamiCsvRow[]>();
 
@@ -115,7 +115,7 @@ export const umamiAdapter = (
 			if (sessionEvents.length >= 2) {
 				sessionEvents.sort(
 					(a, b) =>
-						new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+						new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
 				);
 
 				const lastEvent = sessionEvents.at(-1);

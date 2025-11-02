@@ -10,7 +10,7 @@ export const MetricsChart = dynamic(
 			<SkeletonChart className="w-full" height={400} title="Loading chart..." />
 		),
 		ssr: false,
-	},
+	}
 );
 
 export const DistributionChart = dynamic(
@@ -23,7 +23,7 @@ export const DistributionChart = dynamic(
 			<SkeletonChart className="w-full" height={190} title="Loading chart..." />
 		),
 		ssr: false,
-	},
+	}
 );
 
 export { SkeletonChart } from "./skeleton-chart";

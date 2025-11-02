@@ -106,7 +106,7 @@ export function validateTimezone(timezone: unknown): string {
 
 	const sanitized = sanitizeString(
 		timezone,
-		VALIDATION_LIMITS.TIMEZONE_MAX_LENGTH,
+		VALIDATION_LIMITS.TIMEZONE_MAX_LENGTH
 	);
 
 	if (!timezoneRegex.test(sanitized)) {
@@ -139,7 +139,7 @@ export function validateLanguage(language: unknown): string {
 
 	const sanitized = sanitizeString(
 		language,
-		VALIDATION_LIMITS.LANGUAGE_MAX_LENGTH,
+		VALIDATION_LIMITS.LANGUAGE_MAX_LENGTH
 	);
 
 	if (!languageRegex.test(sanitized)) {
@@ -159,7 +159,7 @@ export function validateSessionId(sessionId: unknown): string {
 
 	const sanitized = sanitizeString(
 		sessionId,
-		VALIDATION_LIMITS.SESSION_ID_MAX_LENGTH,
+		VALIDATION_LIMITS.SESSION_ID_MAX_LENGTH
 	);
 
 	if (!sessionIdRegex.test(sanitized)) {
@@ -186,7 +186,7 @@ export function validateUtmParameter(utm: unknown): string {
 export function validateNumeric(
 	value: unknown,
 	min = 0,
-	max = Number.MAX_SAFE_INTEGER,
+	max = Number.MAX_SAFE_INTEGER
 ): number | null {
 	if (
 		typeof value === "number" &&
@@ -231,7 +231,7 @@ export function validateUrl(url: unknown): string {
  * Filters and validates request headers
  */
 export function filterSafeHeaders(
-	headers: Record<string, string | string[] | undefined>,
+	headers: Record<string, string | string[] | undefined>
 ): Record<string, string> {
 	const safeHeaders: Record<string, string> = {};
 
@@ -242,7 +242,7 @@ export function filterSafeHeaders(
 			if (stringValue) {
 				safeHeaders[lowerKey] = sanitizeString(
 					stringValue,
-					VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH,
+					VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
 				);
 			}
 		}
@@ -255,7 +255,7 @@ export function filterSafeHeaders(
  * Validates analytics properties object
  */
 export function validateProperties(
-	properties: unknown,
+	properties: unknown
 ): Record<string, unknown> {
 	if (
 		!properties ||
@@ -321,7 +321,7 @@ export const batchAnalyticsEventSchema = z
  */
 export function validatePayloadSize(
 	data: unknown,
-	maxSize = VALIDATION_LIMITS.PAYLOAD_MAX_SIZE,
+	maxSize = VALIDATION_LIMITS.PAYLOAD_MAX_SIZE
 ): boolean {
 	try {
 		const serialized = JSON.stringify(data);

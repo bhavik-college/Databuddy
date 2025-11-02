@@ -91,8 +91,8 @@ export const funnelsRouter = createTRPCRouter({
 								and(
 									eq(funnelDefinitions.websiteId, input.websiteId),
 									isNull(funnelDefinitions.deletedAt),
-									sql`jsonb_array_length(${funnelDefinitions.steps}) > 1`,
-								),
+									sql`jsonb_array_length(${funnelDefinitions.steps}) > 1`
+								)
 							)
 							.orderBy(desc(funnelDefinitions.createdAt));
 
@@ -131,8 +131,8 @@ export const funnelsRouter = createTRPCRouter({
 								and(
 									eq(funnelDefinitions.id, input.id),
 									eq(funnelDefinitions.websiteId, input.websiteId),
-									isNull(funnelDefinitions.deletedAt),
-								),
+									isNull(funnelDefinitions.deletedAt)
+								)
 							)
 							.limit(1);
 
@@ -216,8 +216,8 @@ export const funnelsRouter = createTRPCRouter({
 				.where(
 					and(
 						eq(funnelDefinitions.id, input.id),
-						isNull(funnelDefinitions.deletedAt),
-					),
+						isNull(funnelDefinitions.deletedAt)
+					)
 				)
 				.limit(1);
 			if (existingFunnel.length === 0) {
@@ -236,15 +236,15 @@ export const funnelsRouter = createTRPCRouter({
 					.where(
 						and(
 							eq(funnelDefinitions.id, id),
-							isNull(funnelDefinitions.deletedAt),
-						),
+							isNull(funnelDefinitions.deletedAt)
+						)
 					)
 					.returning();
 
 				await Promise.all([
 					drizzleCache.invalidateByTables(["funnelDefinitions"]),
 					drizzleCache.invalidateByKey(
-						`funnels:byId:${id}:${existingFunnel[0].websiteId}`,
+						`funnels:byId:${id}:${existingFunnel[0].websiteId}`
 					),
 				]);
 
@@ -271,8 +271,8 @@ export const funnelsRouter = createTRPCRouter({
 				.where(
 					and(
 						eq(funnelDefinitions.id, input.id),
-						isNull(funnelDefinitions.deletedAt),
-					),
+						isNull(funnelDefinitions.deletedAt)
+					)
 				)
 				.limit(1);
 			if (existingFunnel.length === 0) {
@@ -290,14 +290,14 @@ export const funnelsRouter = createTRPCRouter({
 					.where(
 						and(
 							eq(funnelDefinitions.id, input.id),
-							isNull(funnelDefinitions.deletedAt),
-						),
+							isNull(funnelDefinitions.deletedAt)
+						)
 					);
 
 				await Promise.all([
 					drizzleCache.invalidateByTables(["funnelDefinitions"]),
 					drizzleCache.invalidateByKey(
-						`funnels:byId:${input.id}:${existingFunnel[0].websiteId}`,
+						`funnels:byId:${input.id}:${existingFunnel[0].websiteId}`
 					),
 				]);
 
@@ -340,8 +340,8 @@ export const funnelsRouter = createTRPCRouter({
 								and(
 									eq(funnelDefinitions.id, input.funnelId),
 									eq(funnelDefinitions.websiteId, input.websiteId),
-									isNull(funnelDefinitions.deletedAt),
-								),
+									isNull(funnelDefinitions.deletedAt)
+								)
 							)
 							.limit(1);
 
@@ -379,7 +379,7 @@ export const funnelsRouter = createTRPCRouter({
 								type: step.type as "PAGE_VIEW" | "EVENT",
 								target: step.target,
 								name: step.name,
-							}),
+							})
 						);
 
 						return processFunnelAnalytics(analyticsSteps, filters, params);
@@ -427,8 +427,8 @@ export const funnelsRouter = createTRPCRouter({
 								and(
 									eq(funnelDefinitions.id, input.funnelId),
 									eq(funnelDefinitions.websiteId, input.websiteId),
-									isNull(funnelDefinitions.deletedAt),
-								),
+									isNull(funnelDefinitions.deletedAt)
+								)
 							)
 							.limit(1);
 
@@ -473,13 +473,13 @@ export const funnelsRouter = createTRPCRouter({
 								type: step.type as "PAGE_VIEW" | "EVENT",
 								target: step.target,
 								name: step.name,
-							}),
+							})
 						);
 
 						return processFunnelAnalyticsByReferrer(
 							analyticsSteps,
 							filters,
-							params,
+							params
 						);
 					} catch (error) {
 						if (error instanceof TRPCError) {

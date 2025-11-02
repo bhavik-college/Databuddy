@@ -81,7 +81,7 @@ async function getAuthContext(request: Request) {
 
 function checkNoWebsiteAuth(
 	sessionUser: unknown,
-	apiKey: unknown,
+	apiKey: unknown
 ): Response | null {
 	if (sessionUser || apiKey) {
 		return null;
@@ -97,7 +97,7 @@ async function checkWebsiteAuth(
 	websiteId: string,
 	sessionUser: unknown,
 	apiKey: Parameters<typeof hasWebsiteScope>[0] | null,
-	apiKeyPresent: boolean,
+	apiKeyPresent: boolean
 ): Promise<Response | null> {
 	const website = await getCachedWebsite(websiteId);
 	if (!website) {

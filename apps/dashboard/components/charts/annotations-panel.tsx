@@ -59,19 +59,19 @@ export function AnnotationsPanel({
 
 	return (
 		<>
-			<Sheet open={isOpen} onOpenChange={setIsOpen}>
+			<Sheet onOpenChange={setIsOpen} open={isOpen}>
 				<SheetTrigger asChild>
 					<Button
-						variant="outline"
-						size="sm"
 						className="gap-2 border-sidebar-border hover:bg-sidebar-accent"
+						size="sm"
+						variant="outline"
 					>
 						<NoteIcon className="h-4 w-4" weight="duotone" />
 						Annotations ({annotations.length})
 					</Button>
 				</SheetTrigger>
 				<SheetContent
-					className="w-full overflow-y-auto p-4 sm:w-[60vw] sm:max-w-[600px] bg-sidebar border-sidebar-border"
+					className="w-full overflow-y-auto border-sidebar-border bg-sidebar p-4 sm:w-[60vw] sm:max-w-[600px]"
 					side="right"
 				>
 					<SheetHeader className="space-y-3 border-sidebar-border border-b pb-6">
@@ -97,7 +97,7 @@ export function AnnotationsPanel({
 					<div className="space-y-6 pt-6">
 						{annotations.length === 0 ? (
 							<div className="flex flex-col items-center justify-center py-12 text-center">
-								<div className="rounded bg-sidebar-accent p-4 mb-4">
+								<div className="mb-4 rounded bg-sidebar-accent p-4">
 									<NoteIcon
 										className="h-8 w-8 text-sidebar-foreground/70"
 										weight="duotone"
@@ -106,43 +106,43 @@ export function AnnotationsPanel({
 								<p className="font-medium text-sidebar-foreground">
 									No annotations yet
 								</p>
-								<p className="text-sm text-sidebar-foreground/70 mt-1">
+								<p className="mt-1 text-sidebar-foreground/70 text-sm">
 									Drag on the chart to create your first annotation
 								</p>
 							</div>
 						) : (
 							annotations.map((annotation) => (
 								<div
-									key={annotation.id}
 									className="group rounded border border-sidebar-border bg-sidebar p-4 transition-all hover:border-sidebar-ring/50 hover:shadow-sm"
+									key={annotation.id}
 								>
 									<div className="flex items-start justify-between gap-3">
-										<div className="flex-1 min-w-0">
+										<div className="min-w-0 flex-1">
 											{/* Color indicator and date */}
-											<div className="flex items-center gap-2 mb-2">
+											<div className="mb-2 flex items-center gap-2">
 												<div
 													className="h-3 w-3 rounded-full border-2 border-sidebar shadow-sm"
 													style={{ backgroundColor: annotation.color }}
 												/>
-												<span className="text-xs text-sidebar-foreground/70">
+												<span className="text-sidebar-foreground/70 text-xs">
 													{formatAnnotationDateRange(
 														annotation.xValue,
 														annotation.xEndValue,
-														granularity,
+														granularity
 													)}
 												</span>
 												{annotation.annotationType === "range" &&
 													annotation.xEndValue &&
 													new Date(annotation.xValue).getTime() !==
 														new Date(annotation.xEndValue).getTime() && (
-														<Badge variant="secondary" className="text-xs">
+														<Badge className="text-xs" variant="secondary">
 															Range
 														</Badge>
 													)}
 											</div>
 
 											{/* Text */}
-											<p className="text-sm text-sidebar-foreground mb-2 break-words">
+											<p className="mb-2 break-words text-sidebar-foreground text-sm">
 												{annotation.text}
 											</p>
 
@@ -151,11 +151,11 @@ export function AnnotationsPanel({
 												<div className="flex flex-wrap gap-1">
 													{annotation.tags.map((tag) => (
 														<Badge
+															className="text-xs"
 															key={tag}
 															variant="outline"
-															className="text-xs"
 														>
-															<TagIcon className="h-3 w-3 mr-1" />
+															<TagIcon className="mr-1 h-3 w-3" />
 															{tag}
 														</Badge>
 													))}
@@ -164,23 +164,23 @@ export function AnnotationsPanel({
 										</div>
 
 										{/* Actions */}
-										<div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+										<div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
 											<Button
-												variant="ghost"
-												size="sm"
 												className="h-8 w-8 p-0"
 												onClick={() => {
 													onEdit(annotation);
 													setIsOpen(false);
 												}}
+												size="sm"
+												variant="ghost"
 											>
 												<PencilIcon className="h-4 w-4" weight="duotone" />
 											</Button>
 											<Button
-												variant="ghost"
-												size="sm"
 												className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
 												onClick={() => setDeleteId(annotation.id)}
+												size="sm"
+												variant="ghost"
 											>
 												<TrashIcon className="h-4 w-4" weight="duotone" />
 											</Button>
@@ -194,7 +194,7 @@ export function AnnotationsPanel({
 			</Sheet>
 
 			{/* Delete Confirmation Dialog */}
-			<AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+			<AlertDialog onOpenChange={() => setDeleteId(null)} open={!!deleteId}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>Delete Annotation</AlertDialogTitle>
@@ -206,13 +206,13 @@ export function AnnotationsPanel({
 					<AlertDialogFooter>
 						<AlertDialogCancel>Cancel</AlertDialogCancel>
 						<AlertDialogAction
-							onClick={handleDelete}
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 							disabled={isDeleting}
+							onClick={handleDelete}
 						>
 							{isDeleting ? (
 								<>
-									<div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
+									<div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
 									Deleting...
 								</>
 							) : (

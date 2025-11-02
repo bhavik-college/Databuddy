@@ -81,7 +81,7 @@ export default function GoalsPage() {
 					observer.disconnect();
 				}
 			},
-			{ threshold: 0.1 },
+			{ threshold: 0.1 }
 		);
 
 		if (pageRef.current) {
@@ -138,7 +138,7 @@ export default function GoalsPage() {
 	]);
 
 	const handleSaveGoal = async (
-		data: Goal | Omit<CreateGoalData, "websiteId">,
+		data: Goal | Omit<CreateGoalData, "websiteId">
 	) => {
 		try {
 			if ("id" in data) {

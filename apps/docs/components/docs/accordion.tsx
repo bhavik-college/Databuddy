@@ -34,7 +34,7 @@ function Accordions({
 		<div
 			className={cn(
 				"rounded border border-border bg-card/50 backdrop-blur-sm",
-				className,
+				className
 			)}
 			{...props}
 		>

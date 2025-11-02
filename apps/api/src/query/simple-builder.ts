@@ -66,7 +66,7 @@ export class SimpleQueryBuilder {
 	constructor(
 		config: SimpleQueryConfig,
 		request: QueryRequest,
-		websiteDomain?: string | null,
+		websiteDomain?: string | null
 	) {
 		this.config = config;
 		this.request = request;
@@ -215,7 +215,7 @@ export class SimpleQueryBuilder {
 
 		if (filter.op === "like") {
 			const searchValue = this.normalizeReferrerSearchValue(
-				String(filter.value),
+				String(filter.value)
 			);
 			return {
 				clause: `${normalizedReferrerExpression} ${operator} {${key}:String}`,
@@ -328,7 +328,7 @@ export class SimpleQueryBuilder {
 				.replace(/NOT domain\(referrer\) ILIKE '%.{websiteDomain}'/g, "1=1")
 				.replace(
 					/domain\(referrer\) NOT IN \('localhost', '127\.0\.0\.1'\)/g,
-					"1=1",
+					"1=1"
 				);
 		}
 
@@ -368,7 +368,7 @@ export class SimpleQueryBuilder {
 				this.request.timezone,
 				whereClause,
 				whereClauseParams,
-				helpers,
+				helpers
 			);
 
 			if (typeof result === "string") {
@@ -405,7 +405,7 @@ export class SimpleQueryBuilder {
 	}
 
 	private buildSessionAttributionQuery(
-		params: Record<string, Filter["value"]>,
+		params: Record<string, Filter["value"]>
 	): CompiledQuery {
 		// Build the session attribution query with CTEs
 		const timeField = this.config.timeField || "time";
@@ -499,7 +499,7 @@ export class SimpleQueryBuilder {
 		const appendEndOfDay = this.config.appendEndOfDayToTo !== false;
 		if (appendEndOfDay) {
 			whereClause.push(
-				`${timeField} <= parseDateTimeBestEffort(concat({to:String}, ' 23:59:59'))`,
+				`${timeField} <= parseDateTimeBestEffort(concat({to:String}, ' 23:59:59'))`
 			);
 		} else {
 			whereClause.push(`${timeField} <= parseDateTimeBestEffort({to:String})`);
@@ -513,7 +513,7 @@ export class SimpleQueryBuilder {
 	}
 
 	private buildWhereClauseFromFilters(
-		params: Record<string, Filter["value"]>,
+		params: Record<string, Filter["value"]>
 	): string[] {
 		const whereClause: string[] = [];
 
@@ -555,7 +555,7 @@ export class SimpleQueryBuilder {
 			for (const keyword of dangerousKeywords) {
 				if (upperField.includes(keyword)) {
 					throw new Error(
-						`Grouping by field '${field}' contains dangerous keyword: ${keyword}`,
+						`Grouping by field '${field}' contains dangerous keyword: ${keyword}`
 					);
 				}
 			}
@@ -586,7 +586,7 @@ export class SimpleQueryBuilder {
 		for (const keyword of dangerousKeywords) {
 			if (upperOrderBy.includes(keyword)) {
 				throw new Error(
-					`Ordering by field '${orderBy}' contains dangerous keyword: ${keyword}`,
+					`Ordering by field '${orderBy}' contains dangerous keyword: ${keyword}`
 				);
 			}
 		}

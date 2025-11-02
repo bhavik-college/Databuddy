@@ -43,7 +43,7 @@ export const PageLinkCell: React.FC<PageLinkCellProps> = ({
 		<a
 			className={cn(
 				"group flex items-center gap-1.5 hover:underline",
-				className,
+				className
 			)}
 			href={href}
 			id={id}

@@ -63,7 +63,7 @@ export function parseUserAgent(userAgent: string): {
 			`Failed to parse user agent: ${userAgent}`,
 			{
 				error: error instanceof Error ? error.message : "Unknown error",
-			},
+			}
 		);
 		return {
 			browserName: undefined,
@@ -79,7 +79,7 @@ export function parseUserAgent(userAgent: string): {
 
 export function detectBot(
 	userAgent: string,
-	request: Request,
+	request: Request
 ): {
 	isBot: boolean;
 	reason?: string;

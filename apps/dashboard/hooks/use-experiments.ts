@@ -93,7 +93,7 @@ export function useExperiments(websiteId: string) {
 			enabled: !!websiteId,
 			refetchOnWindowFocus: false,
 			staleTime: 5 * 60 * 1000, // 5 minutes
-		},
+		}
 	);
 
 	const createMutation = trpc.experiments.create.useMutation({
@@ -144,23 +144,20 @@ export function useExperiments(websiteId: string) {
 		},
 	});
 
-	const createExperiment = (data: CreateExperimentData) => {
-		return createMutation.mutateAsync(data as CreateExperimentData);
-	};
+	const createExperiment = (data: CreateExperimentData) =>
+		createMutation.mutateAsync(data as CreateExperimentData);
 
 	const updateExperiment = (params: {
 		experimentId: string;
 		updates: UpdateExperimentData;
-	}) => {
-		return updateMutation.mutateAsync({
+	}) =>
+		updateMutation.mutateAsync({
 			id: params.experimentId,
 			...params.updates,
 		});
-	};
 
-	const deleteExperiment = (experimentId: string) => {
-		return deleteMutation.mutateAsync({ id: experimentId });
-	};
+	const deleteExperiment = (experimentId: string) =>
+		deleteMutation.mutateAsync({ id: experimentId });
 
 	const experiments = useMemo(() => experimentsData || [], [experimentsData]);
 
@@ -185,7 +182,7 @@ export function useExperiment(experimentId: string, websiteId: string) {
 			enabled: !!experimentId && !!websiteId,
 			refetchOnWindowFocus: false,
 			staleTime: 5 * 60 * 1000, // 5 minutes
-		},
+		}
 	);
 
 	return {

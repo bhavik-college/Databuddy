@@ -60,7 +60,7 @@ export default function QueriesPage({ params }: QueriesPageProps) {
 	const { data: metrics, isLoading: metricsLoading } =
 		trpc.performance.getMetrics.useQuery(
 			{ id: connectionId },
-			{ refetchInterval: 30_000 },
+			{ refetchInterval: 30_000 }
 		);
 
 	const handleQueryClick = useCallback((query: QueryPerformanceSummary) => {
@@ -84,18 +84,18 @@ export default function QueriesPage({ params }: QueriesPageProps) {
 		// Remove duplicates based on queryid
 		const uniqueQueries = allQueries.filter(
 			(queryItem, index, self) =>
-				self.findIndex((q) => q.queryid === queryItem.queryid) === index,
+				self.findIndex((q) => q.queryid === queryItem.queryid) === index
 		);
 
 		return {
 			mostCalled: [...metrics.top_queries_by_calls].sort(
-				(a, b) => b.calls - a.calls,
+				(a, b) => b.calls - a.calls
 			),
 			slowest: [...metrics.slowest_queries].sort(
-				(a, b) => b.mean_exec_time - a.mean_exec_time,
+				(a, b) => b.mean_exec_time - a.mean_exec_time
 			),
 			resourceHogs: [...metrics.top_queries_by_time].sort(
-				(a, b) => b.percentage_of_total_time - a.percentage_of_total_time,
+				(a, b) => b.percentage_of_total_time - a.percentage_of_total_time
 			),
 			all: uniqueQueries.sort((a, b) => b.calls - a.calls), // Default sort by most called
 		};

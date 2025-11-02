@@ -132,7 +132,7 @@ export function LogoCarousel({ columns = 3, logos }: LogoCarouselProps) {
 
 			return result;
 		},
-		[columns],
+		[columns]
 	);
 
 	useEffect(() => {

@@ -61,7 +61,7 @@ class ChatDatabase {
 	// Chat management
 	async createOrUpdateChat(
 		websiteId: string,
-		websiteName?: string,
+		websiteName?: string
 	): Promise<void> {
 		const db = await this.dbPromise;
 		const messageCount = await this.getMessageCount(websiteId);
@@ -105,7 +105,7 @@ class ChatDatabase {
 	async saveMessage(
 		message: Message,
 		websiteId: string,
-		chatId?: string,
+		chatId?: string
 	): Promise<void> {
 		const db = await this.dbPromise;
 		const messageWithMeta = {
@@ -130,7 +130,7 @@ class ChatDatabase {
 		return messages
 			.sort(
 				(a, b) =>
-					new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+					new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
 			)
 			.map(({ websiteId: _, chatId: __, ...message }) => ({
 				...message,
@@ -141,7 +141,7 @@ class ChatDatabase {
 	async saveMessages(
 		messages: Message[],
 		websiteId: string,
-		chatId?: string,
+		chatId?: string
 	): Promise<void> {
 		const db = await this.dbPromise;
 		const tx = db.transaction("messages", "readwrite");
@@ -193,7 +193,7 @@ class ChatDatabase {
 
 	async importChat(
 		websiteId: string,
-		data: { messages: Message[]; websiteName?: string },
+		data: { messages: Message[]; websiteName?: string }
 	): Promise<void> {
 		await this.clearMessages(websiteId);
 		await this.saveMessages(data.messages, websiteId);

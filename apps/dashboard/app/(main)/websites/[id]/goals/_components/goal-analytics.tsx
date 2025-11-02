@@ -88,9 +88,7 @@ export function GoalAnalytics({
 		return num.toLocaleString();
 	};
 
-	const formatPercentage = (num: number) => {
-		return `${num.toFixed(1)}%`;
-	};
+	const formatPercentage = (num: number) => `${num.toFixed(1)}%`;
 
 	return (
 		<div className="space-y-4">

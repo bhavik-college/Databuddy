@@ -108,7 +108,7 @@ export function MagicSVG({
 				});
 			}
 		},
-		[animatedX, animatedY],
+		[animatedX, animatedY]
 	);
 
 	const handleMouseLeave = useCallback(() => {
@@ -218,7 +218,7 @@ export function MagicSVG({
 									stroke: strokeColor,
 									strokeWidth,
 									fill,
-								},
+								}
 							);
 						}
 					}
@@ -241,7 +241,7 @@ export function MagicSVG({
 									stroke: `url(#${gradientId})`,
 									strokeWidth: strokeWidth + 1,
 									fill,
-								},
+								}
 							);
 						}
 					}

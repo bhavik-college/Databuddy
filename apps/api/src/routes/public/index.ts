@@ -7,7 +7,7 @@ export const publicApi = new Elysia({ prefix: "/public" })
 		cors({
 			credentials: false,
 			origin: true,
-		}),
+		})
 	)
 	.options("*", () => new Response(null, { status: 204 }))
 	.use(flagsRoute)

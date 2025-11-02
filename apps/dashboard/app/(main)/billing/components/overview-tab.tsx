@@ -128,7 +128,7 @@ const UsageCard = memo(function UsageCardComponent({
 							<div
 								className={cn(
 									"font-bold text-xl sm:text-2xl",
-									getUsageTextColor(),
+									getUsageTextColor()
 								)}
 							>
 								{feature.used.toLocaleString()}
@@ -177,7 +177,7 @@ interface PlanStatusCardProps {
 	onCancelClick: (
 		planId: string,
 		planName: string,
-		currentPeriodEnd?: number,
+		currentPeriodEnd?: number
 	) => void;
 	onManageBilling: () => void;
 }
@@ -345,7 +345,7 @@ const PlanStatusCard = memo(function PlanStatusCardComponent({
 										onCancelClick(
 											plan.id,
 											plan.display?.name || plan.name,
-											undefined,
+											undefined
 										)
 									}
 									size="sm"
@@ -410,14 +410,14 @@ export const OverviewTab = memo(function OverviewTabComponent({
 			: products?.find(
 					(p: Product) =>
 						!p.scenario ||
-						(p.scenario !== "upgrade" && p.scenario !== "downgrade"),
+						(p.scenario !== "upgrade" && p.scenario !== "downgrade")
 				);
 
 		const planStatusDetails = activeCustomerProduct
 			? getSubscriptionStatusDetails(
 					activeCustomerProduct as unknown as Parameters<
 						typeof getSubscriptionStatusDetails
-					>[0],
+					>[0]
 				)
 			: "";
 

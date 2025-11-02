@@ -154,7 +154,7 @@ export function EditFunnelDialog({
 							{ type: "PAGE_VIEW" as const, target: "", name: "" },
 						],
 					}
-				: prev,
+				: prev
 		);
 	}, [formData]);
 
@@ -169,10 +169,10 @@ export function EditFunnelDialog({
 							...prev,
 							steps: prev.steps.filter((_, i) => i !== index),
 						}
-					: prev,
+					: prev
 			);
 		},
-		[formData],
+		[formData]
 	);
 
 	const updateStep = useCallback(
@@ -185,13 +185,13 @@ export function EditFunnelDialog({
 					? {
 							...prev,
 							steps: prev.steps.map((step, i) =>
-								i === index ? { ...step, [field]: value } : step,
+								i === index ? { ...step, [field]: value } : step
 							),
 						}
-					: prev,
+					: prev
 			);
 		},
-		[formData],
+		[formData]
 	);
 
 	const reorderSteps = useCallback(
@@ -218,10 +218,10 @@ export function EditFunnelDialog({
 							...prev,
 							steps: items,
 						}
-					: prev,
+					: prev
 			);
 		},
-		[formData],
+		[formData]
 	);
 
 	const handleFiltersChange = useCallback((newFilters: FunnelFilter[]) => {
@@ -259,7 +259,7 @@ export function EditFunnelDialog({
 					return [];
 			}
 		},
-		[autocompleteData],
+		[autocompleteData]
 	);
 
 	const getStepSuggestions = useCallback(
@@ -277,7 +277,7 @@ export function EditFunnelDialog({
 
 			return [];
 		},
-		[autocompleteData],
+		[autocompleteData]
 	);
 
 	const handleClose = useCallback(() => {
@@ -353,7 +353,7 @@ export function EditFunnelDialog({
 								id="edit-name"
 								onChange={(e) =>
 									setFormData((prev) =>
-										prev ? { ...prev, name: e.target.value } : prev,
+										prev ? { ...prev, name: e.target.value } : prev
 									)
 								}
 								placeholder="e.g., Sign Up Flow"
@@ -372,7 +372,7 @@ export function EditFunnelDialog({
 								id="edit-description"
 								onChange={(e) =>
 									setFormData((prev) =>
-										prev ? { ...prev, description: e.target.value } : prev,
+										prev ? { ...prev, description: e.target.value } : prev
 									)
 								}
 								placeholder="Optional description"

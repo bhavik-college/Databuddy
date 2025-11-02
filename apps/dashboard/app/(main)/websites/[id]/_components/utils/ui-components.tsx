@@ -59,7 +59,7 @@ export const MetricToggle: React.FC<MetricToggleProps> = ({
 				"group flex cursor-pointer items-center gap-2.5 rounded border px-3.5 py-2 transition-all duration-200",
 				checked
 					? "border-primary/20 bg-primary/5 shadow-sm hover:border-primary/30 hover:bg-primary/10"
-					: "border-border/50 bg-transparent hover:border-border hover:bg-muted/30",
+					: "border-border/50 bg-transparent hover:border-border hover:bg-muted/30"
 			)}
 			onClick={onChange}
 			onKeyDown={(e) => {
@@ -76,7 +76,7 @@ export const MetricToggle: React.FC<MetricToggleProps> = ({
 					"h-2.5 w-2.5 rounded-full transition-all duration-200",
 					checked
 						? "scale-100 shadow-sm"
-						: "scale-75 opacity-50 group-hover:scale-90 group-hover:opacity-75",
+						: "scale-75 opacity-50 group-hover:scale-90 group-hover:opacity-75"
 				)}
 				style={{
 					backgroundColor: colorHex,
@@ -88,7 +88,7 @@ export const MetricToggle: React.FC<MetricToggleProps> = ({
 					"font-medium text-sm transition-colors duration-200",
 					checked
 						? "text-primary"
-						: "text-muted-foreground group-hover:text-foreground",
+						: "text-muted-foreground group-hover:text-foreground"
 				)}
 			>
 				{label}
@@ -109,21 +109,19 @@ export const MetricToggles: React.FC<MetricTogglesProps> = ({
 	onToggle,
 	colors,
 	labels = {},
-}) => {
-	return (
-		<div className="flex flex-wrap items-center gap-2">
-			{Object.keys(metrics).map((metric) => (
-				<MetricToggle
-					checked={metrics[metric]}
-					color={colors[metric] || "blue-500"}
-					key={metric}
-					label={labels[metric] || metric}
-					onChange={() => onToggle(metric)}
-				/>
-			))}
-		</div>
-	);
-};
+}) => (
+	<div className="flex flex-wrap items-center gap-2">
+		{Object.keys(metrics).map((metric) => (
+			<MetricToggle
+				checked={metrics[metric]}
+				color={colors[metric] || "blue-500"}
+				key={metric}
+				label={labels[metric] || metric}
+				onChange={() => onToggle(metric)}
+			/>
+		))}
+	</div>
+);
 
 interface ExternalLinkButtonProps {
 	href: string;

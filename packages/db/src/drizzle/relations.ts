@@ -91,7 +91,7 @@ export const userPreferencesRelations = relations(
 			fields: [userPreferences.userId],
 			references: [user.id],
 		}),
-	}),
+	})
 );
 
 export const websitesRelations = relations(websites, ({ one, many }) => ({
@@ -127,7 +127,7 @@ export const funnelDefinitionsRelations = relations(
 			fields: [funnelDefinitions.createdBy],
 			references: [user.id],
 		}),
-	}),
+	})
 );
 
 export const teamRelations = relations(team, ({ one }) => ({
@@ -169,7 +169,7 @@ export const abExperimentsRelations = relations(
 		}),
 		variants: many(abVariants),
 		goals: many(abGoals),
-	}),
+	})
 );
 
 export const abVariantsRelations = relations(abVariants, ({ one }) => ({

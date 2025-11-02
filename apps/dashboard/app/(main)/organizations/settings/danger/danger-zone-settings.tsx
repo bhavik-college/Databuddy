@@ -48,7 +48,7 @@ export function DangerZoneSettings({
 						query: { organizationId: organization.id },
 					});
 				const member = fullOrgData?.members?.find(
-					(m) => m.userId === session.user.id,
+					(m) => m.userId === session.user.id
 				);
 				setIsOwner(member?.role === "owner");
 			} catch {

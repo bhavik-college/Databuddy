@@ -21,7 +21,7 @@ export class VercelSDK {
 
 	private async request<T>(
 		endpoint: string,
-		options: RequestInit = {},
+		options: RequestInit = {}
 	): Promise<T> {
 		const url = `${this.baseUrl}${endpoint}`;
 		const response = await fetch(url, {
@@ -35,7 +35,7 @@ export class VercelSDK {
 
 		if (!response.ok) {
 			throw new Error(
-				`Vercel API error: ${response.status} ${response.statusText}`,
+				`Vercel API error: ${response.status} ${response.statusText}`
 			);
 		}
 
@@ -43,7 +43,7 @@ export class VercelSDK {
 	}
 
 	async getProjects(
-		params: { limit?: string; since?: number; until?: number } = {},
+		params: { limit?: string; since?: number; until?: number } = {}
 	): Promise<VercelProjectsResponse> {
 		const searchParams = new URLSearchParams();
 		if (params.limit) {
@@ -74,7 +74,7 @@ export class VercelSDK {
 				if (project.latestDeployments?.length) {
 					const productionDeployment = project.latestDeployments.find(
 						(deployment) =>
-							deployment.target === "production" || deployment.target === null,
+							deployment.target === "production" || deployment.target === null
 					);
 
 					if (productionDeployment) {
@@ -83,7 +83,7 @@ export class VercelSDK {
 							// Find the first non-vercel.app domain, or fallback to first alias
 							primaryDomain =
 								productionDeployment.alias.find(
-									(domain) => !domain.endsWith(".vercel.app"),
+									(domain) => !domain.endsWith(".vercel.app")
 								) || productionDeployment.alias[0];
 						} else if (productionDeployment.automaticAliases?.length) {
 							primaryDomain = productionDeployment.automaticAliases[0];
@@ -100,7 +100,7 @@ export class VercelSDK {
 						if (firstDeployment.alias?.length) {
 							primaryDomain =
 								firstDeployment.alias.find(
-									(domain) => !domain.endsWith(".vercel.app"),
+									(domain) => !domain.endsWith(".vercel.app")
 								) || firstDeployment.alias[0];
 						} else if (firstDeployment.automaticAliases?.length) {
 							primaryDomain = firstDeployment.automaticAliases[0];
@@ -125,7 +125,7 @@ export class VercelSDK {
 
 	async getProjectEnvs(projectId: string): Promise<VercelEnvVarsResponse> {
 		return await this.request<VercelEnvVarsResponse>(
-			`/v10/projects/${projectId}/env`,
+			`/v10/projects/${projectId}/env`
 		);
 	}
 
@@ -136,7 +136,7 @@ export class VercelSDK {
 			upsert?: boolean;
 			teamId?: string;
 			slug?: string;
-		} = {},
+		} = {}
 	): Promise<CreateEnvVarResponse> {
 		const searchParams = new URLSearchParams();
 		if (options.upsert) {
@@ -183,7 +183,7 @@ export class VercelSDK {
 			upsert?: boolean;
 			teamId?: string;
 			slug?: string;
-		} = {},
+		} = {}
 	): Promise<CreateEnvVarResponse> {
 		const searchParams = new URLSearchParams();
 		if (options.upsert) {
@@ -241,7 +241,7 @@ export class VercelSDK {
 			since?: number;
 			until?: number;
 			order?: string;
-		} = {},
+		} = {}
 	): Promise<VercelDomainsResponse> {
 		const searchParams = new URLSearchParams();
 		if (params.production) {
@@ -291,7 +291,7 @@ export class VercelSDK {
 		options: {
 			teamId?: string;
 			slug?: string;
-		} = {},
+		} = {}
 	): Promise<VercelEnvVar> {
 		const searchParams = new URLSearchParams();
 		if (options.teamId) {
@@ -317,7 +317,7 @@ export class VercelSDK {
 			customEnvironmentId?: string;
 			teamId?: string;
 			slug?: string;
-		} = {},
+		} = {}
 	): Promise<VercelEnvVar[]> {
 		const searchParams = new URLSearchParams();
 		if (options.customEnvironmentId) {
@@ -344,7 +344,7 @@ export class VercelSDK {
 		_options: {
 			teamId?: string;
 			slug?: string;
-		} = {},
+		} = {}
 	): Promise<VercelEnvVar | null> {
 		const envs = await this.getProjectEnvs(projectId);
 		return envs.envs.find((env) => env.key === key) || null;
@@ -356,7 +356,7 @@ export class VercelSDK {
 		_options: {
 			teamId?: string;
 			slug?: string;
-		} = {},
+		} = {}
 	): Promise<VercelEnvVar[]> {
 		const envs = await this.getProjectEnvs(projectId);
 
@@ -371,7 +371,7 @@ export class VercelSDK {
 			upsert?: boolean;
 			teamId?: string;
 			slug?: string;
-		} = {},
+		} = {}
 	): Promise<VercelEnvVar> {
 		// Check if env var exists
 		const existing = await this.getProjectEnvByKey(projectId, key, options);
@@ -388,7 +388,7 @@ export class VercelSDK {
 					gitBranch: envVar.gitBranch,
 					comment: envVar.comment,
 				},
-				options,
+				options
 			);
 		}
 
@@ -421,7 +421,7 @@ export class VercelSDK {
 		options: {
 			teamId?: string;
 			slug?: string;
-		} = {},
+		} = {}
 	): Promise<boolean> {
 		const existing = await this.getProjectEnvByKey(projectId, key, options);
 

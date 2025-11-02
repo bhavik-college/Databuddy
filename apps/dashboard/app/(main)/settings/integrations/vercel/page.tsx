@@ -16,7 +16,7 @@ import {
 
 export default function VercelConfigPage() {
 	const [expandedProjects, setExpandedProjects] = useState<Set<string>>(
-		new Set(),
+		new Set()
 	);
 	const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 	const [selectedDomains, setSelectedDomains] = useState<Domain[]>([]);
@@ -35,7 +35,7 @@ export default function VercelConfigPage() {
 			includeIntegrationStatus: true,
 			organizationId: activeOrganization?.id,
 		},
-		{ enabled: !isLoadingOrganization },
+		{ enabled: !isLoadingOrganization }
 	);
 
 	const toggleProjectExpansion = (projectId: string) => {
@@ -54,7 +54,7 @@ export default function VercelConfigPage() {
 
 	const handleCreateMultipleWebsites = (
 		project: Project,
-		domains: Domain[],
+		domains: Domain[]
 	) => {
 		setSelectedProject(project);
 		setSelectedDomains(domains);
@@ -82,7 +82,7 @@ export default function VercelConfigPage() {
 			if (result.success) {
 				await utils.vercel.getProjects.invalidate();
 				toast.success(
-					`Successfully integrated ${configs.length} website${configs.length > 1 ? "s" : ""}`,
+					`Successfully integrated ${configs.length} website${configs.length > 1 ? "s" : ""}`
 				);
 			}
 
@@ -93,7 +93,7 @@ export default function VercelConfigPage() {
 			// Handle specific error cases
 			if (error?.data?.code === "UNAUTHORIZED") {
 				toast.error(
-					"Missing organization permissions. Please check your Vercel integration settings.",
+					"Missing organization permissions. Please check your Vercel integration settings."
 				);
 			} else if (error?.data?.code === "FORBIDDEN") {
 				toast.error("Insufficient permissions to integrate websites.");

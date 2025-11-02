@@ -17,7 +17,7 @@ const AIAssistantMain = dynamic(
 	{
 		loading: () => <AIAssistantLoadingSkeleton />,
 		ssr: false,
-	},
+	}
 );
 
 function AIAssistantLoadingSkeleton() {

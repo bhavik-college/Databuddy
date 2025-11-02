@@ -45,22 +45,24 @@ export function useChartConfig({
 			...defaultColors,
 			...colors,
 		}),
-		[colors],
+		[colors]
 	);
 
 	// Create initial metric visibility state
 	const initialToggles = useMemo(
 		() => createMetricToggles(initialVisibleMetrics),
-		[initialVisibleMetrics],
+		[initialVisibleMetrics]
 	);
 
 	// Format chart data with dates
-	const formattedData = useMemo(() => {
-		return data.map((item) => ({
-			...item,
-			formattedDate: formatDateByGranularity(item.date, granularity),
-		}));
-	}, [data, granularity]);
+	const formattedData = useMemo(
+		() =>
+			data.map((item) => ({
+				...item,
+				formattedDate: formatDateByGranularity(item.date, granularity),
+			})),
+		[data, granularity]
+	);
 
 	// Create metric labels mapping
 	const metricLabels = useMemo(
@@ -70,7 +72,7 @@ export function useChartConfig({
 			sessions: "Sessions",
 			bounce_rate: "Bounce Rate",
 		}),
-		[],
+		[]
 	);
 
 	return {

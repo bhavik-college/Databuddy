@@ -128,7 +128,7 @@ export function WebsiteAudienceTab({
 				filters,
 			},
 		],
-		[filters],
+		[filters]
 	);
 
 	const {
@@ -251,7 +251,7 @@ export function WebsiteAudienceTab({
 				},
 			},
 		],
-		[],
+		[]
 	);
 
 	const connectionColumns = createIconTextColumns({
@@ -340,7 +340,7 @@ export function WebsiteAudienceTab({
 			geographicData.language,
 			geographicData.timezone,
 			displayNames,
-		],
+		]
 	);
 
 	return (
@@ -360,7 +360,7 @@ export function WebsiteAudienceTab({
 					renderSubRow={(subRow: any, parentRow: any) => {
 						// Calculate percentage relative to parent browser (not total visitors)
 						const percentage = Math.round(
-							((subRow.visitors || 0) / (parentRow.visitors || 1)) * 100,
+							((subRow.visitors || 0) / (parentRow.visitors || 1)) * 100
 						);
 						const gradientConfig =
 							percentage >= 40

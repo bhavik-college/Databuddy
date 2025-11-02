@@ -93,7 +93,7 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
 export default function IntegrationsPage() {
 	const searchParams = useSearchParams();
 	const [connectingProvider, setConnectingProvider] = useState<string | null>(
-		null,
+		null
 	);
 	const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 	const { integrations, isLoading, isError, refetch } = useIntegrations();
@@ -152,7 +152,7 @@ export default function IntegrationsPage() {
 			acc[integration.category].push(integration);
 			return acc;
 		},
-		{} as Record<string, Integration[]>,
+		{} as Record<string, Integration[]>
 	);
 
 	return (
@@ -308,7 +308,7 @@ export default function IntegrationsPage() {
 							))}
 						</div>
 					</div>
-				),
+				)
 			)}
 
 			{integrations.length === 0 && (

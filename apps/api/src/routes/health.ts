@@ -57,6 +57,6 @@ export const health = new Elysia().get("/health", async () => {
 		{
 			status,
 			headers: { "Content-Type": "application/json" },
-		},
+		}
 	);
 });

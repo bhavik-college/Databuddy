@@ -44,7 +44,7 @@ interface DataTableProps<TData extends { name: string | number }, TValue> {
 	renderSubRow?: (
 		subRow: TData,
 		parentRow: TData,
-		index: number,
+		index: number
 	) => React.ReactNode;
 	expandable?: boolean;
 }
@@ -122,7 +122,7 @@ export function DataTable<TData extends { name: string | number }, TValue>({
 			<div
 				className={cn(
 					"w-full overflow-hidden rounded border-sidebar-border bg-sidebar/50 shadow-sm backdrop-blur-sm",
-					className,
+					className
 				)}
 			>
 				<div className="p-4 px-2 pb-2 sm:px-3">
@@ -155,7 +155,7 @@ export function DataTable<TData extends { name: string | number }, TValue>({
 			<div
 				className={cn(
 					"w-full overflow-hidden rounded border bg-card/50 shadow-sm backdrop-blur-sm",
-					className,
+					className
 				)}
 			>
 				{/* Toolbar */}
@@ -205,7 +205,7 @@ export function DataTable<TData extends { name: string | number }, TValue>({
 							className={cn(
 								"relative flex scale-100 animate-scalein flex-col overflow-hidden rounded border border-border bg-background shadow-2xl",
 								FULLSCREEN_HEIGHT,
-								FULLSCREEN_WIDTH,
+								FULLSCREEN_WIDTH
 							)}
 						>
 							<FullScreenModal
@@ -226,7 +226,7 @@ export function DataTable<TData extends { name: string | number }, TValue>({
 							/>
 						</div>
 					</div>,
-					document.body,
+					document.body
 				)}
 		</>
 	);

@@ -42,7 +42,7 @@ export const clickHouseOG = createClient({
 async function withRetry<T>(
 	operation: () => Promise<T>,
 	maxRetries = 3,
-	baseDelay = 500,
+	baseDelay = 500
 ): Promise<T> {
 	let lastError: Error | undefined;
 
@@ -66,7 +66,7 @@ async function withRetry<T>(
 					`Attempt ${attempt + 1}/${maxRetries} failed, retrying in ${delay}ms`,
 					{
 						error: error.message,
-					},
+					}
 				);
 				await new Promise((resolve) => setTimeout(resolve, delay));
 				continue;
@@ -93,7 +93,7 @@ export const clickHouse = new Proxy(clickHouseOG, {
 
 export async function chQueryWithMeta<T extends Record<string, any>>(
 	query: string,
-	params?: Record<string, unknown>,
+	params?: Record<string, unknown>
 ): Promise<ResponseJSON<T>> {
 	const res = await clickHouse.query({
 		query,
@@ -103,8 +103,8 @@ export async function chQueryWithMeta<T extends Record<string, any>>(
 	const keys = Object.keys(json.data[0] || {});
 	const response = {
 		...json,
-		data: json.data.map((item) => {
-			return keys.reduce(
+		data: json.data.map((item) =>
+			keys.reduce(
 				(acc, key) => {
 					const meta = json.meta?.find((m) => m.name === key);
 					acc[key] =
@@ -113,9 +113,9 @@ export async function chQueryWithMeta<T extends Record<string, any>>(
 							: item[key];
 					return acc;
 				},
-				{} as Record<string, any>,
-			);
-		}),
+				{} as Record<string, any>
+			)
+		),
 	};
 
 	return response as ResponseJSON<T>;
@@ -123,14 +123,14 @@ export async function chQueryWithMeta<T extends Record<string, any>>(
 
 export async function chQuery<T extends Record<string, any>>(
 	query: string,
-	params?: Record<string, unknown>,
+	params?: Record<string, unknown>
 ): Promise<T[]> {
 	return (await chQueryWithMeta<T>(query, params)).data;
 }
 
 export async function chCommand(
 	query: string,
-	params?: Record<string, unknown>,
+	params?: Record<string, unknown>
 ): Promise<void> {
 	await clickHouse.command({
 		query,
@@ -144,7 +144,7 @@ const DATE_REGEX = /\d{4}-\d{2}-\d{2}/;
 
 export function formatClickhouseDate(
 	date: Date | string,
-	skipTime = false,
+	skipTime = false
 ): string {
 	if (skipTime) {
 		return new Date(date).toISOString().split("T")[0] ?? "";

@@ -45,7 +45,7 @@ export default function GeneralSettingsPage() {
 						return TOAST_MESSAGES.WEBSITE_DELETED;
 					},
 					error: TOAST_MESSAGES.WEBSITE_DELETE_ERROR,
-				},
+				}
 			);
 		} catch {
 			// handled by toast

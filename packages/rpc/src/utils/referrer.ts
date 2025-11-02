@@ -18,7 +18,7 @@ export interface ReferrerInfo {
  */
 export function parseReferrer(
 	referrerUrl: string | null | undefined,
-	currentDomain?: string,
+	currentDomain?: string
 ): ReferrerInfo {
 	if (!referrerUrl) {
 		return {
@@ -95,7 +95,7 @@ export function parseReferrer(
  * Find a referrer by domain in the referrers database
  */
 function getReferrerByDomain(
-	domain: string,
+	domain: string
 ): { type: string; name: string } | null {
 	// Check exact match first
 	if (domain in referrers) {
@@ -136,7 +136,7 @@ export function categorizeReferrer(referrerInfo: ReferrerInfo): string {
 
 export function isInternalReferrer(
 	referrerUrl: string,
-	websiteHostname?: string,
+	websiteHostname?: string
 ): boolean {
 	if (!referrerUrl || referrerUrl === "direct") {
 		return false;

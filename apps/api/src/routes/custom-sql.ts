@@ -8,7 +8,7 @@ const CustomSQLRequestSchema = t.Object({
 	query: t.String({ minLength: 1, maxLength: 5000 }),
 	clientId: t.String({ minLength: 1 }),
 	parameters: t.Optional(
-		t.Record(t.String(), t.Union([t.String(), t.Number(), t.Boolean()])),
+		t.Record(t.String(), t.Union([t.String(), t.Number(), t.Boolean()]))
 	),
 });
 
@@ -186,24 +186,22 @@ const QuerySecurityValidator = {
 		// Simplified: All JSON properties are extracted as strings since JSON stores everything as strings
 		const propertiesPattern = /\bproperties\.([a-zA-Z_][a-zA-Z0-9_]*)\b/gi;
 
-		return query.replace(propertiesPattern, (_match, propertyName) => {
-			return `JSONExtractString(properties, '${propertyName}')`;
-		});
+		return query.replace(
+			propertiesPattern,
+			(_match, propertyName) =>
+				`JSONExtractString(properties, '${propertyName}')`
+		);
 	},
 
 	transformTemplateLiterals(query: string): string {
 		let transformedQuery = query.replace(
 			/'?\$\{([a-zA-Z_][a-zA-Z0-9_]*)\}'?/gi,
-			(_match, paramName) => {
-				return `{${paramName}:String}`;
-			},
+			(_match, paramName) => `{${paramName}:String}`
 		);
 
 		transformedQuery = transformedQuery.replace(
 			/\$\{([a-zA-Z_][a-zA-Z0-9_]*)\}/gi,
-			(_match, paramName) => {
-				return `{${paramName}:String}`;
-			},
+			(_match, paramName) => `{${paramName}:String}`
 		);
 
 		return transformedQuery;
@@ -238,7 +236,7 @@ const QuerySecurityValidator = {
 			if (regex.test(normalizedQuery)) {
 				throw new SQLValidationError(
 					`Forbidden operation detected: ${operation}`,
-					"FORBIDDEN_OPERATION",
+					"FORBIDDEN_OPERATION"
 				);
 			}
 		}
@@ -247,7 +245,7 @@ const QuerySecurityValidator = {
 			if (pattern.test(normalizedQuery)) {
 				throw new SQLValidationError(
 					"Query contains forbidden pattern or potential injection attempt",
-					"FORBIDDEN_PATTERN",
+					"FORBIDDEN_PATTERN"
 				);
 			}
 		}
@@ -274,7 +272,7 @@ const QuerySecurityValidator = {
 			if (!isAllowed) {
 				throw new SQLValidationError(
 					`Access to table '${tableName}' is not allowed`,
-					"FORBIDDEN_TABLE",
+					"FORBIDDEN_TABLE"
 				);
 			}
 		}
@@ -287,7 +285,7 @@ const QuerySecurityValidator = {
 		if (!hasValidStart) {
 			throw new SQLValidationError(
 				"Query must start with SELECT or WITH",
-				"INVALID_QUERY_START",
+				"INVALID_QUERY_START"
 			);
 		}
 	},
@@ -298,7 +296,7 @@ const QuerySecurityValidator = {
 		if (selectCount > 5) {
 			throw new SQLValidationError(
 				"Query complexity too high (max 5 SELECT statements allowed)",
-				"QUERY_TOO_COMPLEX",
+				"QUERY_TOO_COMPLEX"
 			);
 		}
 
@@ -307,7 +305,7 @@ const QuerySecurityValidator = {
 		if (unionCount > 2) {
 			throw new SQLValidationError(
 				"Too many UNION operations (max 2 allowed)",
-				"UNION_LIMIT_EXCEEDED",
+				"UNION_LIMIT_EXCEEDED"
 			);
 		}
 	},
@@ -316,21 +314,21 @@ const QuerySecurityValidator = {
 		if (normalizedQuery.includes("/*") || normalizedQuery.includes("--")) {
 			throw new SQLValidationError(
 				"Comments are not allowed in queries",
-				"COMMENTS_NOT_ALLOWED",
+				"COMMENTS_NOT_ALLOWED"
 			);
 		}
 
 		if (normalizedQuery.includes(";")) {
 			throw new SQLValidationError(
 				"Multiple statements not allowed",
-				"MULTIPLE_STATEMENTS_NOT_ALLOWED",
+				"MULTIPLE_STATEMENTS_NOT_ALLOWED"
 			);
 		}
 
 		if (normalizedQuery.includes("\\") || normalizedQuery.includes("%")) {
 			throw new SQLValidationError(
 				"Escape sequences and URL encoding not allowed",
-				"ENCODING_NOT_ALLOWED",
+				"ENCODING_NOT_ALLOWED"
 			);
 		}
 	},
@@ -347,14 +345,14 @@ const QuerySecurityValidator = {
 			if (parenCount < 0) {
 				throw new SQLValidationError(
 					"Unbalanced parentheses in query",
-					"INVALID_SYNTAX",
+					"INVALID_SYNTAX"
 				);
 			}
 		}
 		if (parenCount !== 0) {
 			throw new SQLValidationError(
 				"Unbalanced parentheses in query",
-				"INVALID_SYNTAX",
+				"INVALID_SYNTAX"
 			);
 		}
 	},
@@ -374,7 +372,7 @@ const QuerySecurityValidator = {
 		if (!CLIENT_ID_PATTERN.test(clientId)) {
 			throw new SQLValidationError(
 				"Invalid client ID format",
-				"INVALID_CLIENT_ID",
+				"INVALID_CLIENT_ID"
 			);
 		}
 	},
@@ -387,7 +385,7 @@ const QuerySecurityValidator = {
 		) {
 			throw new SQLValidationError(
 				"Query cannot reference client_id directly - use parameterized queries",
-				"CLIENT_REFERENCE_FORBIDDEN",
+				"CLIENT_REFERENCE_FORBIDDEN"
 			);
 		}
 	},
@@ -405,7 +403,7 @@ const QuerySecurityValidator = {
 
 		throw new SQLValidationError(
 			"Unsupported query structure",
-			"UNSUPPORTED_QUERY",
+			"UNSUPPORTED_QUERY"
 		);
 	},
 
@@ -454,7 +452,7 @@ const QuerySecurityValidator = {
 		if (!normalizedQuery.includes("CLIENT_ID = {CLIENTID:STRING}")) {
 			throw new SQLValidationError(
 				"WITH queries must include client filtering using WHERE client_id = {clientId:String}",
-				"WITH_QUERY_REQUIRES_CLIENT_FILTER",
+				"WITH_QUERY_REQUIRES_CLIENT_FILTER"
 			);
 		}
 		return query;
@@ -489,7 +487,7 @@ const QuerySecurityValidator = {
 			if (vector.test(query)) {
 				throw new SQLValidationError(
 					"Query matches known attack pattern",
-					"ATTACK_PATTERN_DETECTED",
+					"ATTACK_PATTERN_DETECTED"
 				);
 			}
 		}
@@ -500,14 +498,14 @@ const QuerySecurityValidator = {
 			if (!query || typeof query !== "string") {
 				throw new SQLValidationError(
 					"Query must be a non-empty string",
-					"INVALID_INPUT",
+					"INVALID_INPUT"
 				);
 			}
 
 			if (query.length > 5000) {
 				throw new SQLValidationError(
 					"Query too long (max 5,000 characters)",
-					"QUERY_TOO_LONG",
+					"QUERY_TOO_LONG"
 				);
 			}
 
@@ -530,7 +528,7 @@ const QuerySecurityValidator = {
 
 			return QuerySecurityValidator.validateClientAccess(
 				transformedQuery,
-				clientId,
+				clientId
 			);
 		} catch (error) {
 			if (error instanceof SQLValidationError) {
@@ -564,7 +562,7 @@ interface ClickHouseQueryResult {
 
 async function executeClickHouseQuery(
 	query: string,
-	parameters: Record<string, unknown> = {},
+	parameters: Record<string, unknown> = {}
 ): Promise<ClickHouseQueryResult> {
 	try {
 		const result = await chQueryWithMeta(query, parameters);
@@ -584,7 +582,7 @@ async function executeClickHouseQuery(
 			timestamp: new Date().toISOString(),
 		});
 		throw new Error(
-			`ClickHouse query failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+			`ClickHouse query failed: ${error instanceof Error ? error.message : "Unknown error"}`
 		);
 	}
 }
@@ -593,7 +591,7 @@ async function executeClickHouseQuery(
 async function validateAPIKeyAndPermissions(
 	apiKey: unknown,
 	clientId: string,
-	request: Request,
+	request: Request
 ) {
 	if (!apiKey) {
 		console.error("Custom SQL Auth Error:", {
@@ -670,7 +668,7 @@ async function validateAPIKeyAndPermissions(
 		const hasAccess = await hasWebsiteScope(
 			apiKey as never,
 			clientId,
-			"read:data",
+			"read:data"
 		);
 		if (!hasAccess) {
 			console.error("Custom SQL Client Access Error:", {
@@ -811,7 +809,7 @@ function parseClickHouseError(errorMessage: string): {
 function handleQueryExecutionError(
 	error: unknown,
 	body: { clientId: string; query: string },
-	apiKey: unknown,
+	apiKey: unknown
 ) {
 	if (error instanceof SQLValidationError) {
 		console.error("SQL Validation Error:", {
@@ -919,7 +917,7 @@ export const customSQL = new Elysia({ prefix: "/v1/custom-sql" })
 				const authResult = await validateAPIKeyAndPermissions(
 					apiKey,
 					body.clientId,
-					request,
+					request
 				);
 				if (authResult.status !== 200) {
 					set.status = authResult.status;
@@ -928,7 +926,7 @@ export const customSQL = new Elysia({ prefix: "/v1/custom-sql" })
 
 				const secureQuery = QuerySecurityValidator.validateAndSecureQuery(
 					body.query,
-					body.clientId,
+					body.clientId
 				);
 
 				const queryParameters = {
@@ -938,7 +936,7 @@ export const customSQL = new Elysia({ prefix: "/v1/custom-sql" })
 
 				const result = await executeClickHouseQuery(
 					secureQuery,
-					queryParameters,
+					queryParameters
 				);
 
 				return {
@@ -960,55 +958,52 @@ export const customSQL = new Elysia({ prefix: "/v1/custom-sql" })
 		},
 		{
 			body: CustomSQLRequestSchema,
-		},
+		}
 	)
-	.get("/schema", () => {
-		return {
-			success: true,
-			schema: {
-				allowedTables: ALLOWED_TABLES,
-				allowedOperations: ALLOWED_OPERATIONS,
-				forbiddenOperations: FORBIDDEN_OPERATIONS,
-				maxQueryLength: 5000,
-				maxNestedSelects: 3,
-				parameterization: {
-					clientIdParameter: "{clientId:String}",
-					required: "All queries must use parameterized client filtering",
-					supportedSyntax: [
-						"Template literals: $[paramName] converted to {paramName:String}",
-						"Simple parameters: {paramName} converted to {paramName:String}",
-						"Typed parameters: {paramName:Type} (unchanged)",
-					],
-					examples: [
-						"$[workspaceId] becomes {workspaceId:String}",
-						"{cutoffTimestamp} becomes {cutoffTimestamp:String}",
-						"{userId:Int32} remains {userId:Int32} (unchanged)",
-					],
-				},
-				propertiesSyntax: {
-					description:
-						"Automatic JSONExtract transformation from properties.X syntax - all properties extracted as strings",
-					syntax: "properties.property_name",
-					note: "All JSON properties are extracted as strings since JSON stores values as strings",
-					examples: [
-						"properties.browser_name",
-						"properties.user_id",
-						"properties.is_active = 'true'",
-						"properties.count = '42'",
-					],
-					extraction: "JSONExtractString(properties, 'property_name')",
-				},
+	.get("/schema", () => ({
+		success: true,
+		schema: {
+			allowedTables: ALLOWED_TABLES,
+			allowedOperations: ALLOWED_OPERATIONS,
+			forbiddenOperations: FORBIDDEN_OPERATIONS,
+			maxQueryLength: 5000,
+			maxNestedSelects: 3,
+			parameterization: {
+				clientIdParameter: "{clientId:String}",
+				required: "All queries must use parameterized client filtering",
+				supportedSyntax: [
+					"Template literals: $[paramName] converted to {paramName:String}",
+					"Simple parameters: {paramName} converted to {paramName:String}",
+					"Typed parameters: {paramName:Type} (unchanged)",
+				],
+				examples: [
+					"$[workspaceId] becomes {workspaceId:String}",
+					"{cutoffTimestamp} becomes {cutoffTimestamp:String}",
+					"{userId:Int32} remains {userId:Int32} (unchanged)",
+				],
 			},
-		};
-	})
-	.get("/examples", () => {
-		return {
-			success: true,
-			examples: [
-				{
-					name: "Monthly Events Count",
-					description: "Get monthly event counts for your client",
-					query: `
+			propertiesSyntax: {
+				description:
+					"Automatic JSONExtract transformation from properties.X syntax - all properties extracted as strings",
+				syntax: "properties.property_name",
+				note: "All JSON properties are extracted as strings since JSON stores values as strings",
+				examples: [
+					"properties.browser_name",
+					"properties.user_id",
+					"properties.is_active = 'true'",
+					"properties.count = '42'",
+				],
+				extraction: "JSONExtractString(properties, 'property_name')",
+			},
+		},
+	}))
+	.get("/examples", () => ({
+		success: true,
+		examples: [
+			{
+				name: "Monthly Events Count",
+				description: "Get monthly event counts for your client",
+				query: `
 						SELECT
 							toStartOfMonth(time) as month_start,
 							count() as event_count
@@ -1018,12 +1013,12 @@ export const customSQL = new Elysia({ prefix: "/v1/custom-sql" })
 						GROUP BY month_start
 						ORDER BY month_start DESC
 					`.trim(),
-				},
-				{
-					name: "Monthly API Requests with Simplified Syntax",
-					description:
-						"Example using simplified parameter syntax - {paramName} auto-converts to {paramName:String}. Also supports $[paramName] template literals.",
-					query: `
+			},
+			{
+				name: "Monthly API Requests with Simplified Syntax",
+				description:
+					"Example using simplified parameter syntax - {paramName} auto-converts to {paramName:String}. Also supports $[paramName] template literals.",
+				query: `
 						SELECT 
 							toStartOfMonth(timestamp) as month_start,
 							countIf(properties.success = 'true') as success,
@@ -1037,11 +1032,11 @@ export const customSQL = new Elysia({ prefix: "/v1/custom-sql" })
 						ORDER BY month_start DESC
 						LIMIT 24
 					`.trim(),
-				},
-				{
-					name: "Top Pages by Views",
-					description: "Get most popular pages",
-					query: `
+			},
+			{
+				name: "Top Pages by Views",
+				description: "Get most popular pages",
+				query: `
 						SELECT
 							path,
 							count() as page_views,
@@ -1054,12 +1049,12 @@ export const customSQL = new Elysia({ prefix: "/v1/custom-sql" })
 						ORDER BY page_views DESC
 						LIMIT 10
 					`.trim(),
-				},
-				{
-					name: "Browser Analytics (simplified properties syntax)",
-					description:
-						"Analyze browser usage using simplified properties.X syntax",
-					query: `
+			},
+			{
+				name: "Browser Analytics (simplified properties syntax)",
+				description:
+					"Analyze browser usage using simplified properties.X syntax",
+				query: `
 						SELECT
 							properties.browser_name,
 							count() as events,
@@ -1071,12 +1066,12 @@ export const customSQL = new Elysia({ prefix: "/v1/custom-sql" })
 						GROUP BY properties.browser_name
 						ORDER BY events DESC
 					`.trim(),
-				},
-				{
-					name: "User Analytics (simplified properties)",
-					description:
-						"Analyze user behavior using simplified properties - all extracted as strings",
-					query: `
+			},
+			{
+				name: "User Analytics (simplified properties)",
+				description:
+					"Analyze user behavior using simplified properties - all extracted as strings",
+				query: `
 						SELECT
 							properties.user_id as user_id,
 							properties.is_premium as is_premium,
@@ -1094,11 +1089,11 @@ export const customSQL = new Elysia({ prefix: "/v1/custom-sql" })
 						ORDER BY total_events DESC
 						LIMIT 20
 					`.trim(),
-				},
-				{
-					name: "Error Events Analysis",
-					description: "Analyze error events",
-					query: `
+			},
+			{
+				name: "Error Events Analysis",
+				description: "Analyze error events",
+				query: `
 						SELECT
 							path,
 							count() as error_count
@@ -1109,7 +1104,6 @@ export const customSQL = new Elysia({ prefix: "/v1/custom-sql" })
 						ORDER BY error_count DESC
 						LIMIT 10
 					`.trim(),
-				},
-			],
-		};
-	});
+			},
+		],
+	}));

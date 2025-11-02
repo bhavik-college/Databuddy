@@ -25,13 +25,13 @@ export default function AIAssistantMain() {
 				m.data &&
 				m.chartType &&
 				m.type === "assistant" &&
-				m.responseType === "chart",
+				m.responseType === "chart"
 		);
 
 	let currentQueryMessage: Message | undefined;
 	if (latestVisualizationMessage) {
 		const vizMessageIndex = messages.findIndex(
-			(m) => m.id === latestVisualizationMessage.id,
+			(m) => m.id === latestVisualizationMessage.id
 		);
 		if (vizMessageIndex > -1) {
 			for (let i = vizMessageIndex - 1; i >= 0; i--) {
@@ -60,7 +60,7 @@ export default function AIAssistantMain() {
 				<div
 					className={cn(
 						"flex min-h-0 flex-col overflow-hidden",
-						shouldShowVisualization ? "flex-1 lg:flex-[3]" : "flex-1",
+						shouldShowVisualization ? "flex-1 lg:flex-[3]" : "flex-1"
 					)}
 				>
 					<Suspense fallback={<ChatSkeleton />}>

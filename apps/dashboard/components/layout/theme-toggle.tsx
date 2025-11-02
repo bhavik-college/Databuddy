@@ -28,7 +28,7 @@ export function ThemeToggle({ className }: ThemeTogglerProps) {
 			aria-label="Toggle theme"
 			className={cn(
 				"relative hidden h-8 w-8 transition-all duration-200 hover:bg-accent/50 md:flex",
-				className,
+				className
 			)}
 			onClick={switchTheme}
 			suppressHydrationWarning
@@ -37,10 +37,8 @@ export function ThemeToggle({ className }: ThemeTogglerProps) {
 		>
 			<SunIcon
 				className={cn(
-					"size-5 transition-all duration-300 not-dark:text-primary",
-					currentTheme === "light"
-						? "scale-100 rotate-0"
-						: "scale-0 -rotate-90",
+					"size-5 not-dark:text-primary transition-all duration-300",
+					currentTheme === "light" ? "rotate-0 scale-100" : "-rotate-90 scale-0"
 				)}
 				size={32}
 				suppressHydrationWarning
@@ -48,8 +46,8 @@ export function ThemeToggle({ className }: ThemeTogglerProps) {
 			/>
 			<MoonIcon
 				className={cn(
-					"absolute size-5 transition-all duration-300 not-dark:text-primary",
-					currentTheme === "dark" ? "scale-100 rotate-0" : "scale-0 rotate-90",
+					"absolute size-5 not-dark:text-primary transition-all duration-300",
+					currentTheme === "dark" ? "rotate-0 scale-100" : "rotate-90 scale-0"
 				)}
 				size={32}
 				suppressHydrationWarning
@@ -57,10 +55,8 @@ export function ThemeToggle({ className }: ThemeTogglerProps) {
 			/>
 			<MonitorIcon
 				className={cn(
-					"absolute size-5 transition-all duration-300 not-dark:text-primary",
-					currentTheme === "system"
-						? "scale-100 rotate-0"
-						: "scale-0 rotate-90",
+					"absolute size-5 not-dark:text-primary transition-all duration-300",
+					currentTheme === "system" ? "rotate-0 scale-100" : "rotate-90 scale-0"
 				)}
 				size={32}
 				suppressHydrationWarning

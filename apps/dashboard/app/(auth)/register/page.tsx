@@ -96,7 +96,7 @@ function RegisterPageContent() {
 						handleAuthSuccess();
 					} else {
 						toast.success(
-							"Account created! Please check your email to verify your account.",
+							"Account created! Please check your email to verify your account."
 						);
 						setRegistrationStep("verification-needed");
 						if (selectedPlan) {
@@ -126,7 +126,7 @@ function RegisterPageContent() {
 				},
 				onError: () => {
 					toast.error(
-						"Failed to send verification email. Please try again later.",
+						"Failed to send verification email. Please try again later."
 					);
 				},
 			},
@@ -149,7 +149,7 @@ function RegisterPageContent() {
 					},
 					onError: () => {
 						toast.error(
-							`${provider === "github" ? "GitHub" : "Google"} login failed. Please try again.`,
+							`${provider === "github" ? "GitHub" : "Google"} login failed. Please try again.`
 						);
 						setIsLoading(false);
 					},

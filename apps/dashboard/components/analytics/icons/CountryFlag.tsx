@@ -13,7 +13,7 @@ export function CountryFlag({ country, size = 18 }: CountryFlagProps) {
 	const imageUrl = useMemo(
 		() =>
 			`https://purecatamphetamine.github.io/country-flag-icons/3x2/${countryCode.toUpperCase()}.svg`,
-		[countryCode],
+		[countryCode]
 	);
 
 	return (

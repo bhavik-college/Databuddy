@@ -54,7 +54,7 @@ const DatabaseConnectionsSkeleton = () => (
 export default function DatabasePage() {
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 	const [connectionToEdit, setConnectionToEdit] = useState<DbConnection | null>(
-		null,
+		null
 	);
 	const [connectionToDelete, setConnectionToDelete] =
 		useState<DbConnection | null>(null);
@@ -134,14 +134,14 @@ export default function DatabasePage() {
 		}) => {
 			createMutation.mutate(data);
 		},
-		[createMutation],
+		[createMutation]
 	);
 
 	const handleEditSubmit = useCallback(
 		(data: { id: string; name: string }) => {
 			editMutation.mutate(data);
 		},
-		[editMutation],
+		[editMutation]
 	);
 
 	if (error) {

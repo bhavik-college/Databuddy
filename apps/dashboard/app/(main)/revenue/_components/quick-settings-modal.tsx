@@ -67,14 +67,14 @@ export function QuickSettingsModal({
 	const handleSecretChange = (value: string) => {
 		setLocalWebhookSecret(value);
 		setHasUnsavedChanges(
-			value !== webhookSecret || localIsLiveMode !== isLiveMode,
+			value !== webhookSecret || localIsLiveMode !== isLiveMode
 		);
 	};
 
 	const handleLiveModeChange = (value: boolean) => {
 		setLocalIsLiveMode(value);
 		setHasUnsavedChanges(
-			localWebhookSecret !== webhookSecret || value !== isLiveMode,
+			localWebhookSecret !== webhookSecret || value !== isLiveMode
 		);
 	};
 
@@ -97,7 +97,7 @@ export function QuickSettingsModal({
 		if (!newOpen && hasUnsavedChanges) {
 			if (
 				window.confirm(
-					"You have unsaved changes. Are you sure you want to close?",
+					"You have unsaved changes. Are you sure you want to close?"
 				)
 			) {
 				handleReset();
@@ -176,7 +176,7 @@ export function QuickSettingsModal({
 									onClick={() =>
 										window.open(
 											"https://dashboard.stripe.com/webhooks",
-											"_blank",
+											"_blank"
 										)
 									}
 									size="sm"

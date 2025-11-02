@@ -65,7 +65,7 @@ const flagFormSchema = z.object({
 		.max(100, "Key too long")
 		.regex(
 			/^[a-zA-Z0-9_-]+$/,
-			"Key must contain only letters, numbers, underscores, and hyphens",
+			"Key must contain only letters, numbers, underscores, and hyphens"
 		),
 	name: z
 		.string()

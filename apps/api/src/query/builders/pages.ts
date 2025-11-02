@@ -109,7 +109,7 @@ export const PagesBuilders: Record<string, SimpleQueryConfig> = {
 			helpers?: {
 				sessionAttributionCTE: (timeField?: string) => string;
 				sessionAttributionJoin: (alias?: string) => string;
-			},
+			}
 		) => {
 			const combinedWhereClause = filterConditions?.length
 				? `AND ${filterConditions.join(" AND ")}`
@@ -230,7 +230,7 @@ export const PagesBuilders: Record<string, SimpleQueryConfig> = {
 			helpers?: {
 				sessionAttributionCTE: (timeField?: string) => string;
 				sessionAttributionJoin: (alias?: string) => string;
-			},
+			}
 		) => {
 			const combinedWhereClause = filterConditions?.length
 				? `AND ${filterConditions.join(" AND ")}`
@@ -378,7 +378,7 @@ export const PagesBuilders: Record<string, SimpleQueryConfig> = {
 			helpers?: {
 				sessionAttributionCTE: (timeField?: string) => string;
 				sessionAttributionJoin: (alias?: string) => string;
-			},
+			}
 		) => {
 			const combinedWhereClause = filterConditions?.length
 				? `AND ${filterConditions.join(" AND ")}`

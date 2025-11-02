@@ -30,7 +30,7 @@ const MapComponent = dynamic(
 			</div>
 		),
 		ssr: false,
-	},
+	}
 );
 
 interface CountryData {
@@ -68,7 +68,7 @@ function CountryRow({
 			className="flex w-full cursor-pointer items-center gap-2.5 px-1.5 py-1.5 text-left transition-all hover:opacity-80"
 			onClick={() =>
 				onCountrySelect(
-					country.country_code?.toUpperCase() || country.country.toUpperCase(),
+					country.country_code?.toUpperCase() || country.country.toUpperCase()
 				)
 			}
 			style={{
@@ -116,7 +116,7 @@ function WebsiteMapPage() {
 	const { isLoading, getDataForQuery } = useMapLocationData(
 		id,
 		dateRange,
-		filters,
+		filters
 	);
 
 	const countriesFromQuery = getDataForQuery("map-countries", "country");
@@ -135,14 +135,14 @@ function WebsiteMapPage() {
 				country_code: item.country_code || item.name,
 				visitors: item.visitors,
 				pageviews: item.pageviews,
-			}),
+			})
 		);
 		const regions = (regionsFromQuery || []).map(
 			(item: { name: string; visitors: number; pageviews: number }) => ({
 				country: item.name,
 				visitors: item.visitors,
 				pageviews: item.pageviews,
-			}),
+			})
 		);
 		return { countries, regions };
 	}, [countriesFromQuery, regionsFromQuery]);
@@ -153,16 +153,16 @@ function WebsiteMapPage() {
 				.filter((c) => c.country && c.country.trim() !== "")
 				.sort((a, b) => b.visitors - a.visitors)
 				.slice(0, 5),
-		[locationData.countries],
+		[locationData.countries]
 	);
 
 	const totalVisitors = useMemo(
 		() =>
 			locationData.countries.reduce(
 				(sum, country) => sum + country.visitors,
-				0,
+				0
 			),
-		[locationData.countries],
+		[locationData.countries]
 	);
 
 	if (!id) {

@@ -15,7 +15,7 @@ export function formatCompact(value: number): string {
 
 export function estimateTieredOverageCostFromTiers(
 	events: number,
-	tiers: Array<{ to: number | "inf"; amount: number }>,
+	tiers: Array<{ to: number | "inf"; amount: number }>
 ): number {
 	let cost = 0;
 	let remaining = events;

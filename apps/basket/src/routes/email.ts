@@ -52,7 +52,7 @@ async function insertEmailEvent(emailData: EmailEventInput): Promise<void> {
 	} catch (err) {
 		logger.error(
 			{ error: err as Error, emailEvent },
-			"Failed to send email event to Kafka",
+			"Failed to send email event to Kafka"
 		);
 		throw err;
 	}
@@ -60,7 +60,7 @@ async function insertEmailEvent(emailData: EmailEventInput): Promise<void> {
 
 async function checkEmailDuplicate(
 	emailHash: string,
-	eventTime: number,
+	eventTime: number
 ): Promise<boolean> {
 	const key = `email_dedup:${emailHash}:${eventTime}`;
 	if (await redis.exists(key)) {
@@ -115,7 +115,7 @@ const app = new Elysia()
 					message: "Failed to process email event",
 				};
 			}
-		},
+		}
 	)
 	.post(
 		"/email/batch",
@@ -168,7 +168,7 @@ const app = new Elysia()
 							email_hash: emailHash,
 						};
 					}
-				},
+				}
 			);
 
 			results.push(...(await Promise.all(processingPromises)));
@@ -179,7 +179,7 @@ const app = new Elysia()
 				processed: results.length,
 				results,
 			};
-		},
+		}
 	);
 
 export default app;

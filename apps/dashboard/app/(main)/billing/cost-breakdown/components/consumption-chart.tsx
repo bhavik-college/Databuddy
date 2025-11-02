@@ -81,7 +81,7 @@ export function ConsumptionChart({
 				acc[key] = 0;
 				return acc;
 			},
-			{} as Record<string, number>,
+			{} as Record<string, number>
 		);
 
 		const entries = Array.from(dailyDataMap.entries());
@@ -160,9 +160,9 @@ export function ConsumptionChart({
 		...chartData.map((d) =>
 			Object.keys(EVENT_TYPE_COLORS).reduce(
 				(sum, key) => sum + (d[key] || 0),
-				0,
-			),
-		),
+				0
+			)
+		)
 	);
 	const yAxisMax = Math.ceil(maxValue * 1.1);
 
@@ -183,7 +183,7 @@ export function ConsumptionChart({
 								if (range?.from && range?.to) {
 									onDateRangeChange(
 										range.from.toISOString().split("T")[0],
-										range.to.toISOString().split("T")[0],
+										range.to.toISOString().split("T")[0]
 									);
 								}
 							}}
@@ -283,7 +283,7 @@ export function ConsumptionChart({
 													{payload
 														.filter(
 															(entry) =>
-																entry.value && (entry.value as number) > 0,
+																entry.value && (entry.value as number) > 0
 														)
 														.map((entry, index) => {
 															const eventType =
@@ -294,7 +294,7 @@ export function ConsumptionChart({
 																? calculateOverageCost(
 																		eventCount,
 																		usageData.totalEvents,
-																		overageInfo,
+																		overageInfo
 																	)
 																: 0;
 

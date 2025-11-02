@@ -268,7 +268,7 @@ export default async function ComparisonPage({ params }: PageProps) {
 	const sortedFeatures = features;
 
 	const featuresWin = features.filter(
-		(f) => f.databuddy && !f.competitor,
+		(f) => f.databuddy && !f.competitor
 	).length;
 	const totalFeatures = features.length;
 

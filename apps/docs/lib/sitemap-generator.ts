@@ -88,7 +88,7 @@ export async function generateSitemapEntries(): Promise<MetadataRoute.Sitemap> {
 				lastModified,
 				changeFrequency: getChangeFrequency(page.url),
 				priority: getPriority(page.url),
-			})),
+			}))
 		);
 
 		// Add static pages that actually exist
@@ -110,7 +110,7 @@ export async function generateSitemapEntries(): Promise<MetadataRoute.Sitemap> {
 				lastModified,
 				changeFrequency: getChangeFrequency(page),
 				priority: getPriority(page),
-			})),
+			}))
 		);
 
 		// Add blog posts and blog index
@@ -130,7 +130,7 @@ export async function generateSitemapEntries(): Promise<MetadataRoute.Sitemap> {
 					? blogEntries.reduce(
 							(latest, entry) =>
 								entry.lastModified > latest ? entry.lastModified : latest,
-							blogEntries[0].lastModified,
+							blogEntries[0].lastModified
 						)
 					: lastModified;
 

@@ -31,7 +31,7 @@ export function useGoals(websiteId: string, enabled = true) {
 	const queryClient = useQueryClient();
 	const query = trpc.goals.list.useQuery(
 		{ websiteId },
-		{ enabled: enabled && !!websiteId },
+		{ enabled: enabled && !!websiteId }
 	);
 	const goalsData = useMemo(
 		() =>
@@ -40,7 +40,7 @@ export function useGoals(websiteId: string, enabled = true) {
 				type: goal.type as "PAGE_VIEW" | "EVENT" | "CUSTOM",
 				filters: (goal.filters as GoalFilter[]) || [],
 			})),
-		[query.data],
+		[query.data]
 	);
 
 	const createMutation = trpc.goals.create.useMutation({
@@ -66,21 +66,16 @@ export function useGoals(websiteId: string, enabled = true) {
 		isLoading: query.isLoading,
 		error: query.error,
 		refetch: query.refetch,
-		createGoal: (goalData: CreateGoalData) => {
-			return createMutation.mutateAsync(goalData);
-		},
+		createGoal: (goalData: CreateGoalData) =>
+			createMutation.mutateAsync(goalData),
 		updateGoal: ({
 			goalId,
 			updates,
 		}: {
 			goalId: string;
 			updates: Partial<CreateGoalData>;
-		}) => {
-			return updateMutation.mutateAsync({ id: goalId, ...updates });
-		},
-		deleteGoal: (goalId: string) => {
-			return deleteMutation.mutateAsync({ id: goalId });
-		},
+		}) => updateMutation.mutateAsync({ id: goalId, ...updates }),
+		deleteGoal: (goalId: string) => deleteMutation.mutateAsync({ id: goalId }),
 		isCreating: createMutation.isPending,
 		isUpdating: updateMutation.isPending,
 		isDeleting: deleteMutation.isPending,
@@ -93,7 +88,7 @@ export function useGoals(websiteId: string, enabled = true) {
 export function useGoal(websiteId: string, goalId: string, enabled = true) {
 	return trpc.goals.getById.useQuery(
 		{ id: goalId, websiteId },
-		{ enabled: enabled && !!websiteId && !!goalId },
+		{ enabled: enabled && !!websiteId && !!goalId }
 	);
 }
 
@@ -101,7 +96,7 @@ export function useGoalAnalytics(
 	websiteId: string,
 	goalId: string,
 	dateRange: { start_date: string; end_date: string },
-	options: { enabled: boolean } = { enabled: true },
+	options: { enabled: boolean } = { enabled: true }
 ) {
 	return trpc.goals.getAnalytics.useQuery(
 		{
@@ -110,7 +105,7 @@ export function useGoalAnalytics(
 			startDate: dateRange?.start_date,
 			endDate: dateRange?.end_date,
 		},
-		{ enabled: options.enabled && !!websiteId && !!goalId },
+		{ enabled: options.enabled && !!websiteId && !!goalId }
 	);
 }
 
@@ -118,7 +113,7 @@ export function useBulkGoalAnalytics(
 	websiteId: string,
 	goalIds: string[],
 	dateRange: { start_date: string; end_date: string },
-	options: { enabled: boolean } = { enabled: true },
+	options: { enabled: boolean } = { enabled: true }
 ) {
 	return trpc.goals.bulkAnalytics.useQuery(
 		{
@@ -127,6 +122,6 @@ export function useBulkGoalAnalytics(
 			startDate: dateRange?.start_date,
 			endDate: dateRange?.end_date,
 		},
-		{ enabled: options.enabled && !!websiteId && goalIds.length > 0 },
+		{ enabled: options.enabled && !!websiteId && goalIds.length > 0 }
 	);
 }

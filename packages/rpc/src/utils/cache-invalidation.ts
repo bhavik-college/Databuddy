@@ -8,7 +8,7 @@ import { logger } from "@databuddy/shared/utils/discord-webhook";
  */
 export const invalidateBasicWebsiteCaches = async (
 	websiteId: string,
-	websiteCache: ReturnType<typeof createDrizzleCache>,
+	websiteCache: ReturnType<typeof createDrizzleCache>
 ): Promise<void> => {
 	await Promise.all([
 		websiteCache.invalidateByTables(["websites"]),
@@ -23,7 +23,7 @@ export const invalidateBasicWebsiteCaches = async (
  */
 export const invalidateWebsiteCaches = async (
 	websiteId: string,
-	userId: string,
+	userId: string
 ): Promise<void> => {
 	try {
 		await Promise.all([
@@ -32,7 +32,7 @@ export const invalidateWebsiteCaches = async (
 				"websites",
 			]),
 			createDrizzleCache({ redis, namespace: "websites" }).invalidateByKey(
-				`getById:${websiteId}`,
+				`getById:${websiteId}`
 			),
 
 			createDrizzleCache({
@@ -40,7 +40,7 @@ export const invalidateWebsiteCaches = async (
 				namespace: "website_by_id",
 			}).invalidateByKey(`website_by_id:${websiteId}`),
 			createDrizzleCache({ redis, namespace: "auth" }).invalidateByKey(
-				`auth:${userId}:${websiteId}`,
+				`auth:${userId}:${websiteId}`
 			),
 
 			// Funnel caches
@@ -49,10 +49,10 @@ export const invalidateWebsiteCaches = async (
 				namespace: "funnels",
 			}).invalidateByTables(["funnelDefinitions"]),
 			createDrizzleCache({ redis, namespace: "funnels" }).invalidateByKey(
-				`funnels:list:${websiteId}`,
+				`funnels:list:${websiteId}`
 			),
 			createDrizzleCache({ redis, namespace: "funnels" }).invalidateByKey(
-				`funnels:listPublic:${websiteId}`,
+				`funnels:listPublic:${websiteId}`
 			),
 
 			// Goals caches
@@ -60,7 +60,7 @@ export const invalidateWebsiteCaches = async (
 				"goals",
 			]),
 			createDrizzleCache({ redis, namespace: "goals" }).invalidateByKey(
-				`goals:list:${websiteId}`,
+				`goals:list:${websiteId}`
 			),
 
 			// Autocomplete caches
@@ -90,7 +90,7 @@ export const invalidateWebsiteCaches = async (
 			{
 				websiteId,
 				userId,
-			},
+			}
 		);
 		throw error;
 	}

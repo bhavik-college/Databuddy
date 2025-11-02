@@ -39,13 +39,12 @@ export const metadata: Metadata = {
 };
 
 function BlogPostCard({ post }: { post: Post }) {
-	const formatDate = (date: Date) => {
-		return new Date(date).toLocaleDateString("en-US", {
+	const formatDate = (date: Date) =>
+		new Date(date).toLocaleDateString("en-US", {
 			year: "numeric",
 			month: "short",
 			day: "numeric",
 		});
-	};
 
 	const getReadingTime = (content: string) => {
 		const wordsPerMinute = 200;
@@ -137,8 +136,8 @@ function BlogPostCard({ post }: { post: Post }) {
 										key={author.id}
 									>
 										<AvatarImage
-											src={author.image ?? undefined}
 											alt={author.name}
+											src={author.image ?? undefined}
 										/>
 										<AvatarFallback>{author.name[0]}</AvatarFallback>
 									</Avatar>
@@ -168,7 +167,7 @@ export default async function BlogPage() {
 	const posts = "error" in result ? [] : result.posts;
 	const sortedPosts = [...posts].sort(
 		(a, b) =>
-			new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
+			new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
 	);
 
 	const title = "Blog | Databuddy";

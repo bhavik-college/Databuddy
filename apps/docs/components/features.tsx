@@ -130,7 +130,7 @@ export default function Features() {
 					{whyWeExist.map((item) => (
 						<div
 							className={cn(
-								"flex transform-gpu flex-col justify-center border-border border-t-[1.2px] border-l-[1.2px] p-10 md:min-h-[240px] md:border-t-0",
+								"flex transform-gpu flex-col justify-center border-border border-t-[1.2px] border-l-[1.2px] p-10 md:min-h-[240px] md:border-t-0"
 							)}
 							key={item.id}
 						>
@@ -180,7 +180,7 @@ export default function Features() {
 					{whatYouGet.map((item) => (
 						<div
 							className={cn(
-								"flex transform-gpu flex-col justify-center border-border border-t-[1.2px] border-b-[1.2px] border-l-[1.2px] p-10 md:min-h-[240px] md:border-t-0",
+								"flex transform-gpu flex-col justify-center border-border border-t-[1.2px] border-b-[1.2px] border-l-[1.2px] p-10 md:min-h-[240px] md:border-t-0"
 							)}
 							key={item.id}
 						>

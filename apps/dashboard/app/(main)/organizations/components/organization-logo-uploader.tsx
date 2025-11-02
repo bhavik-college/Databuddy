@@ -72,10 +72,10 @@ export function OrganizationLogoUploader({
 				},
 				1,
 				width,
-				height,
+				height
 			),
 			width,
-			height,
+			height
 		);
 		setCrop(percentCrop);
 
@@ -111,7 +111,7 @@ export function OrganizationLogoUploader({
 			const croppedFile = await getCroppedImage(
 				imageRef.current,
 				completedCrop,
-				"logo.png",
+				"logo.png"
 			);
 
 			const reader = new FileReader();
@@ -133,7 +133,7 @@ export function OrganizationLogoUploader({
 						onError: (error) => {
 							toast.error(error.message || "Failed to upload logo.");
 						},
-					},
+					}
 				);
 			};
 			reader.readAsDataURL(croppedFile);
@@ -153,7 +153,7 @@ export function OrganizationLogoUploader({
 				onError: (error) => {
 					toast.error(error.message || "Failed to delete logo.");
 				},
-			},
+			}
 		);
 	};
 

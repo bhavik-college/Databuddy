@@ -48,7 +48,7 @@ const Squares: React.FC<SquaresProps> = ({
 			x: number,
 			y: number,
 			squareX: number,
-			squareY: number,
+			squareY: number
 		) => {
 			if (!ctx) {
 				return;
@@ -82,7 +82,7 @@ const Squares: React.FC<SquaresProps> = ({
 				0,
 				canvas.width / 2,
 				canvas.height / 2,
-				Math.sqrt(canvas.width ** 2 + canvas.height ** 2) / 2,
+				Math.sqrt(canvas.width ** 2 + canvas.height ** 2) / 2
 			);
 			gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
 			gradient.addColorStop(1, "#060606");
@@ -155,10 +155,10 @@ const Squares: React.FC<SquaresProps> = ({
 			const startY = Math.floor(gridOffset.current.y / squareSize) * squareSize;
 
 			const hoveredSquareX = Math.floor(
-				(mouseX + gridOffset.current.x - startX) / squareSize,
+				(mouseX + gridOffset.current.x - startX) / squareSize
 			);
 			const hoveredSquareY = Math.floor(
-				(mouseY + gridOffset.current.y - startY) / squareSize,
+				(mouseY + gridOffset.current.y - startY) / squareSize
 			);
 
 			if (

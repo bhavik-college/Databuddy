@@ -45,7 +45,7 @@ export function usePreferences() {
 			options?: {
 				showTime?: boolean;
 				customFormat?: string;
-			},
+			}
 		) => {
 			if (!date) {
 				return "";
@@ -59,7 +59,7 @@ export function usePreferences() {
 				customFormat: options?.customFormat,
 			});
 		},
-		[preferences, getEffectiveTimezone],
+		[preferences, getEffectiveTimezone]
 	);
 
 	const convertToUserTimezone = useCallback(
@@ -67,7 +67,7 @@ export function usePreferences() {
 			const timezone = getEffectiveTimezone();
 			return convertToTimezone(date, timezone);
 		},
-		[getEffectiveTimezone],
+		[getEffectiveTimezone]
 	);
 
 	return {

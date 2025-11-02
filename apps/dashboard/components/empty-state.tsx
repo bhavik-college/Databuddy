@@ -119,13 +119,13 @@ export const EmptyState = memo(function EmptyState({
 			variant === "simple" && "rounded border-dashed bg-muted/10",
 			variant === "minimal" && "rounded border-none bg-transparent shadow-none",
 			"safe-area-inset-4 sm:safe-area-inset-6 lg:safe-area-inset-8",
-			className,
+			className
 		);
 
 		const contentClasses = cn(
 			"flex flex-col items-center justify-center text-center",
 			getPadding(),
-			"px-6 sm:px-8 lg:px-12",
+			"px-6 sm:px-8 lg:px-12"
 		);
 
 		return (
@@ -140,14 +140,14 @@ export const EmptyState = memo(function EmptyState({
 						className={cn(
 							"space-y-4",
 							variant === "minimal" && "max-w-sm",
-							variant !== "minimal" && "max-w-md lg:max-w-lg",
+							variant !== "minimal" && "max-w-md lg:max-w-lg"
 						)}
 					>
 						{isMainContent ? (
 							<h1
 								className={cn(
 									"font-semibold text-foreground",
-									variant === "minimal" ? "text-lg" : "text-2xl lg:text-3xl",
+									variant === "minimal" ? "text-lg" : "text-2xl lg:text-3xl"
 								)}
 							>
 								{title}
@@ -156,7 +156,7 @@ export const EmptyState = memo(function EmptyState({
 							<h2
 								className={cn(
 									"font-semibold text-foreground",
-									variant === "minimal" ? "text-lg" : "text-2xl lg:text-3xl",
+									variant === "minimal" ? "text-lg" : "text-2xl lg:text-3xl"
 								)}
 							>
 								{title}
@@ -165,7 +165,7 @@ export const EmptyState = memo(function EmptyState({
 						<div
 							className={cn(
 								"text-muted-foreground leading-relaxed",
-								variant === "minimal" ? "text-sm" : "text-base lg:text-lg",
+								variant === "minimal" ? "text-sm" : "text-base lg:text-lg"
 							)}
 						>
 							{description}
@@ -174,7 +174,7 @@ export const EmptyState = memo(function EmptyState({
 							<div
 								className={cn(
 									"flex flex-col items-stretch justify-center gap-3 pt-4",
-									"sm:flex-row sm:items-center",
+									"sm:flex-row sm:items-center"
 								)}
 							>
 								{action && (
@@ -185,7 +185,7 @@ export const EmptyState = memo(function EmptyState({
 											variant === "simple" &&
 												"min-h-[44px] cursor-pointer touch-manipulation select-none gap-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 motion-reduce:transition-none sm:min-h-[40px]",
 											variant === "minimal" &&
-												"min-h-[44px] cursor-pointer touch-manipulation select-none gap-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 motion-reduce:transition-none sm:min-h-[40px]",
+												"min-h-[44px] cursor-pointer touch-manipulation select-none gap-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 motion-reduce:transition-none sm:min-h-[40px]"
 										)}
 										onClick={action.onClick}
 										size="lg"
@@ -211,7 +211,7 @@ export const EmptyState = memo(function EmptyState({
 								{secondaryAction && (
 									<Button
 										className={cn(
-											"min-h-[44px] touch-manipulation focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 motion-reduce:transition-none sm:min-h-[40px]",
+											"min-h-[44px] touch-manipulation focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 motion-reduce:transition-none sm:min-h-[40px]"
 										)}
 										onClick={secondaryAction.onClick}
 										size="lg"

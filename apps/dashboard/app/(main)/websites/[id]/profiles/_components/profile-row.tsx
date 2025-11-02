@@ -90,7 +90,7 @@ function getReferrerDisplayInfo(session: any) {
 			const url = new URL(
 				session.referrer.startsWith("http")
 					? session.referrer
-					: `https://${session.referrer}`,
+					: `https://${session.referrer}`
 			);
 			return {
 				name: url.hostname.replace("www.", ""),

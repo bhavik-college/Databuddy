@@ -23,7 +23,7 @@ export class AssistantOrchestrator {
 	async processRequest(
 		request: AssistantRequestType,
 		user: User,
-		website: Website,
+		website: Website
 	): Promise<StreamingUpdate[]> {
 		// Create session to track this interaction
 		const session = new AssistantSession(request, user, website);
@@ -57,7 +57,7 @@ export class AssistantOrchestrator {
 			// Step 2: Process the response into streaming updates
 			const aiResponseUpdates = await this.responseProcessor.process(
 				aiResponse.content,
-				session,
+				session
 			);
 
 			streamingUpdates.push(...aiResponseUpdates);
@@ -73,14 +73,14 @@ export class AssistantOrchestrator {
 					aiResponse.content,
 					aiMessageId,
 					finalResult,
-					metrics,
+					metrics
 				);
 			}
 
 			return streamingUpdates;
 		} catch (error) {
 			session.log(
-				`Processing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+				`Processing failed: ${error instanceof Error ? error.message : "Unknown error"}`
 			);
 
 			// Return error response
@@ -102,7 +102,7 @@ export class AssistantOrchestrator {
 		aiResponse: AIResponseContent,
 		messageId: string,
 		finalResult: StreamingUpdate,
-		metrics: SessionMetrics,
+		metrics: SessionMetrics
 	): Promise<void> {
 		try {
 			await this.conversationRepo.saveConversation(
@@ -110,7 +110,7 @@ export class AssistantOrchestrator {
 				aiResponse,
 				messageId,
 				finalResult,
-				metrics,
+				metrics
 			);
 			console.log("✅ Conversation saved successfully");
 		} catch (error) {
@@ -122,7 +122,7 @@ export class AssistantOrchestrator {
 		session: AssistantSession,
 		originalError: unknown,
 		errorResponse: StreamingUpdate,
-		metrics: SessionMetrics,
+		metrics: SessionMetrics
 	): Promise<void> {
 		try {
 			const errorAIResponse = {
@@ -143,7 +143,7 @@ export class AssistantOrchestrator {
 				errorAIResponse,
 				messageId,
 				errorResponse,
-				metrics,
+				metrics
 			);
 			console.log("✅ Error conversation saved successfully");
 		} catch (error) {

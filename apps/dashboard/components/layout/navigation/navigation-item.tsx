@@ -104,7 +104,7 @@ export function NavigationItem({
 				aria-disabled="true"
 				className={cn(
 					"group flex items-center gap-3 px-4 py-2.5 text-sm transition-colors",
-					"cursor-not-allowed text-sidebar-foreground/30",
+					"cursor-not-allowed text-sidebar-foreground/30"
 				)}
 			>
 				{content}
@@ -121,7 +121,7 @@ export function NavigationItem({
 				"group flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
 				isActive
 					? "border-sidebar-ring border-r-2 bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-					: "text-sidebar-foreground/70",
+					: "text-sidebar-foreground/70"
 			)}
 			data-nav-href={href}
 			data-nav-item={name}
@@ -144,7 +144,7 @@ export function NavigationItem({
 							badge.variant === "blue" && "bg-accent text-accent-foreground",
 							badge.variant === "green" && "bg-accent text-accent-foreground",
 							badge.variant === "orange" && "bg-muted text-muted-foreground",
-							badge.variant === "red" && "bg-destructive/10 text-destructive",
+							badge.variant === "red" && "bg-destructive/10 text-destructive"
 						)}
 					>
 						{badge.text}

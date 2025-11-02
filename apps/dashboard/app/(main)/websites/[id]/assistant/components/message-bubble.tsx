@@ -84,7 +84,7 @@ function ThinkingStepsPreview({ steps }: { steps: string[] }) {
 							"flex items-start gap-2 py-1 pl-1 text-muted-foreground text-xs transition-all duration-300 ease-in-out",
 							isAnimated
 								? "translate-y-0 opacity-100"
-								: "translate-y-2 opacity-0",
+								: "translate-y-2 opacity-0"
 						)}
 						key={`preview-${index}-${step.slice(0, 20)}`}
 					>
@@ -116,16 +116,14 @@ function ThinkingStepsAccordion({ steps }: { steps: string[] }) {
 				</AccordionTrigger>
 				<AccordionContent className="pt-1 pb-0">
 					<ul className="max-h-48 list-disc overflow-y-auto px-4 text-muted-foreground">
-						{steps.map((step, index) => {
-							return (
-								<li
-									className="text-xs leading-relaxed"
-									key={`step-${index}-${step.slice(0, 20)}`}
-								>
-									{step}
-								</li>
-							);
-						})}
+						{steps.map((step, index) => (
+							<li
+								className="text-xs leading-relaxed"
+								key={`step-${index}-${step.slice(0, 20)}`}
+							>
+								{step}
+							</li>
+						))}
 					</ul>
 				</AccordionContent>
 			</AccordionItem>
@@ -197,7 +195,7 @@ function FeedbackInput({
 	};
 
 	const handleCustomTextChange = (
-		e: React.ChangeEvent<HTMLTextAreaElement>,
+		e: React.ChangeEvent<HTMLTextAreaElement>
 	) => {
 		setFeedbackText(e.target.value);
 	};

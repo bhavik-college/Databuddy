@@ -27,7 +27,7 @@ const chartContextSchema = z.object({
 				field: z.string(),
 				operator: z.enum(["eq", "ne", "gt", "lt", "contains"]),
 				value: z.string(),
-			}),
+			})
 		)
 		.optional(),
 	metrics: z.array(z.string()).optional(),
@@ -68,7 +68,7 @@ export const annotationsRouter = createTRPCRouter({
 				websiteId: z.string(),
 				chartType: z.enum(["metrics"]),
 				chartContext: chartContextSchema,
-			}),
+			})
 		)
 		.query(({ ctx, input }) => {
 			const cacheKey = `annotations:list:${input.websiteId}:${input.chartType}`;
@@ -87,8 +87,8 @@ export const annotationsRouter = createTRPCRouter({
 							and(
 								eq(annotations.websiteId, input.websiteId),
 								eq(annotations.chartType, input.chartType),
-								isNull(annotations.deletedAt),
-							),
+								isNull(annotations.deletedAt)
+							)
 						)
 						.orderBy(desc(annotations.createdAt));
 				},
@@ -110,7 +110,7 @@ export const annotationsRouter = createTRPCRouter({
 						.select()
 						.from(annotations)
 						.where(
-							and(eq(annotations.id, input.id), isNull(annotations.deletedAt)),
+							and(eq(annotations.id, input.id), isNull(annotations.deletedAt))
 						)
 						.limit(1);
 
@@ -187,7 +187,7 @@ export const annotationsRouter = createTRPCRouter({
 			await authorizeWebsiteAccess(
 				ctx,
 				existingAnnotation[0].websiteId,
-				"update",
+				"update"
 			);
 
 			const [updatedAnnotation] = await ctx.db
@@ -225,7 +225,7 @@ export const annotationsRouter = createTRPCRouter({
 			await authorizeWebsiteAccess(
 				ctx,
 				existingAnnotation[0].websiteId,
-				"update",
+				"update"
 			);
 
 			await ctx.db

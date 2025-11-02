@@ -22,7 +22,7 @@ export const formatNumber = (value: number | null | undefined): string => {
 };
 
 export const getPerformanceRating = (
-	score: number,
+	score: number
 ): { rating: string; className: string } => {
 	if (typeof score !== "number" || Number.isNaN(score)) {
 		return { rating: "Unknown", className: "text-muted-foreground" };
@@ -68,18 +68,16 @@ export const getMetricStyles = (value: number, type: "time" | "cls") => {
 	};
 };
 
-export const getPerformanceColor = (avgLoadTime: number): string => {
-	return avgLoadTime < 1500
+export const getPerformanceColor = (avgLoadTime: number): string =>
+	avgLoadTime < 1500
 		? "text-green-600"
 		: avgLoadTime < 3000
 			? "text-yellow-600"
 			: "text-red-600";
-};
 
-export const getPerformanceScoreColor = (score: number): string => {
-	return score >= 80
+export const getPerformanceScoreColor = (score: number): string =>
+	score >= 80
 		? "text-green-600"
 		: score >= 60
 			? "text-yellow-600"
 			: "text-red-600";
-};

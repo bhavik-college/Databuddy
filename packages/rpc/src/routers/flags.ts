@@ -43,7 +43,7 @@ const flagSchema = z.object({
 		.max(100)
 		.regex(
 			/^[a-zA-Z0-9_-]+$/,
-			"Key must contain only letters, numbers, underscores, and hyphens",
+			"Key must contain only letters, numbers, underscores, and hyphens"
 		),
 	name: z.string().min(1).max(100).optional(),
 	description: z.string().optional(),
@@ -173,8 +173,8 @@ export const flagsRouter = createTRPCRouter({
 							input.websiteId
 								? eq(flags.websiteId, input.websiteId)
 								: eq(flags.organizationId, input.organizationId ?? ""),
-							isNull(flags.deletedAt),
-						),
+							isNull(flags.deletedAt)
+						)
 					)
 					.limit(1);
 
@@ -201,7 +201,7 @@ export const flagsRouter = createTRPCRouter({
 				.refine((data) => data.websiteId || data.organizationId, {
 					message: "Either websiteId or organizationId must be provided",
 					path: ["websiteId"],
-				}),
+				})
 		)
 		.query(({ ctx, input }) => {
 			const scope = input.websiteId
@@ -228,8 +228,8 @@ export const flagsRouter = createTRPCRouter({
 									? eq(flags.websiteId, input.websiteId)
 									: eq(flags.organizationId, input.organizationId ?? ""),
 								eq(flags.status, "active"),
-								isNull(flags.deletedAt),
-							),
+								isNull(flags.deletedAt)
+							)
 						)
 						.limit(1);
 
