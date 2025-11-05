@@ -230,35 +230,25 @@ async function processWebVitalsEventData(
 	};
 }
 
-async function processCustomEventData(
+function processCustomEventData(
 	customData: any,
 	clientId: string
-): Promise<CustomEvent> {
-	const eventId = parseEventId(customData.eventId, randomUUID);
-	const timestamp = parseTimestamp(customData.timestamp);
-
+): CustomEvent {
 	return {
 		id: randomUUID(),
 		client_id: clientId,
-		event_name: sanitizeString(
-			customData.name,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
-		),
-		anonymous_id: sanitizeString(
-			customData.anonymousId,
-			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
-		),
+		event_name: sanitizeString(customData.name, VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH),
+		anonymous_id: sanitizeString(customData.anonymousId, VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH),
 		session_id: validateSessionId(customData.sessionId),
 		properties: parseProperties(customData.properties),
-		timestamp,
+		timestamp: parseTimestamp(customData.timestamp),
 	};
 }
 
-async function processOutgoingLinkData(
+function processOutgoingLinkData(
 	linkData: any,
 	clientId: string
-): Promise<CustomOutgoingLink> {
-	const eventId = parseEventId(linkData.eventId, randomUUID);
+): CustomOutgoingLink {
 	const timestamp = parseTimestamp(linkData.timestamp);
 
 	return {
