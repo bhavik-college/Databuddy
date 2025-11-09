@@ -10,7 +10,7 @@ import { logger } from "@databuddy/shared/utils/discord-webhook";
 import { Effect, pipe } from "effect";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { invalidateWebsiteCaches } from "../utils/cache-invalidation.js";
+import { invalidateWebsiteCaches } from "../utils/cache-invalidation";
 
 export type Website = InferSelectModel<typeof websites>;
 
@@ -164,7 +164,7 @@ export class WebsiteService {
 		);
 		return pipe(
 			this.performDBOperation<Website | null>(() =>
-				this.db.query.websites.findFirst({ where: websiteFilter })
+				this.db.query.websites.findFirst({ where: websiteFilter }).then((result) => result ?? null)
 			),
 			Effect.flatMap((dup) =>
 				dup
@@ -284,7 +284,7 @@ export class WebsiteService {
 		);
 		return pipe(
 			this.performDBOperation<Website | null>(() =>
-				this.db.query.websites.findFirst({ where: websiteFilter })
+				this.db.query.websites.findFirst({ where: websiteFilter }).then((result) => result ?? null)
 			),
 			Effect.flatMap((dup) =>
 				dup
@@ -319,15 +319,15 @@ export class WebsiteService {
 			Effect.flatMap((updatedWebsite) =>
 				updatedWebsite
 					? pipe(
-							Effect.tryPromise({
-								try: () => invalidateWebsiteCaches(websiteId, userId),
-								catch: (error) =>
-									new Error(
-										`Cache invalidation failed: ${String(error)}`
-									) as WebsiteError,
-							}),
-							Effect.as(updatedWebsite)
-						)
+						Effect.tryPromise({
+							try: () => invalidateWebsiteCaches(websiteId, userId),
+							catch: (error) =>
+								new Error(
+									`Cache invalidation failed: ${String(error)}`
+								) as WebsiteError,
+						}),
+						Effect.as(updatedWebsite)
+					)
 					: Effect.fail(new WebsiteNotFoundError())
 			)
 		);
@@ -373,15 +373,15 @@ export class WebsiteService {
 			Effect.flatMap((updatedWebsite) =>
 				updatedWebsite
 					? pipe(
-							Effect.tryPromise({
-								try: () => invalidateWebsiteCaches(websiteId, userId),
-								catch: (error) =>
-									new Error(
-										`Cache invalidation failed: ${String(error)}`
-									) as WebsiteError,
-							}),
-							Effect.as(updatedWebsite)
-						)
+						Effect.tryPromise({
+							try: () => invalidateWebsiteCaches(websiteId, userId),
+							catch: (error) =>
+								new Error(
+									`Cache invalidation failed: ${String(error)}`
+								) as WebsiteError,
+						}),
+						Effect.as(updatedWebsite)
+					)
 					: Effect.fail(new WebsiteNotFoundError())
 			)
 		);
@@ -408,31 +408,31 @@ export class WebsiteService {
 			Effect.flatMap((transferredWebsite) =>
 				transferredWebsite
 					? pipe(
-							Effect.try({
-								try: () =>
-									logger.info(
-										"Website Transferred",
-										`Website "${transferredWebsite.name}" was transferred to organization "${organizationId}"`,
-										{
-											websiteId: transferredWebsite.id,
-											organizationId,
-											userId,
-										}
-									),
+						Effect.try({
+							try: () =>
+								logger.info(
+									"Website Transferred",
+									`Website "${transferredWebsite.name}" was transferred to organization "${organizationId}"`,
+									{
+										websiteId: transferredWebsite.id,
+										organizationId,
+										userId,
+									}
+								),
+							catch: (error) =>
+								new Error(`Logging failed: ${String(error)}`) as WebsiteError,
+						}),
+						Effect.flatMap(() =>
+							Effect.tryPromise({
+								try: () => invalidateWebsiteCaches(websiteId, userId),
 								catch: (error) =>
-									new Error(`Logging failed: ${String(error)}`) as WebsiteError,
-							}),
-							Effect.flatMap(() =>
-								Effect.tryPromise({
-									try: () => invalidateWebsiteCaches(websiteId, userId),
-									catch: (error) =>
-										new Error(
-											`Cache invalidation failed: ${String(error)}`
-										) as WebsiteError,
-								})
-							),
-							Effect.as(transferredWebsite)
-						)
+									new Error(
+										`Cache invalidation failed: ${String(error)}`
+									) as WebsiteError,
+							})
+						),
+						Effect.as(transferredWebsite)
+					)
 					: Effect.fail(new WebsiteNotFoundError())
 			)
 		);
@@ -459,31 +459,31 @@ export class WebsiteService {
 			Effect.flatMap((transferredWebsite) =>
 				transferredWebsite
 					? pipe(
-							Effect.try({
-								try: () =>
-									logger.info(
-										"Website Transferred to Organization",
-										`Website "${transferredWebsite.name}" was transferred to organization "${targetOrganizationId}"`,
-										{
-											websiteId: transferredWebsite.id,
-											targetOrganizationId,
-											userId,
-										}
-									),
+						Effect.try({
+							try: () =>
+								logger.info(
+									"Website Transferred to Organization",
+									`Website "${transferredWebsite.name}" was transferred to organization "${targetOrganizationId}"`,
+									{
+										websiteId: transferredWebsite.id,
+										targetOrganizationId,
+										userId,
+									}
+								),
+							catch: (error) =>
+								new Error(`Logging failed: ${String(error)}`) as WebsiteError,
+						}),
+						Effect.flatMap(() =>
+							Effect.tryPromise({
+								try: () => invalidateWebsiteCaches(websiteId, userId),
 								catch: (error) =>
-									new Error(`Logging failed: ${String(error)}`) as WebsiteError,
-							}),
-							Effect.flatMap(() =>
-								Effect.tryPromise({
-									try: () => invalidateWebsiteCaches(websiteId, userId),
-									catch: (error) =>
-										new Error(
-											`Cache invalidation failed: ${String(error)}`
-										) as WebsiteError,
-								})
-							),
-							Effect.as(transferredWebsite)
-						)
+									new Error(
+										`Cache invalidation failed: ${String(error)}`
+									) as WebsiteError,
+							})
+						),
+						Effect.as(transferredWebsite)
+					)
 					: Effect.fail(new WebsiteNotFoundError())
 			)
 		);
