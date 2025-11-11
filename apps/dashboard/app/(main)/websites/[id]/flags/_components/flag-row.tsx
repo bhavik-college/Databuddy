@@ -2,30 +2,27 @@
 
 import { CaretDownIcon, CaretUpIcon, FlagIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { orpc } from "@/lib/orpc";
 import { FlagActions } from "./flag-actions";
 import type { Flag } from "./types";
 
-interface FlagRowProps {
+type FlagRowProps = {
 	flag: Flag;
-	onEdit: () => void;
+	onEditAction: () => void;
 	isExpanded?: boolean;
-	onToggle?: (flagId: string) => void;
+	onToggleAction?: (flagId: string) => void;
 	children?: React.ReactNode;
-}
+};
 
 export function FlagRow({
 	flag,
-	onEdit,
+	onEditAction,
 	isExpanded = false,
-	onToggle,
+	onToggleAction,
 	children,
 }: FlagRowProps) {
-	const [_isArchiving, _setIsArchiving] = useState(false);
-
 	const queryClient = useQueryClient();
 
 	const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -33,8 +30,8 @@ export function FlagRow({
 		if (target.closest("button")) {
 			return;
 		}
-		if (onToggle) {
-			onToggle(flag.id);
+		if (onToggleAction) {
+			onToggleAction(flag.id);
 		}
 	};
 
@@ -81,7 +78,7 @@ export function FlagRow({
 
 	return (
 		<Card
-			className={`mb-4 cursor-pointer select-none overflow-hidden rounded border bg-background transition focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] ${
+			className={`mb-4 cursor-pointer select-none overflow-hidden rounded border bg-background transition focus-visible:ring-(--color-primary) focus-visible:ring-2 ${
 				flag.status === "active"
 					? "border-l-4 border-l-green-500"
 					: flag.status === "inactive"
@@ -90,15 +87,15 @@ export function FlagRow({
 			}`}
 			onClick={handleCardClick}
 			onKeyDown={(e) => {
-				if ((e.key === "Enter" || e.key === " ") && onToggle) {
-					onToggle(flag.id);
+				if ((e.key === "Enter" || e.key === " ") && onToggleAction) {
+					onToggleAction(flag.id);
 				}
 			}}
 			style={{ outline: "none" }}
 			tabIndex={0}
 		>
 			<div className="flex items-center justify-between gap-2 px-4 py-3 sm:px-6">
-				<div className="flex flex-grow flex-col text-left">
+				<div className="flex grow flex-col text-left">
 					<div className="mb-1 flex flex-wrap items-center gap-2">
 						<h3
 							className="mr-2 truncate font-mono font-semibold text-base"
@@ -143,21 +140,21 @@ export function FlagRow({
 				<div className="flex items-center gap-2">
 					<FlagActions
 						flag={flag}
-						onDeleted={() => {
+						onDeletedAction={() => {
 							queryClient.invalidateQueries({
-								queryKey: orpc.flags.list.queryOptions({
+								queryKey: orpc.flags.list.key({
 									input: { websiteId: flag.websiteId ?? "" },
-								}).queryKey,
+								}),
 							});
 						}}
-						onEdit={() => onEdit()}
+						onEditAction={onEditAction}
 					/>
-					{onToggle && (
+					{onToggleAction && (
 						<Button
-							className="focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+							className="focus-visible:ring-(--color-primary) focus-visible:ring-2"
 							onClick={(e) => {
 								e.stopPropagation();
-								onToggle(flag.id);
+								onToggleAction(flag.id);
 							}}
 							size="icon"
 							type="button"

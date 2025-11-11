@@ -221,16 +221,16 @@ function ApiKeyActions({
 	);
 }
 
-interface ApiKeyDetailDialogProps {
+type ApiKeyDetailDialogProps = {
 	keyId: string | null;
 	open: boolean;
-	onOpenChange: (open: boolean) => void;
-}
+	onOpenChangeAction: (open: boolean) => void;
+};
 
 export function ApiKeyDetailDialog({
 	keyId,
 	open,
-	onOpenChange,
+	onOpenChangeAction,
 }: ApiKeyDetailDialogProps) {
 	const queryClient = useQueryClient();
 	const { data, isLoading } = useQuery({
@@ -239,38 +239,37 @@ export function ApiKeyDetailDialog({
 	});
 	const rotateMutation = useMutation({
 		...orpc.apikeys.rotate.mutationOptions(),
-		onSuccess: async () => {
+		onSuccess: () => {
 			if (keyId) {
 				queryClient.invalidateQueries({
-					queryKey: orpc.apikeys.getById.queryOptions({ input: { id: keyId } })
-						.queryKey,
+					queryKey: orpc.apikeys.getById.key({ input: { id: keyId } }),
 				});
 			}
 			queryClient.invalidateQueries({
-				queryKey: orpc.apikeys.list.queryOptions({ input: {} }).queryKey,
+				queryKey: orpc.apikeys.list.key(),
 			});
 		},
 	});
 	const revokeMutation = useMutation({
 		...orpc.apikeys.revoke.mutationOptions(),
-		onSuccess: async () => {
+		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: orpc.apikeys.getById.queryOptions({
+				queryKey: orpc.apikeys.getById.key({
 					input: { id: keyId as string },
-				}).queryKey,
+				}),
 			});
 			queryClient.invalidateQueries({
-				queryKey: orpc.apikeys.list.queryOptions({ input: {} }).queryKey,
+				queryKey: orpc.apikeys.list.key(),
 			});
 		},
 	});
 	const deleteMutation = useMutation({
 		...orpc.apikeys.delete.mutationOptions(),
-		onSuccess: async () => {
+		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: orpc.apikeys.list.queryOptions({ input: {} }).queryKey,
+				queryKey: orpc.apikeys.list.key(),
 			});
-			onOpenChange(false);
+			onOpenChangeAction(false);
 		},
 	});
 
@@ -309,14 +308,14 @@ export function ApiKeyDetailDialog({
 
 	const updateMutation = useMutation({
 		...orpc.apikeys.update.mutationOptions(),
-		onSuccess: async () => {
+		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: orpc.apikeys.getById.queryOptions({
+				queryKey: orpc.apikeys.getById.key({
 					input: { id: keyId as string },
-				}).queryKey,
+				}),
 			});
 			queryClient.invalidateQueries({
-				queryKey: orpc.apikeys.list.queryOptions({ input: {} }).queryKey,
+				queryKey: orpc.apikeys.list.key(),
 			});
 		},
 	});
@@ -350,7 +349,7 @@ export function ApiKeyDetailDialog({
 					setShowSecret(null);
 					form.reset({ name: "", enabled: true, expiresAt: undefined });
 				}
-				onOpenChange(o);
+				onOpenChangeAction(o);
 			}}
 			open={open}
 		>

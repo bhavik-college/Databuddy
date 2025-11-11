@@ -23,16 +23,15 @@ export function useWebsiteTransfer(organizationId?: string) {
 		...orpc.websites.transfer.mutationOptions(),
 		onSuccess: (_data, variables) => {
 			queryClient.invalidateQueries({
-				queryKey: orpc.websites.list.queryOptions({ input: {} }).queryKey,
+				queryKey: orpc.websites.list.key(),
 			});
 			queryClient.invalidateQueries({
-				queryKey: orpc.websites.listWithCharts.queryOptions({ input: {} })
-					.queryKey,
+				queryKey: orpc.websites.listWithCharts.key(),
 			});
 			queryClient.invalidateQueries({
-				queryKey: orpc.websites.getById.queryOptions({
+				queryKey: orpc.websites.getById.key({
 					input: { id: variables.websiteId },
-				}).queryKey,
+				}),
 			});
 		},
 	});

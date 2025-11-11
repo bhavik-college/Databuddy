@@ -25,33 +25,36 @@ export function useGoals(websiteId: string, enabled = true) {
 		[query.data]
 	);
 
-	const listKey = orpc.goals.list.queryOptions({
-		input: { websiteId },
-	}).queryKey;
-	const analyticsKey = orpc.goals.getAnalytics.queryOptions({
-		input: { websiteId, goalId: "", startDate: "", endDate: "" },
-	}).queryKey;
-
 	const createMutation = useMutation({
 		...orpc.goals.create.mutationOptions(),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: listKey });
+			queryClient.invalidateQueries({
+				queryKey: orpc.goals.list.key({ input: { websiteId } }),
+			});
 		},
 	});
 
 	const updateMutation = useMutation({
 		...orpc.goals.update.mutationOptions(),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: listKey });
-			queryClient.invalidateQueries({ queryKey: analyticsKey });
+			queryClient.invalidateQueries({
+				queryKey: orpc.goals.list.key({ input: { websiteId } }),
+			});
+			queryClient.invalidateQueries({
+				queryKey: orpc.goals.getAnalytics.key(),
+			});
 		},
 	});
 
 	const deleteMutation = useMutation({
 		...orpc.goals.delete.mutationOptions(),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: listKey });
-			queryClient.invalidateQueries({ queryKey: analyticsKey });
+			queryClient.invalidateQueries({
+				queryKey: orpc.goals.list.key({ input: { websiteId } }),
+			});
+			queryClient.invalidateQueries({
+				queryKey: orpc.goals.getAnalytics.key(),
+			});
 		},
 	});
 

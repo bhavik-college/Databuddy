@@ -14,12 +14,12 @@ export type WebsitesListData = {
 };
 
 export const getWebsiteByIdKey = (id: string): QueryKey =>
-	orpc.websites.getById.queryOptions({ input: { id } }).queryKey;
+	orpc.websites.getById.queryKey({ input: { id } });
 
 export const getWebsitesListKey = (organizationId?: string): QueryKey =>
-	orpc.websites.listWithCharts.queryOptions({
+	orpc.websites.listWithCharts.queryKey({
 		input: { organizationId },
-	}).queryKey;
+	});
 
 export const updateWebsiteInList = (
 	old: WebsitesListData | undefined,

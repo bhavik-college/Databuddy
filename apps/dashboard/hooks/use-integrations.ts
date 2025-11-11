@@ -31,10 +31,10 @@ export function useDisconnectIntegration() {
 		...orpc.integrations.disconnect.mutationOptions(),
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: orpc.integrations.getIntegrations.queryOptions().queryKey,
+				queryKey: orpc.integrations.getIntegrations.key(),
 			});
 			queryClient.invalidateQueries({
-				queryKey: orpc.integrations.getStats.queryOptions().queryKey,
+				queryKey: orpc.integrations.getStats.key(),
 			});
 		},
 		onError: (error) => {

@@ -18,20 +18,20 @@ import {
 import { FlagRow } from "./flag-row";
 import type { Flag } from "./types";
 
-interface FlagsListProps {
+type FlagsListProps = {
 	flags: Flag[];
 	isLoading: boolean;
-	onCreateFlag: () => void;
-	onEditFlag: (flag: Flag) => void;
-}
+	onCreateFlagAction: () => void;
+	onEditFlagAction: (flag: Flag) => void;
+};
 
 type FlagStatus = "active" | "inactive" | "archived";
 
 export function FlagsList({
 	flags,
 	isLoading,
-	onCreateFlag,
-	onEditFlag,
+	onCreateFlagAction,
+	onEditFlagAction,
 }: FlagsListProps) {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState<FlagStatus | "all">("all");
@@ -63,7 +63,7 @@ export function FlagsList({
 			<EmptyState
 				action={{
 					label: "Create Your First Flag",
-					onClick: onCreateFlag,
+					onClick: onCreateFlagAction,
 				}}
 				description="Create your first feature flag to start controlling feature rollouts and A/B testing across your application."
 				icon={
@@ -136,7 +136,7 @@ export function FlagsList({
 						<FlagRow
 							flag={flag}
 							key={flag.id}
-							onEdit={() => onEditFlag(flag)}
+							onEditAction={() => onEditFlagAction(flag)}
 						/>
 					))}
 				</div>

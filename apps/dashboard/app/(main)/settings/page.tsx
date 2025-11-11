@@ -292,12 +292,12 @@ function ApiKeysSection() {
 			)}
 			<ApiKeyCreateDialog
 				onCreated={(res) => setCreatedSecret(res)}
-				onOpenChange={setOpen}
+				onOpenChange={(o) => setOpen(o)}
 				open={open}
 			/>
 			<ApiKeyDetailDialog
 				keyId={selectedId}
-				onOpenChange={(o) => {
+				onOpenChangeAction={(o) => {
 					if (!o) {
 						setSelectedId(null);
 					}

@@ -29,13 +29,17 @@ import {
 import { orpc } from "@/lib/orpc";
 import type { Flag } from "./types";
 
-interface FlagActionsProps {
+type FlagActionsProps = {
 	flag: Flag;
-	onEdit: () => void;
-	onDeleted?: () => void;
-}
+	onEditAction: () => void;
+	onDeletedAction?: () => void;
+};
 
-export function FlagActions({ flag, onEdit, onDeleted }: FlagActionsProps) {
+export function FlagActions({
+	flag,
+	onEditAction,
+	onDeletedAction = () => {},
+}: FlagActionsProps) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
 
@@ -51,18 +55,22 @@ export function FlagActions({ flag, onEdit, onDeleted }: FlagActionsProps) {
 
 	const handleConfirmDelete = async () => {
 		setIsDeleting(true);
-		const queryKey = orpc.flags.list.queryOptions({
+		const queryKey = orpc.flags.list.queryKey({
 			input: { websiteId: flag.websiteId ?? "" },
-		}).queryKey;
+		});
 		queryClient.setQueryData(queryKey, (oldData: any) =>
 			oldData?.filter((f: any) => f.id !== flag.id)
 		);
 		try {
 			await deleteMutation.mutateAsync({ id: flag.id });
 			toast.success("Flag deleted");
-			onDeleted?.();
+			onDeletedAction?.();
 		} catch (_error) {
-			queryClient.invalidateQueries({ queryKey });
+			queryClient.invalidateQueries({
+				queryKey: orpc.flags.list.key({
+					input: { websiteId: flag.websiteId ?? "" },
+				}),
+			});
 			toast.error("Failed to delete flag");
 		} finally {
 			setIsDeleting(false);
@@ -76,7 +84,7 @@ export function FlagActions({ flag, onEdit, onDeleted }: FlagActionsProps) {
 				<DropdownMenuTrigger asChild>
 					<Button
 						aria-label="Open flag actions"
-						className="focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+						className="focus-visible:ring-(--color-primary) focus-visible:ring-2"
 						size="icon"
 						type="button"
 						variant="ghost"
@@ -85,7 +93,7 @@ export function FlagActions({ flag, onEdit, onDeleted }: FlagActionsProps) {
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-40">
-					<DropdownMenuItem onClick={onEdit}>
+					<DropdownMenuItem onClick={onEditAction}>
 						<PencilIcon className="h-4 w-4" weight="duotone" /> Edit
 					</DropdownMenuItem>
 					<DropdownMenuItem onClick={handleCopyKey}>

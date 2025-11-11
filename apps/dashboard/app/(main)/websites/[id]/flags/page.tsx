@@ -186,8 +186,8 @@ export default function FlagsPage() {
 				<FlagsList
 					flags={(flags as any) || []}
 					isLoading={isLoading}
-					onCreateFlag={handleCreateFlag}
-					onEditFlag={handleEditFlag}
+					onCreateFlagAction={handleCreateFlag}
+					onEditFlagAction={handleEditFlag}
 				/>
 			</Suspense>
 
@@ -196,7 +196,7 @@ export default function FlagsPage() {
 					<FlagSheet
 						flag={editingFlag}
 						isOpen={isSheetOpen}
-						onClose={handleSheetClose}
+						onCloseAction={handleSheetClose}
 						websiteId={websiteId}
 					/>
 				</Suspense>

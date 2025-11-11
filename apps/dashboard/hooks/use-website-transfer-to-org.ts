@@ -10,15 +10,14 @@ export function useWebsiteTransferToOrg() {
 		...orpc.websites.transferToOrganization.mutationOptions(),
 		onSuccess: (_data, variables) => {
 			queryClient.invalidateQueries({
-				queryKey: orpc.websites.list.queryOptions({ input: {} }).queryKey,
+				queryKey: orpc.websites.list.key(),
 			});
 			queryClient.invalidateQueries({
-				queryKey: orpc.websites.listWithCharts.queryOptions({ input: {} })
-					.queryKey,
+				queryKey: orpc.websites.listWithCharts.key(),
 			});
-			const getByIdKey = orpc.websites.getById.queryOptions({
+			const getByIdKey = orpc.websites.getById.key({
 				input: { id: variables.websiteId },
-			}).queryKey;
+			});
 			queryClient.invalidateQueries({ queryKey: getByIdKey });
 			queryClient.refetchQueries({ queryKey: getByIdKey });
 		},

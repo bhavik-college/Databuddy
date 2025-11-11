@@ -99,31 +99,36 @@ export function useFunnels(websiteId: string, enabled = true) {
 		[query.data]
 	);
 
-	const listKey = orpc.funnels.list.queryOptions({ input: { websiteId } }).queryKey;
-	const analyticsKey = orpc.funnels.getAnalytics.queryOptions({
-		input: { websiteId, funnelId: "", startDate: "", endDate: "" },
-	}).queryKey;
-
 	const createMutation = useMutation({
 		...orpc.funnels.create.mutationOptions(),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: listKey });
+			queryClient.invalidateQueries({
+				queryKey: orpc.funnels.list.key({ input: { websiteId } }),
+			});
 		},
 	});
 
 	const updateMutation = useMutation({
 		...orpc.funnels.update.mutationOptions(),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: listKey });
-			queryClient.invalidateQueries({ queryKey: analyticsKey });
+			queryClient.invalidateQueries({
+				queryKey: orpc.funnels.list.key({ input: { websiteId } }),
+			});
+			queryClient.invalidateQueries({
+				queryKey: orpc.funnels.getAnalytics.key(),
+			});
 		},
 	});
 
 	const deleteMutation = useMutation({
 		...orpc.funnels.delete.mutationOptions(),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: listKey });
-			queryClient.invalidateQueries({ queryKey: analyticsKey });
+			queryClient.invalidateQueries({
+				queryKey: orpc.funnels.list.key({ input: { websiteId } }),
+			});
+			queryClient.invalidateQueries({
+				queryKey: orpc.funnels.getAnalytics.key(),
+			});
 		},
 	});
 

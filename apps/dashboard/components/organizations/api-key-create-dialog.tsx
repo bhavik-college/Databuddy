@@ -147,16 +147,16 @@ export function ApiKeyCreateDialog({
 
 	const createMutation = useMutation({
 		...orpc.apikeys.create.mutationOptions(),
-		onSuccess: async (res: {
+		onSuccess: (res: {
 			id: string;
 			secret: string;
 			prefix: string;
 			start: string;
 		}) => {
 			queryClient.invalidateQueries({
-				queryKey: orpc.apikeys.list.queryOptions({
+				queryKey: orpc.apikeys.list.key({
 					input: { organizationId },
-				}).queryKey,
+				}),
 			});
 			setCreatedInfo(res);
 			setShowCreatedDialog(true);

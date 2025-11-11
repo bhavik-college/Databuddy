@@ -83,16 +83,16 @@ const flagFormSchema = z.object({
 
 type FlagFormData = z.infer<typeof flagFormSchema>;
 
-interface FlagSheetProps {
+type FlagSheetProps = {
 	isOpen: boolean;
-	onClose: () => void;
+	onCloseAction: () => void;
 	websiteId: string;
 	flag?: Flag | null;
-}
+};
 
 export function FlagSheet({
 	isOpen,
-	onClose,
+	onCloseAction,
 	websiteId,
 	flag,
 }: FlagSheetProps) {
@@ -193,10 +193,9 @@ export function FlagSheet({
 			toast.success(`Flag ${isEditing ? "updated" : "created"} successfully`);
 
 			queryClient.invalidateQueries({
-				queryKey: orpc.flags.list.queryOptions({ input: { websiteId } })
-					.queryKey,
+				queryKey: orpc.flags.list.key({ input: { websiteId } }),
 			});
-			onClose();
+			onCloseAction();
 		} catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : "Unknown error";
@@ -216,7 +215,7 @@ export function FlagSheet({
 	const isLoading = createMutation.isPending || updateMutation.isPending;
 
 	return (
-		<Sheet onOpenChange={onClose} open={isOpen}>
+		<Sheet onOpenChange={onCloseAction} open={isOpen}>
 			<SheetContent
 				className="w-full overflow-y-auto p-4 sm:w-[90vw] sm:max-w-[800px] md:w-[70vw] lg:w-[60vw]"
 				side="right"
@@ -494,7 +493,7 @@ export function FlagSheet({
 							</div>
 
 							<div className="flex justify-end gap-3 border-t pt-6">
-								<Button onClick={onClose} type="button" variant="outline">
+								<Button onClick={onCloseAction} type="button" variant="outline">
 									Cancel
 								</Button>
 								<Button disabled={isLoading} type="submit">
