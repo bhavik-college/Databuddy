@@ -38,6 +38,14 @@ type RetentionRate = {
 	retention_rate: number;
 };
 
+type StatCardConfig = {
+	id: string;
+	title: string;
+	value: string;
+	subtitle?: string;
+	icon: typeof RepeatIcon;
+};
+
 export function RetentionContent({ websiteId }: RetentionContentProps) {
 	const { dateRange } = useDateFilters();
 	const [activeTab, setActiveTab] = useState("cohorts");
@@ -112,118 +120,122 @@ export function RetentionContent({ websiteId }: RetentionContentProps) {
 		};
 	}, [rates, cohorts]);
 
+	const statCards: StatCardConfig[] = useMemo(
+		() => [
+			{
+				id: "overall-rate",
+				title: "Overall Retention Rate",
+				value: `${overallStats.avgRetentionRate}%`,
+				subtitle: "Average across selected range",
+				icon: RepeatIcon,
+			},
+			{
+				id: "total-users",
+				title: "Total Users",
+				value: overallStats.totalUsers.toLocaleString(),
+				subtitle: `${overallStats.totalNewUsers.toLocaleString()} new · ${overallStats.totalReturningUsers.toLocaleString()} returning`,
+				icon: UsersIcon,
+			},
+			{
+				id: "week1",
+				title: "Week 1 Retention",
+				value: `${overallStats.avgWeek1Retention}%`,
+				subtitle: "Weighted by cohort size",
+				icon: ChartLineIcon,
+			},
+			{
+				id: "returning",
+				title: "Returning Users",
+				value: overallStats.totalReturningUsers.toLocaleString(),
+				subtitle: "Users who came back",
+				icon: UsersIcon,
+			},
+		],
+		[overallStats]
+	);
+
+	const renderStatCard = (card: StatCardConfig) => {
+		const Icon = card.icon;
+		return (
+			<Card
+				className="min-w-[200px] snap-center md:min-w-0 md:snap-none"
+				key={card.id}
+			>
+				<CardContent className="p-3 sm:p-4">
+					<div className="flex items-center gap-2 sm:gap-3">
+						<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 sm:h-10 sm:w-10">
+							<Icon
+								className="h-4 w-4 text-primary sm:h-5 sm:w-5"
+								weight="duotone"
+							/>
+						</div>
+						<div className="min-w-0 flex-1">
+							<p className="font-medium text-[11px] text-muted-foreground uppercase tracking-wide sm:text-xs">
+								{card.title}
+							</p>
+							<p className="font-bold text-foreground text-lg sm:text-xl">
+								{card.value}
+							</p>
+							{card.subtitle ? (
+								<p className="text-[11px] text-muted-foreground sm:text-xs">
+									{card.subtitle}
+								</p>
+							) : null}
+						</div>
+					</div>
+				</CardContent>
+			</Card>
+		);
+	};
+
 	return (
-		<div className="space-y-6">
-			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-				{isLoading ? (
-					[...new Array(4)].map((_, i) => (
-						<Card key={i}>
-							<CardContent className="p-4">
-								<div className="flex items-center gap-3">
-									<Skeleton className="h-10 w-10 rounded-lg" />
-									<div className="flex-1 space-y-2">
-										<Skeleton className="h-3 w-24 rounded" />
-										<Skeleton className="h-6 w-16 rounded" />
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-					))
-				) : (
-					<>
-						<Card>
-							<CardContent className="p-4">
-								<div className="flex items-center gap-3">
-									<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-										<RepeatIcon
-											className="h-5 w-5 text-primary"
-											weight="duotone"
-										/>
-									</div>
-									<div>
-										<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-											Overall Retention Rate
-										</p>
-										<p className="font-bold text-foreground text-xl">
-											{overallStats.avgRetentionRate}%
-										</p>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-
-						<Card>
-							<CardContent className="p-4">
-								<div className="flex items-center gap-3">
-									<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-										<UsersIcon
-											className="h-5 w-5 text-primary"
-											weight="duotone"
-										/>
-									</div>
-									<div>
-										<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-											Total Users
-										</p>
-										<p className="font-bold text-foreground text-xl">
-											{overallStats.totalUsers.toLocaleString()}
-										</p>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-
-						<Card>
-							<CardContent className="p-4">
-								<div className="flex items-center gap-3">
-									<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-										<ChartLineIcon
-											className="h-5 w-5 text-primary"
-											weight="duotone"
-										/>
-									</div>
-									<div>
-										<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-											Week 1 Retention
-										</p>
-										<p className="font-bold text-foreground text-xl">
-											{overallStats.avgWeek1Retention}%
-										</p>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-
-						<Card>
-							<CardContent className="p-4">
-								<div className="flex items-center gap-3">
-									<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-										<UsersIcon
-											className="h-5 w-5 text-primary"
-											weight="duotone"
-										/>
-									</div>
-									<div>
-										<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-											Returning Users
-										</p>
-										<p className="font-bold text-foreground text-xl">
-											{overallStats.totalReturningUsers.toLocaleString()}
-										</p>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-					</>
-				)}
+		<div className="flex h-full min-h-0 flex-col gap-4">
+			<div className="shrink-0 space-y-3">
+				<div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 md:hidden">
+					{isLoading
+						? [...new Array(4)].map((_, i) => (
+								<Card
+									className="min-w-[200px] snap-center"
+									key={`skeleton-mobile-${i}`}
+								>
+									<CardContent className="p-4">
+										<div className="flex items-center gap-3">
+											<Skeleton className="h-10 w-10 rounded-lg" />
+											<div className="space-y-2">
+												<Skeleton className="h-3 w-24 rounded" />
+												<Skeleton className="h-6 w-16 rounded" />
+											</div>
+										</div>
+									</CardContent>
+								</Card>
+							))
+						: statCards.map((card) => renderStatCard(card))}
+				</div>
+				<div className="hidden grid-cols-1 gap-3 sm:grid-cols-2 md:grid lg:grid-cols-4">
+					{isLoading
+						? [...new Array(4)].map((_, i) => (
+								<Card key={`skeleton-desktop-${i}`}>
+									<CardContent className="p-4">
+										<div className="flex items-center gap-3">
+											<Skeleton className="h-10 w-10 rounded-lg" />
+											<div className="flex-1 space-y-2">
+												<Skeleton className="h-3 w-24 rounded" />
+												<Skeleton className="h-6 w-16 rounded" />
+											</div>
+										</div>
+									</CardContent>
+								</Card>
+							))
+						: statCards.map((card) => renderStatCard(card))}
+				</div>
 			</div>
 			<Tabs
-				className="space-y-6"
+				className="flex min-h-0 flex-1 flex-col"
 				defaultValue="cohorts"
 				onValueChange={setActiveTab}
 				value={activeTab}
 			>
-				<div className="border-border border-b">
+				<div className="shrink-0 border-border border-b">
 					<TabsList className="h-11 w-full justify-start overflow-x-auto bg-transparent p-0">
 						<TabsTrigger
 							className="relative h-11 whitespace-nowrap rounded-none border-transparent border-b-2 px-4 font-medium text-muted-foreground text-sm transition-colors hover:bg-muted/50 hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
@@ -242,9 +254,12 @@ export function RetentionContent({ websiteId }: RetentionContentProps) {
 					</TabsList>
 				</div>
 
-				<TabsContent className="space-y-6" value="cohorts">
-					<div className="space-y-4">
-						<div>
+				<TabsContent
+					className="mt-4 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
+					value="cohorts"
+				>
+					<div className="flex h-full flex-col gap-4">
+						<div className="shrink-0">
 							<h3 className="font-semibold text-foreground text-lg">
 								Retention by Cohort
 							</h3>
@@ -253,23 +268,32 @@ export function RetentionContent({ websiteId }: RetentionContentProps) {
 								weeks
 							</p>
 						</div>
-						<RetentionCohortsGrid
-							cohorts={cohorts}
-							isLoading={cohortsLoading}
-						/>
+						<div className="min-h-0 flex-1 overflow-auto">
+							<RetentionCohortsGrid
+								cohorts={cohorts}
+								isLoading={cohortsLoading}
+							/>
+						</div>
 					</div>
 				</TabsContent>
 
-				<TabsContent className="space-y-6" value="rate">
-					<Card>
-						<CardHeader>
-							<CardTitle>Daily Retention Rate</CardTitle>
-							<p className="text-muted-foreground text-sm">
+				<TabsContent
+					className="mt-4 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
+					value="rate"
+				>
+					<Card className="flex h-full flex-col">
+						<CardHeader className="shrink-0 px-3 py-2 sm:px-6 sm:py-4">
+							<CardTitle className="font-semibold text-base text-foreground sm:text-lg">
+								Daily Retention Rate
+							</CardTitle>
+							<p className="text-[11px] text-muted-foreground sm:text-sm">
 								View the percentage of returning users vs new users over time
 							</p>
 						</CardHeader>
-						<CardContent>
-							<RetentionRateChart data={rates} isLoading={rateLoading} />
+						<CardContent className="min-h-0 flex-1 px-2 pb-3 sm:px-6 sm:pb-6">
+							<div className="h-[320px] sm:h-full">
+								<RetentionRateChart data={rates} isLoading={rateLoading} />
+							</div>
 						</CardContent>
 					</Card>
 				</TabsContent>

@@ -25,7 +25,6 @@ type RetentionRateChartProps = {
 	isLoading: boolean;
 };
 
-const CHART_HEIGHT = 450;
 const CHART_MIN_VALUE = 0;
 
 function CustomTooltip({ active, payload }: any) {
@@ -105,9 +104,9 @@ function CustomTooltip({ active, payload }: any) {
 }
 
 const RetentionChartSkeleton = () => (
-	<div className="flex h-[450px] items-center justify-center">
+	<div className="flex h-full items-center justify-center">
 		<div className="w-full space-y-4">
-			<div className="flex h-[380px] w-full animate-pulse items-end justify-between gap-1 rounded-lg bg-muted/20">
+			<div className="flex h-full min-h-[380px] w-full animate-pulse items-end justify-between gap-1 rounded-lg bg-muted/20">
 				{Array.from({ length: 14 }).map((_, i) => (
 					<div
 						className="flex-1 rounded-t bg-chart-1/20"
@@ -157,13 +156,19 @@ export function RetentionRateChart({
 		return Math.min(100, Math.ceil(max * 1.15));
 	}, [chartData]);
 
+	const latestPoint = chartData.at(-1);
+
 	if (isLoading) {
-		return <RetentionChartSkeleton />;
+		return (
+			<div className="flex h-full items-center justify-center">
+				<RetentionChartSkeleton />
+			</div>
+		);
 	}
 
 	if (data.length === 0) {
 		return (
-			<div className="flex h-[450px] flex-col items-center justify-center text-center">
+			<div className="flex h-full flex-col items-center justify-center text-center">
 				<ChartLineIcon className="mb-3 h-12 w-12 text-muted-foreground/40" />
 				<p className="text-muted-foreground text-sm">
 					No retention rate data available for the selected time period
@@ -173,79 +178,110 @@ export function RetentionRateChart({
 	}
 
 	return (
-		<div className="relative w-full">
-			<div className="absolute top-0 right-0 z-10 flex items-center gap-4 rounded-lg border border-border bg-card/80 px-4 py-2 backdrop-blur-sm">
-				<div className="flex items-center gap-2">
-					<div className="h-2.5 w-2.5 rounded-full bg-chart-1" />
-					<span className="text-muted-foreground text-xs">Retention Rate</span>
+		<div className="flex h-full flex-col gap-2">
+			{latestPoint ? (
+				<div className="flex items-center justify-between rounded-md border border-border/70 px-3 py-2 sm:hidden">
+					<div>
+						<p className="text-[11px] text-muted-foreground uppercase tracking-wider">
+							Last Day
+						</p>
+						<p className="font-semibold text-base text-foreground">
+							{latestPoint.retention_rate.toFixed(1)}%
+						</p>
+					</div>
+					<div className="text-right">
+						<p className="text-[11px] text-muted-foreground">
+							{dayjs(latestPoint.fullDate).format("MMM D")}
+						</p>
+						<p className="text-[11px] text-muted-foreground">
+							{latestPoint.returning_users.toLocaleString()} returning
+						</p>
+					</div>
 				</div>
+			) : null}
+			<div className="relative h-full w-full">
+				<div className="absolute top-0 right-0 z-10 hidden items-center gap-4 rounded-lg border border-border bg-card/80 px-4 py-2 backdrop-blur-sm sm:flex">
+					<div className="flex items-center gap-2">
+						<div className="h-2.5 w-2.5 rounded-full bg-chart-1" />
+						<span className="text-muted-foreground text-xs">
+							Retention Rate
+						</span>
+					</div>
+				</div>
+				<ResponsiveContainer height="100%" width="100%">
+					<AreaChart
+						data={chartData}
+						margin={{ bottom: 12, left: 35, right: 12, top: 16 }}
+					>
+						<defs>
+							<linearGradient
+								id="retentionGradient"
+								x1="0"
+								x2="0"
+								y1="0"
+								y2="1"
+							>
+								<stop
+									offset="0%"
+									stopColor="var(--color-chart-1)"
+									stopOpacity={0.4}
+								/>
+								<stop
+									offset="50%"
+									stopColor="var(--color-chart-1)"
+									stopOpacity={0.15}
+								/>
+								<stop
+									offset="100%"
+									stopColor="var(--color-chart-1)"
+									stopOpacity={0.02}
+								/>
+							</linearGradient>
+						</defs>
+						<CartesianGrid
+							stroke="var(--color-border)"
+							strokeDasharray="3 4"
+							strokeOpacity={0.2}
+							vertical={false}
+						/>
+						<XAxis
+							axisLine={false}
+							dataKey="date"
+							dy={5}
+							interval="preserveStartEnd"
+							tick={{ fontSize: 10, fill: "var(--color-muted-foreground)" }}
+							tickLine={false}
+						/>
+						<YAxis
+							axisLine={false}
+							domain={[CHART_MIN_VALUE, maxRetention]}
+							tick={{
+								fontSize: 10,
+								fill: "var(--color-muted-foreground)",
+							}}
+							tickFormatter={(value) => `${value}%`}
+							tickLine={false}
+							width={38}
+						/>
+						<Tooltip content={<CustomTooltip />} />
+						<Area
+							activeDot={{
+								fill: "var(--color-chart-1)",
+								r: 4,
+								stroke: "var(--color-background)",
+								strokeWidth: 1.5,
+							}}
+							connectNulls
+							dataKey="retention_rate"
+							fill="url(#retentionGradient)"
+							fillOpacity={1}
+							stroke="var(--color-chart-1)"
+							strokeWidth={2.5}
+							type="monotone"
+						/>
+					</AreaChart>
+				</ResponsiveContainer>
 			</div>
-			<ResponsiveContainer height={CHART_HEIGHT} width="100%">
-				<AreaChart
-					data={chartData}
-					margin={{ bottom: 20, left: 50, right: 20, top: 50 }}
-				>
-					<defs>
-						<linearGradient id="retentionGradient" x1="0" x2="0" y1="0" y2="1">
-							<stop
-								offset="0%"
-								stopColor="var(--color-chart-1)"
-								stopOpacity={0.4}
-							/>
-							<stop
-								offset="50%"
-								stopColor="var(--color-chart-1)"
-								stopOpacity={0.15}
-							/>
-							<stop
-								offset="100%"
-								stopColor="var(--color-chart-1)"
-								stopOpacity={0.02}
-							/>
-						</linearGradient>
-					</defs>
-					<CartesianGrid
-						stroke="var(--color-border)"
-						strokeDasharray="3 4"
-						strokeOpacity={0.2}
-						vertical={false}
-					/>
-					<XAxis
-						axisLine={false}
-						dataKey="date"
-						dy={10}
-						tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }}
-						tickLine={false}
-					/>
-					<YAxis
-						axisLine={false}
-						domain={[CHART_MIN_VALUE, maxRetention]}
-						tick={{
-							fontSize: 11,
-							fill: "var(--color-muted-foreground)",
-						}}
-						tickFormatter={(value) => `${value}%`}
-						tickLine={false}
-						width={45}
-					/>
-					<Tooltip content={<CustomTooltip />} />
-					<Area
-						activeDot={{
-							fill: "var(--color-chart-1)",
-							r: 5,
-							stroke: "var(--color-background)",
-							strokeWidth: 2,
-						}}
-						connectNulls
-						dataKey="retention_rate"
-						fill="url(#retentionGradient)"
-						fillOpacity={1}
-						stroke="var(--color-chart-1)"
-						strokeWidth={2.5}
-						type="monotone"
-					/>
-				</AreaChart>
-			</ResponsiveContainer>
 		</div>
 	);
 }
