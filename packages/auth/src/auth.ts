@@ -34,8 +34,12 @@ export const auth = betterAuth({
 			create: {
 				after: async (user: { id: string; name: string; email: string }) => {
 					logger.info(
-						"User Created",
-						`User ${user.id}, ${user.name}, ${user.email} created`
+						{
+							userId: user.id,
+							userName: user.name,
+							userEmail: user.email,
+						},
+						"User Created"
 					);
 					// const resend = new Resend(process.env.RESEND_API_KEY as string);
 					// await resend.emails.send({

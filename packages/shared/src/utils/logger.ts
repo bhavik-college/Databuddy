@@ -2,35 +2,40 @@ import pino from "pino";
 
 const token = process.env.AXIOM_TOKEN as string;
 const dataset = process.env.AXIOM_DATASET as string;
-let transport: any
+
+const loggerConfig: pino.LoggerOptions = {
+    level: "debug",
+    name: "databuddy",
+};
 
 if (token && dataset) {
-    transport = {
+    loggerConfig.transport = {
         target: "@axiomhq/pino",
         options: {
             token,
             dataset,
         },
     };
-} else {
-    transport = {
-        options: {
-            colorize: true,
-        },
-    };
 }
 
-export const logger = pino({
-    level: "debug",
-    name: "databuddy",
-    transport
-});
+export const logger = pino(loggerConfig);
 
 
 export function createLogger(name: string) {
-    return pino({
+    const config: pino.LoggerOptions = {
         level: "debug",
         name,
-        transport
-    });
+    };
+
+    if (token && dataset) {
+        config.transport = {
+            target: "@axiomhq/pino",
+            options: {
+                token,
+                dataset,
+            },
+        };
+    }
+
+    return pino(config);
 }
