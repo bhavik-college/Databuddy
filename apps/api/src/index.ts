@@ -17,10 +17,9 @@ import { query } from "./routes/query";
 const rpcHandler = new RPCHandler(appRouter, {
 	interceptors: [
 		onError((error) => {
-			logger.error({
-				message: error instanceof Error ? error.message : String(error),
-				error,
-			});
+			logger.error(
+				error
+			);
 		}),
 	],
 });
@@ -42,17 +41,28 @@ const app = new Elysia()
 	.use(
 		autumnHandler({
 			identify: async ({ request }) => {
-				const session = await auth.api.getSession({
-					headers: request.headers,
-				});
+				try {
+					const session = await auth.api.getSession({
+						headers: request.headers,
+					});
 
-				return {
-					customerId: session?.user.id,
-					customerData: {
-						name: session?.user.name,
-						email: session?.user.email,
-					},
-				};
+					return {
+						customerId: session?.user.id,
+						customerData: {
+							name: session?.user.name,
+							email: session?.user.email,
+						},
+					};
+				} catch (error) {
+					logger.error({ error }, "Failed to get session for autumn handler");
+					return {
+						customerId: null,
+						customerData: {
+							name: null,
+							email: null,
+						},
+					};
+				}
 			},
 		})
 	)
@@ -62,12 +72,17 @@ const app = new Elysia()
 	.all(
 		"/rpc/*",
 		async ({ request }: { request: Request }) => {
-			const context = await createRPCContext({ headers: request.headers });
-			const { response } = await rpcHandler.handle(request, {
-				prefix: "/rpc",
-				context,
-			});
-			return response ?? new Response("Not Found", { status: 404 });
+			try {
+				const context = await createRPCContext({ headers: request.headers });
+				const { response } = await rpcHandler.handle(request, {
+					prefix: "/rpc",
+					context,
+				});
+				return response ?? new Response("Not Found", { status: 404 });
+			} catch (error) {
+				logger.error({ error }, "RPC handler failed");
+				return new Response("Internal Server Error", { status: 500 });
+			}
 		},
 		{
 			parse: "none",
@@ -75,7 +90,7 @@ const app = new Elysia()
 	)
 	.onError(({ error, code }) => {
 		const errorMessage = error instanceof Error ? error.message : String(error);
-		logger.error({ message: errorMessage, code, error });
+		logger.error({ error, code }, errorMessage);
 
 		return new Response(
 			JSON.stringify({

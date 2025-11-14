@@ -21,7 +21,7 @@ const getWebsiteById = cacheable(
 				where: eq(websites.id, id),
 			});
 		} catch (error) {
-			console.error("Error fetching website by ID:", error, { id });
+			logger.error({ error, websiteId: id }, "Error fetching website by ID");
 			return null;
 		}
 	},
@@ -41,42 +41,47 @@ async function authorizeWebsiteAccess(
 	websiteId: string,
 	permission: "read" | "update" | "delete" | "transfer"
 ) {
-	const website = await getWebsiteById(websiteId);
+	try {
+		const website = await getWebsiteById(websiteId);
 
-	if (!website) {
-		throw new Error("Website not found");
-	}
-
-	// Public websites allow read access
-	if (permission === "read" && website.isPublic) {
-		return website;
-	}
-
-	const session = await auth.api.getSession({ headers });
-	const user = session?.user;
-
-	if (!user) {
-		throw new Error("Authentication is required for this action");
-	}
-
-	if (user.role === "ADMIN") {
-		return website;
-	}
-
-	if (website.organizationId) {
-		const { success } = await websitesApi.hasPermission({
-			headers,
-			body: { permissions: { website: [permission] } },
-		});
-		if (!success) {
-			throw new Error("You do not have permission to perform this action");
+		if (!website) {
+			throw new Error("Website not found");
 		}
-	} else if (website.userId !== user.id) {
-		// Check direct ownership
-		throw new Error("You are not the owner of this website");
-	}
 
-	return website;
+		// Public websites allow read access
+		if (permission === "read" && website.isPublic) {
+			return website;
+		}
+
+		const session = await auth.api.getSession({ headers });
+		const user = session?.user;
+
+		if (!user) {
+			throw new Error("Authentication is required for this action");
+		}
+
+		if (user.role === "ADMIN") {
+			return website;
+		}
+
+		if (website.organizationId) {
+			const { success } = await websitesApi.hasPermission({
+				headers,
+				body: { permissions: { website: [permission] } },
+			});
+			if (!success) {
+				throw new Error("You do not have permission to perform this action");
+			}
+		} else if (website.userId !== user.id) {
+			// Check direct ownership
+			throw new Error("You are not the owner of this website");
+		}
+
+		return website;
+	} catch (error) {
+		logger.error({ error, websiteId, permission }, "Failed to authorize website access");
+		throw error;
+	}
 }
 
 export const exportRoute = new Elysia({ prefix: "/v1/export" })
@@ -117,25 +122,25 @@ export const exportRoute = new Elysia({ prefix: "/v1/export" })
 				);
 
 				if (dateError) {
-					logger.warn({
-						message: "Export request with invalid dates",
-						requestId,
-						websiteId,
-						startDate: body.start_date,
-						endDate: body.end_date,
-						error: dateError,
-					});
+					logger.warn(
+						{
+							requestId,
+							websiteId,
+							startDate: body.start_date,
+							endDate: body.end_date,
+							error: dateError,
+						},
+						"Export request with invalid dates"
+					);
 					return createErrorResponse(400, "INVALID_DATE_RANGE", dateError);
 				}
 
 				const format = body.format || "json";
 				if (!["csv", "json", "txt", "proto"].includes(format)) {
-					logger.warn({
-						message: "Export request with invalid format",
-						requestId,
-						websiteId,
-						format,
-					});
+					logger.warn(
+						{ requestId, websiteId, format },
+						"Export request with invalid format"
+					);
 					return createErrorResponse(
 						400,
 						"INVALID_FORMAT",
@@ -143,19 +148,20 @@ export const exportRoute = new Elysia({ prefix: "/v1/export" })
 					);
 				}
 
-				logger.info({
-					message: "Data export initiated",
-					requestId,
-					websiteId,
-					startDate: validatedDates.startDate,
-					endDate: validatedDates.endDate,
-					format,
-					userAgent: request.headers.get("user-agent"),
-					ip:
-						request.headers.get("x-forwarded-for") ||
-						request.headers.get("x-real-ip"),
-					timestamp: new Date().toISOString(),
-				});
+				logger.info(
+					{
+						requestId,
+						websiteId,
+						startDate: validatedDates.startDate,
+						endDate: validatedDates.endDate,
+						format,
+						userAgent: request.headers.get("user-agent"),
+						ip:
+							request.headers.get("x-forwarded-for") ||
+							request.headers.get("x-real-ip"),
+					},
+					"Data export initiated"
+				);
 
 				const exportRequest: ExportRequest = {
 					website_id: websiteId,
@@ -166,16 +172,17 @@ export const exportRoute = new Elysia({ prefix: "/v1/export" })
 
 				const result = await processExport(exportRequest);
 
-				logger.info({
-					message: "Data export completed successfully",
-					requestId,
-					websiteId,
-					filename: result.filename,
-					fileSize: result.buffer.length,
-					totalRecords: result.metadata.totalRecords,
-					processingTime: Date.now() - startTime,
-					timestamp: new Date().toISOString(),
-				});
+				logger.info(
+					{
+						requestId,
+						websiteId,
+						filename: result.filename,
+						fileSize: result.buffer.length,
+						totalRecords: result.metadata.totalRecords,
+						processingTime: Date.now() - startTime,
+					},
+					"Data export completed successfully"
+				);
 
 				return new Response(result.buffer, {
 					headers: {
@@ -185,19 +192,19 @@ export const exportRoute = new Elysia({ prefix: "/v1/export" })
 					},
 				});
 			} catch (error) {
-				logger.error({
-					message: "Data export failed",
-					requestId,
-					websiteId: body.website_id,
-					error: error instanceof Error ? error.message : String(error),
-					stack: error instanceof Error ? error.stack : undefined,
-					processingTime: Date.now() - startTime,
-					userAgent: request.headers.get("user-agent"),
-					ip:
-						request.headers.get("x-forwarded-for") ||
-						request.headers.get("x-real-ip"),
-					timestamp: new Date().toISOString(),
-				});
+				logger.error(
+					{
+						error,
+						requestId,
+						websiteId: body.website_id,
+						processingTime: Date.now() - startTime,
+						userAgent: request.headers.get("user-agent"),
+						ip:
+							request.headers.get("x-forwarded-for") ||
+							request.headers.get("x-real-ip"),
+					},
+					"Data export failed"
+				);
 
 				if (error instanceof Error) {
 					if (error.message.includes("not found")) {

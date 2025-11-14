@@ -1,5 +1,4 @@
-import { db, flags } from "@databuddy/db";
-import { and, eq, isNull, or } from "drizzle-orm";
+import { and, db, eq, flags, isNull, or } from "@databuddy/db";
 import { Elysia, t } from "elysia";
 import { logger } from "@/lib/logger";
 
@@ -18,13 +17,13 @@ const bulkFlagQuerySchema = t.Object({
 	properties: t.Optional(t.String()),
 });
 
-interface UserContext {
+type UserContext = {
 	userId?: string;
 	email?: string;
 	properties?: Record<string, unknown>;
-}
+};
 
-interface FlagRule {
+type FlagRule = {
 	type: "user_id" | "email" | "property";
 	operator: string;
 	field?: string;
@@ -33,18 +32,18 @@ interface FlagRule {
 	enabled: boolean;
 	batch: boolean;
 	batchValues?: string[];
-}
+};
 
-interface FlagResult {
+type FlagResult = {
 	enabled: boolean;
 	value: boolean;
 	payload: unknown;
 	reason: string;
-}
+};
 
 export function hashString(str: string): number {
 	let hash = 0;
-	for (let i = 0; i < str.length; i++) {
+	for (let i = 0; i < str.length; i += 1) {
 		const char = str.charCodeAt(i);
 		hash = (hash << 5) - hash + char;
 		hash &= hash;
@@ -61,8 +60,8 @@ export function parseProperties(
 
 	try {
 		return JSON.parse(propertiesJson);
-	} catch {
-		logger.warn("Invalid properties JSON");
+	} catch (error) {
+		logger.warn({ error, propertiesJson }, "Invalid properties JSON");
 		return {};
 	}
 }
@@ -233,13 +232,15 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 					eq(flags.organizationId, query.clientId)
 				);
 
-				logger.info({
-					message: "Flag evaluation request",
-					key: query.key,
-					clientId: query.clientId,
-					userId: query.userId,
-					email: query.email,
-				});
+				logger.info(
+					{
+						key: query.key,
+						clientId: query.clientId,
+						userId: query.userId,
+						email: query.email,
+					},
+					"Flag evaluation request"
+				);
 
 				const flag = await db.query.flags.findFirst({
 					where: and(
@@ -260,16 +261,18 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 						),
 					});
 
-					logger.info({
-						message: "Flag debug info",
-						key: query.key,
-						clientId: query.clientId,
-						foundFlags: allFlags.map((f) => ({
-							id: f.id,
-							websiteId: f.websiteId,
-							organizationId: f.organizationId,
-						})),
-					});
+					logger.info(
+						{
+							key: query.key,
+							clientId: query.clientId,
+							foundFlags: allFlags.map((f) => ({
+								id: f.id,
+								websiteId: f.websiteId,
+								organizationId: f.organizationId,
+							})),
+						},
+						"Flag debug info"
+					);
 				}
 
 				if (!flag) {
@@ -288,10 +291,10 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 					flagType: flag.type,
 				};
 			} catch (error) {
-				logger.error({
-					message: "Flag evaluation failed",
-					error,
-				});
+				logger.error(
+					{ error, key: query.key, clientId: query.clientId },
+					"Flag evaluation failed"
+				);
 				set.status = 500;
 				return {
 					enabled: false,
@@ -350,8 +353,11 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 					count: Object.keys(enabledFlags).length,
 					timestamp: new Date().toISOString(),
 				};
-			} catch (_error) {
-				logger.error("Bulk flag evaluation failed");
+			} catch (error) {
+				logger.error(
+					{ error, clientId: query.clientId },
+					"Bulk flag evaluation failed"
+				);
 				set.status = 500;
 				return {
 					flags: {},
