@@ -27,9 +27,7 @@ const REGEX_DOMAIN_LABEL = /^[a-zA-Z0-9-]+$/;
  * @returns A promise that resolves to the owner's user ID or null if not found.
  */
 async function _resolveOwnerId(website: Website): Promise<string | null> {
-	console.time("_resolveOwnerId");
 	if (website.userId) {
-		console.timeEnd("_resolveOwnerId");
 		return website.userId;
 	}
 
@@ -46,7 +44,6 @@ async function _resolveOwnerId(website: Website): Promise<string | null> {
 			});
 
 			if (orgMember) {
-				console.timeEnd("_resolveOwnerId");
 				return orgMember.userId;
 			}
 
@@ -70,7 +67,6 @@ async function _resolveOwnerId(website: Website): Promise<string | null> {
 		{ websiteId: website.id },
 		"No owner could be determined for website"
 	);
-	console.timeEnd("_resolveOwnerId");
 	return null;
 }
 
@@ -359,14 +355,12 @@ export function getWebsiteByIdV2(
 	id: string
 ): Promise<WebsiteWithOwner | null> {
 	return record("getWebsiteByIdV2", async () => {
-		console.time("getWebsiteByIdV2");
 		setAttributes({
 			"website.id": id,
 		});
 
 		try {
 			const result = await getWebsiteByIdWithOwnerCached(id);
-			console.timeEnd("getWebsiteByIdV2");
 
 			if (result) {
 				setAttributes({
@@ -386,7 +380,6 @@ export function getWebsiteByIdV2(
 			setAttributes({
 				"website.lookup_failed": true,
 			});
-			console.timeEnd("getWebsiteByIdV2");
 			return null;
 		}
 	});

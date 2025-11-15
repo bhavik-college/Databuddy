@@ -298,7 +298,6 @@ export function insertTrackEvent(
 	ip: string
 ): Promise<void> {
 	return record("insertTrackEvent", async () => {
-		console.time("insertTrackEvent");
 		let eventId = sanitizeString(
 			trackData.eventId,
 			VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH
@@ -323,7 +322,6 @@ export function insertTrackEvent(
 
 		if (isDuplicate) {
 			setAttributes({ "event.duplicate": true });
-			console.timeEnd("insertTrackEvent");
 			return;
 		}
 
@@ -432,13 +430,11 @@ export function insertTrackEvent(
 
 		try {
 			sendEvent("analytics-events", trackEvent);
-			console.timeEnd("insertTrackEvent");
 		} catch (error) {
 			logger.error(
 				{ error, eventId },
 				"Failed to queue track event"
 			);
-			console.timeEnd("insertTrackEvent");
 		}
 	});
 }

@@ -12,12 +12,10 @@ function getCurrentDay(): number {
 
 export const getDailySalt = cacheable(
 	async (): Promise<string> => {
-		console.time("getDailySalt");
 		const saltKey = `salt:${getCurrentDay()}`;
 		try {
 			const salt = await redis.get(saltKey);
 			if (salt) {
-				console.timeEnd("getDailySalt");
 				return salt;
 			}
 
@@ -26,11 +24,9 @@ export const getDailySalt = cacheable(
 			redis.setex(saltKey, SALT_TTL, newSalt).catch((error) => {
 				logger.error({ error }, "Failed to set daily salt in Redis");
 			});
-			console.timeEnd("getDailySalt");
 			return newSalt;
 		} catch (error) {
 			logger.error({ error }, "Failed to get daily salt from Redis");
-			console.timeEnd("getDailySalt");
 			return crypto.randomBytes(32).toString("hex");
 		}
 	},
@@ -55,17 +51,14 @@ export async function checkDuplicate(
 	eventId: string,
 	eventType: string
 ): Promise<boolean> {
-	console.time("checkDuplicate");
 	const key = `dedup:${eventType}:${eventId}`;
 	const ttl = eventId.startsWith("exit_") ? EXIT_EVENT_TTL : STANDARD_EVENT_TTL;
 
 	try {
 		const result = await redis.set(key, "1", "EX", ttl, "NX");
-		console.timeEnd("checkDuplicate");
 		return result === null;
 	} catch (error) {
 		logger.error({ error, eventId, eventType }, "Failed to check duplicate event in Redis");
-		console.timeEnd("checkDuplicate");
 		return false;
 	}
 }

@@ -26,13 +26,11 @@ type ValidationError = {
 
 const checkAutumnCached = cacheable(
 	async (ownerId: string) => {
-		console.time("autumnCheck");
 		const result = await autumn.check({
 			customer_id: ownerId,
 			feature_id: "events",
 			send_event: true,
 		});
-		console.timeEnd("autumnCheck");
 		return result.data;
 	},
 	{
@@ -52,7 +50,6 @@ export function validateRequest(
 	request: Request
 ): Promise<ValidationResult | ValidationError> {
 	return record("validateRequest", async () => {
-		console.time("validateRequest");
 		if (!validatePayloadSize(body, VALIDATION_LIMITS.PAYLOAD_MAX_SIZE)) {
 			logBlockedTraffic(
 				request,
@@ -65,7 +62,6 @@ export function validateRequest(
 				"validation.failed": true,
 				"validation.reason": "payload_too_large",
 			});
-			console.timeEnd("validateRequest");
 			return { error: { status: "error", message: "Payload too large" } };
 		}
 
@@ -85,7 +81,6 @@ export function validateRequest(
 				"validation.failed": true,
 				"validation.reason": "missing_client_id",
 			});
-			console.timeEnd("validateRequest");
 			return { error: { status: "error", message: "Missing client ID" } };
 		}
 
@@ -109,7 +104,6 @@ export function validateRequest(
 				"validation.reason": "invalid_client_id",
 				"website.status": website?.status || "not_found",
 			});
-			console.timeEnd("validateRequest");
 			return {
 				error: { status: "error", message: "Invalid or inactive client ID" },
 			};
@@ -139,7 +133,6 @@ export function validateRequest(
 						"validation.reason": "exceeded_event_limit",
 						"autumn.allowed": false,
 					});
-					console.timeEnd("validateRequest");
 					return {
 						error: { status: "error", message: "Exceeded event limit" },
 					};
@@ -173,7 +166,6 @@ export function validateRequest(
 				"validation.reason": "origin_not_authorized",
 				"request.origin": origin,
 			});
-			console.timeEnd("validateRequest");
 			return { error: { status: "error", message: "Origin not authorized" } };
 		}
 
@@ -191,7 +183,6 @@ export function validateRequest(
 			"request.has_ip": Boolean(ip),
 		});
 
-		console.timeEnd("validateRequest");
 		return {
 			success: true,
 			clientId,

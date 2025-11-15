@@ -296,12 +296,10 @@ const app = new Elysia()
 			request: Request;
 		};
 
-		console.time("total-request");
 		try {
 			const validation = await validateRequest(body, query, request);
 
 			if ("error" in validation) {
-				console.timeEnd("total-request");
 				return validation.error;
 			}
 
@@ -315,23 +313,19 @@ const app = new Elysia()
 				]);
 
 				if (botError) {
-					console.timeEnd("total-request");
 					return botError.error;
 				}
 
 				if (!parseResult.success) {
-					console.timeEnd("total-request");
 					return createSchemaErrorResponse(parseResult.error.issues);
 				}
 
 				insertTrackEvent(body, clientId, userAgent, ip);
-				console.timeEnd("total-request");
 				return { status: "success", type: "track" };
 			}
 
 			if (eventType === "error") {
 				if (FILTERED_ERROR_MESSAGES.has(body.payload?.message)) {
-					console.timeEnd("total-request");
 					return {
 						status: "ignored",
 						type: "error",
@@ -345,17 +339,14 @@ const app = new Elysia()
 				]);
 
 				if (botError) {
-					console.timeEnd("total-request");
 					return botError.error;
 				}
 
 				if (!parseResult.success) {
-					console.timeEnd("total-request");
 					return createSchemaErrorResponse(parseResult.error.issues);
 				}
 
 				insertError(body, clientId, userAgent, ip);
-				console.timeEnd("total-request");
 				return { status: "success", type: "error" };
 			}
 
@@ -366,17 +357,14 @@ const app = new Elysia()
 				]);
 
 				if (botError) {
-					console.timeEnd("total-request");
 					return botError.error;
 				}
 
 				if (!parseResult.success) {
-					console.timeEnd("total-request");
 					return createSchemaErrorResponse(parseResult.error.issues);
 				}
 
 				insertWebVitals(body, clientId, userAgent, ip);
-				console.timeEnd("total-request");
 				return { status: "success", type: "web_vitals" };
 			}
 
@@ -390,7 +378,6 @@ const app = new Elysia()
 				);
 
 				if (!parseResult.success) {
-					console.timeEnd("total-request");
 					return createSchemaErrorResponse(parseResult.error.issues);
 				}
 
@@ -398,7 +385,6 @@ const app = new Elysia()
 				const customEventWithId = { ...body, eventId };
 
 				await insertCustomEvent(customEventWithId, clientId, userAgent, ip);
-				console.timeEnd("total-request");
 				return { status: "success", type: "custom", eventId };
 			}
 
@@ -409,25 +395,20 @@ const app = new Elysia()
 				]);
 
 				if (botError) {
-					console.timeEnd("total-request");
 					return botError.error;
 				}
 
 				if (!parseResult.success) {
-					console.timeEnd("total-request");
 					return createSchemaErrorResponse(parseResult.error.issues);
 				}
 
 				insertOutgoingLink(body, clientId, userAgent, ip);
-				console.timeEnd("total-request");
 				return { status: "success", type: "outgoing_link" };
 			}
 
-			console.timeEnd("total-request");
 			return { status: "error", message: "Unknown event type" };
 		} catch (error) {
 			logger.error({ error }, "Error processing event");
-			console.timeEnd("total-request");
 			return { status: "error", message: "Internal server error" };
 		}
 	})
