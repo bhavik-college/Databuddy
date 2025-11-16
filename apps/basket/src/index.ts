@@ -65,32 +65,19 @@ const app = new Elysia()
 		span: null as ReturnType<typeof startRequestSpan> | null,
 		startTime: 0,
 	})
-	.onBeforeHandle(function handleCors({ request, set }) {
-		const origin = request.headers.get("origin");
-		if (origin) {
-			set.headers ??= {};
-			set.headers["Access-Control-Allow-Origin"] = origin;
-			set.headers["Access-Control-Allow-Methods"] =
-				"POST, GET, OPTIONS, PUT, DELETE";
-			set.headers["Access-Control-Allow-Headers"] =
-				"Content-Type, Authorization, X-Requested-With, databuddy-client-id, databuddy-sdk-name, databuddy-sdk-version";
-			set.headers["Access-Control-Allow-Credentials"] = "true";
-		}
-	})
 	.onBeforeHandle(function startTrace({ request, path, store }) {
 		const method = request.method;
 		const startTime = Date.now();
 		const span = startRequestSpan(method, request.url, path);
 
-		// Store span and start time in Elysia store
 		store.tracing = {
 			span,
 			startTime,
 		};
 	})
-	.onAfterHandle(function endTrace({ response, store }) {
+	.onAfterHandle(function endTrace({ responseValue, store }) {
 		if (store.tracing?.span && store.tracing.startTime) {
-			const statusCode = response instanceof Response ? response.status : 200;
+			const statusCode = responseValue instanceof Response ? responseValue.status : 200;
 			endRequestSpan(store.tracing.span, statusCode, store.tracing.startTime);
 		}
 	})

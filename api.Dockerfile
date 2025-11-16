@@ -1,4 +1,3 @@
-# Build stage
 FROM oven/bun:1.3.2-slim AS builder
 
 WORKDIR /app
@@ -20,7 +19,6 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/api ./apps/api
 COPY --from=builder /app/packages ./packages
-
 
 EXPOSE 4000
 
