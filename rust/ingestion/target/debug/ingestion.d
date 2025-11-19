@@ -1,1 +1,0 @@
-/Users/iza/Dev/Databuddy/rust/ingestion/target/debug/ingestion: /Users/iza/Dev/Databuddy/rust/ingestion/src/main.rs /Users/iza/Dev/Databuddy/rust/ingestion/src/models.rs /Users/iza/Dev/Databuddy/rust/ingestion/src/producer.rs
