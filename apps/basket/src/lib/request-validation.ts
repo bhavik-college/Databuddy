@@ -8,8 +8,7 @@ import {
 	validatePayloadSize,
 } from "../utils/validation";
 import { logBlockedTraffic } from "./blocked-traffic";
-import { logger } from "./logger";
-import { record, setAttributes } from "./tracing";
+import { captureError, record, setAttributes } from "./tracing";
 
 type ValidationResult = {
 	success: boolean;
@@ -70,7 +69,9 @@ export function validateRequest(
 			"client.id": clientId,
 		});
 
-		const website = await getWebsiteByIdV2(clientId);
+		const website = await record("getWebsiteByIdV2", () =>
+			getWebsiteByIdV2(clientId)
+		);
 		if (!website || website.status !== "ACTIVE") {
 			logBlockedTraffic(
 				request,
@@ -98,11 +99,13 @@ export function validateRequest(
 
 		if (website.ownerId) {
 			try {
-				const result = await autumn.check({
-					customer_id: website.ownerId,
-					feature_id: "events",
-					send_event: true,
-				});
+				const result = await record("autumn.check", () =>
+					autumn.check({
+						customer_id: website.ownerId || "",
+						feature_id: "events",
+						send_event: true,
+					})
+				);
 				const data = result.data;
 
 				if (data && !(data.allowed || data.overage_allowed)) {
@@ -130,7 +133,9 @@ export function validateRequest(
 					"autumn.overage_allowed": data?.overage_allowed ?? false,
 				});
 			} catch (error) {
-				logger.error({ error }, "Autumn check failed, allowing event through");
+				captureError(error, {
+					message: "Autumn check failed, allowing event through",
+				});
 				setAttributes({
 					"autumn.check_failed": true,
 				});
@@ -138,7 +143,12 @@ export function validateRequest(
 		}
 
 		const origin = request.headers.get("origin");
-		if (origin && !isValidOrigin(origin, website.domain)) {
+		if (
+			origin &&
+			!(await record("isValidOrigin", () =>
+				isValidOrigin(origin, website.domain)
+			))
+		) {
 			logBlockedTraffic(
 				request,
 				body,
@@ -179,7 +189,6 @@ export function validateRequest(
 		};
 	});
 }
-
 /**
  * Check if request is from a bot
  * Returns error object if bot detected, undefined otherwise
@@ -190,26 +199,29 @@ export function checkForBot(
 	query: any,
 	clientId: string,
 	userAgent: string
-): { error?: { status: string } } | undefined {
-	const botCheck = detectBot(userAgent, request);
-	if (botCheck.isBot) {
-		logBlockedTraffic(
-			request,
-			body,
-			query,
-			botCheck.reason || "unknown_bot",
-			botCheck.category || "Bot Detection",
-			botCheck.botName,
-			clientId
-		);
-		setAttributes({
-			"validation.failed": true,
-			"validation.reason": "bot_detected",
-			"bot.name": botCheck.botName || "unknown",
-			"bot.category": botCheck.category || "Bot Detection",
-			"bot.detection_reason": botCheck.reason || "unknown_bot",
-		});
-		return { error: { status: "ignored" } };
-	}
-	return;
+): Promise<{ error?: { status: string } } | undefined> {
+	return record("checkForBot", () => {
+		const botCheck = detectBot(userAgent, request);
+		if (botCheck.isBot) {
+			logBlockedTraffic(
+				request,
+				body,
+				query,
+				botCheck.reason || "unknown_bot",
+				botCheck.category || "Bot Detection",
+				botCheck.botName,
+				clientId
+			);
+			setAttributes({
+				"validation.failed": true,
+				"validation.reason": "bot_detected",
+				"bot.name": botCheck.botName || "unknown",
+				"bot.category": botCheck.category || "Bot Detection",
+				"bot.detection_reason": botCheck.reason || "unknown_bot",
+			});
+			return { error: { status: "ignored" } };
+		}
+		return;
+	});
 }
+

@@ -6,6 +6,10 @@ const activeRevalidations = new Map<string, Promise<void>>();
 
 const stringifyRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*Z$/;
 
+let redisAvailable = true;
+let lastRedisCheck = 0;
+const REDIS_CHECK_INTERVAL = 30_000;
+
 type CacheOptions = {
 	expireInSec: number;
 	prefix?: string;
@@ -14,6 +18,7 @@ type CacheOptions = {
 	staleWhileRevalidate?: boolean;
 	staleTime?: number;
 	maxRetries?: number;
+	timeout?: number;
 };
 
 const defaultSerialize = (data: unknown): string => JSON.stringify(data);
@@ -24,6 +29,30 @@ const defaultDeserialize = (data: string): unknown =>
 		}
 		return value;
 	});
+
+function withTimeout<T>(
+	promise: Promise<T>,
+	timeoutMs: number
+): Promise<T> {
+	return Promise.race([
+		promise,
+		new Promise<T>((_, reject) =>
+			setTimeout(() => reject(new Error("Redis timeout")), timeoutMs)
+		),
+	]);
+}
+
+function shouldSkipRedis(): boolean {
+	const now = Date.now();
+	if (!redisAvailable && now - lastRedisCheck < REDIS_CHECK_INTERVAL) {
+		return true;
+	}
+	if (!redisAvailable && now - lastRedisCheck >= REDIS_CHECK_INTERVAL) {
+		redisAvailable = true;
+		lastRedisCheck = now;
+	}
+	return false;
+}
 
 export async function getCache<T>(
 	key: string,
@@ -36,38 +65,60 @@ export async function getCache<T>(
 		deserialize = defaultDeserialize,
 		staleWhileRevalidate = false,
 		staleTime = 0,
-		maxRetries = 3,
+		maxRetries = 1,
+		timeout = 300,
 	} = typeof options === "number" ? { expireInSec: options } : options;
+
+	if (shouldSkipRedis()) {
+		return fn();
+	}
 
 	let retries = 0;
 	while (retries < maxRetries) {
 		try {
 			const redis = getRedisCache();
-			const hit = await redis.get(key);
+			const hit = await withTimeout(redis.get(key), timeout);
+			redisAvailable = true;
+			lastRedisCheck = Date.now();
+
 			if (hit) {
 				const data = deserialize(hit) as T;
 
 				if (staleWhileRevalidate) {
-					const ttl = await redis.ttl(key);
-					if (ttl < staleTime && !activeRevalidations.has(key)) {
-						// Return stale data and revalidate in background
-						const revalidationPromise = fn()
-							.then(async (freshData: T) => {
-								if (freshData !== undefined && freshData !== null) {
-									const redis = getRedisCache();
-									await redis.setex(key, expireInSec, serialize(freshData));
-								}
-							})
-							.catch((error: unknown) => {
-								logger.error(
-									`Background revalidation failed for key ${key}:`,
-									error
-								);
-							})
-							.finally(() => {
-								activeRevalidations.delete(key);
-							});
-						activeRevalidations.set(key, revalidationPromise);
+					try {
+						const ttl = await withTimeout(redis.ttl(key), timeout);
+						if (ttl < staleTime && !activeRevalidations.has(key)) {
+							const revalidationPromise = fn()
+								.then(async (freshData: T) => {
+									if (
+										freshData !== undefined &&
+										freshData !== null &&
+										redisAvailable
+									) {
+										try {
+											const redis = getRedisCache();
+											await withTimeout(
+												redis.setex(key, expireInSec, serialize(freshData)),
+												timeout
+											);
+										} catch {
+											// Ignore SET failure
+										}
+									}
+								})
+								.catch((error: unknown) => {
+									logger.error(
+										`Background revalidation failed for key ${key}:`,
+										error
+									);
+								})
+								.finally(() => {
+									activeRevalidations.delete(key);
+								});
+							activeRevalidations.set(key, revalidationPromise);
+						}
+					} catch {
+						// Ignore TTL check failure
 					}
 				}
 
@@ -75,20 +126,31 @@ export async function getCache<T>(
 			}
 
 			const data = await fn();
-			if (data !== undefined && data !== null) {
-				await redis.setex(key, expireInSec, serialize(data));
+			if (
+				data !== undefined &&
+				data !== null &&
+				redisAvailable &&
+				!shouldSkipRedis()
+			) {
+				try {
+					await withTimeout(
+						redis.setex(key, expireInSec, serialize(data)),
+						timeout
+					);
+				} catch {
+					redisAvailable = false;
+					lastRedisCheck = Date.now();
+				}
 			}
 			return data;
 		} catch (error: unknown) {
 			retries += 1;
-			if (retries === maxRetries) {
-				logger.error(
-					`Cache error for key ${key} after ${maxRetries} retries:`,
-					error
-				);
+			if (retries >= maxRetries) {
+				redisAvailable = false;
+				lastRedisCheck = Date.now();
+				logger.error(`Cache error for key ${key}, skipping Redis:`, error);
 				return fn();
 			}
-			await new Promise((resolve) => setTimeout(resolve, 100 * retries)); // Exponential backoff
 		}
 	}
 
@@ -106,7 +168,6 @@ export function cacheable<T extends (...args: any) => any>(
 		deserialize = defaultDeserialize,
 		staleWhileRevalidate = false,
 		staleTime = 0,
-		maxRetries = 3,
 	} = typeof options === "number" ? { expireInSec: options } : options;
 
 	const cachePrefix = `cacheable:${prefix}`;
@@ -152,36 +213,59 @@ export function cacheable<T extends (...args: any) => any>(
 		...args: Parameters<T>
 	): Promise<Awaited<ReturnType<T>>> => {
 		const key = getKey(...args);
-		let retries = 0;
+		const timeout = typeof options === "number" ? 50 : options.timeout ?? 50;
+		const retries = typeof options === "number" ? 1 : options.maxRetries ?? 1;
 
-		while (retries < maxRetries) {
+		if (shouldSkipRedis()) {
+			return fn(...args);
+		}
+
+		let attempt = 0;
+		while (attempt < retries) {
 			try {
 				const redis = getRedisCache();
-				const cached = await redis.get(key);
+				const cached = await withTimeout(redis.get(key), timeout);
+				redisAvailable = true;
+				lastRedisCheck = Date.now();
+
 				if (cached) {
 					const data = deserialize(cached) as Awaited<ReturnType<T>>;
 
 					if (staleWhileRevalidate) {
-						const ttl = await redis.ttl(key);
-						if (ttl < staleTime && !activeRevalidations.has(key)) {
-							// Return stale data and revalidate in background
-							const revalidationPromise = fn(...args)
-								.then(async (freshData: Awaited<ReturnType<T>>) => {
-									if (freshData !== undefined && freshData !== null) {
-										const redis = getRedisCache();
-										await redis.setex(key, expireInSec, serialize(freshData));
-									}
-								})
-								.catch((error: unknown) => {
-									logger.error(
-										`Background revalidation failed for function ${fn.name}:`,
-										error
-									);
-								})
-								.finally(() => {
-									activeRevalidations.delete(key);
-								});
-							activeRevalidations.set(key, revalidationPromise);
+						try {
+							const ttl = await withTimeout(redis.ttl(key), timeout);
+							if (ttl < staleTime && !activeRevalidations.has(key)) {
+								const revalidationPromise = fn(...args)
+									.then(async (freshData: Awaited<ReturnType<T>>) => {
+										if (
+											freshData !== undefined &&
+											freshData !== null &&
+											redisAvailable
+										) {
+											try {
+												const redis = getRedisCache();
+												await withTimeout(
+													redis.setex(key, expireInSec, serialize(freshData)),
+													timeout
+												);
+											} catch {
+												// Ignore SET failure
+											}
+										}
+									})
+									.catch((error: unknown) => {
+										logger.error(
+											`Background revalidation failed for function ${fn.name}:`,
+											error
+										);
+									})
+									.finally(() => {
+										activeRevalidations.delete(key);
+									});
+								activeRevalidations.set(key, revalidationPromise);
+							}
+						} catch {
+							// Ignore TTL check failure
 						}
 					}
 
@@ -189,20 +273,34 @@ export function cacheable<T extends (...args: any) => any>(
 				}
 
 				const result = await fn(...args);
-				if (result !== undefined && result !== null) {
-					await redis.setex(key, expireInSec, serialize(result));
+				if (
+					result !== undefined &&
+					result !== null &&
+					redisAvailable &&
+					!shouldSkipRedis()
+				) {
+					try {
+						await withTimeout(
+							redis.setex(key, expireInSec, serialize(result)),
+							timeout
+						);
+					} catch {
+						redisAvailable = false;
+						lastRedisCheck = Date.now();
+					}
 				}
 				return result;
 			} catch (error: unknown) {
-				retries += 1;
-				if (retries === maxRetries) {
+				attempt += 1;
+				if (attempt >= retries) {
+					redisAvailable = false;
+					lastRedisCheck = Date.now();
 					logger.error(
-						`Cache error for function ${fn.name} after ${maxRetries} retries:`,
+						`Cache error for function ${fn.name}, skipping Redis:`,
 						error
 					);
 					return fn(...args);
 				}
-				await new Promise((resolve) => setTimeout(resolve, 100 * retries)); // Exponential backoff
 			}
 		}
 
