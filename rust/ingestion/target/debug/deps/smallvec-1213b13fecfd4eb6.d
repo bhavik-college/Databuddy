@@ -1,7 +1,0 @@
-/Users/iza/Dev/Databuddy/rust/ingestion/target/debug/deps/smallvec-1213b13fecfd4eb6.d: /Users/iza/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/smallvec-1.15.1/src/lib.rs
-
-/Users/iza/Dev/Databuddy/rust/ingestion/target/debug/deps/libsmallvec-1213b13fecfd4eb6.rlib: /Users/iza/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/smallvec-1.15.1/src/lib.rs
-
-/Users/iza/Dev/Databuddy/rust/ingestion/target/debug/deps/libsmallvec-1213b13fecfd4eb6.rmeta: /Users/iza/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/smallvec-1.15.1/src/lib.rs
-
-/Users/iza/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/smallvec-1.15.1/src/lib.rs:
