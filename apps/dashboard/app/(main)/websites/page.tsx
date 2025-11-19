@@ -15,6 +15,7 @@ import { WebsiteDialog } from "@/components/website-dialog";
 import { useWebsites } from "@/hooks/use-websites";
 
 import { cn } from "@/lib/utils";
+import { NoticeBanner } from "./_components/notice-banner";
 import { PageHeader } from "./_components/page-header";
 import { WebsiteCard } from "./_components/website-card";
 
@@ -140,23 +141,10 @@ export default function WebsitesPage() {
 			>
 				{/* Website count indicator */}
 				{!isLoading && websites && websites.length > 0 && (
-					<div className="mb-6">
-						<div className="flex items-center gap-2 rounded-lg border bg-accent-brighter px-3 py-2 text-accent-foreground text-sm">
-							<GlobeIcon
-								aria-hidden="true"
-								className="h-4 w-4 shrink-0 text-accent-foreground"
-								size={24}
-								weight="duotone"
-							/>
-							<span className="truncate">
-								Tracking{" "}
-								<span className="font-medium text-foreground">
-									{websites.length}
-								</span>{" "}
-								website{websites.length !== 1 ? "s" : ""}
-							</span>
-						</div>
-					</div>
+					<NoticeBanner className="mb-6" icon={<GlobeIcon />}>
+						Tracking <span className="font-medium">{websites.length} </span>
+						website{websites.length !== 1 ? "s" : ""}
+					</NoticeBanner>
 				)}
 
 				{/* Show loading state */}

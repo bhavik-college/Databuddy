@@ -172,7 +172,7 @@ export function OrganizationSelector() {
 			<div className="flex h-12 w-full items-center bg-sidebar-accent px-3 py-3">
 				<div className="flex w-full items-center justify-between">
 					<div className="flex items-center gap-3">
-						<div className="rounded-lg bg-sidebar/80 p-1.5 ring-1 ring-sidebar-border/50">
+						<div className="rounded-lg border bg-sidebar/80 p-1.5 ring-1">
 							<Skeleton className="h-5 w-5 rounded" />
 						</div>
 						<div className="flex min-w-0 flex-1 flex-col items-start">
@@ -220,7 +220,7 @@ export function OrganizationSelector() {
 				>
 					<DropdownMenuItem
 						className={cn(
-							"flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sm transition-colors",
+							"flex cursor-pointer items-center gap-3 border-b px-4 py-2.5 text-sm transition-colors",
 							"text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
 							!activeOrganization &&
 								"bg-sidebar-accent font-medium text-sidebar-accent-foreground"
@@ -244,7 +244,6 @@ export function OrganizationSelector() {
 
 					{filteredOrganizations && filteredOrganizations.length > 0 && (
 						<div className="flex flex-col">
-							<DropdownMenuSeparator className="m-0 bg-sidebar-border p-0" />
 							{filteredOrganizations.map((org) => (
 								<DropdownMenuItem
 									className={cn(

@@ -232,9 +232,11 @@ export function WebsiteDialog({
 				</Form>
 				<DialogFooter>
 					<Button
-						className="w-full sm:w-auto"
+						className="w-full"
 						disabled={
-							createWebsiteMutation.isPending || updateWebsiteMutation.isPending
+							createWebsiteMutation.isPending ||
+							updateWebsiteMutation.isPending ||
+							!form.formState.isValid
 						}
 						form="form"
 						onClick={handleSubmit}

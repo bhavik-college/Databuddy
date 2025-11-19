@@ -27,8 +27,8 @@ export const PageHeader = memo(
 		right,
 		count,
 	}: PageHeaderProps) => (
-		<div className="box-content flex h-22 w-full flex-col justify-between gap-3 border-box border-b sm:flex-row sm:items-center sm:gap-0">
-			<div className="flex h-full items-center gap-3 p-3 sm:p-4">
+		<div className="box-content flex h-22 min-h-fit flex-col justify-between gap-0 border-box border-b sm:flex-row sm:items-center lg:gap-3">
+			<div className="flex items-center gap-3 p-3 sm:p-4">
 				<div className="rounded-lg border border-accent-foreground/10 bg-accent-foreground/10 p-2.5">
 					{cloneElement(icon, {
 						...icon.props,
@@ -65,9 +65,7 @@ export const PageHeader = memo(
 					</p>
 				</div>
 			</div>
-			{right && (
-				<div className="flex h-full items-center gap-2 px-3">{right}</div>
-			)}
+			{right && <div className="flex items-center gap-2 p-3">{right}</div>}
 		</div>
 	)
 );

@@ -220,7 +220,7 @@ export function TableContent<TData extends { name: string | number }>({
 		<div
 			aria-labelledby={`tab-${activeTab}`}
 			className={cn(
-				"relative overflow-auto bg-accent table-scrollbar",
+				"table-scrollbar relative overflow-auto bg-accent",
 				className
 			)}
 			id={`tabpanel-${activeTab}`}
@@ -231,7 +231,7 @@ export function TableContent<TData extends { name: string | number }>({
 				<TableHeader>
 					{headerGroups.map((headerGroup) => (
 						<TableRow
-							className="sticky shadow-[0_0_0_0.5px_var(--border)] top-0 z-10 bg-accent"
+							className="sticky top-0 z-10 bg-accent shadow-[0_0_0_0.5px_var(--border)]"
 							key={headerGroup.id}
 						>
 							{headerGroup.headers.map((header) => (
@@ -276,7 +276,7 @@ export function TableContent<TData extends { name: string | number }>({
 							<Fragment key={row.id}>
 								<TableRow
 									className={cn(
-										"relative h-11 bg-accent/20! border border-border pl-3 transition-all duration-300 ease-in-out",
+										"relative h-11 border border-border bg-accent-brighter/30! pl-3 transition-all duration-300 ease-in-out",
 										(isInteractive || hasSubRows) && "cursor-pointer",
 										!gradient &&
 											(rowIndex % 2 === 0 ? "bg-accent/50" : "bg-accent/10")

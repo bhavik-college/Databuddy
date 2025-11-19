@@ -125,20 +125,20 @@
   --secondary-foreground: oklch(0.25 0.01 240);
   
 
-  --muted: oklch(0.95 0.005 240);
-  --muted-foreground: oklch(0.4 0.01 240);
+  --muted: oklch(0.60 0.0079 228.88);
+  --muted-foreground: oklch(0.4 0.0079 228.88);
   --accent: oklch(0.9134 0.0079 228.88);
-  --accent-disabled: oklch(0.95 0.005 240);
+  --accent-disabled: oklch(0.85 0.0079 228.88);
   --accent-brighter: oklch(0.94 0.005 240);
   --sidebar-accent-brighter: oklch(0.96 0.005 240);
-  --accent-foreground: oklch(0.15 0.01 240);
+  --accent-foreground: oklch(0.15 0.0079 228.88);
   --destructive: oklch(0.50 0.18 25);
   --destructive-brighter: oklch(0.52 0.18 25);
   --destructive-foreground: oklch(1 0 0);
 
   --border: oklch(0.85 0.005 240);
   --input: oklch(0.9 0.005 240);
-  --ring: oklch(0.65 0.22 265 / 0.7);
+  --ring: oklch(70% 0.013 285.805);
 
   --chart-1: oklch(0.81 0.1 252);
   --chart-2: oklch(0.62 0.19 260);
@@ -220,12 +220,12 @@
   --secondary-foreground: oklch(0.25 0.01 240);
 
 
-  --muted: oklch(0.25 0.02 240);
-  --muted-foreground: oklch(0.65 0.015 240);
+  --muted: oklch(0.60 0.006 286.033);
+  --muted-foreground: oklch(0.65 0.006 286.033);
   --accent: oklch(16.5% 0.006 286.033);
   --accent-brighter: oklch(20% 0.006 286.033);
-  --accent-disabled: oklch(0.20 0.001 240);
-  --accent-foreground: oklch(0.9 0.01 240);
+  --accent-disabled: oklch(0.30 0.006 286.033);
+  --accent-foreground: oklch(0.9 0.006 286.033);
   --destructive: oklch(0.50 0.18 25);
   --destructive-brighter: oklch(0.52 0.18 25);
   --destructive-foreground: oklch(1 0 0);
@@ -428,6 +428,90 @@
   select {
     font-size: 16px; /* Prevent zoom on iOS */
   }
+}
+
+::selection {
+  background-color: var(--accent-foreground);
+  color: var(--accent);
+}
+
+
+/* Angled Rectangle Gradient - Modal footer */
+
+.dark .angled-rectangle-gradient {
+  background-image: repeating-linear-gradient(-50deg, rgba(47, 47, 52, 0.5) 0px, rgba(47, 47, 52, 0.5) 1px, transparent 1px, transparent 5px);
+}
+
+.angled-rectangle-gradient {
+  background-image: repeating-linear-gradient(-50deg, rgba(50, 50, 50, 0.2) 0px, rgba(50, 50, 50, 0.2) 1px, transparent 1px, transparent 5px);
+}
+
+/* Notice banner Angled Rectangle Gradient */
+
+.dark .notice-banner-angled-rectangle-gradient {
+  background-image: repeating-linear-gradient(-50deg, rgba(255, 255, 255, 0.25) 0px, rgba(255, 255, 255, 0.25) 1px, transparent 1px, transparent 5px);
+}
+
+.notice-banner-angled-rectangle-gradient {
+  background-image: repeating-linear-gradient(-50deg, rgba(255, 255, 255, 0.09) 0px, rgba(255, 255, 255, 0.09) 1px, transparent 1px, transparent 5px);
+}
+
+/* Badge Angled Rectangle Gradient */
+
+.dark-angled-rectangle-gradient {
+  background-image: repeating-linear-gradient(-50deg, rgba(255, 255, 255, 0.15) 0px, rgba(255, 255, 255, 0.15) 1px, transparent 1px, transparent 5px);
+}
+
+.dark .dark-angled-rectangle-gradient {
+  background-image: repeating-linear-gradient(-50deg, rgba(255, 255, 255, 0.4) 0px, rgba(255, 255, 255, 0.4) 1px, transparent 1px, transparent 5px);
+}
+
+.badge-angled-rectangle-gradient {
+  background-image: repeating-linear-gradient(-50deg, rgba(105, 105, 105, 0.17) 0px, rgba(105, 105, 105, 0.17) 1px, transparent 1px, transparent 5px);
+}
+
+.dark .badge-angled-rectangle-gradient {
+  background-image: repeating-linear-gradient(-50deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 5px);
+}
+
+/* Green Angled Rectangle Gradient */
+
+.green-angled-rectangle-gradient {
+  background-image: repeating-linear-gradient(-50deg, rgba(11, 83, 11, 0.17) 0px, rgba(11, 83, 11, 0.17) 1px, transparent 1px, transparent 5px);
+}
+
+.dark .green-angled-rectangle-gradient {
+  background-image: repeating-linear-gradient(-50deg, rgba(55, 184, 55, 0.13) 0px, rgba(55, 184, 55, 0.13) 1px, transparent 1px, transparent 5px);
+}
+
+/* Blue Angled Rectangle Gradient */
+
+.blue-angled-rectangle-gradient {
+  background-image: repeating-linear-gradient(-50deg, rgba(16, 16, 121, 0.1) 0px, rgba(16, 16, 121, 0.1) 1px, transparent 1px, transparent 5px);
+}
+
+.dark .blue-angled-rectangle-gradient {
+  background-image: repeating-linear-gradient(-50deg, rgba(104, 104, 255, 0.13) 0px, rgba(104, 104, 255, 0.13) 1px, transparent 1px, transparent 5px);
+}
+
+/* Amber Angled Rectangle Gradient */
+
+.amber-angled-rectangle-gradient {
+  background-image: repeating-linear-gradient(-50deg, rgba(91, 91, 6, 0.17) 0px, rgba(91, 91, 6, 0.17) 1px, transparent 1px, transparent 5px);
+}
+
+.dark .amber-angled-rectangle-gradient {
+  background-image: repeating-linear-gradient(-50deg, rgba(255, 255, 11, 0.13) 0px, rgba(255, 255, 11, 0.13) 1px, transparent 1px, transparent 5px);
+}
+
+.dotted-bg {
+  background-image: radial-gradient(circle at center, #06060616 1px, transparent 1px);
+  background-size: 8px 8px; /* Controls the spacing between dots */
+}
+
+.dark .dotted-bg {
+  background-image: radial-gradient(circle at center, #ffffff10 1px, transparent 1px);
+  background-size: 8px 8px; /* Controls the spacing between dots */
 }
 
 /* Tablet optimizations */

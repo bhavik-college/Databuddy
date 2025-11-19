@@ -208,7 +208,7 @@ export default function SettingsPage() {
 				)}
 				{activeTab === "security" && (
 					<div className="space-y-6">
-						<Card className="shadow-sm">
+						<Card>
 							<CardHeader>
 								<CardTitle>Two-Factor Authentication</CardTitle>
 								<CardDescription>
@@ -221,7 +221,7 @@ export default function SettingsPage() {
 							</CardContent>
 						</Card>
 
-						<Card className="shadow-sm">
+						<Card>
 							<CardHeader>
 								<CardTitle>Active Sessions</CardTitle>
 								<CardDescription>

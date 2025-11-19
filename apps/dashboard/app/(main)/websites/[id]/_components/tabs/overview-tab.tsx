@@ -790,7 +790,7 @@ export function WebsiteOverviewTab({
 	return (
 		<div className="space-y-6">
 			<EventLimitIndicator />
-			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6">
+			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-6">
 				{[
 					{
 						id: "visitors-chart",
@@ -937,10 +937,6 @@ export function WebsiteOverviewTab({
 							</div>
 						)}
 					</div>
-
-					<div className="flex flex-col items-end gap-3 sm:flex-row sm:items-center">
-						{/* Live user indicator moved to analytics toolbar */}
-					</div>
 				</div>
 				<div>
 					<MetricsChartWithAnnotations
@@ -991,7 +987,7 @@ export function WebsiteOverviewTab({
 			/>
 
 			{/* Technology */}
-			<div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+			<div className="grid grid-cols-1 gap-4 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3">
 				<DataTable
 					columns={deviceColumns}
 					data={analytics.device_types || []}
