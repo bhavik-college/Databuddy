@@ -115,11 +115,11 @@ export function DateRangePicker({
 							"h-8 justify-start gap-2 whitespace-nowrap rounded px-3 text-left font-medium text-xs transition-colors",
 							!hasSelection && "text-muted-foreground"
 						)}
-						variant="secondary"
 						disabled={disabled}
+						variant="secondary"
 					>
 						<CalendarDotsIcon className="size-4" weight="duotone" />
-						<span className="truncate text-accent-foreground">{getDisplayText()}</span>
+						<span className="truncate">{getDisplayText()}</span>
 					</Button>
 				</PopoverTrigger>
 				<PopoverContent
@@ -127,7 +127,7 @@ export function DateRangePicker({
 					className="w-auto rounded border p-0 sm:max-w-none"
 					sideOffset={4}
 				>
-					<div className="border-b bg-accent-brighter p-4 rounded-t-md">
+					<div className="rounded-t-md border-b bg-accent-brighter p-4">
 						<div className="text-muted-foreground text-sm">
 							{tempRange?.from && tempRange?.to ? (
 								<span className="font-medium text-foreground">
@@ -183,7 +183,7 @@ export function DateRangePicker({
 						/>
 					</div>
 
-					<div className="flex items-center justify-between border-t bg-accent-brighter p-4 rounded-b-md">
+					<div className="flex items-center justify-between rounded-b-md border-t bg-accent-brighter p-4">
 						<Button
 							className="h-8 text-muted-foreground transition-[color,box-shadow] hover:text-foreground"
 							onClick={handleClear}
