@@ -47,10 +47,10 @@ export function getTrackerConfig(): TrackerOptions {
 
     if (!script) {
         const scripts = document.getElementsByTagName('script');
-        for (let i = 0; i < scripts.length; i++) {
-            const src = scripts[i].src;
+        for (const currentScript of scripts) {
+            const src = currentScript.src;
             if (src && (src.includes('/databuddy.js') || src.includes('/databuddy-debug.js'))) {
-                script = scripts[i];
+                script = currentScript;
                 break;
             }
         }
