@@ -74,8 +74,7 @@ function OrganizationSelectorTrigger({
 				"flex h-12 w-full items-center border-b bg-sidebar-accent px-3 py-3 transition-colors",
 				"hover:bg-sidebar-accent/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/50",
 				isSettingActiveOrganization && "cursor-not-allowed opacity-70",
-				isOpen && "bg-sidebar-accent/60",
-				""
+				isOpen && "bg-sidebar-accent/60"
 			)}
 		>
 			<div className="flex w-full items-center justify-between">

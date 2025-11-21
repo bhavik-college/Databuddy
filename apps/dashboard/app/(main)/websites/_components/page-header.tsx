@@ -28,7 +28,7 @@ export const PageHeader = memo(
 		count,
 	}: PageHeaderProps) => (
 		<div className="box-content flex h-22 min-h-fit flex-col justify-between gap-0 border-box border-b sm:flex-row sm:items-center lg:gap-3">
-			<div className="flex items-center gap-3 p-3 sm:p-4">
+			<div className="flex h-full items-center gap-3 p-3 sm:p-4">
 				<div className="rounded-lg border border-accent-foreground/10 bg-sidebar-accent p-2.5">
 					{cloneElement(icon, {
 						...icon.props,
@@ -46,7 +46,7 @@ export const PageHeader = memo(
 						<h1 className="truncate font-medium text-foreground text-xl tracking-tight sm:text-2xl">
 							{title}
 						</h1>
-						{count && (
+						{typeof count === "number" && (
 							<div className="flex items-center gap-2 text-accent-foreground/60 text-sm">
 								{count}
 							</div>

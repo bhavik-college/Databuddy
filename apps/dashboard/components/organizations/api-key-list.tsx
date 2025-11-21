@@ -100,7 +100,7 @@ export function ApiKeyList({
 			{items.length > 0 && (
 				<div className="overflow-hidden rounded border">
 					{/* Table Header with Create Button */}
-					<div className="flex items-center justify-between border-b bg-accent p-3 py-2">
+					<div className="flex items-center justify-between border-b bg-accent px-3 py-2">
 						<div>
 							<h1 className="font-medium text-base">API Keys</h1>
 							<p className="text-muted-foreground text-xs">
@@ -137,7 +137,7 @@ export function ApiKeyList({
 											</div>
 										</TableCell>
 										<TableCell className="p-3">
-											<code className="rounded bg-accent-brighter px-2 py-1 font-mono text-accent-foreground text-xs transition-colors group-hover:bg-accent-brighter/70">
+											<code className="rounded bg-accent-brighter px-2 py-1 font-mono text-accent-foreground text-xs transition-colors hover:bg-accent-brighter/70">
 												{k.prefix}-{k.start}
 											</code>
 										</TableCell>
@@ -165,7 +165,7 @@ export function ApiKeyList({
 										</TableCell>
 										<TableCell className="p-3 text-right">
 											<Button
-												className="rounded opacity-0 transition-all duration-200 hover:bg-primary/10 hover:text-primary group-hover:opacity-100"
+												className="rounded opacity-0 transition-all duration-200 hover:bg-primary/10 hover:text-primary hover:opacity-100"
 												onClick={(e) => {
 													e.stopPropagation();
 													onSelect?.(k.id);

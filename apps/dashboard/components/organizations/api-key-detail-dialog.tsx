@@ -88,11 +88,11 @@ function GlobalScopesDisplay({ scopes }: { scopes: string[] }) {
 				<div className="grid grid-cols-1 gap-2 md:grid-cols-2">
 					{scopes.map((s) => (
 						<div
-							className="flex w-fit items-center gap-3 rounded border bg-accent p-3"
+							className="flex w-fit items-center gap-2 rounded border bg-accent p-2"
 							key={s}
 						>
 							<Checkbox checked disabled />
-							<div className="font-medium text-sm">{s}</div>
+							<div className="text-sm">{s}</div>
 						</div>
 					))}
 				</div>

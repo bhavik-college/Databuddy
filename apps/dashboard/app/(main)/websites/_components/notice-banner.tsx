@@ -28,7 +28,7 @@ export const NoticeBanner = ({
 						cloneElement(icon, {
 							...icon.props,
 							className: cn("text-accent", icon.props.className),
-							"aria-hidden": "true",
+							"aria-hidden": true,
 							weight: "fill",
 							size: 20,
 						})}
