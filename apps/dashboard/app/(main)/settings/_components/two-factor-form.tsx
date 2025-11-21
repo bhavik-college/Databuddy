@@ -523,10 +523,9 @@ export function TwoFactorForm() {
 				<>
 					<NoticeBanner
 						icon={<ShieldCheckIcon className="size-4" weight="duotone" />}
-					>
-						Two-factor authentication adds an additional layer of security to
-						your account by requiring more than just a password to sign in.
-					</NoticeBanner>
+						title="	Two-factor authentication adds an additional layer of security to
+						your account by requiring more than just a password to sign in."
+					/>
 
 					<Form {...setupForm}>
 						<form

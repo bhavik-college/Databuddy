@@ -256,7 +256,7 @@ export function ApiKeyCreateDialog({
 					className="w-full overflow-y-auto p-4 sm:w-[480px] sm:max-w-[480px]"
 					side="right"
 				>
-					<SheetHeader className="space-y-1 pb-3">
+					<SheetHeader className="pb-3">
 						<SheetTitle className="text-foreground text-lg">
 							Create API Key
 						</SheetTitle>
@@ -300,7 +300,7 @@ export function ApiKeyCreateDialog({
 										<div className="grid grid-cols-1 gap-2">
 											{ALL_SCOPES.map((scope) => (
 												<label
-													className="flex cursor-pointer items-center gap-3 rounded border bg-background p-3 transition-colors hover:bg-accent/50"
+													className="flex cursor-pointer items-center gap-3 rounded border bg-background p-3 transition-colors hover:bg-accent/30"
 													htmlFor={`global-${scope.value}`}
 													key={scope.value}
 												>
@@ -327,14 +327,14 @@ export function ApiKeyCreateDialog({
 									{/* Resource Access Section */}
 									{websites && websites.length > 0 && (
 										<div className="space-y-3">
-											<Separator className="my-1" />
+											<Separator className="my-5" />
 											<div className="flex items-center justify-between">
 												<Label className="font-semibold text-foreground text-sm">
 													Website Restrictions
+													<span className="font-medium text-muted-foreground text-xs">
+														(optional)
+													</span>
 												</Label>
-												<span className="text-muted-foreground text-xs">
-													optional
-												</span>
 											</div>
 
 											{/* Add Website */}
@@ -362,7 +362,7 @@ export function ApiKeyCreateDialog({
 													onClick={addWebsite}
 													type="button"
 												>
-													<PlusIcon className="mr-2 h-4 w-4" />
+													<PlusIcon className="size-3" />
 													Add
 												</Button>
 											</div>
@@ -386,13 +386,13 @@ export function ApiKeyCreateDialog({
 																			entry.resourceId}
 																	</span>
 																	<Button
-																		className="h-7 w-7 p-0"
+																		className="size-7 p-0"
 																		onClick={() => removeAccess(idx)}
 																		size="sm"
 																		type="button"
 																		variant="ghost"
 																	>
-																		<TrashIcon className="h-4 w-4" />
+																		<TrashIcon className="size-4" />
 																	</Button>
 																</div>
 																<div className="grid grid-cols-1 gap-2">
@@ -432,13 +432,11 @@ export function ApiKeyCreateDialog({
 								</fieldset>
 
 								<div className="flex items-center justify-end gap-3 border-border/50 border-t pt-6">
-									<Button onClick={handleClose} type="button" variant="outline">
+									<Button onClick={handleClose} type="button" variant="ghost">
 										Cancel
 									</Button>
 									<Button disabled={createMutation.isPending} type="submit">
-										{createMutation.isPending
-											? "Creating..."
-											: "Create API Key"}
+										{createMutation.isPending ? "Creating..." : "Create"}
 									</Button>
 								</div>
 							</form>

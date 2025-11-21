@@ -5,6 +5,7 @@ import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
@@ -49,7 +50,7 @@ export function HelpDialog({ open, onOpenChangeAction }: HelpDialogProps) {
 					</DialogDescription>
 				</DialogHeader>
 
-				<div className="space-y-2 py-4">
+				<div className="space-y-2">
 					{helpItems.map((item) => {
 						const Icon = item.icon;
 						return (
@@ -87,6 +88,16 @@ export function HelpDialog({ open, onOpenChangeAction }: HelpDialogProps) {
 						);
 					})}
 				</div>
+				<DialogFooter>
+					<Button
+						className="w-full"
+						onClick={() => onOpenChangeAction(false)}
+						type="button"
+						variant="secondary"
+					>
+						Close
+					</Button>
+				</DialogFooter>
 			</DialogContent>
 		</Dialog>
 	);

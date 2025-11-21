@@ -445,11 +445,11 @@
 /* Angled Rectangle Gradient - Modal footer */
 
 .dark .angled-rectangle-gradient {
-  background-image: repeating-linear-gradient(-50deg, rgba(47, 47, 52, 0.5) 0px, rgba(47, 47, 52, 0.5) 1px, transparent 1px, transparent 5px);
+  background-image: repeating-linear-gradient(-50deg, rgba(47, 47, 52, 0.4) 0px, rgba(47, 47, 52, 0.4) 1px, transparent 1px, transparent 5px);
 }
 
 .angled-rectangle-gradient {
-  background-image: repeating-linear-gradient(-50deg, rgba(50, 50, 50, 0.2) 0px, rgba(50, 50, 50, 0.2) 1px, transparent 1px, transparent 5px);
+  background-image: repeating-linear-gradient(-50deg, rgba(50, 50, 50, 0.1) 0px, rgba(50, 50, 50, 0.1) 1px, transparent 1px, transparent 5px);
 }
 
 /* Notice banner Angled Rectangle Gradient */

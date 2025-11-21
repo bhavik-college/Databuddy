@@ -100,22 +100,22 @@ export function ApiKeyList({
 			{items.length > 0 && (
 				<div className="overflow-hidden rounded border">
 					{/* Table Header with Create Button */}
-					<div className="flex items-center justify-between border-b bg-muted/30 px-6 py-4">
+					<div className="flex items-center justify-between border-b bg-accent p-3 py-2">
 						<div>
-							<h3 className="font-medium text-sm">API Keys</h3>
+							<h1 className="font-medium text-base">API Keys</h1>
 							<p className="text-muted-foreground text-xs">
 								{items.length} active key{items.length !== 1 ? "s" : ""}
 							</p>
 						</div>
 						<Button onClick={onCreateNew} size="sm" type="button">
-							<PlusIcon className="mr-2 h-3 w-3" />
+							<PlusIcon className="size-3" />
 							Create
 						</Button>
 					</div>
 					<div className="overflow-x-auto">
 						<Table>
 							<TableHeader>
-								<TableRow>
+								<TableRow className="hover:bg-transparent">
 									<TableHead>Name</TableHead>
 									<TableHead>Prefix</TableHead>
 									<TableHead>Status</TableHead>
@@ -127,32 +127,23 @@ export function ApiKeyList({
 							<TableBody>
 								{items.map((k) => (
 									<TableRow
-										className="cursor-pointer hover:bg-muted/50"
+										className="cursor-pointer"
 										key={k.id}
 										onClick={() => onSelect?.(k.id)}
 									>
 										<TableCell>
 											<div className="flex items-center gap-3">
-												<div className="flex h-8 w-8 items-center justify-center rounded bg-muted">
-													<KeyIcon
-														className="h-4 w-4 not-dark:text-primary"
-														weight="duotone"
-													/>
-												</div>
 												<div className="font-medium">{k.name}</div>
 											</div>
 										</TableCell>
-										<TableCell className="px-6 py-4">
-											<code className="rounded bg-muted/50 px-2 py-1 font-mono text-muted-foreground text-xs transition-colors group-hover:bg-muted/70">
-												{k.prefix}_{k.start}
+										<TableCell className="p-3">
+											<code className="rounded bg-accent-brighter px-2 py-1 font-mono text-accent-foreground text-xs transition-colors group-hover:bg-accent-brighter/70">
+												{k.prefix}-{k.start}
 											</code>
 										</TableCell>
-										<TableCell className="px-6 py-4">
+										<TableCell className="p-3">
 											{k.enabled && !k.revokedAt ? (
-												<Badge
-													className="bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400"
-													variant="default"
-												>
+												<Badge variant="gray">
 													<div className="mr-1 h-1.5 w-1.5 rounded-full bg-green-500" />
 													Active
 												</Badge>
@@ -166,13 +157,13 @@ export function ApiKeyList({
 												</Badge>
 											)}
 										</TableCell>
-										<TableCell className="px-6 py-4 text-muted-foreground text-xs">
+										<TableCell className="p-3 text-muted-foreground text-xs">
 											{dayjs(k.createdAt).format("MMM D, YYYY")}
 										</TableCell>
-										<TableCell className="px-6 py-4 text-muted-foreground text-xs">
+										<TableCell className="p-3 text-muted-foreground text-xs">
 											{dayjs(k.updatedAt).format("MMM D, YYYY")}
 										</TableCell>
-										<TableCell className="px-6 py-4 text-right">
+										<TableCell className="p-3 text-right">
 											<Button
 												className="rounded opacity-0 transition-all duration-200 hover:bg-primary/10 hover:text-primary group-hover:opacity-100"
 												onClick={(e) => {
@@ -196,21 +187,18 @@ export function ApiKeyList({
 
 			{/* Empty State */}
 			{items.length === 0 && (
-				<div className="rounded border border-dashed p-8 text-center">
-					<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-						<KeyIcon
-							className="h-6 w-6 not-dark:text-primary text-muted-foreground"
-							weight="duotone"
-						/>
+				<div className="space-y-5 rounded p-8 text-center">
+					<div className="mx-auto flex size-12 items-center justify-center rounded-full bg-accent-foreground">
+						<KeyIcon className="size-6 text-accent" />
 					</div>
-					<div className="mb-2 font-semibold text-foreground">
-						No API keys yet
+					<div className="flex flex-col space-y-1 text-center">
+						<div className="font-semibold text-foreground">No API keys yet</div>
+						<div className="mx-auto mb-4 max-w-sm text-balance text-muted-foreground text-sm">
+							Create your first API key to start integrating with our platform.
+						</div>
 					</div>
-					<div className="mx-auto mb-4 max-w-sm text-muted-foreground text-sm">
-						Create your first API key to start integrating with our platform.
-					</div>
-					<Button onClick={onCreateNew} type="button">
-						<PlusIcon className="mr-2 h-4 w-4 not-dark:text-white" />
+					<Button onClick={onCreateNew} size="lg" type="button">
+						<PlusIcon className="size-4" />
 						Create Your First API Key
 					</Button>
 				</div>

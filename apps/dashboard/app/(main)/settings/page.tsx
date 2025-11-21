@@ -234,13 +234,7 @@ export default function SettingsPage() {
 						</Card>
 					</div>
 				)}
-				{activeTab === "api-keys" && (
-					<Card className="shadow-sm">
-						<CardContent className="pt-6">
-							<ApiKeysSection />
-						</CardContent>
-					</Card>
-				)}
+				{activeTab === "api-keys" && <ApiKeysSection />}
 				{activeTab === "notifications" && (
 					<div className="flex h-full items-center justify-center">
 						<div className="text-center">
