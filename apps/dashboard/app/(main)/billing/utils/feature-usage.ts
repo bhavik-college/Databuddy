@@ -40,10 +40,7 @@ export function calculateFeatureUsage(feature: CustomerFeature): FeatureUsage {
     } else if (reportedUsage > 0) {
         actualUsed = reportedUsage;
     } else if (reportedUsage < 0) {
-        actualUsed = Math.max(
-            0,
-            includedUsage - balance + Math.abs(reportedUsage)
-        );
+        actualUsed = Math.max(0, includedUsage - balance + Math.abs(reportedUsage));
     } else {
         actualUsed = Math.max(0, includedUsage - balance);
     }
@@ -76,36 +73,52 @@ export function calculateAllFeatureUsage(
 }
 
 export function formatCompactNumber(num: number): string {
-    if (num >= 1_000_000_000_000) return `${(num / 1_000_000_000_000).toFixed(1)}T`;
+    if (num >= 1_000_000_000_000)
+        return `${(num / 1_000_000_000_000).toFixed(1)}T`;
     if (num >= 1_000_000_000) return `${(num / 1_000_000_000).toFixed(1)}B`;
     if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
-    if (num >= 10_000) return `${(num / 1_000).toFixed(0)}K`;
+    if (num >= 10_000) return `${(num / 1000).toFixed(0)}K`;
     return num.toLocaleString();
 }
 
 const INTERVAL_LABELS: Record<string, string> = {
-    day: "daily",
-    month: "monthly",
-    year: "yearly",
-    lifetime: "never",
+    day: "Daily",
+    month: "Monthly",
+    year: "Yearly",
+    lifetime: "Lifetime",
 };
 
 export function getResetText(feature: FeatureUsage): string {
-    if (feature.interval === "lifetime") return "Never expires";
-    if (!feature.resetAt) return "No reset scheduled";
+    if (feature.interval === "lifetime") {
+        return "Never expires";
+    }
+    if (!feature.resetAt) {
+        return "No reset scheduled";
+    }
 
-    const intervalLabel = feature.interval ? INTERVAL_LABELS[feature.interval] : null;
-    const relativeText = feature.resetRelative;
+    const resetDate = dayjs(feature.resetAt);
+    const now = dayjs();
+    const hoursUntil = resetDate.diff(now, "hour");
+    const daysUntil = resetDate.diff(now, "day");
 
-    if (intervalLabel && relativeText) {
-        return `Resets ${intervalLabel} · ${relativeText}`;
+    let resetString = "";
+
+    if (hoursUntil <= 0) {
+        resetString = "Resets soon";
+    } else if (hoursUntil < 24) {
+        resetString = `Resets in ${hoursUntil}h`;
+    } else if (daysUntil <= 1) {
+        resetString = "Resets tomorrow";
+    } else if (daysUntil < 14) {
+        resetString = `Resets in ${daysUntil}d`;
+    } else {
+        resetString = `Resets on ${resetDate.format("MMM D")}`;
     }
-    if (relativeText) {
-        return `Resets ${relativeText}`;
+
+    if (feature.interval && INTERVAL_LABELS[feature.interval]) {
+        const label = INTERVAL_LABELS[feature.interval];
+        return `${label} limit · ${resetString}`;
     }
-    if (feature.resetDateFormatted) {
-        return `Resets ${feature.resetDateFormatted}`;
-    }
-    return "No reset scheduled";
+
+    return resetString;
 }
-
