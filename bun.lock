@@ -482,7 +482,6 @@
         "@types/react": "catalog:",
         "@vitejs/plugin-react": "^5.0.0",
         "ai": "^5.0.51",
-        "jotai": "catalog:",
         "msw": "^2.11.5",
         "react": "catalog:",
         "tokenlens": "^2.0.0-alpha.3",
@@ -493,7 +492,6 @@
       "peerDependencies": {
         "@ai-sdk/provider": "^2.0.0",
         "ai": "^5.0.51",
-        "jotai": ">=2.0.0",
         "msw": "^2.11.5",
         "react": ">=18",
         "tokenlens": "^2.0.0-alpha.3",
@@ -502,7 +500,6 @@
       "optionalPeers": [
         "@ai-sdk/provider",
         "ai",
-        "jotai",
         "msw",
         "react",
         "tokenlens",
