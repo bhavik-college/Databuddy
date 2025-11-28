@@ -24,6 +24,16 @@ function calculateTotalCost(
 	return basePrice + overageCost;
 }
 
+function findHighestTierPlan(plans: NormalizedPlan[]): NormalizedPlan | null {
+	const paidPlansWithOverage = plans.filter((p) => p.eventTiers !== null);
+	if (paidPlansWithOverage.length === 0) {
+		return null;
+	}
+	return paidPlansWithOverage.reduce((max, plan) =>
+		plan.includedEventsMonthly > max.includedEventsMonthly ? plan : max
+	);
+}
+
 export function selectBestPlan(
 	monthlyEvents: number,
 	plans: NormalizedPlan[]
@@ -32,6 +42,11 @@ export function selectBestPlan(
 		return null;
 	}
 
+	const highestTier = findHighestTierPlan(plans);
+
+	if (highestTier && monthlyEvents > highestTier.includedEventsMonthly) {
+		return highestTier;
+	}
 	let bestPlan: NormalizedPlan | null = null;
 	let bestCost = Number.POSITIVE_INFINITY;
 

@@ -1,6 +1,14 @@
 import type * as React from "react";
-import { cache } from "react";
-import { createHighlighter } from "shiki";
+import { createHighlighterCoreSync } from "shiki/core";
+import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
+import css from "shiki/langs/css.mjs";
+import html from "shiki/langs/html.mjs";
+import json from "shiki/langs/json.mjs";
+import jsx from "shiki/langs/jsx.mjs";
+import markdown from "shiki/langs/markdown.mjs";
+import tsx from "shiki/langs/tsx.mjs";
+import githubLight from "shiki/themes/github-light.mjs";
+import vesper from "shiki/themes/vesper.mjs";
 import { SciFiCard } from "@/components/scifi-card";
 import { cn } from "@/lib/utils";
 import { CopyButton } from "./copy-button";
@@ -12,50 +20,27 @@ interface CodeBlockProps extends React.ComponentProps<"div"> {
 	children?: React.ReactNode;
 }
 
-const getShikiHighlighter = cache(
-	async () =>
-		await createHighlighter({
-			themes: ["vesper", "github-light"],
-			langs: [
-				"typescript",
-				"javascript",
-				"tsx",
-				"jsx",
-				"bash",
-				"shell",
-				"sh",
-				"html",
-				"css",
-				"json",
-				"python",
-				"go",
-				"rust",
-				"sql",
-				"yaml",
-				"xml",
-				"markdown",
-				"plaintext",
-			],
-		})
-);
+const highlighter = createHighlighterCoreSync({
+	themes: [vesper, githubLight],
+	langs: [tsx, jsx, html, css, json, markdown],
+	engine: createJavaScriptRegexEngine(),
+});
 
-async function CodeBlock({
+function CodeBlock({
 	children,
 	className,
 	language = "text",
 	filename,
 	code,
 }: CodeBlockProps) {
-	const content = (code || children) as string;
+	const content = (code ?? children) as string;
 
 	if (!content || typeof content !== "string") {
 		return null;
 	}
 
-	const highlighter = await getShikiHighlighter();
 	let highlightedCode: string | null = null;
 
-	// Only attempt syntax highlighting for supported languages
 	if (language !== "text" && language !== "plaintext") {
 		try {
 			highlightedCode = highlighter.codeToHtml(content, {
@@ -68,7 +53,6 @@ async function CodeBlock({
 				transformers: [
 					{
 						pre(node) {
-							// Remove default styling to use our own
 							node.properties.style = "";
 							node.properties.tabindex = "-1";
 						},
@@ -79,10 +63,6 @@ async function CodeBlock({
 				],
 			});
 		} catch {
-			// Fallback to plain text if language is not supported
-			console.warn(
-				`Shiki: Language "${language}" not supported, falling back to plain text`
-			);
 			highlightedCode = null;
 		}
 	}
@@ -93,7 +73,6 @@ async function CodeBlock({
 			cornerOpacity="opacity-0 group-hover/code:opacity-100"
 			variant="primary"
 		>
-			{/* Header */}
 			{(language !== "text" || filename) && (
 				<div className="flex items-center justify-between border-white/5 border-b bg-white/5 px-4 py-2.5">
 					<div className="flex items-center gap-3">
@@ -108,9 +87,7 @@ async function CodeBlock({
 							</span>
 						)}
 					</div>
-					<div className="flex items-center gap-2">
-						<CopyButton className="h-6 w-6" value={content} />
-					</div>
+					<CopyButton className="h-6 w-6" value={content} />
 				</div>
 			)}
 
@@ -123,15 +100,14 @@ async function CodeBlock({
 				</div>
 			)}
 
-			{/* Code content */}
 			<div className="relative">
 				{highlightedCode ? (
 					<div
 						className={cn(
-							"overflow-x-auto font-geist-mono text-[13px] leading-relaxed",
-							"[&>pre]:m-0 [&>pre]:overflow-visible [&>pre]:p-4 [&>pre]:font-geist-mono [&>pre]:leading-relaxed",
-							"[&>pre>code]:block [&>pre>code]:w-full [&>pre>code]:font-geist-mono [&>pre>code]:leading-relaxed",
-							"[&_.line]:min-h-[1.25rem] [&_.line]:px-0",
+							"overflow-x-auto font-mono text-[13px] leading-relaxed",
+							"[&>pre]:m-0 [&>pre]:overflow-visible [&>pre]:p-4 [&>pre]:leading-relaxed",
+							"[&>pre>code]:block [&>pre>code]:w-full",
+							"[&_.line]:min-h-5",
 							className
 						)}
 						dangerouslySetInnerHTML={{ __html: highlightedCode }}
@@ -139,13 +115,13 @@ async function CodeBlock({
 				) : (
 					<pre
 						className={cn(
-							"overflow-x-auto p-4 font-geist-mono text-foreground text-sm leading-relaxed",
+							"overflow-x-auto p-4 font-mono text-foreground text-sm leading-relaxed",
 							"[&>code]:block [&>code]:w-full [&>code]:p-0 [&>code]:text-inherit",
 							className
 						)}
 						tabIndex={-1}
 					>
-						<code className="font-geist-mono">{content}</code>
+						<code>{content}</code>
 					</pre>
 				)}
 			</div>
@@ -153,13 +129,11 @@ async function CodeBlock({
 	);
 }
 
-interface InlineCodeProps extends React.ComponentProps<"code"> {}
-
-function InlineCode({ className, ...props }: InlineCodeProps) {
+function InlineCode({ className, ...props }: React.ComponentProps<"code">) {
 	return (
 		<code
 			className={cn(
-				"relative rounded border border-accent bg-accent/50 px-1.5 py-0.5 font-geist-mono font-medium text-primary text-sm",
+				"relative rounded border border-accent bg-accent/50 px-1.5 py-0.5 font-medium font-mono text-primary text-sm",
 				className
 			)}
 			{...props}
