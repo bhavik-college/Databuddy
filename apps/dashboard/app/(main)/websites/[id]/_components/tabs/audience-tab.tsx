@@ -555,7 +555,7 @@ export function WebsiteAudienceTab({
 
 										return (
 											<div
-												className="flex flex-col rounded-lg border bg-card p-4"
+												className="flex flex-col rounded-lg border bg-accent p-4"
 												key={`resolution-${resolution}-${item.visitors}`}
 											>
 												<div className="mb-3 flex items-center justify-between">
@@ -643,7 +643,7 @@ export function WebsiteAudienceTab({
 															{formatNumber(item.visitors)} visitors
 														</span>
 													</div>
-													<div className="h-2 w-full overflow-hidden rounded-full bg-accent-brighter">
+													<div className="h-2 w-full overflow-hidden rounded-full bg-card">
 														<div
 															className="h-full rounded-full bg-accent-foreground transition-all duration-500 ease-out"
 															style={{ width: `${percentage}%` }}

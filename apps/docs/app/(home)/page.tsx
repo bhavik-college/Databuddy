@@ -1,3 +1,4 @@
+import Bento from "@/components/bento";
 import { Footer } from "@/components/footer";
 import { Description } from "@/components/landing/description";
 import FAQ from "@/components/landing/faq";
@@ -33,6 +34,12 @@ export default function HomePage() {
 				>
 					<div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
 						<TrustedBy />
+					</div>
+				</Section>
+
+				<Section className="border-border border-b" id="bento">
+					<div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+						<Bento />
 					</div>
 				</Section>
 

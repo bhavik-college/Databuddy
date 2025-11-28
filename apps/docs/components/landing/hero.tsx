@@ -73,7 +73,7 @@ export default function Hero() {
 			<div className="fade-in slide-in-from-bottom-8 mx-auto w-full max-w-7xl animate-in px-4 pb-12 delay-500 duration-1000 sm:px-6 lg:px-8 lg:pb-20">
 				<DemoContainer />
 			</div>
-			<div className="mx-auto w-full border-t bg-neutral-900/30 px-4 py-4 sm:px-6 lg:px-8">
+			<div className="mx-auto w-full border-t bg-secondary/70 px-4 py-4 sm:px-6 lg:px-8">
 				<div className="flex justify-center">
 					<a
 						className="text-muted-foreground text-sm underline underline-offset-4 transition-colors hover:text-foreground"
