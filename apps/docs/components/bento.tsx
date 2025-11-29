@@ -45,7 +45,7 @@ const BentoCard = ({
 }) => (
 	<motion.div
 		className={cn(
-			"group relative overflow-hidden border border-border bg-card backdrop-blur-xl transition-colors duration-500 hover:border-muted-foreground/30",
+			"group relative overflow-hidden border border-border bg-card backdrop-blur-xl duration-500",
 			className
 		)}
 		initial={{ opacity: 0, y: 20 }}
@@ -55,14 +55,11 @@ const BentoCard = ({
 	>
 		<CardHeader className={cn("relative z-20 px-6 py-4", headerClassName)}>
 			<div className="flex items-center gap-3">
-				<div className="flex h-8 w-8 items-center justify-center bg-secondary/40 ring-1 ring-border transition-all duration-300 group-hover:bg-accent group-hover:ring-muted-foreground/30">
-					<Icon
-						className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-foreground"
-						weight="duotone"
-					/>
+				<div className="flex h-8 w-8 items-center justify-center bg-secondary/40 ring-1 ring-border">
+					<Icon className="h-4 w-4 text-muted-foreground" weight="duotone" />
 				</div>
 				<div className="flex flex-col gap-0.5">
-					<CardTitle className="font-medium font-mono text-foreground text-sm transition-colors">
+					<CardTitle className="font-medium font-mono text-foreground text-sm">
 						{title}
 					</CardTitle>
 					{description && (
@@ -124,9 +121,7 @@ const FunnelsFeature = () => {
 						Conversion Rate
 					</div>
 				</div>
-				<Badge className="h-6 border-border bg-secondary/50 px-2.5 font-mono text-muted-foreground text-xs">
-					+2.4%
-				</Badge>
+				<Badge variant="gray">+2.4%</Badge>
 			</div>
 			<div
 				className="h-[320px] w-full"
@@ -368,7 +363,7 @@ const SessionsFeature = () => {
 					{sessions.map((session) => (
 						<motion.div
 							animate={{ opacity: 1, y: 0 }}
-							className="group flex items-center justify-between border border-border/50 bg-secondary/20 p-2 text-sm transition-colors hover:border-muted-foreground/20 hover:bg-accent/50"
+							className="group flex items-center justify-between border border-border/50 bg-secondary/20 p-2 text-sm transition-colors"
 							exit={{ y: -60 }}
 							initial={{ opacity: 0, y: 60 }}
 							key={session.id}
@@ -383,7 +378,7 @@ const SessionsFeature = () => {
 									{session.flag}
 								</div>
 								<div className="flex flex-col gap-1">
-									<span className="font-medium font-mono text-secondary-foreground text-xs transition-colors group-hover:text-foreground">
+									<span className="font-medium font-mono text-accent-foreground text-xs transition-colors group-hover:text-foreground">
 										{session.path}
 									</span>
 									<span className="font-mono text-muted-foreground text-xs">
@@ -407,7 +402,7 @@ const SessionsFeature = () => {
 
 const ErrorTrackingFeature = () => (
 	<div className="flex h-full flex-1 flex-col">
-		<div className="relative overflow-hidden border border-border bg-secondary/20 p-4 transition-all hover:border-muted-foreground/20 hover:bg-accent/50">
+		<div className="relative overflow-hidden border border-border bg-secondary/20 p-4 transition-all">
 			<div className="flex items-start gap-3">
 				<div className="rounded-md bg-destructive/10 p-2">
 					<motion.div
@@ -422,13 +417,13 @@ const ErrorTrackingFeature = () => (
 				</div>
 				<div className="min-w-0 flex-1 space-y-2">
 					<div className="flex items-center justify-between gap-2">
-						<p className="truncate font-medium font-mono text-secondary-foreground text-xs">
+						<p className="truncate font-medium font-mono text-[11px] text-accent-foreground">
 							TypeError: undefined is not a function
 						</p>
 						<Badge variant="destructive">
 							<motion.span
 								animate={{ opacity: [1, 0.5, 1] }}
-								className="font-mono text-[10px] text-red-100"
+								className="font-mono text-[10px]"
 								transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
 							>
 								CRITICAL
@@ -480,7 +475,7 @@ const FeatureFlagsFeature = () => {
 		>
 			{flags.map((flag, i) => (
 				<div
-					className="group flex items-center justify-between border border-border/50 bg-secondary/20 p-3 transition-all hover:border-muted-foreground/20 hover:bg-accent/50"
+					className="group flex items-center justify-between border border-border/50 bg-secondary/20 p-3 transition-all"
 					key={i}
 				>
 					<div className="flex min-w-0 flex-1 items-center gap-3">
@@ -501,7 +496,7 @@ const FeatureFlagsFeature = () => {
 							)}
 						</div>
 						<div className="flex min-w-0 flex-col gap-0.5">
-							<span className="truncate font-medium font-mono text-secondary-foreground text-xs transition-colors group-hover:text-foreground">
+							<span className="truncate font-medium font-mono text-accent-foreground text-xs transition-colors group-hover:text-foreground">
 								{flag.name}
 							</span>
 							<span className="font-medium font-mono text-[9px] text-muted-foreground uppercase tracking-widest">
@@ -571,7 +566,7 @@ const WebVitalsFeature = () => {
 				<motion.div
 					animate={{ opacity: 1, y: 0 }}
 					className={cn(
-						"angled-rectangle-gradient flex h-full flex-col items-center justify-between gap-2 border border-border border-b-0 p-3 transition-all hover:border-muted-foreground/20 hover:bg-accent/50"
+						"angled-rectangle-gradient flex h-full flex-col items-center justify-between gap-2 border border-border border-b-0 p-3 transition-all"
 					)}
 					initial={{ opacity: 0, y: 20 }}
 					key={m.label}
@@ -711,7 +706,7 @@ const CustomEventsFeature = () => {
 					{events.map((event) => (
 						<motion.div
 							animate={{ opacity: 1, y: 0 }}
-							className="group flex items-center justify-between border border-border/50 bg-secondary/20 p-2 text-xs transition-colors hover:border-muted-foreground/20 hover:bg-accent/50"
+							className="flex items-center justify-between border border-border/50 bg-secondary/20 p-2 text-xs transition-colors"
 							exit={{ y: -60 }}
 							initial={{ opacity: 0, y: 60 }}
 							key={event.id}
@@ -722,10 +717,10 @@ const CustomEventsFeature = () => {
 							}}
 						>
 							<div className="flex items-center gap-3">
-								<div className="rounded-md border border-border bg-background p-2 text-muted-foreground shadow-sm transition-colors group-hover:bg-accent group-hover:text-foreground">
+								<div className="rounded-md border border-border bg-background p-2 text-muted-foreground transition-colors">
 									<CursorClick className="size-3" weight="fill" />
 								</div>
-								<span className="font-mono text-muted-foreground transition-colors group-hover:text-foreground">
+								<span className="font-mono text-muted-foreground transition-colors">
 									{event.name}
 								</span>
 							</div>
