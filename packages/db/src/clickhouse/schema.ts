@@ -159,6 +159,7 @@ SETTINGS index_granularity = 8192
  * - CLS: good < 0.1, poor > 0.25
  * - INP: good < 200, poor > 500
  * - TTFB: good < 800, poor > 1800
+ * - FPS: good > 55, poor < 30
  */
 const CREATE_WEB_VITALS_SPANS_TABLE = `
 CREATE TABLE IF NOT EXISTS ${ANALYTICS_DATABASE}.web_vitals_spans (
@@ -443,7 +444,8 @@ export type WebVitalMetricName =
 	| "LCP"
 	| "CLS"
 	| "INP"
-	| "TTFB";
+	| "TTFB"
+	| "FPS";
 
 export type WebVitalsSpan = {
 	client_id: string;
