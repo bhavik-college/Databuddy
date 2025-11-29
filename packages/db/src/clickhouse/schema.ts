@@ -378,6 +378,7 @@ TTL toDateTime(Timestamp) + toIntervalDay(3)
 SETTINGS ttl_only_drop_parts = 1
 `;
 
+// Legacy table - keeping for backwards compatibility
 const CREATE_CUSTOM_EVENTS_TABLE = `
 CREATE TABLE IF NOT EXISTS ${ANALYTICS_DATABASE}.custom_events (
   id UUID,
@@ -392,6 +393,30 @@ CREATE TABLE IF NOT EXISTS ${ANALYTICS_DATABASE}.custom_events (
 PARTITION BY toYYYYMM(timestamp)
 ORDER BY (client_id, timestamp, id)
 SETTINGS index_granularity = 8192
+`;
+
+/**
+ * Lean custom event spans table
+ * Uses JSON for flexible metadata
+ */
+const CREATE_CUSTOM_EVENT_SPANS_TABLE = `
+CREATE TABLE IF NOT EXISTS ${ANALYTICS_DATABASE}.custom_event_spans (
+  client_id String CODEC(ZSTD(1)),
+  session_id String CODEC(ZSTD(1)),
+  
+  timestamp DateTime64(3, 'UTC') CODEC(Delta(8), ZSTD(1)),
+  path String CODEC(ZSTD(1)),
+  
+  event_name LowCardinality(String) CODEC(ZSTD(1)),
+  properties JSON CODEC(ZSTD(1)),
+  
+  INDEX idx_session_id session_id TYPE bloom_filter(0.01) GRANULARITY 1,
+  INDEX idx_event_name event_name TYPE bloom_filter(0.01) GRANULARITY 1
+) ENGINE = MergeTree
+PARTITION BY toDate(timestamp)
+ORDER BY (client_id, event_name, path, timestamp)
+TTL toDateTime(timestamp) + INTERVAL 90 DAY
+SETTINGS index_granularity = 8192, ttl_only_drop_parts = 1
 `;
 
 const CREATE_CUSTOM_OUTGOING_LINKS_TABLE = `
@@ -625,6 +650,7 @@ export type OTelLogs = {
 	LogAttributes: Record<string, string>;
 }
 
+// Legacy type - keeping for backwards compatibility
 export type CustomEvent = {
 	id: string;
 	client_id: string;
@@ -633,6 +659,19 @@ export type CustomEvent = {
 	session_id: string;
 	properties: string;
 	timestamp: number;
+}
+
+/**
+ * Lean custom event span
+ * properties is flexible JSON
+ */
+export type CustomEventSpan = {
+	client_id: string;
+	session_id: string;
+	timestamp: number;
+	path: string;
+	event_name: string;
+	properties: Record<string, unknown>;
 }
 
 export type CustomOutgoingLink = {
@@ -741,6 +780,7 @@ export async function initClickHouseSchema() {
 			{ name: "blocked_traffic", query: CREATE_BLOCKED_TRAFFIC_TABLE },
 			{ name: "email_events", query: CREATE_EMAIL_EVENTS_TABLE },
 			{ name: "custom_events", query: CREATE_CUSTOM_EVENTS_TABLE },
+			{ name: "custom_event_spans", query: CREATE_CUSTOM_EVENT_SPANS_TABLE },
 			{ name: "outgoing_links", query: CREATE_CUSTOM_OUTGOING_LINKS_TABLE },
 		];
 

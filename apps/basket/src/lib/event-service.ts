@@ -2,13 +2,14 @@ import { randomUUID } from "node:crypto";
 import type {
 	AnalyticsEvent,
 	CustomEvent,
+	CustomEventSpan,
 	CustomOutgoingLink,
 	ErrorEvent,
 	ErrorSpanRow,
 	WebVitalsEvent,
 	WebVitalsSpan,
 } from "@databuddy/db";
-import type { ErrorSpan, IndividualVital } from "@databuddy/validation";
+import type { CustomEventSpanInput, ErrorSpan, IndividualVital } from "@databuddy/validation";
 import { getGeo } from "../utils/ip-geo";
 import { parseUserAgent } from "../utils/user-agent";
 import {
@@ -230,6 +231,49 @@ export async function insertCustomEvent(
 	} catch (error) {
 		captureError(error, { eventId });
 		// Don't throw - event is buffered or sent async
+	}
+}
+
+/**
+ * Insert lean custom event spans (v2.x format)
+ */
+export async function insertCustomEventSpans(
+	events: CustomEventSpanInput[],
+	clientId: string
+): Promise<void> {
+	if (events.length === 0) {
+		return;
+	}
+
+	const now = Date.now();
+	const spans: CustomEventSpan[] = [];
+
+	for (const event of events) {
+		// Dedup by client+session+path+eventName+timestamp
+		const dedupKey = `custom_${clientId}_${event.sessionId}_${event.path}_${event.eventName}_${event.timestamp}`;
+		const isDuplicate = await checkDuplicate(dedupKey, "custom");
+		if (isDuplicate) {
+			continue;
+		}
+
+		const span: CustomEventSpan = {
+			client_id: clientId,
+			session_id: validateSessionId(event.sessionId),
+			timestamp: typeof event.timestamp === "number" ? event.timestamp : now,
+			path: sanitizeString(event.path, VALIDATION_LIMITS.STRING_MAX_LENGTH),
+			event_name: sanitizeString(event.eventName, VALIDATION_LIMITS.SHORT_STRING_MAX_LENGTH),
+			properties: (event.properties as Record<string, unknown>) ?? {},
+		};
+
+		spans.push(span);
+	}
+
+	if (spans.length > 0) {
+		try {
+			await sendEventBatch("analytics-custom-event-spans", spans);
+		} catch (error) {
+			captureError(error, { count: spans.length });
+		}
 	}
 }
 

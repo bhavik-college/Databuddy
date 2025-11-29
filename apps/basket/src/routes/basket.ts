@@ -7,12 +7,14 @@ import type {
 	WebVitalsEvent,
 } from "@databuddy/db";
 import {
+	batchedCustomEventSpansSchema,
 	batchedErrorsSchema,
 	batchedVitalsSchema,
 } from "@databuddy/validation";
 import { Elysia } from "elysia";
 import {
 	insertCustomEvent,
+	insertCustomEventSpans,
 	insertCustomEventsBatch,
 	insertError,
 	insertErrorSpans,
@@ -411,6 +413,50 @@ const app = new Elysia()
 			};
 		} catch (error) {
 			captureError(error, { message: "Error processing error" });
+			return { status: "error", message: "Internal server error" };
+		}
+	})
+	.post("/events", async (context) => {
+		const { body, query, request } = context as {
+			body: unknown;
+			query: Record<string, string>;
+			request: Request;
+		};
+
+		try {
+			const validation = await validateRequest(body, query, request);
+			if ("error" in validation) {
+				return validation.error;
+			}
+
+			const { clientId, userAgent } = validation;
+
+			const parseResult = batchedCustomEventSpansSchema.safeParse(body);
+
+			if (!parseResult.success) {
+				return createSchemaErrorResponse(parseResult.error.issues);
+			}
+
+			const botError = await checkForBot(
+				request,
+				body,
+				query,
+				clientId,
+				userAgent
+			);
+			if (botError) {
+				return botError.error;
+			}
+
+			await insertCustomEventSpans(parseResult.data, clientId);
+
+			return {
+				status: "success",
+				type: "custom_event",
+				count: parseResult.data.length,
+			};
+		} catch (error) {
+			captureError(error, { message: "Error processing custom events" });
 			return { status: "error", message: "Internal server error" };
 		}
 	})
