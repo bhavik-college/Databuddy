@@ -104,7 +104,6 @@ export type DatabuddyGlobal = {
 	clear: () => void;
 	flush: () => void;
 	setGlobalProperties: (props: Record<string, unknown>) => void;
-	trackCustomEvent: (name: string, props?: Record<string, unknown>) => void;
 	options: TrackerOptions;
 };
 

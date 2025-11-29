@@ -8,7 +8,6 @@ import { initScrollDepthTracking } from "./plugins/scroll-depth";
 import { initWebVitalsTracking } from "./plugins/vitals";
 
 export class Databuddy extends BaseTracker {
-	// Store references for cleanup
 	private cleanupFns: Array<() => void> = [];
 	private originalPushState: typeof history.pushState | null = null;
 	private originalReplaceState: typeof history.replaceState | null = null;
@@ -54,7 +53,6 @@ export class Databuddy extends BaseTracker {
 				flush: () => this.flushBatch(),
 				clear: () => this.clear(),
 				setGlobalProperties: (props: Record<string, unknown>) => this.setGlobalProperties(props),
-				trackCustomEvent: (name: string, props?: Record<string, unknown>) => this.trackCustomEvent(name, props),
 				options: this.options,
 			};
 			window.db = window.databuddy;
@@ -134,7 +132,7 @@ export class Databuddy extends BaseTracker {
 
 			this.lastPath = url;
 			this.pageCount += 1;
-			this.track("screen_view", {
+			this._trackInternal("screen_view", {
 				page_count: this.pageCount,
 				...props,
 			});
@@ -182,7 +180,7 @@ export class Databuddy extends BaseTracker {
 							properties[key] = attr.value;
 						}
 					}
-					this.trackCustomEvent(eventName, properties);
+					this.track(eventName, properties);
 				}
 			}
 		};
@@ -190,7 +188,7 @@ export class Databuddy extends BaseTracker {
 		this.cleanupFns.push(() => document.removeEventListener("click", handler));
 	}
 
-	track(name: string, props?: Record<string, unknown>) {
+	_trackInternal(name: string, props?: Record<string, unknown>) {
 		if (this.shouldSkipTracking()) {
 			return;
 		}
@@ -208,7 +206,7 @@ export class Databuddy extends BaseTracker {
 		this.addToBatch(payload);
 	}
 
-	trackCustomEvent(name: string, props?: Record<string, unknown>) {
+	track(name: string, props?: Record<string, unknown>) {
 		if (this.shouldSkipTracking()) {
 			return;
 		}
@@ -298,7 +296,6 @@ function initializeDatabuddy() {
 			clear: () => { },
 			flush: () => { },
 			setGlobalProperties: () => { },
-			trackCustomEvent: () => { },
 			options: { clientId: "", disabled: true },
 		};
 		window.db = window.databuddy;
