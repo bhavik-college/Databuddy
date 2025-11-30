@@ -1,20 +1,18 @@
 "use client";
 
-import { WarningCircleIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAtom } from "jotai";
-import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { useRef } from "react";
 import { toast } from "sonner";
 import NotFound from "@/app/not-found";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTrackingSetup } from "@/hooks/use-tracking-setup";
 import { useWebsite } from "@/hooks/use-websites";
 import { isAnalyticsRefreshingAtom } from "@/stores/jotai/filterAtoms";
 import { AnalyticsToolbar } from "./_components/analytics-toolbar";
 import { FiltersSection } from "./_components/filters-section";
+import { WebsiteTrackingSetupTab } from "./_components/tabs/tracking-setup-tab";
 
 type WebsiteLayoutProps = {
 	children: React.ReactNode;
@@ -26,7 +24,7 @@ export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
 	const queryClient = useQueryClient();
 	const { isTrackingSetup, isTrackingSetupLoading } = useTrackingSetup(
 		id as string
-	);
+	);	
 	const { isLoading: isWebsiteLoading } = useWebsite(id as string);
 	const [isRefreshing, setIsRefreshing] = useAtom(isAnalyticsRefreshingAtom);
 	const toolbarRef = useRef<HTMLDivElement>(null);
@@ -154,25 +152,11 @@ export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
 							</div>
 						</div>
 					</div>
-				) : !isAssistantPage && isTrackingSetup === false ? (
-					<div className="flex h-full items-center justify-center p-6">
-						<div className="max-w-md space-y-4 text-center">
-							<div className="mx-auto flex size-12 items-center justify-center rounded-full bg-muted">
-								<WarningCircleIcon className="size-6 text-muted-foreground" />
-							</div>
-							<h3 className="font-semibold text-lg">Tracking Not Setup</h3>
-							<p className="text-muted-foreground text-sm">
-								Install the tracking script to start collecting analytics data
-								for this website.
-							</p>
-							<Button asChild>
-								<Link href={`/websites/${websiteId}/settings`}>
-									Setup Tracking
-								</Link>
-							</Button>
-						</div>
-					</div>
-				) : (
+			) : !isAssistantPage && isTrackingSetup === false ? (
+				<div className="p-4">
+					<WebsiteTrackingSetupTab websiteId={websiteId} />
+				</div>
+			) : (
 					children
 				)}
 			</div>
