@@ -9,7 +9,7 @@ import {
 } from "@phosphor-icons/react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { ApiKeyDetailDialog } from "@/components/organizations/api-key-detail-dialog";
 import {
 	Card,
@@ -100,6 +100,28 @@ const TimezonePreferences = dynamic(
 );
 
 export default function SettingsPage() {
+	return (
+		<Suspense fallback={<SettingsPageSkeleton />}>
+			<SettingsPageContent />
+		</Suspense>
+	);
+}
+
+function SettingsPageSkeleton() {
+	return (
+		<div className="flex h-full flex-col">
+			<div className="border-b p-4">
+				<Skeleton className="h-8 w-32" />
+				<Skeleton className="mt-2 h-4 w-64" />
+			</div>
+			<div className="flex-1 p-4">
+				<Skeleton className="h-96 w-full rounded" />
+			</div>
+		</div>
+	);
+}
+
+function SettingsPageContent() {
 	const searchParams = useSearchParams();
 	const activeTab = searchParams.get("tab") || "profile";
 
