@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { NoticeBanner } from "@/app/(main)/websites/_components/notice-banner";
+import { RightSidebar } from "@/components/right-sidebar";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -160,15 +161,15 @@ export function DangerZoneSettings({
 			</div>
 
 			{/* Sidebar */}
-			<aside className="flex flex-col gap-4 bg-card p-5">
+			<RightSidebar className="gap-4 p-5">
 				{/* Docs Link */}
-				<Button asChild className="w-full justify-start" variant="outline">
+				<Button asChild className="w-full justify-start" variant="secondary">
 					<a
 						href="https://www.databuddy.cc/docs/getting-started"
 						rel="noopener noreferrer"
 						target="_blank"
 					>
-						<BookOpenIcon className="mr-2" size={16} />
+						<BookOpenIcon size={16} />
 						Documentation
 					</a>
 				</Button>
@@ -178,7 +179,7 @@ export function DangerZoneSettings({
 					description="Contact support if you need to recover deleted data or transfer ownership of an organization."
 					title="Need help?"
 				/>
-			</aside>
+			</RightSidebar>
 
 			{/* Delete Dialog */}
 			<AlertDialog onOpenChange={setShowDeleteDialog} open={showDeleteDialog}>

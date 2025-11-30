@@ -1,6 +1,10 @@
 "use client";
 
-import { UploadSimpleIcon, UsersIcon } from "@phosphor-icons/react";
+import {
+	BuildingsIcon,
+	UploadSimpleIcon,
+	UsersIcon,
+} from "@phosphor-icons/react";
 import Image from "next/image";
 // import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -275,6 +279,13 @@ export function CreateOrganizationDialog({
 				>
 					<SheetHeader>
 						<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+							<div className="flex h-11 w-11 items-center justify-center rounded border bg-secondary-brighter">
+								<BuildingsIcon
+									className="text-foreground"
+									size={22}
+									weight="fill"
+								/>
+							</div>
 							<div className="min-w-0 flex-1">
 								<SheetTitle className="text-foreground text-lg">
 									Create New Organization

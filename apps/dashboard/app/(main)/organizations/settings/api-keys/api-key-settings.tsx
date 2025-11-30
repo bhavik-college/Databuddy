@@ -11,6 +11,7 @@ import { useState } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { ApiKeyCreateDialog } from "@/components/organizations/api-key-create-dialog";
 import { ApiKeyDetailDialog } from "@/components/organizations/api-key-detail-dialog";
+import { RightSidebar } from "@/components/right-sidebar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Organization } from "@/hooks/use-organizations";
@@ -112,7 +113,7 @@ export function ApiKeySettings({ organization }: ApiKeySettingsProps) {
 				</div>
 
 				{/* Sidebar */}
-				<aside className="flex flex-col gap-4 bg-card p-5">
+				<RightSidebar className="gap-4 p-5">
 					{/* Create Button */}
 					<Button className="w-full" onClick={() => setShowCreateDialog(true)}>
 						<PlusIcon className="mr-2" size={16} />
@@ -142,13 +143,13 @@ export function ApiKeySettings({ organization }: ApiKeySettingsProps) {
 					)}
 
 					{/* Actions */}
-					<Button asChild className="w-full justify-start" variant="outline">
+					<Button asChild className="w-full justify-start" variant="secondary">
 						<a
 							href="https://www.databuddy.cc/docs/getting-started"
 							rel="noopener noreferrer"
 							target="_blank"
 						>
-							<BookOpenIcon className="mr-2" size={16} />
+							<BookOpenIcon size={16} />
 							Documentation
 						</a>
 					</Button>
@@ -161,7 +162,7 @@ export function ApiKeySettings({ organization }: ApiKeySettingsProps) {
 							them to version control.
 						</p>
 					</div>
-				</aside>
+				</RightSidebar>
 			</div>
 
 			<ApiKeyCreateDialog

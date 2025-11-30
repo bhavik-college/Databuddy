@@ -10,6 +10,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { FaviconImage } from "@/components/analytics/favicon-image";
+import { RightSidebar } from "@/components/right-sidebar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tip } from "@/components/ui/tip";
@@ -150,7 +151,7 @@ export function WebsiteSettings({
 			</div>
 
 			{/* Sidebar */}
-			<aside className="flex flex-col gap-4 bg-card p-5">
+			<RightSidebar className="gap-4 p-5">
 				{/* Add Website Button */}
 				<Button asChild className="w-full">
 					<Link href="/websites">
@@ -173,20 +174,20 @@ export function WebsiteSettings({
 				</div>
 
 				{/* Docs Link */}
-				<Button asChild className="w-full justify-start" variant="outline">
+				<Button asChild className="w-full justify-start" variant="secondary">
 					<a
 						href="https://www.databuddy.cc/docs/getting-started"
 						rel="noopener noreferrer"
 						target="_blank"
 					>
-						<BookOpenIcon className="mr-2" size={16} />
+						<BookOpenIcon size={16} />
 						Documentation
 					</a>
 				</Button>
 
 				{/* Tip */}
 				<Tip description="Click on a website to view its settings, manage tracking scripts, and configure analytics." />
-			</aside>
+			</RightSidebar>
 		</div>
 	);
 }

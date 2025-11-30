@@ -7,6 +7,7 @@ import {
 } from "@phosphor-icons/react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { RightSidebar } from "@/components/right-sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -120,7 +121,7 @@ export function GeneralSettings({
 			</div>
 
 			{/* Sidebar */}
-			<aside className="flex flex-col gap-4 bg-card p-5">
+			<RightSidebar className="gap-4 p-5">
 				{/* Org Info Card */}
 				<div className="flex items-center gap-3 rounded border bg-background p-4">
 					<div className="flex h-10 w-10 items-center justify-center rounded bg-secondary">
@@ -139,20 +140,20 @@ export function GeneralSettings({
 				</div>
 
 				{/* Docs Link */}
-				<Button asChild className="w-full justify-start" variant="outline">
+				<Button asChild className="w-full justify-start" variant="secondary">
 					<a
 						href="https://www.databuddy.cc/docs/getting-started"
 						rel="noopener noreferrer"
 						target="_blank"
 					>
-						<BookOpenIcon className="mr-2" size={16} />
+						<BookOpenIcon size={16} />
 						Documentation
 					</a>
 				</Button>
 
 				{/* Tip */}
 				<Tip description="The slug is used in URLs and API requests. Keep it short and memorable." />
-			</aside>
+			</RightSidebar>
 		</div>
 	);
 }

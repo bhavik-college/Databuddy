@@ -13,6 +13,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { memo, useMemo } from "react";
 import { EmptyState } from "@/components/empty-state";
+import { RightSidebar } from "@/components/right-sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -78,7 +79,7 @@ export default function HistoryPage() {
 				</div>
 
 				{/* Sidebar - Subscription History + Actions */}
-				<div className="flex w-full shrink-0 flex-col border-t bg-card lg:h-full lg:w-auto lg:overflow-y-auto lg:border-t-0 lg:border-l">
+				<RightSidebar>
 					{/* Subscription Changes */}
 					<div className="border-b p-5">
 						<h3 className="font-semibold">Subscription History</h3>
@@ -110,7 +111,7 @@ export default function HistoryPage() {
 							</Button>
 						</div>
 					</div>
-				</div>
+				</RightSidebar>
 			</div>
 		</main>
 	);

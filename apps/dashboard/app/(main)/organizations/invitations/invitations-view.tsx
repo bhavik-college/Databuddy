@@ -12,6 +12,7 @@ import {
 import { useState } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { InviteMemberDialog } from "@/components/organizations/invite-member-dialog";
+import { RightSidebar } from "@/components/right-sidebar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -265,7 +266,7 @@ export function InvitationsView({
 				</div>
 
 				{/* Sidebar */}
-				<aside className="flex flex-col gap-4 bg-muted/30 p-5">
+				<RightSidebar className="gap-4 p-5">
 					{/* Invite Button */}
 					<Button className="w-full" onClick={() => setShowInviteDialog(true)}>
 						<UserPlusIcon className="mr-2" size={16} />
@@ -293,20 +294,20 @@ export function InvitationsView({
 					</div>
 
 					{/* Docs Link */}
-					<Button asChild className="w-full justify-start" variant="outline">
+					<Button asChild className="w-full justify-start" variant="secondary">
 						<a
 							href="https://www.databuddy.cc/docs/getting-started"
 							rel="noopener noreferrer"
 							target="_blank"
 						>
-							<BookOpenIcon className="mr-2" size={16} />
+							<BookOpenIcon size={16} />
 							Documentation
 						</a>
 					</Button>
 
 					{/* Tip */}
 					<Tip description="Invitations expire after 7 days. Resend if needed from the pending tab." />
-				</aside>
+				</RightSidebar>
 			</div>
 
 			<InviteMemberDialog

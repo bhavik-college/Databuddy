@@ -16,6 +16,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { CreateOrganizationDialog } from "@/components/organizations/create-organization-dialog";
 import type { Organization } from "@/components/providers/organizations-provider";
+import { RightSidebar } from "@/components/right-sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,12 +50,12 @@ function EmptyState() {
 	);
 }
 
-interface OrganizationRowProps {
+type OrganizationRowProps = {
 	organization: Organization;
 	isActive: boolean;
 	isProcessing: boolean;
 	onClick: () => void;
-}
+};
 
 function OrganizationRow({
 	organization,
@@ -65,8 +66,7 @@ function OrganizationRow({
 	return (
 		<button
 			className={cn(
-				"group relative grid w-full cursor-pointer grid-cols-[auto_1fr_auto_auto] items-center gap-4 px-5 py-3 text-left transition-colors",
-				isActive ? "bg-card hover:bg-secondary" : "hover:bg-accent",
+				"group relative grid w-full cursor-pointer grid-cols-[auto_1fr_auto_auto] items-center gap-4 px-5 py-3 text-left transition-colors hover:bg-accent",
 				isProcessing && "pointer-events-none opacity-60"
 			)}
 			onClick={onClick}
@@ -153,7 +153,7 @@ export function OrganizationsList({
 	return (
 		<div className="h-full lg:grid lg:grid-cols-[1fr_18rem]">
 			{/* Organizations List */}
-			<div className="flex flex-col border-b lg:border-r lg:border-b-0">
+			<div className="flex flex-col border-b lg:border-b-0">
 				<div className="flex-1 divide-y overflow-y-auto">
 					{organizations.map((org) => (
 						<OrganizationRow
@@ -168,7 +168,7 @@ export function OrganizationsList({
 			</div>
 
 			{/* Sidebar */}
-			<aside className="flex flex-col gap-4 bg-card p-5">
+			<RightSidebar className="gap-4 p-5">
 				{/* Create Button */}
 				<Button
 					className="w-full"
@@ -196,7 +196,7 @@ export function OrganizationsList({
 
 				{/* Tip */}
 				<Tip description="Click on an organization to switch to it. The active organization is used across the dashboard." />
-			</aside>
+			</RightSidebar>
 		</div>
 	);
 }

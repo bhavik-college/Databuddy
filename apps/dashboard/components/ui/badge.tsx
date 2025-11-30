@@ -16,7 +16,7 @@ const badgeVariants = cva(
 				green:
 					'border border-green-600 green-angled-rectangle-gradient bg-green-100 text-green-800 [a&]:hover:bg-green-200/90 dark:border-green-800  dark:bg-green-900/30 dark:text-green-400',
 				amber:
-					' dark:bg-amber-900/30 dark:text-amber-400 amber-angled-rectangle-gradient border border-amber-200 bg-amber-100 text-amber-800 [a&]:hover:bg-amber-200/90',
+					' dark:bg-amber-900/30 dark:text-amber-400 amber-angled-rectangle-gradient border border-amber-800/40 bg-amber-100 text-amber-800 [a&]:hover:bg-amber-200/90',
 				secondary:
 					'border border-accent-foreground/20 dark-angled-rectangle-gradient bg-accent-foreground text-accent [a&]:hover:bg-secondary/90',
 				destructive:

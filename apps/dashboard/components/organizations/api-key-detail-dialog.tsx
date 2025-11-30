@@ -199,7 +199,7 @@ export function ApiKeyDetailDialog({
 		<>
 			<Sheet onOpenChange={handleClose} open={open}>
 				<SheetContent
-					className="m-3 h-[calc(100%-1.5rem)] rounded border bg-background p-0 sm:max-w-md"
+					className="m-3 h-[calc(100%-1.5rem)] rounded border p-0 sm:max-w-md"
 					side="right"
 				>
 					{isLoading || !detail ? (

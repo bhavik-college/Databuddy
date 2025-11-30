@@ -8,6 +8,7 @@ import {
 } from "@phosphor-icons/react";
 import { useState } from "react";
 import { InviteMemberDialog } from "@/components/organizations/invite-member-dialog";
+import { RightSidebar } from "@/components/right-sidebar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tip } from "@/components/ui/tip";
@@ -113,7 +114,7 @@ export function MembersView({
 		<>
 			<div className="h-full lg:grid lg:grid-cols-[1fr_18rem]">
 				{/* Members List */}
-				<div className="flex flex-col border-b lg:border-r lg:border-b-0">
+				<div className="flex flex-col border-b lg:border-b-0">
 					<div className="flex-1 divide-y overflow-y-auto">
 						<MemberList
 							isRemovingMember={isRemovingMember}
@@ -127,7 +128,7 @@ export function MembersView({
 				</div>
 
 				{/* Sidebar */}
-				<aside className="flex flex-col gap-4 bg-card p-5">
+				<RightSidebar className="gap-4 p-5">
 					{/* Invite Button */}
 					<Button className="w-full" onClick={() => setShowInviteDialog(true)}>
 						<UserPlusIcon className="mr-2" size={16} />
@@ -136,8 +137,12 @@ export function MembersView({
 
 					{/* Stats Card */}
 					<div className="flex items-center gap-3 rounded border bg-background p-4">
-						<div className="flex h-10 w-10 items-center justify-center rounded bg-primary/10">
-							<UsersIcon className="text-primary" size={20} weight="duotone" />
+						<div className="flex h-10 w-10 items-center justify-center rounded bg-accent">
+							<UsersIcon
+								className="text-accent-foreground"
+								size={20}
+								weight="duotone"
+							/>
 						</div>
 						<div>
 							<p className="font-semibold tabular-nums">{members.length}</p>
@@ -148,20 +153,20 @@ export function MembersView({
 					</div>
 
 					{/* Docs Link */}
-					<Button asChild className="w-full justify-start" variant="outline">
+					<Button asChild className="w-full justify-start" variant="secondary">
 						<a
 							href="https://www.databuddy.cc/docs/getting-started"
 							rel="noopener noreferrer"
 							target="_blank"
 						>
-							<BookOpenIcon className="mr-2" size={16} />
+							<BookOpenIcon size={16} />
 							Documentation
 						</a>
 					</Button>
 
 					{/* Tip */}
 					<Tip description="Admins can manage settings and invite members. Members have read-only access to analytics." />
-				</aside>
+				</RightSidebar>
 			</div>
 
 			<InviteMemberDialog
