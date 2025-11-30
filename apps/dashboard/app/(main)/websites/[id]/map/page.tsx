@@ -53,14 +53,15 @@ function CountryRow({
 }: CountryRowProps) {
 	const percentage =
 		totalVisitors > 0 ? (country.visitors / totalVisitors) * 100 : 0;
+	// Colors from globals.css: success, chart-1, warning, muted
 	const getColor = (pct: number) =>
 		pct >= 50
-			? ["rgba(34, 197, 94, 0.08)", "rgba(34, 197, 94, 0.8)"]
+			? ["oklch(0.60 0.22 150 / 0.08)", "oklch(0.60 0.22 150 / 0.8)"] // success
 			: pct >= 25
-				? ["rgba(59, 130, 246, 0.08)", "rgba(59, 130, 246, 0.8)"]
+				? ["oklch(0.81 0.1 252 / 0.08)", "oklch(0.81 0.1 252 / 0.8)"] // chart-1
 				: pct >= 10
-					? ["rgba(245, 158, 11, 0.08)", "rgba(245, 158, 11, 0.8)"]
-					: ["rgba(107, 114, 128, 0.06)", "rgba(107, 114, 128, 0.7)"];
+					? ["oklch(0.7 0.17 76 / 0.08)", "oklch(0.7 0.17 76 / 0.8)"] // warning
+					: ["oklch(0.60 0.0079 240 / 0.06)", "oklch(0.60 0.0079 240 / 0.7)"]; // muted
 	const [bgColor, accentColor] = getColor(percentage);
 
 	return (
@@ -103,7 +104,6 @@ function CountryRow({
 
 function WebsiteMapPage() {
 	const { id } = useParams<{ id: string }>();
-	const [mode] = useState<"total" | "perCapita">("total");
 	const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
 
 	const { dateRange } = useDateFilters();
@@ -176,7 +176,6 @@ function WebsiteMapPage() {
 					height="100%"
 					isLoading={isLoading}
 					locationData={locationData}
-					mode={mode}
 					selectedCountry={selectedCountry}
 				/>
 
