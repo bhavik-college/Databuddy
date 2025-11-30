@@ -1,8 +1,11 @@
 "use client";
 
-import { getCountryName } from "@databuddy/shared/country-codes";
+import {
+	getCountryCode,
+	getCountryName,
+} from "@databuddy/shared/country-codes";
 import type { ProfileData } from "@databuddy/shared/types/analytics";
-import { SpinnerIcon, UsersIcon, UsersThreeIcon } from "@phosphor-icons/react";
+import { GlobeIcon, UsersIcon, UsersThreeIcon } from "@phosphor-icons/react";
 import {
 	type ColumnDef,
 	flexRender,
@@ -10,10 +13,17 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import utc from "dayjs/plugin/utc";
 import { useAtom } from "jotai";
+
+dayjs.extend(relativeTime);
+dayjs.extend(utc);
+
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/app/(main)/websites/_components/page-header";
+import { FaviconImage } from "@/components/analytics/favicon-image";
 import { EmptyState } from "@/components/empty-state";
 import { BrowserIcon, CountryFlag, OSIcon } from "@/components/icon";
 import { Badge } from "@/components/ui/badge";
@@ -26,14 +36,61 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { UserAvatar } from "@/components/user-avatar";
 import { useDateFilters } from "@/hooks/use-date-filters";
 import { useProfilesData } from "@/hooks/use-dynamic-query";
 import { getDeviceIcon } from "@/lib/utils";
 import { dynamicQueryFiltersAtom } from "@/stores/jotai/filterAtoms";
 import { generateProfileName } from "../[userId]/_components/generate-profile-name";
 
-interface UsersListProps {
+type UsersListProps = {
 	websiteId: string;
+};
+
+const wwwRegex = /^www\./;
+
+function SkeletonRow() {
+	return (
+		<TableRow>
+			<TableCell>
+				<div className="flex items-center gap-2">
+					<Skeleton className="size-6 rounded-full" />
+					<Skeleton className="h-4 w-24" />
+				</div>
+			</TableCell>
+			<TableCell>
+				<div className="flex items-center gap-2">
+					<Skeleton className="size-5 rounded" />
+					<Skeleton className="h-4 w-16" />
+				</div>
+			</TableCell>
+			<TableCell>
+				<div className="flex gap-1">
+					<Skeleton className="size-4 rounded" />
+					<Skeleton className="size-4 rounded" />
+					<Skeleton className="size-4 rounded" />
+				</div>
+			</TableCell>
+			<TableCell>
+				<div className="flex items-center gap-1.5">
+					<Skeleton className="size-3.5 rounded" />
+					<Skeleton className="h-4 w-16" />
+				</div>
+			</TableCell>
+			<TableCell>
+				<Skeleton className="h-4 w-6" />
+			</TableCell>
+			<TableCell>
+				<Skeleton className="h-4 w-6" />
+			</TableCell>
+			<TableCell>
+				<Skeleton className="h-5 w-12 rounded-full" />
+			</TableCell>
+			<TableCell>
+				<Skeleton className="h-4 w-14" />
+			</TableCell>
+		</TableRow>
+	);
 }
 
 export function UsersList({ websiteId }: UsersListProps) {
@@ -120,141 +177,139 @@ export function UsersList({ websiteId }: UsersListProps) {
 	const columns = useMemo<ColumnDef<ProfileData>[]>(
 		() => [
 			{
-				id: "index",
-				header: "#",
-				cell: ({ row }) => (
-					<div className="flex size-8 items-center justify-center rounded-lg bg-accent font-medium text-accent-foreground text-sm">
-						{row.index + 1}
-					</div>
-				),
-				size: 60,
-			},
-			{
 				id: "user_id",
 				header: "User",
 				accessorKey: "visitor_id",
 				cell: ({ row }) => {
 					const profileName = generateProfileName(row.original.visitor_id);
 					return (
-						<div className="flex items-center gap-2">
-							<div className="min-w-0">
-								<div className="truncate font-semibold text-foreground text-sm">
-									{profileName}
-								</div>
-								<div className="truncate text-muted-foreground text-xs">
-									ID: {row.original.visitor_id.slice(-8)}
-								</div>
-							</div>
+						<div className="flex items-center gap-2.5">
+							<UserAvatar size="sm" visitorId={row.original.visitor_id} />
+							<span className="truncate font-medium">{profileName}</span>
 						</div>
 					);
 				},
-				size: 200,
+				size: 180,
 			},
 			{
 				id: "location",
 				header: "Location",
-				cell: ({ row }) => (
-					<div className="flex items-center gap-2">
-						<CountryFlag country={row.original.country} size="sm" />
-						<div className="min-w-0">
-							<div className="truncate font-medium text-foreground text-sm">
-								{getCountryName(row.original.country) || "Unknown"}
-							</div>
-							{row.original.region && row.original.region !== "Unknown" && (
-								<div className="truncate text-muted-foreground text-xs">
-									{row.original.region}
-								</div>
+				cell: ({ row }) => {
+					const countryCode = getCountryCode(row.original.country);
+					const countryName = getCountryName(countryCode);
+					const isUnknown = !countryCode || countryCode === "Unknown";
+
+					return (
+						<div className="flex items-center gap-2">
+							{isUnknown ? (
+								<GlobeIcon className="size-4 shrink-0 text-muted-foreground" />
+							) : (
+								<CountryFlag country={countryCode} size="sm" />
 							)}
+							<span className="truncate text-sm">
+								{isUnknown ? "Unknown" : countryName || countryCode}
+							</span>
 						</div>
-					</div>
-				),
-				size: 180,
+					);
+				},
+				size: 130,
 			},
 			{
 				id: "device",
-				header: "Device & Browser",
+				header: "Device",
 				cell: ({ row }) => (
-					<div className="flex items-center gap-2">
-						<div className="flex items-center gap-1">
-							{getDeviceIcon(row.original.device)}
-							<BrowserIcon name={row.original.browser} size="sm" />
-							<OSIcon name={row.original.os} size="sm" />
-						</div>
-						<div className="min-w-0">
-							<div className="truncate font-medium text-foreground text-sm">
-								{row.original.browser}
-							</div>
-							<div className="truncate text-muted-foreground text-xs">
-								{row.original.os}
-							</div>
-						</div>
+					<div
+						className="flex items-center gap-1"
+						title={`${row.original.browser_name} on ${row.original.os_name}`}
+					>
+						{getDeviceIcon(row.original.device_type)}
+						<BrowserIcon name={row.original.browser_name} size="sm" />
+						<OSIcon name={row.original.os_name} size="sm" />
 					</div>
 				),
-				size: 200,
+				size: 80,
+			},
+			{
+				id: "referrer",
+				header: "Source",
+				cell: ({ row }) => {
+					const referrer = row.original.referrer;
+
+					if (!referrer || referrer === "direct" || referrer === "") {
+						return (
+							<span className="text-muted-foreground text-sm">Direct</span>
+						);
+					}
+
+					try {
+						const url = new URL(referrer);
+						const hostname = url.hostname.replace(wwwRegex, "");
+
+						return (
+							<div className="flex min-w-0 max-w-[100px] items-center gap-1.5">
+								<FaviconImage
+									className="shrink-0 rounded-sm"
+									domain={hostname}
+									size={14}
+								/>
+								<span className="truncate text-sm">{hostname}</span>
+							</div>
+						);
+					} catch {
+						return (
+							<span className="block max-w-[100px] truncate text-sm">
+								{referrer}
+							</span>
+						);
+					}
+				},
+				size: 120,
 			},
 			{
 				id: "sessions",
 				header: "Sessions",
-				accessorKey: "total_sessions",
 				cell: ({ row }) => (
-					<div>
-						<div className="font-semibold text-foreground text-lg">
-							{row.original.total_sessions}
-						</div>
-						<div className="text-muted-foreground text-xs">sessions</div>
-					</div>
+					<span className="font-medium tabular-nums">
+						{row.original.session_count}
+					</span>
 				),
-				size: 100,
+				size: 70,
 			},
 			{
-				id: "pageviews",
+				id: "pages",
 				header: "Pages",
-				accessorKey: "total_pageviews",
 				cell: ({ row }) => (
-					<div>
-						<div className="font-semibold text-foreground text-lg">
-							{row.original.total_pageviews}
-						</div>
-						<div className="text-muted-foreground text-xs">pages</div>
-					</div>
+					<span className="font-medium tabular-nums">
+						{row.original.total_events}
+					</span>
 				),
-				size: 100,
+				size: 60,
 			},
 			{
 				id: "type",
 				header: "Type",
 				cell: ({ row }) => {
-					const isReturning = row.original.total_sessions > 1;
+					const isReturning = row.original.session_count > 1;
 					return (
-						<Badge
-							className="w-16"
-							variant={isReturning ? "default" : "secondary"}
-						>
+						<Badge variant={isReturning ? "default" : "secondary"}>
 							{isReturning ? "Return" : "New"}
 						</Badge>
 					);
 				},
-				size: 100,
+				size: 70,
 			},
 			{
 				id: "last_visit",
-				header: "Last Visit",
+				header: "Last seen",
 				accessorKey: "last_visit",
 				cell: ({ row }) => (
-					<div>
-						<div className="font-medium text-foreground text-sm">
-							{row.original.last_visit
-								? dayjs(row.original.last_visit).format("MMM D, YYYY")
-								: "Unknown"}
-						</div>
-						<div className="text-muted-foreground text-xs">
-							{row.original.last_visit
-								? dayjs(row.original.last_visit).format("HH:mm")
-								: ""}
-						</div>
-					</div>
+					<span className="text-muted-foreground text-sm">
+						{row.original.last_visit
+							? dayjs.utc(row.original.last_visit).fromNow()
+							: "—"}
+					</span>
 				),
-				size: 150,
+				size: 90,
 			},
 		],
 		[]
@@ -279,33 +334,25 @@ export function UsersList({ websiteId }: UsersListProps) {
 				<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
 					<div className="overflow-auto">
 						<Table>
-							<TableHeader className="sticky top-0 z-10 bg-accent/50 backdrop-blur-sm">
-								<TableRow>
+							<TableHeader className="sticky top-0 z-10 bg-accent backdrop-blur-sm">
+								<TableRow className="bg-accent shadow-[0_0_0_0.5px_var(--border)]">
 									{columns.map((column) => (
-										<TableHead className="h-[39px]" key={column.id}>
+										<TableHead
+											className="h-[39px]"
+											key={column.id}
+											style={{ width: column.size }}
+										>
 											{typeof column.header === "string" ? column.header : null}
 										</TableHead>
 									))}
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{Array.from({ length: 12 }).map((_, i) => (
-									<TableRow key={i}>
-										{columns.map((column) => (
-											<TableCell key={column.id}>
-												<Skeleton className="h-6 w-full" />
-											</TableCell>
-										))}
-									</TableRow>
+								{Array.from({ length: 10 }).map((_, i) => (
+									<SkeletonRow key={i} />
 								))}
 							</TableBody>
 						</Table>
-					</div>
-					<div className="flex items-center justify-center border-t py-4">
-						<div className="flex items-center gap-2 text-muted-foreground">
-							<SpinnerIcon className="h-4 w-4 animate-spin" />
-							<span className="text-sm">Loading users...</span>
-						</div>
 					</div>
 				</div>
 			</div>
@@ -419,22 +466,24 @@ export function UsersList({ websiteId }: UsersListProps) {
 								</TableRow>
 							))}
 
-							{/* Load more trigger row */}
+							{/* Load more trigger */}
 							{pagination.hasNext && (
-								<TableRow>
-									<TableCell
-										className="h-16 text-center"
-										colSpan={columns.length}
-										ref={setLoadMoreRef}
-									>
-										{isLoading && (
-											<div className="flex items-center justify-center gap-2 text-muted-foreground">
-												<SpinnerIcon className="h-4 w-4 animate-spin" />
-												<span className="text-sm">Loading more users...</span>
-											</div>
-										)}
-									</TableCell>
-								</TableRow>
+								<>
+									<TableRow>
+										<TableCell
+											className="h-0 p-0"
+											colSpan={columns.length}
+											ref={setLoadMoreRef}
+										/>
+									</TableRow>
+									{isLoading && (
+										<>
+											<SkeletonRow />
+											<SkeletonRow />
+											<SkeletonRow />
+										</>
+									)}
+								</>
 							)}
 						</TableBody>
 					</Table>
