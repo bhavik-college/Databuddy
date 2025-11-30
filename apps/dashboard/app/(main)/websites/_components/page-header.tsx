@@ -10,7 +10,15 @@ type PageHeaderProps = {
 	description: string;
 	icon: React.ReactElement<IconProps>;
 	badgeContent?: string;
-	badgeVariant?: "default" | "secondary" | "destructive" | "outline";
+	badgeVariant?:
+		| "default"
+		| "secondary"
+		| "destructive"
+		| "outline"
+		| "green"
+		| "amber"
+		| "gray"
+		| "blue";
 	badgeClassName?: string;
 	right?: React.ReactNode;
 	count?: number;
