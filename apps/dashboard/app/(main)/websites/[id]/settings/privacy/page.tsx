@@ -10,6 +10,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { PageHeader } from "@/app/(main)/websites/_components/page-header";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -74,33 +75,17 @@ export default function PrivacyPage() {
 		<div className="flex h-full flex-col">
 			<div className="h-[89px] border-b">
 				<div className="flex h-full flex-col justify-center gap-2 px-4 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
-					<div className="min-w-0 flex-1">
-						<div className="flex items-center gap-3">
-							<div className="rounded-lg border border-primary/20 bg-primary/10 p-2">
-								<ShareIcon className="h-5 w-5 text-primary" />
-							</div>
-							<div className="min-w-0 flex-1">
-								<div className="flex items-center gap-2">
-									<h1 className="truncate font-bold text-foreground text-xl tracking-tight sm:text-2xl">
-										Privacy
-									</h1>
-									<Badge
-										className={
-											isPublic
-												? "h-5 bg-green-100 px-2 text-green-800 dark:bg-green-900/30 dark:text-green-200"
-												: "h-5 px-2"
-										}
-										variant={isPublic ? "secondary" : "secondary"}
-									>
-										{isPublic ? "Public" : "Private"}
-									</Badge>
-								</div>
-								<p className="mt-0.5 text-muted-foreground text-xs sm:text-sm">
-									Control public access to your website's analytics dashboard
-								</p>
-							</div>
-						</div>
-					</div>
+					<PageHeader
+						badgeClassName={
+							isPublic
+								? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200"
+								: "h-5 px-2"
+						}
+						badgeContent={isPublic ? "Public" : "Private"}
+						description="Control public access to your website's analytics dashboard"
+						icon={<ShareIcon />}
+						title="Privacy"
+					/>
 				</div>
 			</div>
 			<div className="flex min-h-0 flex-1 flex-col">

@@ -11,7 +11,7 @@ import dayjs from "dayjs";
 import { memo } from "react";
 import { Badge } from "@/components/ui/badge";
 
-interface ApiKeyRowItem {
+export type ApiKeyRowItem = {
 	id: string;
 	name: string;
 	prefix: string;
@@ -20,12 +20,12 @@ interface ApiKeyRowItem {
 	revokedAt: Date | null;
 	expiresAt: string | null;
 	createdAt: Date;
-}
+};
 
-interface ApiKeyRowProps {
+type ApiKeyRowProps = {
 	apiKey: ApiKeyRowItem;
 	onSelect: (id: string) => void;
-}
+};
 
 export const ApiKeyRow = memo(function ApiKeyRowComponent({
 	apiKey,
@@ -55,7 +55,10 @@ export const ApiKeyRow = memo(function ApiKeyRowComponent({
 				<div className="flex items-center gap-2">
 					<span className="truncate font-medium">{apiKey.name}</span>
 					{!isActive && (
-						<Badge className="bg-destructive/10 text-destructive" variant="secondary">
+						<Badge
+							className="bg-destructive/10 text-destructive"
+							variant="secondary"
+						>
 							<LockIcon className="mr-1" size={10} weight="fill" />
 							{apiKey.revokedAt ? "Revoked" : "Disabled"}
 						</Badge>

@@ -11,11 +11,11 @@ import {
 	YAxis,
 } from "recharts";
 
-interface MiniChartProps {
+type MiniChartProps = {
 	data: { date: string; value: number }[];
 	id: string;
 	days?: number;
-}
+};
 
 const formatNumber = (num: number) => {
 	if (num >= 1_000_000) {
@@ -29,7 +29,7 @@ const formatNumber = (num: number) => {
 
 const MiniChart = memo(({ data, id, days = 7 }: MiniChartProps) => (
 	<div className="chart-container rounded">
-		<ResponsiveContainer height={days > 14 ? 56 : 50} width="100%">
+		<ResponsiveContainer height={64} width="100%">
 			<AreaChart
 				aria-label={`Mini chart showing views for the last ${days} days`}
 				data={data}
@@ -63,10 +63,8 @@ const MiniChart = memo(({ data, id, days = 7 }: MiniChartProps) => (
 					content={({ active, payload, label }) =>
 						active && payload?.[0] && typeof payload[0].value === "number" ? (
 							<div className="rounded border bg-background p-2 text-xs shadow-md">
-								<p className="font-medium">
-									{dayjs(label as string).format("MMM D")}
-								</p>
-								<p className="text-primary">
+								<p>{dayjs(label as string).format("MMM D")}</p>
+								<p className="font-medium text-accent-foreground">
 									{formatNumber(payload[0].value)} views
 								</p>
 							</div>

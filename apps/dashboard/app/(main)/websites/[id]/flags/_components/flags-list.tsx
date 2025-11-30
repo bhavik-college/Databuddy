@@ -65,16 +65,11 @@ export function FlagsList({
 					label: "Create Your First Flag",
 					onClick: onCreateFlagAction,
 				}}
+				className="h-full py-0"
 				description="Create your first feature flag to start controlling feature rollouts and A/B testing across your application."
-				icon={
-					<FlagIcon
-						className="h-16 w-16 text-primary"
-						size={16}
-						weight="duotone"
-					/>
-				}
+				icon={<FlagIcon weight="duotone" />}
 				title="No feature flags yet"
-				variant="default"
+				variant="minimal"
 			/>
 		);
 	}
@@ -94,7 +89,6 @@ export function FlagsList({
 						/>
 					</div>
 					<div className="flex items-center gap-2">
-						<FunnelSimpleIcon className="h-4 w-4 text-muted-foreground" />
 						<Select
 							onValueChange={(value: FlagStatus | "all") =>
 								setStatusFilter(value)
@@ -102,6 +96,7 @@ export function FlagsList({
 							value={statusFilter}
 						>
 							<SelectTrigger className="w-36">
+								<FunnelSimpleIcon className="h-4 w-4 text-muted-foreground" />
 								<SelectValue placeholder="Status" />
 							</SelectTrigger>
 							<SelectContent>

@@ -1,19 +1,25 @@
 "use client";
 
-import { BookOpenIcon, BuildingsIcon, FloppyDiskIcon } from "@phosphor-icons/react";
+import {
+	BookOpenIcon,
+	BuildingsIcon,
+	FloppyDiskIcon,
+} from "@phosphor-icons/react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { RightSidebar } from "@/components/right-sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tip } from "@/components/ui/tip";
 import { type Organization, useOrganizations } from "@/hooks/use-organizations";
 import { OrganizationLogoUploader } from "./organization-logo-uploader";
 
-interface GeneralSettingsProps {
+export function GeneralSettings({
+	organization,
+}: {
 	organization: Organization;
-}
-
-export function GeneralSettings({ organization }: GeneralSettingsProps) {
+}) {
 	const [name, setName] = useState(organization.name);
 	const [slug, setSlug] = useState(organization.slug);
 	const [isSaving, setIsSaving] = useState(false);
@@ -60,7 +66,7 @@ export function GeneralSettings({ organization }: GeneralSettingsProps) {
 	return (
 		<div className="h-full lg:grid lg:grid-cols-[1fr_18rem]">
 			{/* Main Content */}
-			<div className="flex flex-col border-b lg:border-b-0 lg:border-r">
+			<div className="flex flex-col border-b lg:border-r lg:border-b-0">
 				<div className="flex-1 space-y-6 p-5">
 					{/* Logo Section */}
 					<OrganizationLogoUploader organization={organization} />
@@ -94,7 +100,9 @@ export function GeneralSettings({ organization }: GeneralSettingsProps) {
 				{/* Save Footer */}
 				{hasChanges && (
 					<div className="flex items-center justify-between border-t bg-muted/30 px-5 py-3">
-						<p className="text-muted-foreground text-sm">You have unsaved changes</p>
+						<p className="text-muted-foreground text-sm">
+							You have unsaved changes
+						</p>
 						<Button disabled={isSaving} onClick={handleSave} size="sm">
 							{isSaving ? (
 								<>
@@ -113,11 +121,15 @@ export function GeneralSettings({ organization }: GeneralSettingsProps) {
 			</div>
 
 			{/* Sidebar */}
-			<aside className="flex flex-col gap-4 bg-muted/30 p-5">
+			<RightSidebar className="gap-4 p-5">
 				{/* Org Info Card */}
 				<div className="flex items-center gap-3 rounded border bg-background p-4">
-					<div className="flex h-10 w-10 items-center justify-center rounded bg-primary/10">
-						<BuildingsIcon className="text-primary" size={20} weight="duotone" />
+					<div className="flex h-10 w-10 items-center justify-center rounded bg-secondary">
+						<BuildingsIcon
+							className="text-accent-foreground"
+							size={20}
+							weight="duotone"
+						/>
 					</div>
 					<div className="min-w-0">
 						<p className="truncate font-semibold">{organization.name}</p>
@@ -128,26 +140,20 @@ export function GeneralSettings({ organization }: GeneralSettingsProps) {
 				</div>
 
 				{/* Docs Link */}
-				<Button asChild className="w-full justify-start" variant="outline">
+				<Button asChild className="w-full justify-start" variant="secondary">
 					<a
 						href="https://www.databuddy.cc/docs/getting-started"
 						rel="noopener noreferrer"
 						target="_blank"
 					>
-						<BookOpenIcon className="mr-2" size={16} />
+						<BookOpenIcon size={16} />
 						Documentation
 					</a>
 				</Button>
 
 				{/* Tip */}
-				<div className="mt-auto rounded border border-dashed bg-background/50 p-4">
-					<p className="mb-2 font-medium text-sm">Quick tip</p>
-					<p className="text-muted-foreground text-xs leading-relaxed">
-						The slug is used in URLs and API requests. Keep it short and
-						memorable.
-					</p>
-				</div>
-			</aside>
+				<Tip description="The slug is used in URLs and API requests. Keep it short and memorable." />
+			</RightSidebar>
 		</div>
 	);
 }

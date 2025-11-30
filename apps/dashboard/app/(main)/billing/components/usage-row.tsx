@@ -78,11 +78,8 @@ export const UsageRow = memo(function UsageRowComponent({
 						<div className="flex items-center gap-2">
 							<span className="font-medium">{feature.name}</span>
 							{feature.hasExtraCredits && (
-								<Badge
-									className="bg-primary/10 text-primary"
-									variant="secondary"
-								>
-									<GiftIcon className="mr-1" size={10} />
+								<Badge variant="secondary">
+									<GiftIcon size={10} weight="fill" />
 									Bonus
 								</Badge>
 							)}

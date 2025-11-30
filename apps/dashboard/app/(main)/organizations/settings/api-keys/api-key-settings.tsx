@@ -1,7 +1,6 @@
 "use client";
 
 import {
-	ArrowClockwiseIcon,
 	BookOpenIcon,
 	KeyIcon,
 	PlusIcon,
@@ -9,13 +8,15 @@ import {
 } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { EmptyState } from "@/components/empty-state";
 import { ApiKeyCreateDialog } from "@/components/organizations/api-key-create-dialog";
 import { ApiKeyDetailDialog } from "@/components/organizations/api-key-detail-dialog";
+import { RightSidebar } from "@/components/right-sidebar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Organization } from "@/hooks/use-organizations";
 import { orpc } from "@/lib/orpc";
-import { ApiKeyRow } from "./api-key-row";
+import { ApiKeyRow, type ApiKeyRowItem } from "./api-key-row";
 
 type ApiKeySettingsProps = {
 	organization: Organization;
@@ -52,44 +53,12 @@ function ApiKeysSkeleton() {
 	);
 }
 
-function EmptyState() {
-	return (
-		<div className="flex h-full flex-col items-center justify-center p-8 text-center">
-			<div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-				<KeyIcon className="text-primary" size={28} weight="duotone" />
-			</div>
-			<h3 className="mb-1 font-semibold text-lg">No API keys yet</h3>
-			<p className="max-w-sm text-muted-foreground text-sm">
-				Create your first API key to start integrating with our platform
-			</p>
-		</div>
-	);
-}
-
-function ErrorState({ onRetry }: { onRetry: () => void }) {
-	return (
-		<div className="flex h-full flex-col items-center justify-center p-8 text-center">
-			<div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-				<KeyIcon className="text-destructive" size={28} weight="duotone" />
-			</div>
-			<h3 className="mb-1 font-semibold text-lg">Failed to load</h3>
-			<p className="mb-6 max-w-sm text-muted-foreground text-sm">
-				Something went wrong while loading your API keys
-			</p>
-			<Button onClick={onRetry} variant="outline">
-				<ArrowClockwiseIcon className="mr-2" size={16} />
-				Try again
-			</Button>
-		</div>
-	);
-}
-
 export function ApiKeySettings({ organization }: ApiKeySettingsProps) {
 	const [showCreateDialog, setShowCreateDialog] = useState(false);
 	const [showDetailDialog, setShowDetailDialog] = useState(false);
 	const [selectedKeyId, setSelectedKeyId] = useState<string | null>(null);
 
-	const { data, isLoading, isError, refetch } = useQuery({
+	const { data, isLoading, isError } = useQuery({
 		...orpc.apikeys.list.queryOptions({
 			input: { organizationId: organization.id },
 		}),
@@ -98,7 +67,7 @@ export function ApiKeySettings({ organization }: ApiKeySettingsProps) {
 		staleTime: 0,
 	});
 
-	const items = data ?? [];
+	const items = (data ?? []) as ApiKeyRowItem[];
 	const activeCount = items.filter((k) => k.enabled && !k.revokedAt).length;
 	const isEmpty = items.length === 0;
 
@@ -106,7 +75,14 @@ export function ApiKeySettings({ organization }: ApiKeySettingsProps) {
 		return <ApiKeysSkeleton />;
 	}
 	if (isError) {
-		return <ErrorState onRetry={refetch} />;
+		return (
+			<EmptyState
+				description="Please try again in a moment"
+				icon={<KeyIcon weight="duotone" />}
+				title="Failed to load API keys"
+				variant="error"
+			/>
+		);
 	}
 
 	return (
@@ -115,7 +91,11 @@ export function ApiKeySettings({ organization }: ApiKeySettingsProps) {
 				{/* Keys List / Empty State */}
 				<div className="flex flex-col border-b lg:border-r lg:border-b-0">
 					{isEmpty ? (
-						<EmptyState />
+						<EmptyState
+							description="Create your first API key to start integrating with our platform"
+							icon={<KeyIcon weight="duotone" />}
+							title="No API keys yet"
+						/>
 					) : (
 						<div className="flex-1 divide-y overflow-y-auto">
 							{items.map((apiKey) => (
@@ -133,7 +113,7 @@ export function ApiKeySettings({ organization }: ApiKeySettingsProps) {
 				</div>
 
 				{/* Sidebar */}
-				<aside className="flex flex-col gap-4 bg-muted/30 p-5">
+				<RightSidebar className="gap-4 p-5">
 					{/* Create Button */}
 					<Button className="w-full" onClick={() => setShowCreateDialog(true)}>
 						<PlusIcon className="mr-2" size={16} />
@@ -163,13 +143,13 @@ export function ApiKeySettings({ organization }: ApiKeySettingsProps) {
 					)}
 
 					{/* Actions */}
-					<Button asChild className="w-full justify-start" variant="outline">
+					<Button asChild className="w-full justify-start" variant="secondary">
 						<a
 							href="https://www.databuddy.cc/docs/getting-started"
 							rel="noopener noreferrer"
 							target="_blank"
 						>
-							<BookOpenIcon className="mr-2" size={16} />
+							<BookOpenIcon size={16} />
 							Documentation
 						</a>
 					</Button>
@@ -182,7 +162,7 @@ export function ApiKeySettings({ organization }: ApiKeySettingsProps) {
 							them to version control.
 						</p>
 					</div>
-				</aside>
+				</RightSidebar>
 			</div>
 
 			<ApiKeyCreateDialog

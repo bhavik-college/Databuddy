@@ -10,10 +10,13 @@ import {
 	XIcon,
 } from "@phosphor-icons/react";
 import { useState } from "react";
+import { EmptyState } from "@/components/empty-state";
 import { InviteMemberDialog } from "@/components/organizations/invite-member-dialog";
+import { RightSidebar } from "@/components/right-sidebar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tip } from "@/components/ui/tip";
 import { useOrganizationInvitations } from "@/hooks/use-organization-invitations";
 import type {
 	ActiveOrganization,
@@ -37,7 +40,7 @@ function SkeletonRow() {
 function InvitationsSkeleton() {
 	return (
 		<div className="h-full lg:grid lg:grid-cols-[1fr_18rem]">
-			<div className="border-b lg:border-b-0 lg:border-r">
+			<div className="border-b lg:border-r lg:border-b-0">
 				<div className="flex gap-4 border-b px-5 py-3">
 					<Skeleton className="h-8 w-24" />
 					<Skeleton className="h-8 w-24" />
@@ -54,20 +57,6 @@ function InvitationsSkeleton() {
 				<Skeleton className="h-18 w-full rounded" />
 				<Skeleton className="h-10 w-full" />
 			</div>
-		</div>
-	);
-}
-
-function EmptyState() {
-	return (
-		<div className="flex h-full flex-col items-center justify-center p-8 text-center">
-			<div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-				<EnvelopeIcon className="text-primary" size={28} weight="duotone" />
-			</div>
-			<h3 className="mb-1 font-semibold text-lg">No invitations</h3>
-			<p className="mb-6 max-w-sm text-muted-foreground text-sm">
-				Invite team members to start collaborating
-			</p>
 		</div>
 	);
 }
@@ -120,6 +109,26 @@ function TabEmptyState({ type }: { type: "pending" | "expired" | "accepted" }) {
 	);
 }
 
+function EmptyInvitationsState({
+	setShowInviteMemberDialog,
+}: {
+	setShowInviteMemberDialog: () => void;
+}) {
+	return (
+		<EmptyState
+			action={{
+				label: "Invite Member",
+				onClick: setShowInviteMemberDialog,
+				size: "sm",
+			}}
+			description="There are no pending invitations for this organization. All invited members have either joined or declined their invitations."
+			icon={<EnvelopeIcon weight="duotone" />}
+			title="No Pending Invitations"
+			variant="minimal"
+		/>
+	);
+}
+
 export function InvitationsView({
 	organization,
 }: {
@@ -140,17 +149,34 @@ export function InvitationsView({
 		refetch,
 	} = useOrganizationInvitations(organization.id);
 
-	if (isLoading) return <InvitationsSkeleton />;
-	if (error) return <ErrorState onRetry={refetch} />;
+	if (isLoading) {
+		return <InvitationsSkeleton />;
+	}
+	if (error) {
+		return <ErrorState onRetry={refetch} />;
+	}
 
 	const totalCount = pendingCount + expiredCount + acceptedCount;
-	if (totalCount === 0) return <EmptyState />;
+	if (totalCount === 0) {
+		return (
+			<div className="flex h-full flex-col">
+				<InviteMemberDialog
+					onOpenChange={setShowInviteDialog}
+					open={showInviteDialog}
+					organizationId={organization.id}
+				/>
+				<EmptyInvitationsState
+					setShowInviteMemberDialog={() => setShowInviteDialog(true)}
+				/>
+			</div>
+		);
+	}
 
 	return (
 		<>
 			<div className="h-full lg:grid lg:grid-cols-[1fr_18rem]">
 				{/* Main Content */}
-				<div className="flex flex-col border-b lg:border-b-0 lg:border-r">
+				<div className="flex flex-col border-b lg:border-r lg:border-b-0">
 					<Tabs
 						className="flex h-full flex-col"
 						onValueChange={setTab}
@@ -240,7 +266,7 @@ export function InvitationsView({
 				</div>
 
 				{/* Sidebar */}
-				<aside className="flex flex-col gap-4 bg-muted/30 p-5">
+				<RightSidebar className="gap-4 p-5">
 					{/* Invite Button */}
 					<Button className="w-full" onClick={() => setShowInviteDialog(true)}>
 						<UserPlusIcon className="mr-2" size={16} />
@@ -250,38 +276,38 @@ export function InvitationsView({
 					{/* Stats Card */}
 					<div className="flex items-center gap-3 rounded border bg-background p-4">
 						<div className="flex h-10 w-10 items-center justify-center rounded bg-primary/10">
-							<EnvelopeIcon className="text-primary" size={20} weight="duotone" />
+							<EnvelopeIcon
+								className="text-primary"
+								size={20}
+								weight="duotone"
+							/>
 						</div>
 						<div>
 							<p className="font-semibold tabular-nums">
 								{pendingCount}{" "}
-								<span className="font-normal text-muted-foreground">/ {totalCount}</span>
+								<span className="font-normal text-muted-foreground">
+									/ {totalCount}
+								</span>
 							</p>
 							<p className="text-muted-foreground text-sm">Pending</p>
 						</div>
 					</div>
 
 					{/* Docs Link */}
-					<Button asChild className="w-full justify-start" variant="outline">
+					<Button asChild className="w-full justify-start" variant="secondary">
 						<a
 							href="https://www.databuddy.cc/docs/getting-started"
 							rel="noopener noreferrer"
 							target="_blank"
 						>
-							<BookOpenIcon className="mr-2" size={16} />
+							<BookOpenIcon size={16} />
 							Documentation
 						</a>
 					</Button>
 
 					{/* Tip */}
-					<div className="mt-auto rounded border border-dashed bg-background/50 p-4">
-						<p className="mb-2 font-medium text-sm">Quick tip</p>
-						<p className="text-muted-foreground text-xs leading-relaxed">
-							Invitations expire after 7 days. Resend if needed from the pending
-							tab.
-						</p>
-					</div>
-				</aside>
+					<Tip description="Invitations expire after 7 days. Resend if needed from the pending tab." />
+				</RightSidebar>
 			</div>
 
 			<InviteMemberDialog

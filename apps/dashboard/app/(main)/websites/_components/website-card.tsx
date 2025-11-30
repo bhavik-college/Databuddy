@@ -3,7 +3,7 @@ import type {
 	Website,
 } from "@databuddy/shared/types/website";
 import {
-	ArrowRightIcon,
+	EyeIcon,
 	MinusIcon,
 	TrendDownIcon,
 	TrendUpIcon,
@@ -21,15 +21,15 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface WebsiteCardProps {
+type WebsiteCardProps = {
 	website: Website;
 	chartData?: ProcessedMiniChartData;
 	isLoadingChart?: boolean;
-}
+};
 
 function TrendStat({
 	trend,
-	className = "flex items-center gap-1 font-medium text-xs sm:text-sm",
+	className = "flex items-center gap-1 font-medium text-xs",
 }: {
 	trend: ProcessedMiniChartData["trend"] | undefined;
 	className?: string;
@@ -115,52 +115,16 @@ export const WebsiteCard = memo(
 			data-website-name={website.name}
 			href={`/websites/${website.id}`}
 		>
-			<Card className="flex h-full select-none flex-col overflow-hidden bg-background transition-all duration-300 ease-in-out group-hover:border-primary/60 group-hover:shadow-primary/5 group-hover:shadow-xl motion-reduce:transform-none motion-reduce:transition-none">
-				<CardHeader className="pb-2">
-					<div className="flex items-center justify-between gap-2">
-						<div className="min-w-0 flex-1">
-							<CardTitle className="truncate font-bold text-base leading-tight transition-colors group-hover:text-primary sm:text-lg">
-								{website.name}
-							</CardTitle>
-							<CardDescription className="flex items-center gap-1 pt-0.5">
-								<FaviconImage
-									altText={`${website.name} favicon`}
-									className="shrink-0"
-									domain={website.domain}
-									size={24}
-								/>
-								<span className="truncate text-xs sm:text-sm">
-									{website.domain}
-								</span>
-							</CardDescription>
-						</div>
-						<ArrowRightIcon
-							aria-hidden="true"
-							className="h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-hover:translate-x-1 group-hover:text-primary"
-							weight="fill"
-						/>
-					</div>
-				</CardHeader>
-
-				<CardContent className="pt-0 pb-3">
+			<Card className="flex h-full select-none flex-col gap-0 overflow-hidden bg-background p-0 transition-all duration-300 ease-in-out group-hover:border-primary/60 group-hover:shadow-primary/5 group-hover:shadow-xl motion-reduce:transform-none motion-reduce:transition-none">
+				<CardHeader className="dotted-bg gap-0! border-b bg-accent-brighter/80 px-0 pt-4 pb-0!">
 					{isLoadingChart ? (
-						<div className="space-y-2">
-							<div className="flex justify-between">
-								<Skeleton className="h-3 w-12 rounded" />
-								<Skeleton className="h-3 w-8 rounded" />
-							</div>
-							<Skeleton className="h-12 w-full rounded sm:h-16" />
+						<div className="px-3">
+							<Skeleton className="mx-auto h-12 w-full rounded sm:h-16" />
 						</div>
 					) : chartData ? (
 						chartData.data.length > 0 ? (
-							<div className="space-y-2">
-								<div className="flex items-center justify-between">
-									<span className="font-medium text-muted-foreground text-xs sm:text-sm">
-										{formatNumber(chartData.totalViews)} views
-									</span>
-									<TrendStat trend={chartData.trend} />
-								</div>
-								<div className="transition-colors duration-300 [--chart-color:theme(colors.primary.DEFAULT)] motion-reduce:transition-none group-hover:[--chart-color:theme(colors.primary.600)]">
+							<div className="h-16 space-y-2">
+								<div className="h-full transition-colors duration-300 [--chart-color:theme(colors.primary.DEFAULT)] motion-reduce:transition-none group-hover:[--chart-color:theme(colors.primary.600)]">
 									<Suspense
 										fallback={
 											<Skeleton className="h-12 w-full rounded sm:h-16" />
@@ -184,6 +148,40 @@ export const WebsiteCard = memo(
 							Failed to load
 						</div>
 					)}
+				</CardHeader>
+				<CardContent className="gap-0 p-4">
+					<div className="flex flex-wrap items-center gap-5">
+						<div className="flex min-w-0 flex-1 items-center justify-between">
+							<div>
+								<CardTitle className="truncate font-medium text-base leading-tight sm:text-base">
+									{website.name}
+								</CardTitle>
+								<CardDescription className="flex items-center gap-1 pt-0.5">
+									<FaviconImage
+										altText={`${website.name} favicon`}
+										className="shrink-0"
+										domain={website.domain}
+										size={12}
+									/>
+									<span className="truncate text-muted text-xs">
+										{website.domain}
+									</span>
+								</CardDescription>
+							</div>
+						</div>
+						{chartData && (
+							<div className="flex w-full items-center justify-between">
+								<span className="flex items-center gap-1 font-medium text-muted text-xs">
+									<EyeIcon
+										className="size-3 shrink-0 text-muted"
+										weight="duotone"
+									/>
+									{formatNumber(chartData.totalViews)} views
+								</span>
+								<TrendStat trend={chartData.trend} />
+							</div>
+						)}
+					</div>
 				</CardContent>
 			</Card>
 		</Link>

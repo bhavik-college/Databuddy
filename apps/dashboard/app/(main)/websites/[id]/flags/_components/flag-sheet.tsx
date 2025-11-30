@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FlagIcon } from "@phosphor-icons/react";
+import { FlagIcon, InfoIcon } from "@phosphor-icons/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -35,7 +35,13 @@ import {
 } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { orpc } from "@/lib/orpc";
+import { cn } from "@/lib/utils";
 import type { Flag } from "./types";
 import { UserRulesBuilder } from "./user-rules-builder";
 
@@ -220,10 +226,13 @@ export function FlagSheet({
 				className="w-full overflow-y-auto p-4 sm:w-[90vw] sm:max-w-[800px] md:w-[70vw] lg:w-[60vw]"
 				side="right"
 			>
-				<SheetHeader className="space-y-3 border-border/50 border-b pb-6">
+				<SheetHeader>
 					<div className="flex items-center gap-3">
-						<div className="rounded border border-primary/20 bg-primary/10 p-3">
-							<FlagIcon className="h-6 w-6 text-primary" weight="duotone" />
+						<div className="flex h-11 w-11 items-center justify-center rounded border bg-secondary-brighter">
+							<FlagIcon
+								weight="fill"
+								className="size-6 text-accent-foreground"
+							/>
 						</div>
 						<div>
 							<SheetTitle className="font-semibold text-foreground text-xl">
@@ -238,11 +247,11 @@ export function FlagSheet({
 					</div>
 				</SheetHeader>
 
-				<div className="space-y-8 pt-6">
+				<div className="space-y-8">
 					<Form {...form}>
 						<form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>
 							{/* Basic Information */}
-							<div className="space-y-4">
+							<div className="space-y-5">
 								<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 									<FormField
 										control={form.control}
@@ -268,7 +277,24 @@ export function FlagSheet({
 											<FormItem>
 												<FormLabel>
 													Key{" "}
-													{!isEditing && (
+													{isEditing ? (
+														<Tooltip>
+															<TooltipTrigger asChild>
+																<InfoIcon
+																	className="h-4 w-4"
+																	weight="duotone"
+																/>
+															</TooltipTrigger>
+															<TooltipContent className="max-w-xs">
+																<div className="space-y-2">
+																	<p className="text-xs leading-relaxed">
+																		Key cannot be changed after creation to
+																		maintain data integrity.
+																	</p>
+																</div>
+															</TooltipContent>
+														</Tooltip>
+													) : (
 														<span aria-hidden="true" className="text-red-500">
 															*
 														</span>
@@ -286,12 +312,6 @@ export function FlagSheet({
 														}}
 													/>
 												</FormControl>
-												{isEditing && (
-													<FormDescription>
-														Flag keys cannot be changed after creation to
-														maintain data integrity.
-													</FormDescription>
-												)}
 												<FormMessage />
 											</FormItem>
 										)}
@@ -303,7 +323,12 @@ export function FlagSheet({
 									name="description"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>Description (Optional)</FormLabel>
+											<FormLabel>
+												Description{" "}
+												<span className="text-muted-foreground text-xs">
+													(Optional)
+												</span>
+											</FormLabel>
 											<FormControl>
 												<Textarea
 													placeholder="What does this flag control?"
@@ -319,7 +344,7 @@ export function FlagSheet({
 
 							{/* Configuration */}
 							<div className="space-y-4">
-								<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+								<div className="flex gap-8">
 									<FormField
 										control={form.control}
 										name="type"
@@ -382,14 +407,15 @@ export function FlagSheet({
 											<FormItem>
 												<FormLabel>Default Value</FormLabel>
 												<FormControl>
-													<div className="flex h-10 items-center justify-center rounded-md border bg-background px-3">
+													<div className="flex h-9 w-fit items-center justify-center rounded-md border bg-accent-brighter/80 px-3 will-change-contents">
 														<div className="flex items-center gap-2">
 															<span
-																className={
-																	field.value
+																className={cn(
+																	"text-sm",
+																	field.value === false
 																		? "text-muted-foreground"
-																		: "font-medium"
-																}
+																		: "text-muted-foreground/50"
+																)}
 															>
 																Off
 															</span>
@@ -399,11 +425,12 @@ export function FlagSheet({
 																onCheckedChange={field.onChange}
 															/>
 															<span
-																className={
-																	field.value
-																		? "font-medium"
-																		: "text-muted-foreground"
-																}
+																className={cn(
+																	"text-sm",
+																	field.value === true
+																		? "text-muted-foreground"
+																		: "text-muted-foreground/50"
+																)}
 															>
 																On
 															</span>
@@ -457,7 +484,7 @@ export function FlagSheet({
 															</div>
 														</div>
 													</FormControl>
-													<FormDescription>
+													<FormDescription className="text-muted-foreground text-xs mx-auto">
 														Percentage of users who will see this flag enabled.
 														0% = disabled, 100% = fully enabled.
 													</FormDescription>
@@ -476,7 +503,12 @@ export function FlagSheet({
 									name="rules"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>User Targeting (Optional)</FormLabel>
+											<FormLabel>
+												User Targeting{" "}
+												<span className="text-muted-foreground text-xs">
+													(Optional)
+												</span>
+											</FormLabel>
 											<FormControl>
 												<UserRulesBuilder
 													onChange={field.onChange}
@@ -493,7 +525,7 @@ export function FlagSheet({
 							</div>
 
 							<div className="flex justify-end gap-3 border-t pt-6">
-								<Button onClick={onCloseAction} type="button" variant="outline">
+								<Button onClick={onCloseAction} type="button" variant="ghost">
 									Cancel
 								</Button>
 								<Button disabled={isLoading} type="submit">
