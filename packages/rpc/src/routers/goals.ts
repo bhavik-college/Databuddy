@@ -88,6 +88,7 @@ export const goalsRouter = {
 				name: z.string(),
 				description: z.string().nullable().optional(),
 				filters: z.unknown().optional(),
+				ignoreHistoricData: z.boolean().optional(),
 			})
 		)
 		.handler(async ({ context, input }) => {
@@ -103,6 +104,7 @@ export const goalsRouter = {
 					name: input.name,
 					description: input.description,
 					filters: input.filters,
+					ignoreHistoricData: input.ignoreHistoricData ?? false,
 					isActive: true,
 					createdBy: context.user.id,
 				})
@@ -122,6 +124,7 @@ export const goalsRouter = {
 				name: z.string().optional(),
 				description: z.string().nullable().optional(),
 				filters: z.unknown().optional(),
+				ignoreHistoricData: z.boolean().optional(),
 				isActive: z.boolean().optional(),
 			})
 		)
@@ -247,14 +250,26 @@ export const goalsRouter = {
 							operator: string;
 							value: string | string[];
 						}>) || [];
+
+					let effectiveStartDate = startDate;
+					if (goalData.ignoreHistoricData && goalData.createdAt) {
+						const goalCreatedDate = new Date(goalData.createdAt)
+							.toISOString()
+							.split("T")[0];
+						const requestedStart = new Date(startDate);
+						const goalStart = new Date(goalCreatedDate);
+						effectiveStartDate =
+							requestedStart > goalStart ? startDate : goalCreatedDate;
+					}
+
 					const totalWebsiteUsers = await getTotalWebsiteUsers(
 						input.websiteId,
-						startDate,
+						effectiveStartDate,
 						endDate
 					);
 					const params: Record<string, unknown> = {
 						websiteId: input.websiteId,
-						startDate,
+						startDate: effectiveStartDate,
 						endDate: `${endDate} 23:59:59`,
 					};
 					return processGoalAnalytics(
@@ -318,9 +333,21 @@ export const goalsRouter = {
 								name: goalData.name,
 							},
 						];
+
+						let effectiveStartDate = startDate;
+						if (goalData.ignoreHistoricData && goalData.createdAt) {
+							const goalCreatedDate = new Date(goalData.createdAt)
+								.toISOString()
+								.split("T")[0];
+							const requestedStart = new Date(startDate);
+							const goalStart = new Date(goalCreatedDate);
+							effectiveStartDate =
+								requestedStart > goalStart ? startDate : goalCreatedDate;
+						}
+
 						const localParams: Record<string, unknown> = {
 							websiteId: input.websiteId,
-							startDate,
+							startDate: effectiveStartDate,
 							endDate: `${endDate} 23:59:59`,
 						};
 						const filters =
@@ -329,12 +356,17 @@ export const goalsRouter = {
 								operator: string;
 								value: string | string[];
 							}>) || [];
+
+						const effectiveTotalUsers = goalData.ignoreHistoricData
+							? await getTotalWebsiteUsers(input.websiteId, effectiveStartDate, endDate)
+							: totalWebsiteUsers;
+
 						try {
 							const processedAnalytics = await processGoalAnalytics(
 								steps,
 								filters,
 								localParams,
-								totalWebsiteUsers
+								effectiveTotalUsers
 							);
 							return { id: goalData.id, result: processedAnalytics };
 						} catch (error) {

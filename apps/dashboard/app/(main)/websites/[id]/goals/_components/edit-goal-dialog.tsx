@@ -14,6 +14,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import {
 	Sheet,
 	SheetBody,
@@ -41,6 +42,7 @@ interface GoalFormData {
 	type: string;
 	target: string;
 	filters: GoalFilter[];
+	ignoreHistoricData?: boolean;
 }
 
 interface EditGoalDialogProps {
@@ -72,6 +74,7 @@ export function EditGoalDialog({
 				type: goal.type,
 				target: goal.target,
 				filters: (goal.filters as GoalFilter[]) || [],
+				ignoreHistoricData: goal.ignoreHistoricData ?? false,
 			});
 		} else {
 			setFormData({
@@ -80,6 +83,7 @@ export function EditGoalDialog({
 				type: "PAGE_VIEW",
 				target: "",
 				filters: [],
+				ignoreHistoricData: false,
 			});
 		}
 	}, [goal]);
@@ -96,6 +100,7 @@ export function EditGoalDialog({
 			type: "PAGE_VIEW",
 			target: "",
 			filters: [],
+			ignoreHistoricData: false,
 		});
 	}, []);
 
@@ -245,6 +250,32 @@ export function EditGoalDialog({
 									onValueChange={(value) => updateField("target", value)}
 								/>
 							</div>
+						</div>
+					</section>
+
+					{/* Settings Section */}
+					<section className="space-y-3">
+						<Label className="text-muted-foreground text-xs">
+							Settings
+						</Label>
+						<div className="flex items-center justify-between rounded border bg-card p-3">
+							<div className="space-y-0.5">
+								<Label htmlFor="ignore-historic" className="font-medium text-sm">
+									Ignore historic data
+								</Label>
+								<p className="text-muted-foreground text-xs">
+									Only count events after this goal was created
+								</p>
+							</div>
+							<Switch
+								id="ignore-historic"
+								checked={formData.ignoreHistoricData ?? false}
+								onCheckedChange={(checked) =>
+									setFormData((prev) =>
+										prev ? { ...prev, ignoreHistoricData: checked } : prev
+									)
+								}
+							/>
 						</div>
 					</section>
 

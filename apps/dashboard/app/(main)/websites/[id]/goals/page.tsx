@@ -95,6 +95,7 @@ export default function GoalsPage() {
 						type: data.type,
 						target: data.target,
 						filters: data.filters,
+						ignoreHistoricData: "ignoreHistoricData" in data ? data.ignoreHistoricData : undefined,
 					},
 				});
 			} else {
@@ -104,6 +105,7 @@ export default function GoalsPage() {
 					type: data.type,
 					target: data.target,
 					filters: data.filters,
+					ignoreHistoricData: "ignoreHistoricData" in data ? data.ignoreHistoricData : undefined,
 					websiteId,
 				} as CreateGoalData);
 			}
