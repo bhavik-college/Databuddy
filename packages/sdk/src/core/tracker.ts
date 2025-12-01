@@ -27,12 +27,16 @@ export function isTrackerAvailable(): boolean {
  *
  * @example
  * ```ts
- * import { getTracker } from "@databuddy/sdk";
+ * import { getTracker, getAnonymousId, getSessionId } from "@databuddy/sdk";
  *
  * const tracker = getTracker();
  * if (tracker) {
- *   console.log("Anonymous ID:", tracker.anonymousId);
- *   console.log("Session ID:", tracker.sessionId);
+ *   // Access tracker methods
+ *   tracker.track("event", { prop: "value" });
+ *   
+ *   // Get IDs using dedicated functions
+ *   const anonId = getAnonymousId();
+ *   const sessionId = getSessionId();
  * }
  * ```
  */
@@ -237,7 +241,6 @@ export function getAnonymousId(urlParams?: URLSearchParams): string | null {
 	}
 	return (
 		urlParams?.get("anonId") ||
-		window.databuddy?.anonymousId ||
 		localStorage.getItem("did") ||
 		null
 	);
@@ -266,7 +269,6 @@ export function getSessionId(urlParams?: URLSearchParams): string | null {
 	}
 	return (
 		urlParams?.get("sessionId") ||
-		window.databuddy?.sessionId ||
 		sessionStorage.getItem("did_session") ||
 		null
 	);

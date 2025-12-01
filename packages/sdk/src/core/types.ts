@@ -120,7 +120,7 @@ export type DatabuddyConfig = {
 	samplingRate?: number;
 
 	/**
-	 * Enable retries for failed requests (default: true).
+	 * Enable retries for failed requests (default: false).
 	 */
 	enableRetries?: boolean;
 
@@ -139,7 +139,7 @@ export type DatabuddyConfig = {
 	// --- Batching ---
 
 	/**
-	 * Enable event batching (default: false).
+	 * Enable event batching (default: true).
 	 */
 	enableBatching?: boolean;
 
@@ -157,9 +157,36 @@ export type DatabuddyConfig = {
 	 */
 	batchTimeout?: number;
 
+	/**
+	 * Ignore bot detection (default: false).
+	 * If true, bot detection will be disabled and bots will be tracked.
+	 */
+	ignoreBotDetection?: boolean;
+
+	/**
+	 * Use pixel tracking instead of script (default: false).
+	 * When enabled, uses a 1x1 pixel image for tracking.
+	 */
+	usePixel?: boolean;
+
+	/**
+	 * Filter function to conditionally skip events.
+	 * Return false to skip the event, true to send it.
+	 *
+	 * @example
+	 * ```ts
+	 * filter: (event) => {
+	 *   // Skip events from admin pages
+	 *   return !event.path?.includes('/admin');
+	 * }
+	 * ```
+	 */
+	filter?: (event: any) => boolean;
+
 	/** Array of glob patterns to skip tracking on matching paths (e.g., ['/admin/**']) */
 	skipPatterns?: string[];
 
+	/** Array of glob patterns to mask sensitive paths (e.g., ['/users/*']) */
 	maskPatterns?: string[];
 }
 
@@ -295,17 +322,11 @@ export type PropertiesForEvent<T extends EventName> =
  * window.databuddy.track("signup", { plan: "pro" });
  * window.databuddy.flush();
  *
- * // Access IDs for server-side identification
- * const { anonymousId, sessionId } = window.databuddy;
+ * // Access tracker options
+ * const options = window.databuddy.options;
  * ```
  */
 export type DatabuddyTracker = {
-	/** Persistent user ID (stored in localStorage, survives sessions) */
-	anonymousId: string;
-
-	/** Current session ID (resets after 30 min inactivity) */
-	sessionId: string;
-
 	/**
 	 * Track a custom event.
 	 * @param eventName - Name of the event (e.g., "purchase", "signup")
@@ -315,10 +336,9 @@ export type DatabuddyTracker = {
 
 	/**
 	 * Manually track a page view. Called automatically on route changes.
-	 * @param path - Override the current path
-	 * @param properties - Additional properties
+	 * @param properties - Additional properties to attach to the screen view event
 	 */
-	screenView(path?: string, properties?: EventProperties): void;
+	screenView(properties?: Record<string, unknown>): void;
 
 	/**
 	 * Set properties that will be attached to ALL future events.
@@ -332,7 +352,7 @@ export type DatabuddyTracker = {
 	 * });
 	 * ```
 	 */
-	setGlobalProperties(properties: EventProperties): void;
+	setGlobalProperties(properties: Record<string, unknown>): void;
 
 	/**
 	 * Reset the user session. Generates new anonymous and session IDs.
@@ -345,6 +365,11 @@ export type DatabuddyTracker = {
 	 * Call before navigation to external sites.
 	 */
 	flush(): void;
+
+	/**
+	 * Current tracker configuration options.
+	 */
+	options: DatabuddyConfig;
 }
 
 /**
@@ -407,8 +432,7 @@ export type TrackFunction = <T extends EventName>(
 ) => Promise<void>;
 
 export type ScreenViewFunction = (
-	path?: string,
-	properties?: EventProperties
+	properties?: Record<string, unknown>
 ) => void;
 
 export type SetGlobalPropertiesFunction = (properties: EventProperties) => void;
