@@ -15,7 +15,6 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import type { ApiKeyRowItem } from "@/app/(main)/organizations/settings/api-keys/api-key-row";
 import { orpc } from "@/lib/orpc";
 import {
 	AlertDialog,
@@ -39,10 +38,10 @@ import {
 	SheetTitle,
 } from "../ui/sheet";
 import { Switch } from "../ui/switch";
-import type { ApiScope } from "./api-key-types";
+import type { ApiKeyListItem, ApiScope } from "./api-key-types";
 
 type ApiKeyDetailDialogProps = {
-	apiKey: ApiKeyRowItem | null;
+	apiKey: ApiKeyListItem | null;
 	open: boolean;
 	onOpenChangeAction: (open: boolean) => void;
 };
