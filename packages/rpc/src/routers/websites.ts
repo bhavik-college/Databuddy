@@ -516,6 +516,12 @@ export const websitesRouter = {
 				if (error instanceof WebsiteNotFoundError) {
 					throw new ORPCError("NOT_FOUND", { message: error.message });
 				}
+				if (error instanceof DuplicateDomainError) {
+					throw new ORPCError("CONFLICT", {
+						message:
+							"A website with this domain already exists in the destination. Please remove or rename the existing website first.",
+					});
+				}
 				throw new ORPCError("INTERNAL_SERVER_ERROR", {
 					message: error instanceof Error ? error.message : String(error),
 				});
@@ -552,6 +558,12 @@ export const websitesRouter = {
 			} catch (error) {
 				if (error instanceof WebsiteNotFoundError) {
 					throw new ORPCError("NOT_FOUND", { message: error.message });
+				}
+				if (error instanceof DuplicateDomainError) {
+					throw new ORPCError("CONFLICT", {
+						message:
+							"A website with this domain already exists in the destination. Please remove or rename the existing website first.",
+					});
 				}
 				throw new ORPCError("INTERNAL_SERVER_ERROR", {
 					message: error instanceof Error ? error.message : String(error),

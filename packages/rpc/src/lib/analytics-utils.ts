@@ -1,28 +1,33 @@
 import { chQuery } from "@databuddy/db";
+import { referrers } from "@databuddy/shared/lists/referrers";
 import { ORPCError } from "@orpc/server";
 
+// Types
 export type AnalyticsStep = {
 	step_number: number;
 	name: string;
 	type: "PAGE_VIEW" | "EVENT";
 	target: string;
 };
-export type ProcessedAnalytics = {
-	overall_conversion_rate: number;
-	total_users_entered: number;
-	total_users_completed: number;
-	avg_completion_time: number;
-	avg_completion_time_formatted: string;
-	steps_analytics: Array<{
-		step_number: number;
-		step_name: string;
-		users: number;
-		total_users: number;
-		conversion_rate: number;
-		dropoffs: number;
-		dropoff_rate: number;
-		avg_time_to_complete: number;
-	}>;
+
+export type StepAnalytics = {
+	step_number: number;
+	step_name: string;
+	users: number;
+	total_users: number;
+	conversion_rate: number;
+	dropoffs: number;
+	dropoff_rate: number;
+	avg_time_to_complete: number;
+};
+
+export type FunnelTimeSeriesPoint = {
+	date: string;
+	users: number;
+	conversions: number;
+	conversion_rate: number;
+	dropoffs: number;
+	avg_time: number;
 };
 
 export type FunnelAnalytics = {
@@ -33,502 +38,88 @@ export type FunnelAnalytics = {
 	avg_completion_time_formatted: string;
 	biggest_dropoff_step: number;
 	biggest_dropoff_rate: number;
-	steps_analytics: Array<{
-		step_number: number;
-		step_name: string;
-		users: number;
-		total_users: number;
-		conversion_rate: number;
-		dropoffs: number;
-		dropoff_rate: number;
-		avg_time_to_complete: number;
-	}>;
+	steps_analytics: StepAnalytics[];
+	time_series: FunnelTimeSeriesPoint[];
 };
 
 export type ReferrerAnalytics = {
 	referrer: string;
-	referrer_parsed: {
-		name: string;
-		type: string;
-		domain: string;
-		url: string;
-	};
+	referrer_parsed: { name: string; type: string; domain: string; url: string };
 	total_users: number;
 	completed_users: number;
 	conversion_rate: number;
 };
 
-export const getTotalWebsiteUsers = async (
-	websiteId: string,
-	startDate: string,
-	endDate: string
-): Promise<number> => {
-	const params = {
-		websiteId,
-		startDate,
-		endDate: `${endDate} 23:59:59`,
-	};
+// Keep ProcessedAnalytics for backwards compatibility
+export type ProcessedAnalytics = Omit<FunnelAnalytics, "biggest_dropoff_step" | "biggest_dropoff_rate" | "time_series">;
 
-	const query = `
-		SELECT COUNT(DISTINCT anonymous_id) as total_users
-		FROM analytics.events
-		WHERE client_id = {websiteId:String}
-			AND time >= parseDateTimeBestEffort({startDate:String})
-			AND time <= parseDateTimeBestEffort({endDate:String})
-			AND event_name = 'screen_view'
-	`;
-
-	const result = await chQuery<{ total_users: number }>(query, params);
-	return result[0]?.total_users ?? 0;
+type VisitorEvent = {
+	step_number: number;
+	step_name: string;
+	first_occurrence: number;
+	referrer?: string;
 };
 
-const buildWhereCondition = (
-	step: AnalyticsStep,
-	params: Record<string, unknown>
-): string => {
-	const targetKey = `target_${step.step_number - 1}`;
+type Filter = { field: string; operator: string; value: string | string[] };
 
-	if (step.type === "PAGE_VIEW") {
-		params[targetKey] = step.target;
-		params[`${targetKey}_like`] = `%${step.target}%`;
-		return `event_name = 'screen_view' AND (path = {${targetKey}:String} OR path LIKE {${targetKey}_like:String})`;
+// Helpers
+const formatDuration = (seconds: number): string => {
+	if (!seconds || !Number.isFinite(seconds) || seconds <= 0) return "—";
+	if (seconds < 60) return `${Math.round(seconds)}s`;
+	if (seconds < 3600) {
+		const m = Math.floor(seconds / 60);
+		const s = Math.round(seconds % 60);
+		return s > 0 ? `${m}m ${s}s` : `${m}m`;
 	}
-
-	params[targetKey] = step.target;
-	return `event_name = {${targetKey}:String}`;
+	const h = Math.floor(seconds / 3600);
+	const m = Math.round((seconds % 3600) / 60);
+	return m > 0 ? `${h}h ${m}m` : `${h}h`;
 };
 
-const buildStepQuery = (
-	step: AnalyticsStep,
-	stepIndex: number,
-	filterConditions: string,
-	params: Record<string, unknown>,
-	includeReferrer = false
-): string => {
-	const stepNameKey = `step_name_${stepIndex}`;
-	params[stepNameKey] = step.name;
+const safeAvg = (arr: number[]): number =>
+	arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) || 0 : 0;
 
-	const whereCondition = buildWhereCondition(step, params);
-	const referrerSelect = includeReferrer ? ", any(referrer) as referrer" : "";
+const pct = (a: number, b: number): number =>
+	b > 0 ? Math.round((a / b) * 10000) / 100 : 0;
 
-	if (step.type === "PAGE_VIEW") {
-		return `
-			SELECT 
-				${stepIndex + 1} as step_number,
-				{${stepNameKey}:String} as step_name,
-				any(session_id) as session_id,
-				anonymous_id,
-				MIN(time) as first_occurrence${referrerSelect}
-			FROM analytics.events
-			WHERE client_id = {websiteId:String}
-				AND time >= parseDateTimeBestEffort({startDate:String})
-				AND time <= parseDateTimeBestEffort({endDate:String})
-				AND ${whereCondition}${filterConditions}
-			GROUP BY anonymous_id`;
+const parseReferrer = (referrer: string) => {
+	if (!referrer || referrer === "Direct" || referrer.toLowerCase() === "(direct)") {
+		return { name: "Direct", type: "direct", domain: "", url: "" };
 	}
+	try {
+		const fullUrl = referrer.startsWith("http://") || referrer.startsWith("https://")
+			? referrer
+			: `https://${referrer}`;
+		const url = new URL(fullUrl);
+		const hostname = url.hostname.toLowerCase();
+		const hostnameWithoutWww = hostname.startsWith("www.") ? hostname.slice(4) : hostname;
 
-	// For custom EVENT, query both analytics.events and analytics.custom_events
-	const targetKey = `target_${step.step_number - 1}`;
-
-	return `
-		WITH visitor_referrers AS (
-			SELECT 
-				anonymous_id,
-				argMin(referrer, time) as visitor_referrer
-			FROM analytics.events
-			WHERE client_id = {websiteId:String}
-				AND time >= parseDateTimeBestEffort({startDate:String})
-				AND time <= parseDateTimeBestEffort({endDate:String})
-				AND event_name = 'screen_view'
-				AND referrer != ''
-			GROUP BY anonymous_id
-		)
-		SELECT 
-			${stepIndex + 1} as step_number,
-			{${stepNameKey}:String} as step_name,
-			any(session_id) as session_id,
-			anonymous_id,
-			MIN(first_occurrence) as first_occurrence${includeReferrer ? ", COALESCE(vr.visitor_referrer, '') as referrer" : ""}
-		FROM (
-			SELECT 
-				anonymous_id,
-				session_id,
-				time as first_occurrence
-			FROM analytics.events
-			WHERE client_id = {websiteId:String}
-				AND time >= parseDateTimeBestEffort({startDate:String})
-				AND time <= parseDateTimeBestEffort({endDate:String})
-				AND event_name = {${targetKey}:String}${filterConditions}
-			
-			UNION ALL
-			
-			SELECT 
-				anonymous_id,
-				session_id,
-				timestamp as first_occurrence
-			FROM analytics.custom_events
-			WHERE client_id = {websiteId:String}
-				AND timestamp >= parseDateTimeBestEffort({startDate:String})
-				AND timestamp <= parseDateTimeBestEffort({endDate:String})
-				AND event_name = {${targetKey}:String}
-		) AS event_union${
-			includeReferrer
-				? `
-		LEFT JOIN visitor_referrers vr ON event_union.anonymous_id = vr.anonymous_id`
-				: ""
+		if (referrers[hostname]) {
+			return {
+				name: referrers[hostname].name,
+				type: referrers[hostname].type,
+				domain: hostnameWithoutWww,
+				url: referrer,
+			};
 		}
-		GROUP BY anonymous_id${includeReferrer ? ", vr.visitor_referrer" : ""}`;
+
+		return { name: hostnameWithoutWww, type: "referrer", domain: hostnameWithoutWww, url: referrer };
+	} catch {
+		return { name: referrer, type: "referrer", domain: "", url: referrer };
+	}
 };
 
-const processVisitorEvents = (
-	rawResults: Array<{
-		step_number: number;
-		step_name: string;
-		session_id: string;
-		anonymous_id: string;
-		first_occurrence: number;
-		referrer?: string;
-	}>
-): Map<
-	string,
-	Array<{
-		step_number: number;
-		step_name: string;
-		first_occurrence: number;
-		referrer?: string;
-	}>
-> => {
-	const visitorEvents = new Map<
-		string,
-		Array<{
-			step_number: number;
-			step_name: string;
-			first_occurrence: number;
-			referrer?: string;
-		}>
-	>();
+// Filter building
+const ALLOWED_FIELDS = new Set([
+	"event_name", "path", "referrer", "user_agent", "country", "city",
+	"device_type", "browser_name", "os_name", "screen_resolution", "language",
+	"utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
+]);
 
-	for (const event of rawResults) {
-		const visitorId = event.anonymous_id;
-		const existing = visitorEvents.get(visitorId);
-		const eventData = {
-			step_number: event.step_number,
-			step_name: event.step_name,
-			first_occurrence: event.first_occurrence,
-			referrer: event.referrer,
-		};
-
-		if (existing) {
-			existing.push(eventData);
-		} else {
-			visitorEvents.set(visitorId, [eventData]);
-		}
-	}
-
-	return visitorEvents;
-};
-
-const calculateStepCounts = (
-	visitorEvents: Map<
-		string,
-		Array<{
-			step_number: number;
-			step_name: string;
-			first_occurrence: number;
-			referrer?: string;
-		}>
-	>
-): Map<number, Set<string>> => {
-	const stepCounts = new Map<number, Set<string>>();
-
-	for (const [visitorId, events] of Array.from(visitorEvents.entries())) {
-		events.sort((a, b) => a.first_occurrence - b.first_occurrence);
-		let currentStep = 1;
-
-		for (const event of events) {
-			if (event.step_number === currentStep) {
-				const stepSet = stepCounts.get(event.step_number);
-				if (stepSet) {
-					stepSet.add(visitorId);
-				} else {
-					stepCounts.set(event.step_number, new Set([visitorId]));
-				}
-				currentStep += 1;
-			}
-		}
-	}
-
-	return stepCounts;
-};
-
-export const processGoalAnalytics = async (
-	steps: AnalyticsStep[],
-	filters: Array<{ field: string; operator: string; value: string | string[] }>,
-	params: Record<string, unknown>,
-	totalWebsiteUsers: number
-): Promise<ProcessedAnalytics> => {
-	const { conditions: filterConditions, errors } = buildFilterConditions(
-		filters,
-		"f",
-		params
-	);
-
-	if (errors.length > 0) {
-		throw new ORPCError("BAD_REQUEST", {
-			message: `Invalid filters: ${errors.join(", ")}`,
-		});
-	}
-
-	const firstStep = steps[0];
-	const stepQuery = buildStepQuery(firstStep, 0, filterConditions, params);
-
-	const analysisQuery = `
-		WITH all_step_events AS (
-			${stepQuery}
-		)
-		SELECT DISTINCT
-			step_number,
-			step_name,
-			session_id,
-			anonymous_id,
-			first_occurrence
-		FROM all_step_events
-		ORDER BY anonymous_id, first_occurrence`;
-
-	const rawResults = await chQuery<{
-		step_number: number;
-		step_name: string;
-		session_id: string;
-		anonymous_id: string;
-		first_occurrence: number;
-	}>(analysisQuery, params);
-
-	const visitorEvents = processVisitorEvents(rawResults);
-	const stepCounts = calculateStepCounts(visitorEvents);
-
-	const goalCompletions = stepCounts.get(1)?.size ?? 0;
-	const conversion_rate =
-		totalWebsiteUsers > 0 ? (goalCompletions / totalWebsiteUsers) * 100 : 0;
-
-	const analyticsResults = [
-		{
-			step_number: 1,
-			step_name: firstStep.name,
-			users: goalCompletions,
-			total_users: totalWebsiteUsers,
-			conversion_rate,
-			dropoffs: 0,
-			dropoff_rate: 0,
-			avg_time_to_complete: 0,
-		},
-	];
-
-	return {
-		overall_conversion_rate: conversion_rate,
-		total_users_entered: totalWebsiteUsers,
-		total_users_completed: goalCompletions,
-		avg_completion_time: 0,
-		avg_completion_time_formatted: "0s",
-		steps_analytics: analyticsResults,
-	};
-};
-
-type AllowedField =
-	| "event_name"
-	| "path"
-	| "referrer"
-	| "user_agent"
-	| "country"
-	| "city"
-	| "device_type"
-	| "browser_name"
-	| "os_name"
-	| "screen_resolution"
-	| "language"
-	| "utm_source"
-	| "utm_medium"
-	| "utm_campaign"
-	| "utm_term"
-	| "utm_content";
-
-type AllowedOperator =
-	| "equals"
-	| "not_equals"
-	| "contains"
-	| "not_contains"
-	| "starts_with"
-	| "ends_with"
-	| "in"
-	| "not_in"
-	| "is_null"
-	| "is_not_null"
-	| "greater_than"
-	| "less_than"
-	| "greater_than_or_equal"
-	| "less_than_or_equal";
-
-const ALLOWED_FIELDS: readonly AllowedField[] = [
-	"event_name",
-	"path",
-	"referrer",
-	"user_agent",
-	"country",
-	"city",
-	"device_type",
-	"browser_name",
-	"os_name",
-	"screen_resolution",
-	"language",
-	"utm_source",
-	"utm_medium",
-	"utm_campaign",
-	"utm_term",
-	"utm_content",
-] as const;
-
-const ALLOWED_OPERATORS: readonly AllowedOperator[] = [
-	"equals",
-	"not_equals",
-	"contains",
-	"not_contains",
-	"starts_with",
-	"ends_with",
-	"in",
-	"not_in",
-	"is_null",
-	"is_not_null",
-	"greater_than",
-	"less_than",
-	"greater_than_or_equal",
-	"less_than_or_equal",
-] as const;
-
-type Filter = {
-	field: string;
-	operator: string;
-	value: string | string[];
-};
-
-const validateFilter = (filter: Filter): string | null => {
-	if (!ALLOWED_FIELDS.includes(filter.field as AllowedField)) {
-		return `Invalid field: ${filter.field}`;
-	}
-
-	if (!ALLOWED_OPERATORS.includes(filter.operator as AllowedOperator)) {
-		return `Invalid operator: ${filter.operator}`;
-	}
-
-	if (
-		!["is_null", "is_not_null"].includes(filter.operator) &&
-		(!filter.value ||
-			(Array.isArray(filter.value) && filter.value.length === 0))
-	) {
-		return `Value is required for operator: ${filter.operator}`;
-	}
-
-	return null;
-};
-
-const escapeSqlWildcards = (value: string): string =>
-	value.replace(/[%_]/g, "\\$&");
-
-const buildStringCondition = (
-	field: string,
-	operator: AllowedOperator,
-	value: string,
-	prefix: string,
-	params: Record<string, unknown>
-): string => {
-	const paramKey = `${prefix}_${field}_${operator}`;
-
-	let processedValue = value;
-
-	if (operator === "contains") {
-		processedValue = `%${escapeSqlWildcards(value)}%`;
-	} else if (operator === "not_contains") {
-		processedValue = `%${escapeSqlWildcards(value)}%`;
-	} else if (operator === "starts_with") {
-		processedValue = `${escapeSqlWildcards(value)}%`;
-	} else if (operator === "ends_with") {
-		processedValue = `%${escapeSqlWildcards(value)}`;
-	} else {
-		processedValue = escapeSqlWildcards(value);
-	}
-
-	params[paramKey] = processedValue;
-
-	const conditions: Record<AllowedOperator, string> = {
-		equals: `${field} = {${paramKey}:String}`,
-		not_equals: `${field} != {${paramKey}:String}`,
-		contains: `${field} LIKE {${paramKey}:String}`,
-		not_contains: `${field} NOT LIKE {${paramKey}:String}`,
-		starts_with: `${field} LIKE {${paramKey}:String}`,
-		ends_with: `${field} LIKE {${paramKey}:String}`,
-		greater_than: `${field} > {${paramKey}:String}`,
-		less_than: `${field} < {${paramKey}:String}`,
-		greater_than_or_equal: `${field} >= {${paramKey}:String}`,
-		less_than_or_equal: `${field} <= {${paramKey}:String}`,
-		is_null: `${field} IS NULL`,
-		is_not_null: `${field} IS NOT NULL`,
-		in: "",
-		not_in: "",
-	};
-
-	return conditions[operator] || "";
-};
-
-const buildArrayCondition = (
-	field: string,
-	operator: AllowedOperator,
-	values: string[],
-	prefix: string,
-	params: Record<string, unknown>
-): string => {
-	const paramKey = `${prefix}_${field}_${operator}`;
-	params[paramKey] = values;
-
-	if (operator === "in") {
-		return `${field} IN {${paramKey}:Array(String)}`;
-	}
-
-	if (operator === "not_in") {
-		return `${field} NOT IN {${paramKey}:Array(String)}`;
-	}
-
-	return "";
-};
-
-const buildFilterCondition = (
-	filter: Filter,
-	prefix: string,
-	params: Record<string, unknown>
-): string => {
-	const validationError = validateFilter(filter);
-	if (validationError) {
-		throw new Error(validationError);
-	}
-
-	if (Array.isArray(filter.value)) {
-		const condition = buildArrayCondition(
-			filter.field,
-			filter.operator as AllowedOperator,
-			filter.value,
-			prefix,
-			params
-		);
-		if (condition) {
-			return condition;
-		}
-	}
-
-	return buildStringCondition(
-		filter.field,
-		filter.operator as AllowedOperator,
-		filter.value as string,
-		prefix,
-		params
-	);
-};
+const ALLOWED_OPS = new Set([
+	"equals", "not_equals", "contains", "not_contains", "starts_with",
+	"ends_with", "in", "not_in", "is_null", "is_not_null",
+]);
 
 export const buildFilterConditions = (
 	filters: Filter[],
@@ -538,16 +129,52 @@ export const buildFilterConditions = (
 	const conditions: string[] = [];
 	const errors: string[] = [];
 
-	for (const filter of filters) {
-		try {
-			const condition = buildFilterCondition(filter, prefix, params);
-			if (condition) {
-				conditions.push(condition);
-			}
-		} catch (error) {
-			errors.push(
-				error instanceof Error ? error.message : "Unknown filter error"
+	for (const f of filters) {
+		if (!ALLOWED_FIELDS.has(f.field)) {
+			errors.push(`Invalid field: ${f.field}`);
+			continue;
+		}
+		if (!ALLOWED_OPS.has(f.operator)) {
+			errors.push(`Invalid operator: ${f.operator}`);
+			continue;
+		}
+
+		const key = `${prefix}_${f.field}_${f.operator}`;
+		const { field, operator, value } = f;
+
+		if (operator === "is_null") {
+			conditions.push(`${field} IS NULL`);
+		} else if (operator === "is_not_null") {
+			conditions.push(`${field} IS NOT NULL`);
+		} else if (Array.isArray(value)) {
+			params[key] = value;
+			conditions.push(
+				operator === "in"
+					? `${field} IN {${key}:Array(String)}`
+					: `${field} NOT IN {${key}:Array(String)}`
 			);
+		} else {
+			const escaped = (value as string).replace(/[%_]/g, "\\$&");
+			if (operator === "contains") {
+				params[key] = `%${escaped}%`;
+				conditions.push(`${field} LIKE {${key}:String}`);
+			} else if (operator === "not_contains") {
+				params[key] = `%${escaped}%`;
+				conditions.push(`${field} NOT LIKE {${key}:String}`);
+			} else if (operator === "starts_with") {
+				params[key] = `${escaped}%`;
+				conditions.push(`${field} LIKE {${key}:String}`);
+			} else if (operator === "ends_with") {
+				params[key] = `%${escaped}`;
+				conditions.push(`${field} LIKE {${key}:String}`);
+			} else {
+				params[key] = escaped;
+				conditions.push(
+					operator === "equals"
+						? `${field} = {${key}:String}`
+						: `${field} != {${key}:String}`
+				);
+			}
 		}
 	}
 
@@ -557,57 +184,133 @@ export const buildFilterConditions = (
 	};
 };
 
-const parseReferrer = (referrer: string) => {
-	if (!referrer || referrer === "Direct") {
-		return { name: "Direct", type: "direct", domain: "", url: "" };
+// Query building
+const buildStepQuery = (
+	step: AnalyticsStep,
+	idx: number,
+	filterCond: string,
+	params: Record<string, unknown>,
+	includeReferrer = false
+): string => {
+	const nameKey = `step_name_${idx}`;
+	const targetKey = `target_${idx}`;
+	params[nameKey] = step.name;
+	params[targetKey] = step.target;
+
+	const refSelect = includeReferrer ? ", any(referrer) as referrer" : "";
+
+	if (step.type === "PAGE_VIEW") {
+		params[`${targetKey}_like`] = `%${step.target}%`;
+		return `
+			SELECT ${idx + 1} as step_number, {${nameKey}:String} as step_name, any(session_id) as session_id,
+				anonymous_id, MIN(time) as first_occurrence${refSelect}
+			FROM analytics.events
+			WHERE client_id = {websiteId:String}
+				AND time >= parseDateTimeBestEffort({startDate:String})
+				AND time <= parseDateTimeBestEffort({endDate:String})
+				AND event_name = 'screen_view'
+				AND (path = {${targetKey}:String} OR path LIKE {${targetKey}_like:String})${filterCond}
+			GROUP BY anonymous_id`;
 	}
 
-	try {
-		const url = new URL(referrer);
-		return {
-			name: url.hostname,
-			type: "referrer",
-			domain: url.hostname,
-			url: referrer,
-		};
-	} catch {
-		return { name: referrer, type: "referrer", domain: "", url: referrer };
-	}
+	// EVENT type - query both tables
+	const refJoin = includeReferrer
+		? `LEFT JOIN (
+			SELECT anonymous_id, argMin(referrer, time) as visitor_referrer
+			FROM analytics.events
+			WHERE client_id = {websiteId:String}
+				AND time >= parseDateTimeBestEffort({startDate:String})
+				AND time <= parseDateTimeBestEffort({endDate:String})
+				AND event_name = 'screen_view' AND referrer != ''
+			GROUP BY anonymous_id
+		) vr ON e.anonymous_id = vr.anonymous_id`
+		: "";
+
+	return `
+		SELECT ${idx + 1} as step_number, {${nameKey}:String} as step_name, any(session_id) as session_id,
+			e.anonymous_id as anonymous_id, MIN(first_occurrence) as first_occurrence${includeReferrer ? ", COALESCE(vr.visitor_referrer, '') as referrer" : ""}
+		FROM (
+			SELECT anonymous_id, session_id, time as first_occurrence
+			FROM analytics.events
+			WHERE client_id = {websiteId:String}
+				AND time >= parseDateTimeBestEffort({startDate:String})
+				AND time <= parseDateTimeBestEffort({endDate:String})
+				AND event_name = {${targetKey}:String}${filterCond}
+			UNION ALL
+			SELECT anonymous_id, session_id, timestamp as first_occurrence
+			FROM analytics.custom_events
+			WHERE client_id = {websiteId:String}
+				AND timestamp >= parseDateTimeBestEffort({startDate:String})
+				AND timestamp <= parseDateTimeBestEffort({endDate:String})
+				AND event_name = {${targetKey}:String}
+		) e ${refJoin}
+		GROUP BY e.anonymous_id${includeReferrer ? ", vr.visitor_referrer" : ""}`;
 };
 
+// Core processing
+const processVisitorEvents = (
+	rawResults: Array<{
+		step_number: number;
+		step_name: string;
+		session_id: string;
+		anonymous_id: string;
+		first_occurrence: number;
+		referrer?: string;
+	}>
+): Map<string, VisitorEvent[]> => {
+	const map = new Map<string, VisitorEvent[]>();
+	for (const e of rawResults) {
+		const events = map.get(e.anonymous_id) || [];
+		events.push({
+			step_number: e.step_number,
+			step_name: e.step_name,
+			first_occurrence: e.first_occurrence,
+			referrer: e.referrer,
+		});
+		map.set(e.anonymous_id, events);
+	}
+	return map;
+};
+
+const calculateStepCounts = (
+	visitorEvents: Map<string, VisitorEvent[]>,
+	visitorFilter?: Set<string>
+): Map<number, Set<string>> => {
+	const counts = new Map<number, Set<string>>();
+
+	for (const [visitorId, events] of visitorEvents) {
+		if (visitorFilter && !visitorFilter.has(visitorId)) continue;
+
+		events.sort((a, b) => a.first_occurrence - b.first_occurrence);
+		let step = 1;
+		for (const e of events) {
+			if (e.step_number === step) {
+				const set = counts.get(step) || new Set();
+				set.add(visitorId);
+				counts.set(step, set);
+				step++;
+			}
+		}
+	}
+	return counts;
+};
+
+// Main funnel analytics
 export const processFunnelAnalytics = async (
 	steps: AnalyticsStep[],
-	filters: Array<{ field: string; operator: string; value: string | string[] }>,
+	filters: Filter[],
 	params: Record<string, unknown>
 ): Promise<FunnelAnalytics> => {
-	const { conditions: filterConditions, errors } = buildFilterConditions(
-		filters,
-		"f",
-		params
-	);
-
+	const { conditions, errors } = buildFilterConditions(filters, "f", params);
 	if (errors.length > 0) {
-		throw new ORPCError("BAD_REQUEST", {
-			message: `Invalid filters: ${errors.join(", ")}`,
-		});
+		throw new ORPCError("BAD_REQUEST", { message: `Invalid filters: ${errors.join(", ")}` });
 	}
 
-	const stepQueries = steps.map((step, index) =>
-		buildStepQuery(step, index, filterConditions, params)
-	);
-
-	const analysisQuery = `
-		WITH all_step_events AS (
-			${stepQueries.join("\n			UNION ALL\n")}
-		)
-		SELECT DISTINCT
-			step_number,
-			step_name,
-			session_id,
-			anonymous_id,
-			first_occurrence
-		FROM all_step_events
-		ORDER BY anonymous_id, first_occurrence`;
+	const stepQueries = steps.map((s, i) => buildStepQuery(s, i, conditions, params));
+	const query = `
+		WITH all_step_events AS (${stepQueries.join("\nUNION ALL\n")})
+		SELECT DISTINCT step_number, step_name, session_id, anonymous_id, first_occurrence
+		FROM all_step_events ORDER BY anonymous_id, first_occurrence`;
 
 	const rawResults = await chQuery<{
 		step_number: number;
@@ -615,255 +318,177 @@ export const processFunnelAnalytics = async (
 		session_id: string;
 		anonymous_id: string;
 		first_occurrence: number;
-	}>(analysisQuery, params);
+	}>(query, params);
 
 	const visitorEvents = processVisitorEvents(rawResults);
 	const stepCounts = calculateStepCounts(visitorEvents);
+	const totalSteps = steps.length;
 
-	const analyticsResults = steps.map((step, index) => {
-		const stepNumber = index + 1;
-		const users = stepCounts.get(stepNumber)?.size || 0;
-		const prevStepUsers = index > 0 ? stepCounts.get(index)?.size || 0 : users;
-		const totalUsers = stepCounts.get(1)?.size || 0;
+	// Calculate timings
+	const completionTimes: number[] = [];
+	const stepTimings = new Map<number, number[]>();
 
-		let conversion_rate = 100.0;
-		if (index > 0 && prevStepUsers > 0) {
-			conversion_rate = Math.round((users / prevStepUsers) * 100 * 100) / 100;
+	for (const [, events] of visitorEvents) {
+		events.sort((a, b) => a.first_occurrence - b.first_occurrence);
+		let currentStep = 1;
+		let firstTime = 0;
+		let prevTime = 0;
+
+		for (const e of events) {
+			if (e.step_number === currentStep) {
+				if (currentStep === 1) {
+					firstTime = prevTime = e.first_occurrence;
+				} else {
+					const arr = stepTimings.get(currentStep) || [];
+					arr.push(e.first_occurrence - prevTime);
+					stepTimings.set(currentStep, arr);
+					prevTime = e.first_occurrence;
+				}
+				if (currentStep === totalSteps) {
+					completionTimes.push(e.first_occurrence - firstTime);
+				}
+				currentStep++;
+			}
 		}
+	}
 
-		const dropoffs = index > 0 ? prevStepUsers - users : 0;
-		let dropoff_rate = 0;
-		if (index > 0 && prevStepUsers > 0) {
-			dropoff_rate = Math.round((dropoffs / prevStepUsers) * 100 * 100) / 100;
-		}
+	const avgCompletionTime = safeAvg(completionTimes);
+	const totalUsers = stepCounts.get(1)?.size || 0;
+
+	const stepsAnalytics: StepAnalytics[] = steps.map((s, i) => {
+		const stepNum = i + 1;
+		const users = stepCounts.get(stepNum)?.size || 0;
+		const prevUsers = i > 0 ? stepCounts.get(i)?.size || 0 : users;
+		const dropoffs = i > 0 ? prevUsers - users : 0;
 
 		return {
-			step_number: stepNumber,
-			step_name: step.name,
+			step_number: stepNum,
+			step_name: s.name,
 			users,
 			total_users: totalUsers,
-			conversion_rate,
+			conversion_rate: i > 0 ? pct(users, prevUsers) : 100,
 			dropoffs,
-			dropoff_rate,
-			avg_time_to_complete: 0,
+			dropoff_rate: i > 0 ? pct(dropoffs, prevUsers) : 0,
+			avg_time_to_complete: safeAvg(stepTimings.get(stepNum) || []),
 		};
 	});
 
-	const firstStep = analyticsResults[0];
-	const lastStep = analyticsResults.at(-1);
-	const biggestDropoff = analyticsResults.reduce(
-		(max, step) => (step.dropoff_rate > max.dropoff_rate ? step : max),
-		analyticsResults[1] || analyticsResults[0]
+	const lastStep = stepsAnalytics.at(-1);
+	const biggestDropoff = stepsAnalytics.slice(1).reduce(
+		(max, s) => (s.dropoff_rate > max.dropoff_rate ? s : max),
+		stepsAnalytics[1] || stepsAnalytics[0]
 	);
 
-	let overall_conversion_rate = 0;
-	if (lastStep && stepCounts.get(1)?.size) {
-		const firstStepSize = stepCounts.get(1)?.size || 0;
-		if (firstStepSize > 0) {
-			overall_conversion_rate =
-				Math.round((lastStep.users / firstStepSize) * 100 * 100) / 100;
-		}
+	// Time series query
+	let timeSeries: FunnelTimeSeriesPoint[] = [];
+	try {
+		const tsQuery = `
+			WITH all_step_events AS (${stepQueries.join("\nUNION ALL\n")}),
+			daily_first AS (
+				SELECT toDate(first_occurrence) as date, anonymous_id, MIN(first_occurrence) as first_time
+				FROM all_step_events WHERE step_number = 1 GROUP BY date, anonymous_id
+			),
+			daily_last AS (
+				SELECT toDate(first_occurrence) as date, anonymous_id, MAX(first_occurrence) as last_time
+				FROM all_step_events WHERE step_number = ${totalSteps} GROUP BY date, anonymous_id
+			)
+			SELECT toString(f.date) as date, COUNT(DISTINCT f.anonymous_id) as users,
+				COUNT(DISTINCT l.anonymous_id) as conversions,
+				AVG(IF(l.last_time IS NOT NULL, dateDiff('second', f.first_time, l.last_time), 0)) as avg_time
+			FROM daily_first f
+			LEFT JOIN daily_last l ON f.anonymous_id = l.anonymous_id AND f.date = l.date
+			GROUP BY f.date ORDER BY f.date`;
+
+		const tsResults = await chQuery<{ date: string; users: number; conversions: number; avg_time: number }>(tsQuery, params);
+		timeSeries = tsResults.map((r) => ({
+			date: r.date,
+			users: r.users || 0,
+			conversions: r.conversions || 0,
+			conversion_rate: pct(r.conversions || 0, r.users || 0),
+			dropoffs: (r.users || 0) - (r.conversions || 0),
+			avg_time: Math.round(r.avg_time || 0) || 0,
+		}));
+	} catch (err) {
+		console.error("Time-series query failed:", err);
 	}
 
 	return {
-		overall_conversion_rate,
-		total_users_entered: firstStep ? firstStep.total_users : 0,
-		total_users_completed: lastStep ? lastStep.users : 0,
+		overall_conversion_rate: pct(lastStep?.users || 0, totalUsers),
+		total_users_entered: totalUsers,
+		total_users_completed: lastStep?.users || 0,
+		avg_completion_time: avgCompletionTime,
+		avg_completion_time_formatted: formatDuration(avgCompletionTime),
+		biggest_dropoff_step: biggestDropoff?.step_number || 1,
+		biggest_dropoff_rate: biggestDropoff?.dropoff_rate || 0,
+		steps_analytics: stepsAnalytics,
+		time_series: timeSeries,
+	};
+};
+
+// Goal analytics (single step)
+export const processGoalAnalytics = async (
+	steps: AnalyticsStep[],
+	filters: Filter[],
+	params: Record<string, unknown>,
+	totalWebsiteUsers: number
+): Promise<ProcessedAnalytics> => {
+	const { conditions, errors } = buildFilterConditions(filters, "f", params);
+	if (errors.length > 0) {
+		throw new ORPCError("BAD_REQUEST", { message: `Invalid filters: ${errors.join(", ")}` });
+	}
+
+	const step = steps[0];
+	const query = `
+		WITH step_events AS (${buildStepQuery(step, 0, conditions, params)})
+		SELECT DISTINCT step_number, step_name, session_id, anonymous_id, first_occurrence
+		FROM step_events ORDER BY anonymous_id, first_occurrence`;
+
+	const rawResults = await chQuery<{
+		step_number: number;
+		step_name: string;
+		session_id: string;
+		anonymous_id: string;
+		first_occurrence: number;
+	}>(query, params);
+
+	const visitorEvents = processVisitorEvents(rawResults);
+	const completions = calculateStepCounts(visitorEvents).get(1)?.size || 0;
+
+	return {
+		overall_conversion_rate: pct(completions, totalWebsiteUsers),
+		total_users_entered: totalWebsiteUsers,
+		total_users_completed: completions,
 		avg_completion_time: 0,
-		avg_completion_time_formatted: "0s",
-		biggest_dropoff_step: biggestDropoff ? biggestDropoff.step_number : 1,
-		biggest_dropoff_rate: biggestDropoff ? biggestDropoff.dropoff_rate : 0,
-		steps_analytics: analyticsResults,
+		avg_completion_time_formatted: "—",
+		steps_analytics: [{
+			step_number: 1,
+			step_name: step.name,
+			users: completions,
+			total_users: totalWebsiteUsers,
+			conversion_rate: pct(completions, totalWebsiteUsers),
+			dropoffs: 0,
+			dropoff_rate: 0,
+			avg_time_to_complete: 0,
+		}],
 	};
 };
 
-const calculateReferrerStepCounts = (
-	group: {
-		parsed: { name: string; type: string; domain: string; url: string };
-		visitorIds: Set<string>;
-	},
-	visitorEvents: Map<
-		string,
-		Array<{
-			step_number: number;
-			step_name: string;
-			first_occurrence: number;
-			referrer?: string;
-		}>
-	>
-): Map<number, Set<string>> => {
-	const stepCounts = new Map<number, Set<string>>();
-
-	for (const visitorId of Array.from(group.visitorIds)) {
-		const events = visitorEvents
-			.get(visitorId)
-			?.sort((a, b) => a.first_occurrence - b.first_occurrence);
-
-		if (!events) {
-			continue;
-		}
-
-		let currentStep = 1;
-		for (const event of events) {
-			if (event.step_number === currentStep) {
-				const stepSet = stepCounts.get(currentStep);
-				if (stepSet) {
-					stepSet.add(visitorId);
-				} else {
-					stepCounts.set(currentStep, new Set([visitorId]));
-				}
-				currentStep += 1;
-			}
-		}
-	}
-
-	return stepCounts;
-};
-
-const calculateReferrerConversionRate = (
-	total_users: number,
-	completed_users: number
-): number => {
-	if (total_users === 0) {
-		return 0;
-	}
-	return Math.round((completed_users / total_users) * 100 * 100) / 100;
-};
-
-const processReferrerGroup = (
-	groupKey: string,
-	group: {
-		parsed: { name: string; type: string; domain: string; url: string };
-		visitorIds: Set<string>;
-	},
-	visitorEvents: Map<
-		string,
-		Array<{
-			step_number: number;
-			step_name: string;
-			first_occurrence: number;
-			referrer?: string;
-		}>
-	>,
-	steps: AnalyticsStep[]
-): ReferrerAnalytics | null => {
-	const stepCounts = calculateReferrerStepCounts(group, visitorEvents);
-
-	const total_users = stepCounts.get(1)?.size || 0;
-	if (total_users === 0) {
-		return null;
-	}
-
-	const completed_users = stepCounts.get(steps.length)?.size || 0;
-	const conversion_rate = calculateReferrerConversionRate(
-		total_users,
-		completed_users
-	);
-
-	return {
-		referrer: groupKey,
-		referrer_parsed: group.parsed,
-		total_users,
-		completed_users,
-		conversion_rate,
-	};
-};
-
-const aggregateReferrerAnalytics = (
-	referrerAnalytics: ReferrerAnalytics[]
-): ReferrerAnalytics[] => {
-	const aggregated = new Map<
-		string,
-		{
-			parsed: { name: string; type: string; domain: string; url: string };
-			total_users: number;
-			completed_users: number;
-			conversion_rate_sum: number;
-			conversion_rate_count: number;
-		}
-	>();
-
-	for (const {
-		referrer,
-		referrer_parsed,
-		total_users,
-		completed_users,
-		conversion_rate,
-	} of referrerAnalytics) {
-		if (!aggregated.has(referrer)) {
-			aggregated.set(referrer, {
-				parsed: referrer_parsed,
-				total_users: 0,
-				completed_users: 0,
-				conversion_rate_sum: 0,
-				conversion_rate_count: 0,
-			});
-		}
-
-		const agg = aggregated.get(referrer);
-		if (agg) {
-			agg.total_users += total_users;
-			agg.completed_users += completed_users;
-			agg.conversion_rate_sum += conversion_rate;
-			agg.conversion_rate_count += 1;
-		}
-	}
-
-	return Array.from(aggregated.entries())
-		.map(([key, agg]) => {
-			let conversion_rate = 0;
-			if (agg.conversion_rate_count > 0) {
-				conversion_rate =
-					Math.round(
-						(agg.conversion_rate_sum / agg.conversion_rate_count) * 100
-					) / 100;
-			}
-
-			return {
-				referrer: key,
-				referrer_parsed: agg.parsed,
-				total_users: agg.total_users,
-				completed_users: agg.completed_users,
-				conversion_rate,
-			};
-		})
-		.sort((a, b) => b.total_users - a.total_users);
-};
-
+// Referrer analytics
 export const processFunnelAnalyticsByReferrer = async (
 	steps: AnalyticsStep[],
-	filters: Array<{ field: string; operator: string; value: string | string[] }>,
+	filters: Filter[],
 	params: Record<string, unknown>
 ): Promise<{ referrer_analytics: ReferrerAnalytics[] }> => {
-	const { conditions: filterConditions, errors } = buildFilterConditions(
-		filters,
-		"f",
-		params
-	);
-
+	const { conditions, errors } = buildFilterConditions(filters, "f", params);
 	if (errors.length > 0) {
-		throw new ORPCError("BAD_REQUEST", {
-			message: `Invalid filters: ${errors.join(", ")}`,
-		});
+		throw new ORPCError("BAD_REQUEST", { message: `Invalid filters: ${errors.join(", ")}` });
 	}
 
-	const stepQueries = steps.map((step, index) =>
-		buildStepQuery(step, index, filterConditions, params, true)
-	);
-
-	const sessionReferrerQuery = `
-		WITH all_step_events AS (
-			${stepQueries.join("\n			UNION ALL\n")}
-		)
-		SELECT DISTINCT
-			step_number,
-			step_name,
-			session_id,
-			anonymous_id,
-			first_occurrence,
-			referrer
-		FROM all_step_events
-		ORDER BY anonymous_id, first_occurrence`;
+	const stepQueries = steps.map((s, i) => buildStepQuery(s, i, conditions, params, true));
+	const query = `
+		WITH all_step_events AS (${stepQueries.join("\nUNION ALL\n")})
+		SELECT DISTINCT step_number, step_name, session_id, anonymous_id, first_occurrence, referrer
+		FROM all_step_events ORDER BY anonymous_id, first_occurrence`;
 
 	const rawResults = await chQuery<{
 		step_number: number;
@@ -872,46 +497,57 @@ export const processFunnelAnalyticsByReferrer = async (
 		anonymous_id: string;
 		first_occurrence: number;
 		referrer: string;
-	}>(sessionReferrerQuery, params);
+	}>(query, params);
 
 	const visitorEvents = processVisitorEvents(rawResults);
 
-	const referrerGroups = new Map<
-		string,
-		{
-			parsed: { name: string; type: string; domain: string; url: string };
-			visitorIds: Set<string>;
-		}
-	>();
+	// Group by referrer
+	const groups = new Map<string, { parsed: ReturnType<typeof parseReferrer>; visitors: Set<string> }>();
+	for (const [visitorId, events] of visitorEvents) {
+		if (events.length === 0) continue;
+		const ref = events[0].referrer || "Direct";
+		const parsed = parseReferrer(ref);
+		const key = parsed.domain?.toLowerCase() || "direct";
 
-	for (const [visitorId, events] of Array.from(visitorEvents.entries())) {
-		if (events.length > 0) {
-			const referrer = events[0].referrer || "Direct";
-			const parsed = parseReferrer(referrer);
-			const groupKey = parsed.domain ? parsed.domain.toLowerCase() : "direct";
-
-			if (!referrerGroups.has(groupKey)) {
-				referrerGroups.set(groupKey, { parsed, visitorIds: new Set() });
-			}
-			referrerGroups.get(groupKey)?.visitorIds.add(visitorId);
+		if (!groups.has(key)) {
+			groups.set(key, { parsed, visitors: new Set() });
 		}
+		groups.get(key)?.visitors.add(visitorId);
 	}
 
-	const referrerAnalytics: ReferrerAnalytics[] = [];
+	// Calculate per-referrer stats
+	const analytics: ReferrerAnalytics[] = [];
+	for (const [key, group] of groups) {
+		const counts = calculateStepCounts(visitorEvents, group.visitors);
+		const total = counts.get(1)?.size || 0;
+		if (total === 0) continue;
 
-	for (const [groupKey, group] of Array.from(referrerGroups.entries())) {
-		const analytics = processReferrerGroup(
-			groupKey,
-			group,
-			visitorEvents,
-			steps
-		);
-		if (analytics) {
-			referrerAnalytics.push(analytics);
-		}
+		const completed = counts.get(steps.length)?.size || 0;
+		analytics.push({
+			referrer: key,
+			referrer_parsed: group.parsed,
+			total_users: total,
+			completed_users: completed,
+			conversion_rate: pct(completed, total),
+		});
 	}
 
-	const referrer_analytics = aggregateReferrerAnalytics(referrerAnalytics);
+	return { referrer_analytics: analytics.sort((a, b) => b.total_users - a.total_users) };
+};
 
-	return { referrer_analytics };
+// Utility export
+export const getTotalWebsiteUsers = async (
+	websiteId: string,
+	startDate: string,
+	endDate: string
+): Promise<number> => {
+	const result = await chQuery<{ total_users: number }>(
+		`SELECT COUNT(DISTINCT anonymous_id) as total_users FROM analytics.events
+		 WHERE client_id = {websiteId:String}
+			AND time >= parseDateTimeBestEffort({startDate:String})
+			AND time <= parseDateTimeBestEffort({endDate:String})
+			AND event_name = 'screen_view'`,
+		{ websiteId, startDate, endDate: `${endDate} 23:59:59` }
+	);
+	return result[0]?.total_users ?? 0;
 };

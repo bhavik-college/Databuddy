@@ -330,6 +330,7 @@ export const funnelsRouter = {
 			return drizzleCache.withCache({
 				key: cacheKey,
 				ttl: ANALYTICS_CACHE_TTL,
+				disabled: true,
 				tables: ["funnelDefinitions"],
 				queryFn: async () => {
 					await authorizeWebsiteAccess(context, input.websiteId, "read");
