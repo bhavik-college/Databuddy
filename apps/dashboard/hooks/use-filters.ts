@@ -2,9 +2,10 @@ import type { DynamicQueryFilter } from "@databuddy/shared/types/api";
 import { useCallback } from "react";
 
 export const operatorOptions = [
-	{ value: "equals", label: "equals" },
+	{ value: "eq", label: "equals" },
+	{ value: "ne", label: "does not equal" },
 	{ value: "contains", label: "contains" },
-	{ value: "not_equals", label: "does not equal" },
+	{ value: "starts_with", label: "starts with" },
 ] as const;
 
 type BaseFilterType = {

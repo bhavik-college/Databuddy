@@ -2,29 +2,41 @@
 
 import { filterOptions } from "@databuddy/shared/lists/filters";
 import type { DynamicQueryFilter } from "@databuddy/shared/types/api";
-import { FunnelIcon } from "@phosphor-icons/react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+	ArrowLeftIcon,
+	FunnelIcon,
+	WarningCircleIcon,
+} from "@phosphor-icons/react";
 import { useParams } from "next/navigation";
-import { Suspense, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
+	CommandEmpty,
+	CommandGroup,
 	CommandInput,
 	CommandItem,
 	CommandList,
 } from "@/components/ui/command";
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
 	Select,
 	SelectContent,
@@ -40,254 +52,310 @@ import {
 } from "@/hooks/use-funnels";
 import { cn } from "@/lib/utils";
 
-type OperatorOption = (typeof operatorOptions)[number];
 type FilterOption = (typeof filterOptions)[number];
 
-export function getOperatorShorthand(operator: OperatorOption["value"]) {
-	const operatorToShorthandMap: Record<
-		OperatorOption["value"],
-		DynamicQueryFilter["operator"]
-	> = {
-		equals: "eq",
-		contains: "like",
-		not_equals: "ne",
+const filterFormSchema = z.object({
+	field: z.string().min(1, "Please select a field"),
+	operator: z.enum(["eq", "ne", "contains", "starts_with"]),
+	value: z.string().min(1, "Value is required"),
+});
+
+type FilterFormData = z.infer<typeof filterFormSchema>;
+
+const MAX_SUGGESTIONS = 8;
+
+function getSuggestions(
+	field: string,
+	autocompleteData: AutocompleteData | undefined
+): string[] {
+	if (!autocompleteData) return [];
+
+	const suggestionMap: Record<string, string[] | undefined> = {
+		browser_name: autocompleteData.browsers,
+		os_name: autocompleteData.operatingSystems,
+		country: autocompleteData.countries,
+		device_type: autocompleteData.deviceTypes,
+		utm_source: autocompleteData.utmSources,
+		utm_medium: autocompleteData.utmMediums,
+		utm_campaign: autocompleteData.utmCampaigns,
+		path: autocompleteData.pagePaths,
 	};
-	return operatorToShorthandMap[operator] || operator;
+
+	return suggestionMap[field] ?? [];
 }
 
-const MAX_SUGGESTIONS = 7;
-
-function FilterEditorForm({
-	filterOption,
-	addFilter,
-	setIsDropdownOpen,
+function ValueSuggestions({
 	suggestions,
+	searchValue,
+	onSelect,
+	selectedValue,
 }: {
-	addFilter: (filter: DynamicQueryFilter) => void;
-	filterOption: FilterOption;
-	setIsDropdownOpen: (isOpen: boolean) => void;
 	suggestions: string[];
+	searchValue: string;
+	onSelect: (value: string) => void;
+	selectedValue: string;
 }) {
-	const [operator, setOperator] = useState<OperatorOption>(operatorOptions[0]);
-	const [value, setValue] = useState("");
+	const filteredSuggestions = searchValue.trim()
+		? suggestions
+				.filter((s) => s.toLowerCase().includes(searchValue.toLowerCase()))
+				.slice(0, MAX_SUGGESTIONS)
+		: suggestions.slice(0, MAX_SUGGESTIONS);
 
-	const [searchValue, setSearchValue] = useState("");
-	const [isOpen, setIsOpen] = useState(false);
-	const [filteredSuggestions, setFilteredSuggestions] = useState(
-		suggestions.slice(0, MAX_SUGGESTIONS)
-	);
-
-	const handleInputChange = useCallback(
-		(newValue: string) => {
-			setSearchValue(newValue);
-			setValue(newValue);
-
-			if (newValue.trim()) {
-				const filtered = suggestions
-					.filter((s) => s.toLowerCase().includes(newValue.toLowerCase()))
-					.slice(0, MAX_SUGGESTIONS);
-				setFilteredSuggestions(filtered);
-				// Keep popover open even if no results - don't auto-close
-			} else {
-				setFilteredSuggestions(suggestions.slice(0, MAX_SUGGESTIONS));
-			}
-		},
-		[suggestions]
-	);
-
-	const handleSelect = (suggestion: string) => {
-		setIsOpen(false);
-		setValue(suggestion);
-	};
+	if (suggestions.length === 0) return null;
 
 	return (
-		<div className="w-full space-y-2 p-2">
-			<p>{filterOption.label}</p>
-			<div className="flex w-full items-center gap-2">
-				<Select
-					onValueChange={(operatorValue) =>
-						setOperator(
-							operatorOptions.find(
-								(o) => o.value === operatorValue
-							) as OperatorOption
-						)
-					}
-					value={operator.value}
-				>
-					<SelectTrigger className="w-32 rounded border-border/50">
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent className="rounded">
-						{operatorOptions.map((option) => (
-							<SelectItem key={option.value} value={option.value}>
-								{option.label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-				<Popover onOpenChange={setIsOpen} open={isOpen}>
-					<PopoverTrigger asChild>
-						<Button
-							aria-expanded={isOpen}
-							className="w-full flex-1 justify-between overflow-x-auto overflow-y-hidden bg-transparent px-3"
-							onClick={() => setIsOpen(true)}
-							variant="outline"
+		<div className="space-y-2">
+			<p className="text-muted-foreground text-xs">Suggestions</p>
+			<div className="flex flex-wrap gap-1.5">
+				{filteredSuggestions.length === 0 ? (
+					<p className="py-2 text-muted-foreground text-xs">No matches found</p>
+				) : (
+					filteredSuggestions.map((suggestion) => (
+						<button
+							className={cn(
+								"cursor-pointer rounded border px-2 py-1 text-xs transition-colors hover:bg-accent",
+								selectedValue === suggestion
+									? "border-primary bg-primary/10 text-primary"
+									: "border-border"
+							)}
+							key={suggestion}
+							onClick={() => onSelect(suggestion)}
+							type="button"
 						>
-							{value === "" ? "Select a value" : value}
-						</Button>
-					</PopoverTrigger>
-					<PopoverContent align="start" className="p-0">
-						<Command shouldFilter={false}>
-							<CommandInput
-								className="w-full"
-								onValueChange={handleInputChange}
-								placeholder="Search for a value"
-								value={searchValue}
-							/>
-							<CommandList>
-								{filteredSuggestions.map((suggestion) => (
-									<CommandItem
-										className="w-full cursor-pointer border-b px-3 py-2 text-left text-sm last:border-b-0 hover:bg-accent hover:text-accent-foreground"
-										key={suggestion}
-										onSelect={() => handleSelect(suggestion)}
-										value={suggestion}
-									>
-										{suggestion}
-									</CommandItem>
-								))}
-							</CommandList>
-						</Command>
-					</PopoverContent>
-				</Popover>
+							{suggestion}
+						</button>
+					))
+				)}
 			</div>
-			<Button
-				disabled={!value.trim()}
-				onClick={() => {
-					addFilter({
-						field: filterOption.value,
-						operator: getOperatorShorthand(operator.value),
-						value,
-					});
-					setIsDropdownOpen(false);
-				}}
-				variant="default"
-			>
-				Add
-			</Button>
 		</div>
 	);
 }
 
-function FilterSelectionForm({
-	onFilterClick,
-}: {
-	onFilterClick: (filterOption: FilterOption) => void;
-}) {
-	return (
-		<>
-			<DropdownMenuLabel>Fields</DropdownMenuLabel>
-			<DropdownMenuSeparator />
-			{filterOptions.map((filter) => (
-				<DropdownMenuItem
-					key={filter.value}
-					onClick={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
-						onFilterClick(filter);
-					}}
-				>
-					{filter.label}
-				</DropdownMenuItem>
-			))}
-		</>
-	);
-}
+type FilterDialogStep = "select-field" | "configure-value";
 
-function FilterForm({
+function FilterDialogContent({
 	addFilter,
-	setIsDropdownOpen,
+	onClose,
 	autocompleteData,
-	isAutocompleteDataLoading,
-	isAutocompleteDataError,
+	isLoading,
+	isError,
 }: {
 	addFilter: (filter: DynamicQueryFilter) => void;
-	setIsDropdownOpen: (isOpen: boolean) => void;
+	onClose: () => void;
 	autocompleteData: AutocompleteData | undefined;
-	isAutocompleteDataLoading: boolean;
-	isAutocompleteDataError: boolean;
+	isLoading: boolean;
+	isError: boolean;
 }) {
-	const [filterBeingEdited, setFilterBeingEdited] =
-		useState<FilterOption | null>(null);
+	const [step, setStep] = useState<FilterDialogStep>("select-field");
+	const [selectedFilterOption, setSelectedFilterOption] = useState<FilterOption | null>(null);
 
-	const getSuggestions = useCallback(
-		(field: string): string[] => {
-			if (!autocompleteData) {
-				return [];
-			}
-
-			switch (field) {
-				case "browser_name":
-					return autocompleteData.browsers || [];
-				case "os_name":
-					return autocompleteData.operatingSystems || [];
-				case "country":
-					return autocompleteData.countries || [];
-				case "device_type":
-					return autocompleteData.deviceTypes || [];
-				case "utm_source":
-					return autocompleteData.utmSources || [];
-				case "utm_medium":
-					return autocompleteData.utmMediums || [];
-				case "utm_campaign":
-					return autocompleteData.utmCampaigns || [];
-				case "path":
-					return autocompleteData.pagePaths || [];
-				default:
-					return [];
-			}
+	const form = useForm<FilterFormData>({
+		resolver: zodResolver(filterFormSchema),
+		defaultValues: {
+			field: "",
+			operator: "eq",
+			value: "",
 		},
-		[autocompleteData]
-	);
+	});
 
-	if (isAutocompleteDataError) {
+	const watchedValue = form.watch("value");
+	const watchedField = form.watch("field");
+
+	const handleFieldSelect = (filter: FilterOption) => {
+		setSelectedFilterOption(filter);
+		form.setValue("field", filter.value, { shouldValidate: true });
+		setStep("configure-value");
+	};
+
+	const handleBack = () => {
+		setStep("select-field");
+		setSelectedFilterOption(null);
+		form.reset();
+	};
+
+	const onSubmit = (data: FilterFormData) => {
+		addFilter({
+			field: data.field,
+			operator: data.operator,
+			value: data.value.trim(),
+		});
+		onClose();
+	};
+
+	const suggestions = getSuggestions(watchedField, autocompleteData);
+
+	if (isError) {
 		return (
-			<div className="p-4 text-destructive text-sm">
-				Failed to load filter suggestions. Please try again.
-			</div>
+			<>
+				<div className="mb-3 flex items-center gap-3">
+					<div className="rounded-full border bg-destructive/10 p-2.5">
+						<WarningCircleIcon className="size-4 text-destructive" weight="duotone" />
+					</div>
+					<div>
+						<DialogTitle className="font-medium text-base">Add Filter</DialogTitle>
+						<DialogDescription className="text-muted-foreground text-xs">
+							Failed to load filter suggestions
+						</DialogDescription>
+					</div>
+				</div>
+				<div className="py-4 text-center">
+					<p className="text-muted-foreground text-sm">Please try again later</p>
+				</div>
+				<DialogFooter>
+					<Button className="flex-1" onClick={onClose} variant="secondary">
+						Close
+					</Button>
+				</DialogFooter>
+			</>
 		);
 	}
 
-	if (isAutocompleteDataLoading) {
-		const numberOfFilters = filterOptions.length;
+	if (step === "select-field") {
 		return (
-			<div className="flex flex-col gap-2">
-				{Array.from({ length: Math.min(numberOfFilters, 5) }, (_, index) => (
-					<Skeleton
-						className="h-8 w-full"
-						key={`filter-skeleton-${index.toString()}`}
-					/>
-				))}
-			</div>
-		);
-	}
+			<>
+				<div className="mb-3 flex items-center gap-3">
+					<div className="rounded-full border bg-secondary p-2.5">
+						<FunnelIcon className="size-4 text-accent-foreground" weight="duotone" />
+					</div>
+					<div>
+						<DialogTitle className="font-medium text-base">Add Filter</DialogTitle>
+						<DialogDescription className="text-muted-foreground text-xs">
+							Choose a field to filter your data
+						</DialogDescription>
+					</div>
+				</div>
 
-	if (filterBeingEdited) {
-		return (
-			<FilterEditorForm
-				addFilter={addFilter}
-				filterOption={filterBeingEdited}
-				setIsDropdownOpen={setIsDropdownOpen}
-				suggestions={getSuggestions(filterBeingEdited.value)}
-			/>
+				{isLoading ? (
+					<div className="space-y-2 py-2">
+						{Array.from({ length: 5 }, (_, i) => (
+							<Skeleton className="h-9 w-full" key={`skeleton-${i.toString()}`} />
+						))}
+					</div>
+				) : (
+					<Command className="rounded border">
+						<CommandInput placeholder="Search fields…" />
+						<CommandList className="max-h-[240px]">
+							<CommandEmpty>No field found.</CommandEmpty>
+							<CommandGroup>
+								{filterOptions.map((filter) => (
+									<CommandItem
+										key={filter.value}
+										onSelect={() => handleFieldSelect(filter)}
+										value={filter.label}
+									>
+										{filter.label}
+									</CommandItem>
+								))}
+							</CommandGroup>
+						</CommandList>
+					</Command>
+				)}
+
+				<DialogFooter>
+					<Button className="flex-1" onClick={onClose} variant="secondary">
+						Cancel
+					</Button>
+				</DialogFooter>
+			</>
 		);
 	}
 
 	return (
-		<FilterSelectionForm
-			onFilterClick={(filterOption: FilterOption) =>
-				setFilterBeingEdited(filterOption)
-			}
-		/>
+		<>
+			<div className="mb-3 flex items-center gap-3">
+				<div className="rounded-full border bg-secondary p-2.5">
+					<FunnelIcon className="size-4 text-accent-foreground" weight="duotone" />
+				</div>
+				<div>
+					<DialogTitle className="font-medium text-base">
+						{selectedFilterOption?.label}
+					</DialogTitle>
+					<DialogDescription className="text-muted-foreground text-xs">
+						Set the condition and value for this filter
+					</DialogDescription>
+				</div>
+			</div>
+
+			<button
+				className="mb-3 flex cursor-pointer items-center gap-1.5 text-muted-foreground text-xs transition-colors hover:text-foreground"
+				onClick={handleBack}
+				type="button"
+			>
+				<ArrowLeftIcon className="size-3" weight="fill" />
+				Back to fields
+			</button>
+
+			<Form {...form}>
+				<form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)}>
+					<FormField
+						control={form.control}
+						name="value"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel className="text-xs">Value</FormLabel>
+								<FormControl>
+									<div className="flex">
+										<FormField
+											control={form.control}
+											name="operator"
+											render={({ field: operatorField }) => (
+												<Select
+													defaultValue={operatorField.value}
+													onValueChange={operatorField.onChange}
+												>
+													<SelectTrigger className="h-9 w-auto gap-1 rounded-r-none border-r-0 bg-secondary px-2.5 text-xs font-medium">
+														<SelectValue />
+													</SelectTrigger>
+													<SelectContent align="start">
+														{operatorOptions.map((option) => (
+															<SelectItem key={option.value} value={option.value}>
+																{option.label}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+											)}
+										/>
+										<Input
+											autoFocus
+											className="rounded-l-none text-sm"
+											placeholder={`Enter ${selectedFilterOption?.label.toLowerCase()}…`}
+											{...field}
+										/>
+									</div>
+								</FormControl>
+								<FormMessage className="text-xs" />
+							</FormItem>
+						)}
+					/>
+
+					<ValueSuggestions
+						onSelect={(value) => form.setValue("value", value, { shouldValidate: true })}
+						searchValue={watchedValue}
+						selectedValue={watchedValue}
+						suggestions={suggestions}
+					/>
+
+					<DialogFooter className="pt-2">
+						<Button
+							className="flex-1"
+							onClick={onClose}
+							type="button"
+							variant="secondary"
+						>
+							Cancel
+						</Button>
+						<Button
+							className="flex-1"
+							disabled={!form.formState.isValid}
+							type="submit"
+						>
+							Add filter
+						</Button>
+					</DialogFooter>
+				</form>
+			</Form>
+		</>
 	);
 }
 
@@ -308,39 +376,35 @@ export function AddFilterForm({
 	const websiteId = id as string;
 
 	const autocompleteQuery = useAutocompleteData(websiteId);
-	const autocompleteData = autocompleteQuery.data;
+
+	const handleClose = useCallback(() => {
+		setIsOpen(false);
+	}, []);
 
 	return (
-		<DropdownMenu disabled={disabled} onOpenChange={setIsOpen} open={isOpen}>
-			<DropdownMenuTrigger asChild>
-				<Button
-					aria-expanded={isOpen}
-					aria-haspopup="menu"
-					aria-label="Add filter"
-					className={cn("h-8 text-xs", className)}
-					disabled={disabled}
-					onClick={() => setIsOpen(!isOpen)}
-					variant="secondary"
-				>
-					<FunnelIcon aria-hidden="true" className="size-3.5" weight="duotone" />
-					{buttonText}
-				</Button>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent
-				align="end"
-				className="w-[calc(100vw-2rem)] max-w-[300px] sm:w-[300px]"
-				side="bottom"
+		<>
+			<Button
+				aria-label="Add filter"
+				className={cn("h-8 text-xs", className)}
+				disabled={disabled}
+				onClick={() => setIsOpen(true)}
+				variant="secondary"
 			>
-				<Suspense fallback={<div>Loading...</div>}>
-					<FilterForm
+				<FunnelIcon className="size-3.5" weight="duotone" />
+				{buttonText}
+			</Button>
+
+			<Dialog onOpenChange={setIsOpen} open={isOpen}>
+				<DialogContent className="max-w-md p-4">
+					<FilterDialogContent
 						addFilter={addFilter}
-						autocompleteData={autocompleteData}
-						isAutocompleteDataError={autocompleteQuery.isError}
-						isAutocompleteDataLoading={autocompleteQuery.isLoading}
-						setIsDropdownOpen={setIsOpen}
+						autocompleteData={autocompleteQuery.data}
+						isError={autocompleteQuery.isError}
+						isLoading={autocompleteQuery.isLoading}
+						onClose={handleClose}
 					/>
-				</Suspense>
-			</DropdownMenuContent>
-		</DropdownMenu>
+				</DialogContent>
+			</Dialog>
+		</>
 	);
 }

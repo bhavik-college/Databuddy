@@ -7,7 +7,6 @@ import { useAtom } from "jotai";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
-
 import { useSavedFilters } from "@/hooks/use-saved-filters";
 import {
 	dynamicQueryFiltersAtom,
@@ -18,41 +17,41 @@ import { DeleteFilterDialog } from "./delete-filter-dialog";
 import { SaveFilterDialog } from "./save-filter-dialog";
 import { SavedFiltersMenu } from "./saved-filters-menu";
 
-function getOperatorSymbol(operator: string): string {
-	const operatorToSymbolMap: Record<string, string> = {
-		eq: "=",
-		like: "∈",
-		ne: "≠",
-		in: "∈",
-		notIn: "∉",
-		gt: ">",
-		gte: "≥",
-		lt: "<",
-		lte: "≤",
-	};
-	return operatorToSymbolMap[operator] || operator;
+const operatorLabels: Record<string, string> = {
+	eq: "is",
+	ne: "is not",
+	contains: "contains",
+	starts_with: "starts with",
+	like: "like",
+	in: "in",
+	not_in: "not in",
+	gt: ">",
+	gte: "≥",
+	lt: "<",
+	lte: "≤",
+};
+
+function getOperatorLabel(operator: string): string {
+	return operatorLabels[operator] ?? operator;
 }
 
+function getFieldLabel(field: string): string {
+	return filterOptions.find((o) => o.value === field)?.label ?? field;
+}
+
+function formatValue(value: DynamicQueryFilter["value"]): string {
+	return Array.isArray(value) ? value.join(", ") : String(value);
+}
+
+type EditingState = {
+	id: string;
+	name: string;
+	originalFilters: DynamicQueryFilter[];
+} | null;
+
 export function FiltersSection() {
-	const [selectedFilters, setSelectedFilters] = useAtom(
-		dynamicQueryFiltersAtom
-	);
+	const [filters, setFilters] = useAtom(dynamicQueryFiltersAtom);
 	const [, removeFilter] = useAtom(removeDynamicFilterAtom);
-
-	const handleRemoveFilter = useCallback(
-		(index: number) => {
-			if (selectedFilters[index]) {
-				const filterToRemove = selectedFilters[index];
-				removeFilter({
-					field: filterToRemove.field,
-					operator: filterToRemove.operator,
-					value: filterToRemove.value,
-				});
-			}
-		},
-		[selectedFilters, removeFilter]
-	);
-
 	const { id } = useParams();
 	const websiteId = id as string;
 
@@ -71,337 +70,235 @@ export function FiltersSection() {
 	const [isSaving, setIsSaving] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [isDeletingAll, setIsDeletingAll] = useState(false);
-	const [editingFilter, setEditingFilter] = useState<{
-		id: string;
-		name: string;
-		originalFilters: DynamicQueryFilter[];
-	} | null>(null);
-	const [deleteDialogState, setDeleteDialogState] = useState<{
-		isOpen: boolean;
-		filterId: string;
-		filterName: string;
-	}>({
+	const [editing, setEditing] = useState<EditingState>(null);
+	const [deleteDialog, setDeleteDialog] = useState({
 		isOpen: false,
 		filterId: "",
 		filterName: "",
 	});
-	const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false);
+	const [isDeleteAllOpen, setIsDeleteAllOpen] = useState(false);
 
-	const clearAllFilters = useCallback(() => {
-		setSelectedFilters([]);
-	}, [setSelectedFilters]);
-
-	const handleSaveFilter = useCallback(
-		(name: string) => {
-			if (selectedFilters.length === 0) {
-				return;
+	const handleRemoveFilter = useCallback(
+		(index: number) => {
+			const filter = filters[index];
+			if (filter) {
+				removeFilter(filter);
 			}
+		},
+		[filters, removeFilter]
+	);
 
+	const clearAll = useCallback(() => setFilters([]), [setFilters]);
+
+	const handleSave = useCallback(
+		(name: string) => {
+			if (filters.length === 0) return;
 			setIsSaving(true);
 
-			if (editingFilter) {
-				// Update existing filter
-				const result = updateFilter(editingFilter.id, name, selectedFilters);
-				if (result.success) {
-					setIsSaveDialogOpen(false);
-					setEditingFilter(null);
-				}
-			} else {
-				// Create new filter
-				const result = saveFilter(name, selectedFilters);
-				if (result.success) {
-					setIsSaveDialogOpen(false);
-					setEditingFilter(null);
-				}
+			const result = editing
+				? updateFilter(editing.id, name, filters)
+				: saveFilter(name, filters);
+
+			if (result.success) {
+				setIsSaveDialogOpen(false);
+				setEditing(null);
 			}
-			// Error is handled by toast in the hook
 			setIsSaving(false);
 		},
-		[selectedFilters, saveFilter, updateFilter, editingFilter]
+		[filters, editing, saveFilter, updateFilter]
 	);
 
-	const handleApplyFilter = useCallback(
-		(filters: DynamicQueryFilter[]) => {
-			setSelectedFilters(filters);
-		},
-		[setSelectedFilters]
+	const handleApply = useCallback(
+		(appliedFilters: DynamicQueryFilter[]) => setFilters(appliedFilters),
+		[setFilters]
 	);
 
-	const handleDeleteSavedFilter = useCallback(
-		(savedFilterId: string) => {
-			const filterToDelete = savedFilters.find((f) => f.id === savedFilterId);
-			if (!filterToDelete) {
-				return;
+	const handleDeleteSaved = useCallback(
+		(id: string) => {
+			const filter = savedFilters.find((f) => f.id === id);
+			if (filter) {
+				setDeleteDialog({ isOpen: true, filterId: id, filterName: filter.name });
 			}
-
-			setDeleteDialogState({
-				isOpen: true,
-				filterId: savedFilterId,
-				filterName: filterToDelete.name,
-			});
 		},
 		[savedFilters]
 	);
 
 	const handleConfirmDelete = useCallback(() => {
 		setIsDeleting(true);
-		const result = deleteFilter(deleteDialogState.filterId);
-
+		const result = deleteFilter(deleteDialog.filterId);
 		if (result.success) {
-			setDeleteDialogState((prev) => ({ ...prev, isOpen: false }));
+			setDeleteDialog((prev) => ({ ...prev, isOpen: false }));
 		}
-		// Error is handled by toast in the hook
 		setIsDeleting(false);
-	}, [deleteFilter, deleteDialogState.filterId]);
+	}, [deleteFilter, deleteDialog.filterId]);
 
-	const handleDuplicateSavedFilter = useCallback(
-		(savedFilterId: string) => {
-			duplicateFilter(savedFilterId);
-			// Success/error feedback is handled by toast in the hook
-		},
+	const handleDuplicate = useCallback(
+		(id: string) => duplicateFilter(id),
 		[duplicateFilter]
 	);
 
-	const handleEditSavedFilter = useCallback(
-		(savedFilterId: string) => {
-			const filterToEdit = savedFilters.find((f) => f.id === savedFilterId);
-			if (!filterToEdit) {
-				return;
+	const handleEdit = useCallback(
+		(id: string) => {
+			const filter = savedFilters.find((f) => f.id === id);
+			if (filter) {
+				setFilters(filter.filters);
+				setEditing({
+					id: filter.id,
+					name: filter.name,
+					originalFilters: [...filter.filters],
+				});
 			}
-
-			// Apply the filter's configuration to current filters
-			setSelectedFilters(filterToEdit.filters);
-
-			// Set up editing mode with original filters stored
-			setEditingFilter({
-				id: filterToEdit.id,
-				name: filterToEdit.name,
-				originalFilters: [...filterToEdit.filters], // Store original state
-			});
 		},
-		[savedFilters, setSelectedFilters]
+		[savedFilters, setFilters]
 	);
 
 	const handleCancelEdit = useCallback(() => {
-		if (editingFilter) {
-			// Restore original filters
-			setSelectedFilters(editingFilter.originalFilters);
+		if (editing) {
+			setFilters(editing.originalFilters);
 		}
-		setEditingFilter(null);
-	}, [editingFilter, setSelectedFilters]);
+		setEditing(null);
+	}, [editing, setFilters]);
 
 	const handleSaveEdit = useCallback(() => {
-		if (!editingFilter || selectedFilters.length === 0) {
-			return;
-		}
-
-		// Directly update the existing filter without dialog
+		if (!editing || filters.length === 0) return;
 		setIsSaving(true);
-		const result = updateFilter(
-			editingFilter.id,
-			editingFilter.name,
-			selectedFilters
-		);
-
+		const result = updateFilter(editing.id, editing.name, filters);
 		if (result.success) {
-			setEditingFilter(null);
+			setEditing(null);
 		}
-
 		setIsSaving(false);
-	}, [editingFilter, selectedFilters, updateFilter]);
+	}, [editing, filters, updateFilter]);
 
-	const handleDeleteAll = useCallback(() => {
-		setIsDeleteAllDialogOpen(true);
-	}, []);
+	const handleDeleteAll = useCallback(() => setIsDeleteAllOpen(true), []);
 
 	const handleConfirmDeleteAll = useCallback(() => {
 		setIsDeletingAll(true);
 		deleteAllFilters();
-		setIsDeleteAllDialogOpen(false);
+		setIsDeleteAllOpen(false);
 		setIsDeletingAll(false);
 	}, [deleteAllFilters]);
 
-	if (selectedFilters.length === 0) {
-		return null;
-	}
+	if (filters.length === 0) return null;
 
 	return (
-		<div className="slide-in-from-top-2 animate-in overflow-hidden border-b bg-background duration-300">
-			{editingFilter && (
-				<div className="border-amber-200/50 border-b bg-linear-to-r from-amber-50/80 to-amber-50/40 px-2 py-2 text-amber-900 text-xs sm:px-4 sm:py-3 sm:text-sm">
-					<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
-						<div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
-							<div className="flex items-center gap-2">
-								<div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-200">
-									<PencilIcon className="h-3 w-3 text-amber-700" />
-								</div>
-								<span className="font-semibold">
-									Editing: "{editingFilter.name}"
-								</span>
-							</div>
-							<span className="hidden text-amber-700 text-xs sm:inline">
-								Add, remove, or modify filters below, then save your changes.
-							</span>
+		<div className="border-b bg-background">
+			{editing && (
+				<div className="flex items-center justify-between gap-3 border-b bg-secondary/50 px-4 py-2">
+					<div className="flex items-center gap-2">
+						<div className="rounded bg-primary/10 p-1">
+							<PencilIcon className="size-3 text-primary" weight="duotone" />
 						</div>
-						<div className="flex shrink-0 flex-wrap gap-1.5 sm:gap-2">
-							<Button
-								className="h-8 flex-1 font-medium text-xs sm:flex-initial sm:text-sm"
-								data-filter-id={editingFilter.id}
-								data-total-filters={selectedFilters.length}
-								data-track="filter_edit_completed"
-								disabled={isSaving || selectedFilters.length === 0}
-								onClick={handleSaveEdit}
-								size="sm"
-								variant="default"
-							>
-								{isSaving ? "Saving..." : "Save Changes"}
-							</Button>
-							<Button
-								className="h-8 text-xs sm:text-sm"
-								disabled={isSaving}
-								onClick={handleCancelEdit}
-								size="sm"
-								variant="outline"
-							>
-								Cancel
-							</Button>
-							<Button
-								className="h-8 text-xs sm:text-sm"
-								onClick={() => {
-									setIsSaveDialogOpen(true);
-								}}
-								size="sm"
-								variant="ghost"
-							>
-								<span className="hidden sm:inline">Rename...</span>
-								<span className="sm:hidden">Rename</span>
-							</Button>
-						</div>
+						<span className="text-muted-foreground text-xs">
+							Editing <span className="font-medium text-foreground">"{editing.name}"</span>
+						</span>
+					</div>
+					<div className="flex items-center gap-1.5">
+						<Button
+							className="h-7 text-xs"
+							disabled={isSaving || filters.length === 0}
+							onClick={handleSaveEdit}
+							size="sm"
+						>
+							{isSaving ? "Saving…" : "Save"}
+						</Button>
+						<Button
+							className="h-7 text-xs"
+							disabled={isSaving}
+							onClick={handleCancelEdit}
+							size="sm"
+							variant="ghost"
+						>
+							Cancel
+						</Button>
 					</div>
 				</div>
 			)}
-			<div className="flex min-h-[52px] flex-wrap items-center gap-2 p-4">
-				<div className="flex flex-wrap items-center gap-2">
-					{selectedFilters.map((filter, index) => {
-						const fieldLabel = filterOptions.find(
-							(o) => o.value === filter.field
-						)?.label;
-						const operatorSymbol = getOperatorSymbol(filter.operator);
-						const valueLabel = Array.isArray(filter.value)
-							? filter.value.join(", ")
-							: filter.value;
 
-						return (
-							<div
-								className="group inline-flex items-center gap-1.5 rounded-md border bg-secondary px-2 py-1 text-xs transition-all hover:bg-secondary-brighter"
-								key={`filter-${filter.field}-${filter.operator}-${Array.isArray(filter.value) ? filter.value.join("-") : filter.value}-${index}`}
-							>
-								<div className="flex items-center gap-1.5 sm:gap-2">
-									<span className="font-medium text-foreground">
-										{fieldLabel}
-									</span>
-									<span className="text-muted-foreground text-xs">
-										{operatorSymbol}
-									</span>
-									<span className="max-w-[120px] truncate font-mono text-foreground text-xs sm:max-w-none">
-										{valueLabel}
-									</span>
-								</div>
-								<button
-									aria-label={`Remove filter ${fieldLabel} ${operatorSymbol} ${valueLabel}`}
-									className="flex size-6 shrink-0 touch-manipulation items-center justify-center rounded-full p-0.5 text-muted-foreground transition-colors duration-200 group-hover:text-accent-foreground"
-									onClick={() => handleRemoveFilter(index)}
-									type="button"
-								>
-									<XIcon className="size-3" weight="bold" />
-								</button>
-							</div>
-						);
-					})}
-				</div>
+			<div className="flex flex-wrap items-center gap-2 px-4 py-3">
+				{filters.map((filter, index) => (
+					<div
+						className="group flex items-center gap-1.5 rounded border bg-secondary/50 py-1 pr-1 pl-2.5 text-xs"
+						key={`${filter.field}-${filter.operator}-${formatValue(filter.value)}-${index.toString()}`}
+					>
+						<span className="font-medium">{getFieldLabel(filter.field)}</span>
+						<span className="text-muted-foreground">{getOperatorLabel(filter.operator)}</span>
+						<span className="max-w-32 truncate font-mono">{formatValue(filter.value)}</span>
+						<button
+							aria-label={`Remove ${getFieldLabel(filter.field)} filter`}
+							className="ml-0.5 flex size-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+							onClick={() => handleRemoveFilter(index)}
+							type="button"
+						>
+							<XIcon className="size-3" weight="bold" />
+						</button>
+					</div>
+				))}
 
-				<div className="ml-auto flex flex-wrap items-center gap-1.5 sm:gap-2">
+				<div className="ml-auto flex items-center gap-1.5">
 					<SavedFiltersMenu
-						currentFilters={selectedFilters}
+						currentFilters={filters}
 						isLoading={isSavedFiltersLoading}
-						onApplyFilter={handleApplyFilter}
+						onApplyFilter={handleApply}
 						onDeleteAll={handleDeleteAll}
-						onDeleteFilter={handleDeleteSavedFilter}
-						onDuplicateFilter={handleDuplicateSavedFilter}
-						onEditFilter={handleEditSavedFilter}
+						onDeleteFilter={handleDeleteSaved}
+						onDuplicateFilter={handleDuplicate}
+						onEditFilter={handleEdit}
 						savedFilters={savedFilters}
 					/>
 
-					{selectedFilters.length > 0 && !editingFilter && (
-						<div className="flex items-center gap-1 sm:gap-2">
+					{!editing && (
+						<>
 							<Button
-								className="h-8 gap-1 text-xs sm:gap-2 sm:text-sm"
+								className="h-7 gap-1.5 text-xs"
 								onClick={() => {
-									setEditingFilter(null);
+									setEditing(null);
 									setIsSaveDialogOpen(true);
 								}}
 								size="sm"
 								variant="secondary"
 							>
-								<FloppyDiskIcon
-									className="size-3.5 sm:size-4"
-									weight="duotone"
-								/>
-								<span className="hidden sm:inline">Save as New</span>
-								<span className="sm:hidden">Save</span>
+								<FloppyDiskIcon className="size-3.5" weight="duotone" />
+								Save
 							</Button>
 							<Button
-								className="h-8 text-xs sm:text-sm"
-								onClick={clearAllFilters}
+								className="h-7 text-xs"
+								onClick={clearAll}
 								size="sm"
 								variant="ghost"
 							>
-								Clear all
+								Clear
 							</Button>
-						</div>
-					)}
-
-					{selectedFilters.length > 0 && editingFilter && (
-						<div className="rounded-md bg-muted/30 px-3 py-1.5">
-							<span className="text-muted-foreground text-xs">
-								{selectedFilters.length} filter
-								{selectedFilters.length === 1 ? "" : "s"} configured
-							</span>
-						</div>
+						</>
 					)}
 				</div>
 			</div>
 
 			<SaveFilterDialog
-				editingFilter={editingFilter}
-				filters={selectedFilters}
+				editingFilter={editing}
+				filters={filters}
 				isLoading={isSaving}
 				isOpen={isSaveDialogOpen}
 				onClose={() => {
 					setIsSaveDialogOpen(false);
-					setEditingFilter(null);
+					setEditing(null);
 				}}
-				onSave={handleSaveFilter}
-				validateName={(name: string) =>
-					validateFilterName(name, editingFilter?.id)
-				}
+				onSave={handleSave}
+				validateName={(name: string) => validateFilterName(name, editing?.id)}
 			/>
 
 			<DeleteFilterDialog
-				filterName={deleteDialogState.filterName}
+				filterName={deleteDialog.filterName}
 				isDeleting={isDeleting}
-				isOpen={deleteDialogState.isOpen}
-				onClose={() =>
-					setDeleteDialogState((prev) => ({ ...prev, isOpen: false }))
-				}
+				isOpen={deleteDialog.isOpen}
+				onClose={() => setDeleteDialog((prev) => ({ ...prev, isOpen: false }))}
 				onConfirm={handleConfirmDelete}
 			/>
 
 			<DeleteAllDialog
 				filterCount={savedFilters.length}
 				isDeleting={isDeletingAll}
-				isOpen={isDeleteAllDialogOpen}
-				onClose={() => setIsDeleteAllDialogOpen(false)}
+				isOpen={isDeleteAllOpen}
+				onClose={() => setIsDeleteAllOpen(false)}
 				onConfirm={handleConfirmDeleteAll}
 			/>
 		</div>
