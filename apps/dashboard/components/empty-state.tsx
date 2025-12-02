@@ -68,6 +68,12 @@ export const EmptyState = memo(function EmptyState({
 	};
 
 	const renderIcon = () => {
+		if (!icon || typeof icon !== "object" || !("type" in icon)) {
+			return null;
+		}
+		
+		const iconProps = icon.props || {};
+		
 		if (variant === "simple" || variant === "minimal" || variant === "error") {
 			return (
 				<div
@@ -79,11 +85,11 @@ export const EmptyState = memo(function EmptyState({
 					role="img"
 				>
 					{cloneElement(icon, {
-						...icon.props,
+						...iconProps,
 						className: cn(
 							"size-6 text-accent",
 							variant === "error" && "text-destructive",
-							icon.props.className
+							iconProps.className
 						),
 						"aria-hidden": "true",
 						size: 24,
@@ -100,7 +106,13 @@ export const EmptyState = memo(function EmptyState({
 					className="rounded-full border-2 border-primary/10 bg-primary/5 p-6"
 					role="img"
 				>
-					{icon}
+					{cloneElement(icon, {
+						...iconProps,
+						className: cn("size-6 text-primary", iconProps.className),
+						"aria-hidden": "true",
+						size: 24,
+						weight: "duotone",
+					})}
 				</div>
 				{showPlusBadge && (
 					<button
