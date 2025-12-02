@@ -18,6 +18,8 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { DeleteDialog } from "@/components/ui/delete-dialog";
+import { Input } from "@/components/ui/input";
 import { type Organization, useOrganizations } from "@/hooks/use-organizations";
 import { TransferAssets } from "./transfer-assets";
 
@@ -33,6 +35,7 @@ export function DangerZoneSettings({
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [isLeaving, setIsLeaving] = useState(false);
 	const [isOwner, setIsOwner] = useState<boolean | null>(null);
+	const [confirmText, setConfirmText] = useState("");
 
 	const { deleteOrganizationAsync, leaveOrganizationAsync } =
 		useOrganizations();
@@ -61,6 +64,11 @@ export function DangerZoneSettings({
 	}, [organization.id, session?.user?.id]);
 
 	const handleDelete = async () => {
+		if (confirmText !== organization.name) {
+			toast.error("Organization name does not match");
+			return;
+		}
+
 		setIsDeleting(true);
 		try {
 			await deleteOrganizationAsync(organization.id);
@@ -70,6 +78,7 @@ export function DangerZoneSettings({
 		} finally {
 			setIsDeleting(false);
 			setShowDeleteDialog(false);
+			setConfirmText("");
 		}
 	};
 
@@ -164,27 +173,40 @@ export function DangerZoneSettings({
 			</RightSidebar>
 
 			{/* Delete Dialog */}
-			<AlertDialog onOpenChange={setShowDeleteDialog} open={showDeleteDialog}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-						<AlertDialogDescription>
-							This action cannot be undone. This will permanently delete the
-							organization "{organization.name}" and remove all associated data.
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction
-							className="bg-destructive text-red-700"
-							disabled={isDeleting}
-							onClick={handleDelete}
+			<DeleteDialog
+				confirmDisabled={confirmText !== organization.name}
+				confirmLabel="Delete Organization"
+				description={`This action cannot be undone. This will permanently delete the organization "${organization.name}" and remove all associated data.`}
+				isDeleting={isDeleting}
+				isOpen={showDeleteDialog}
+				onClose={() => {
+					setShowDeleteDialog(false);
+					setConfirmText("");
+				}}
+				onConfirm={handleDelete}
+				title="Are you absolutely sure?"
+			>
+				<div className="space-y-4">
+					<div className="space-y-2">
+						<label
+							className="text-foreground text-sm font-medium"
+							htmlFor="confirm-org-name"
 						>
-							{isDeleting ? "Deleting..." : "Delete Organization"}
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
+							Type the organization name to confirm
+						</label>
+						<Input
+							id="confirm-org-name"
+							onChange={(e) => setConfirmText(e.target.value)}
+							placeholder={organization.name}
+							value={confirmText}
+						/>
+						<p className="text-muted-foreground text-xs">
+							Type <span className="font-medium">{organization.name}</span> to
+							confirm deletion
+						</p>
+					</div>
+				</div>
+			</DeleteDialog>
 
 			{/* Leave Dialog */}
 			<AlertDialog onOpenChange={setShowLeaveDialog} open={showLeaveDialog}>

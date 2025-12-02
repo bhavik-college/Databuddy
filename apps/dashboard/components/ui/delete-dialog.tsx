@@ -22,6 +22,7 @@ interface DeleteDialogProps {
 	confirmLabel?: string;
 	cancelLabel?: string;
 	isDeleting?: boolean;
+	confirmDisabled?: boolean;
 	children?: React.ReactNode;
 }
 
@@ -35,6 +36,7 @@ export function DeleteDialog({
 	confirmLabel = "Delete",
 	cancelLabel = "Cancel",
 	isDeleting = false,
+	confirmDisabled = false,
 	children,
 }: DeleteDialogProps) {
 	const wasDeletingRef = useRef(false);
@@ -63,24 +65,45 @@ export function DeleteDialog({
 						{description || defaultDescription}
 					</DialogDescription>
 				</DialogHeader>
-				{children}
-				<div className="flex items-center gap-3 py-2">
-					<div className="flex size-10 shrink-0 items-center justify-center border border-destructive/20 bg-destructive/10">
-						<TrashIcon
-							className="text-destructive"
-							size={18}
-							weight="duotone"
-						/>
+				{children ? (
+					<>
+						{children}
+						<div className="flex items-center gap-3 rounded-md border border-destructive/20 bg-destructive/5 p-3">
+							<div className="flex size-8 shrink-0 items-center justify-center">
+								<TrashIcon
+									className="text-destructive"
+									size={16}
+									weight="duotone"
+								/>
+							</div>
+							<p className="text-muted-foreground text-sm">
+								This action cannot be undone.
+							</p>
+						</div>
+					</>
+				) : (
+					<div className="flex items-center gap-3 py-2">
+						<div className="flex size-10 shrink-0 items-center justify-center border border-destructive/20 bg-destructive/10">
+							<TrashIcon
+								className="text-destructive"
+								size={18}
+								weight="duotone"
+							/>
+						</div>
+						<p className="text-muted-foreground text-sm">
+							This action cannot be undone.
+						</p>
 					</div>
-					<p className="text-muted-foreground text-sm">
-						This action cannot be undone.
-					</p>
-				</div>
+				)}
 				<DialogFooter>
 					<Button variant="outline" onClick={onClose} disabled={isDeleting}>
 						{cancelLabel}
 					</Button>
-					<Button variant="destructive" onClick={handleConfirm} disabled={isDeleting}>
+					<Button
+						variant="destructive"
+						onClick={handleConfirm}
+						disabled={isDeleting || confirmDisabled}
+					>
 						{isDeleting ? "Deleting..." : confirmLabel}
 					</Button>
 				</DialogFooter>
