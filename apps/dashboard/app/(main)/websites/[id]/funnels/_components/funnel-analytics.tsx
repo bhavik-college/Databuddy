@@ -1,13 +1,5 @@
 "use client";
 
-import { StatCard } from "@/components/analytics/stat-card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import type { FunnelAnalyticsByReferrerResult } from "@/hooks/use-funnels";
-import type {
-	FunnelAnalyticsData,
-	FunnelTimeSeriesPoint,
-} from "@/types/funnels";
 import {
 	ArrowClockwiseIcon,
 	ClockIcon,
@@ -17,6 +9,14 @@ import {
 	WarningCircleIcon,
 } from "@phosphor-icons/react";
 import { useMemo } from "react";
+import { StatCard } from "@/components/analytics/stat-card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { FunnelAnalyticsByReferrerResult } from "@/hooks/use-funnels";
+import type {
+	FunnelAnalyticsData,
+	FunnelTimeSeriesPoint,
+} from "@/types/funnels";
 import { FunnelFlow } from "./funnel-flow";
 
 function createChartData(
@@ -79,11 +79,7 @@ export function FunnelAnalytics({
 	referrerAnalytics,
 }: FunnelAnalyticsProps) {
 	const selectedReferrerData = useMemo(() => {
-		if (
-			!selectedReferrer ||
-			selectedReferrer === "all" ||
-			!referrerAnalytics
-		) {
+		if (!selectedReferrer || selectedReferrer === "all" || !referrerAnalytics) {
 			return null;
 		}
 
@@ -134,7 +130,7 @@ export function FunnelAnalytics({
 
 	if (error) {
 		return (
-			<div className="rounded border border-destructive/30 bg-destructive/5 p-4 red-angled-rectangle-gradient">
+			<div className="red-angled-rectangle-gradient rounded border border-destructive/30 bg-destructive/5 p-4">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-3">
 						<div className="flex size-9 items-center justify-center rounded bg-destructive/10">
@@ -208,7 +204,9 @@ export function FunnelAnalytics({
 				/>
 				<StatCard
 					chartData={avgTimeChartData}
-					formatChartValue={(v) => (v < 60 ? `${Math.round(v)}s` : `${Math.round(v / 60)}m`)}
+					formatChartValue={(v) =>
+						v < 60 ? `${Math.round(v)}s` : `${Math.round(v / 60)}m`
+					}
 					icon={ClockIcon}
 					showChart={hasChartData}
 					title="Avg Time"

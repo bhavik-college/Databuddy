@@ -1,5 +1,11 @@
 "use client";
 
+import {
+	CaretRightIcon,
+	DotsThreeIcon,
+	PencilSimpleIcon,
+	TrashIcon,
+} from "@phosphor-icons/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,12 +19,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { FunnelFilter, FunnelStep } from "@/hooks/use-funnels";
 import { cn } from "@/lib/utils";
 import type { FunnelAnalyticsData } from "@/types/funnels";
-import {
-	CaretRightIcon,
-	DotsThreeIcon,
-	PencilSimpleIcon,
-	TrashIcon,
-} from "@phosphor-icons/react";
 
 export interface FunnelItemData {
 	id: string;
@@ -127,7 +127,7 @@ export function FunnelItem({
 	return (
 		<div
 			className={cn(
-				"border-b border-border transition-colors",
+				"border-border border-b transition-colors",
 				className,
 				isExpanded && "bg-accent/30"
 			)}
@@ -182,10 +182,7 @@ export function FunnelItem({
 						) : (
 							<>
 								{/* Mini funnel visualization */}
-								<MiniFunnelPreview
-									steps={stepsData}
-									totalUsers={totalUsers}
-								/>
+								<MiniFunnelPreview steps={stepsData} totalUsers={totalUsers} />
 
 								{/* Users count */}
 								<div className="w-16 text-right">
@@ -197,7 +194,7 @@ export function FunnelItem({
 
 								{/* Conversion rate */}
 								<div className="w-16 text-right">
-									<div className="font-semibold text-primary tabular-nums">
+									<div className="font-semibold text-success tabular-nums">
 										{conversionRate.toFixed(1)}%
 									</div>
 									<div className="text-muted-foreground text-xs">
@@ -251,7 +248,7 @@ export function FunnelItem({
 			{/* Expanded content */}
 			{isExpanded && (
 				<div
-					className="border-t border-border bg-background"
+					className="border-border border-t bg-background"
 					onClick={(e) => e.stopPropagation()}
 					onKeyDown={(e) => e.stopPropagation()}
 					role="region"
@@ -265,7 +262,7 @@ export function FunnelItem({
 
 export function FunnelItemSkeleton() {
 	return (
-		<div className="flex items-center border-b border-border px-4 py-3 sm:px-6 sm:py-4">
+		<div className="flex items-center border-border border-b px-4 py-3 sm:px-6 sm:py-4">
 			<div className="flex flex-1 items-center gap-4">
 				<Skeleton className="size-4 shrink-0" />
 				<div className="min-w-0 flex-1 space-y-1.5">

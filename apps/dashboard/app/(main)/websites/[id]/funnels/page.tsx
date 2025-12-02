@@ -19,14 +19,14 @@ import {
 import { useTrackingSetup } from "@/hooks/use-tracking-setup";
 import { isAnalyticsRefreshingAtom } from "@/stores/jotai/filterAtoms";
 import type { FunnelAnalyticsData } from "@/types/funnels";
+import { WebsitePageHeader } from "../_components/website-page-header";
 import {
 	FunnelAnalytics,
 	FunnelAnalyticsByReferrer,
+	type FunnelItemData,
 	FunnelItemSkeleton,
 	FunnelsList,
-	type FunnelItemData,
 } from "./_components";
-import { WebsitePageHeader } from "../_components/website-page-header";
 
 // Only dialogs are lazy loaded since they're conditionally rendered
 const EditFunnelDialog = dynamic(
@@ -39,7 +39,7 @@ const EditFunnelDialog = dynamic(
 
 function FunnelsListSkeleton() {
 	return (
-		<div className="border-t border-border">
+		<div className="border">
 			{[1, 2, 3].map((i) => (
 				<FunnelItemSkeleton key={i} />
 			))}
@@ -76,11 +76,7 @@ export default function FunnelsPage() {
 
 	// Preload analytics for all funnels
 	const { data: performanceData, isLoading: performanceLoading } =
-		useFunnelPerformance(
-			websiteId,
-			dateRange,
-			!!funnels && funnels.length > 0
-		);
+		useFunnelPerformance(websiteId, dateRange, !!funnels && funnels.length > 0);
 
 	// Detailed analytics for expanded funnel
 	const {
@@ -309,9 +305,7 @@ export default function FunnelsPage() {
 									error={analyticsError as Error | null}
 									isLoading={analyticsLoading}
 									onRetry={refetchAnalytics}
-									referrerAnalytics={
-										referrerAnalyticsData?.referrer_analytics
-									}
+									referrerAnalytics={referrerAnalyticsData?.referrer_analytics}
 									selectedReferrer={selectedReferrer}
 								/>
 							</div>
@@ -346,16 +340,23 @@ export default function FunnelsPage() {
 
 			{!!deletingFunnelId && (
 				<DeleteDialog
+					confirmLabel="Delete Funnel"
 					isOpen={!!deletingFunnelId}
+					itemName="this funnel"
 					onClose={() => setDeletingFunnelId(null)}
 					onConfirm={() =>
 						deletingFunnelId && handleDeleteFunnel(deletingFunnelId)
 					}
 					title="Delete Funnel"
-					itemName="this funnel"
-					confirmLabel="Delete Funnel"
 				/>
 			)}
+			<div className="p-5">
+				<Card>
+					<CardContent>
+						<p>Hello</p>
+					</CardContent>
+				</Card>
+			</div>
 		</div>
 	);
 }

@@ -1,25 +1,25 @@
 "use client";
 
-import { FaviconImage } from "@/components/analytics/favicon-image";
-import { Skeleton } from "@/components/ui/skeleton";
-import type { FunnelAnalyticsByReferrerResult } from "@/hooks/use-funnels";
-import { cn } from "@/lib/utils";
 import {
 	GlobeIcon,
 	TargetIcon,
 	UsersIcon,
 	WarningCircleIcon,
 } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { FaviconImage } from "@/components/analytics/favicon-image";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { FunnelAnalyticsByReferrerResult } from "@/hooks/use-funnels";
+import { cn } from "@/lib/utils";
 
-interface FunnelAnalyticsByReferrerProps {
+type FunnelAnalyticsByReferrerProps = {
 	onReferrerChange?: (referrer: string) => void;
 	data: { referrer_analytics: FunnelAnalyticsByReferrerResult[] } | undefined;
 	isLoading: boolean;
 	error: Error | null;
-}
+};
 
-interface SourceCardProps {
+type SourceCardProps = {
 	label: string;
 	domain?: string;
 	users: number;
@@ -27,7 +27,7 @@ interface SourceCardProps {
 	isSelected: boolean;
 	onClick: () => void;
 	isAll?: boolean;
-}
+};
 
 function SourceCard({
 	label,
@@ -40,8 +40,6 @@ function SourceCard({
 }: SourceCardProps) {
 	return (
 		<button
-			type="button"
-			onClick={onClick}
 			className={cn(
 				"group flex shrink-0 flex-col gap-2 rounded border p-3 text-left transition-all",
 				"min-w-[140px] max-w-[180px]",
@@ -49,6 +47,8 @@ function SourceCard({
 					? "border-chart-2 bg-chart-2/10"
 					: "border-border bg-card hover:border-border hover:bg-secondary/50"
 			)}
+			onClick={onClick}
+			type="button"
 		>
 			<div className="flex items-center gap-2">
 				{isAll ? (
@@ -62,9 +62,8 @@ function SourceCard({
 					</div>
 				) : (
 					<FaviconImage
-						domain={domain || ""}
-						size={20}
 						className="shrink-0"
+						domain={domain || ""}
 						fallbackIcon={
 							<GlobeIcon
 								className={cn(
@@ -74,6 +73,7 @@ function SourceCard({
 								weight="duotone"
 							/>
 						}
+						size={20}
 					/>
 				)}
 				<span
@@ -87,7 +87,7 @@ function SourceCard({
 			</div>
 
 			<div className="flex items-center justify-between gap-2">
-				<div className="flex items-center gap-1 text-xs text-muted-foreground">
+				<div className="flex items-center gap-1 text-muted-foreground text-xs">
 					<UsersIcon className="size-3" weight="fill" />
 					<span className="tabular-nums">{users.toLocaleString()}</span>
 				</div>
@@ -110,11 +110,11 @@ function SourceCard({
 function SourcesSkeleton() {
 	return (
 		<div className="-mx-4 px-4">
-			<div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+			<div className="scrollbar-none flex gap-2 overflow-x-auto pb-1">
 				{[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
 					<div
-						key={i}
 						className="flex min-w-[140px] max-w-[180px] shrink-0 flex-col gap-2 rounded border border-border bg-card p-3"
+						key={i}
 					>
 						<div className="flex items-center gap-2">
 							<Skeleton className="size-5 rounded" />
@@ -138,8 +138,57 @@ export function FunnelAnalyticsByReferrer({
 	error,
 }: FunnelAnalyticsByReferrerProps) {
 	const [selectedReferrer, setSelectedReferrer] = useState("all");
+	const sourcesContainer = useRef<HTMLDivElement>(null);
+	const [isDragging, setIsDragging] = useState(false);
+	const [startX, setStartX] = useState(0);
+	const [scrollLeft, setScrollLeft] = useState(0);
+
+	const handleMouseWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+		if (sourcesContainer.current) {
+			const delta =
+				Math.abs(event.deltaX) > Math.abs(event.deltaY)
+					? event.deltaX
+					: event.deltaY;
+			sourcesContainer.current.scrollLeft += delta;
+		}
+	};
+
+	const handleMouseDown = (e: React.MouseEvent) => {
+		if (!sourcesContainer.current) {
+			return;
+		}
+		setIsDragging(true);
+		setStartX(e.pageX - sourcesContainer.current.offsetLeft);
+		setScrollLeft(sourcesContainer.current.scrollLeft);
+	};
+
+	const handleMouseLeave = () => {
+		setIsDragging(false);
+	};
+
+	const handleMouseUp = () => {
+		setIsDragging(false);
+	};
+
+	const handleMouseMove = (e: React.MouseEvent) => {
+		if (!isDragging) {
+			return;
+		}
+		if (!sourcesContainer.current) {
+			return;
+		}
+		e.preventDefault();
+		const x = e.pageX - sourcesContainer.current.offsetLeft;
+		const walk = (x - startX) * 1.5; // Scroll-fast
+		sourcesContainer.current.scrollLeft = scrollLeft - walk;
+	};
 
 	const handleChange = (referrer: string) => {
+		// Prevent selection if we were just dragging (simple heuristic)
+		if (isDragging) {
+			return;
+		}
+
 		setSelectedReferrer(referrer);
 		onReferrerChange?.(referrer);
 	};
@@ -222,24 +271,35 @@ export function FunnelAnalyticsByReferrer({
 
 	return (
 		<div className="-mx-4 px-4">
-			<div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+			<div
+				aria-label="Traffic sources"
+				className={cn(
+					"scrollbar-none flex cursor-grab gap-2 overflow-x-auto overscroll-contain pb-1"
+				)}
+				onMouseDown={handleMouseDown}
+				onMouseLeave={handleMouseLeave}
+				onMouseMove={handleMouseMove}
+				onMouseUp={handleMouseUp}
+				onWheel={handleMouseWheel}
+				ref={sourcesContainer}
+			>
 				<SourceCard
-					label="All Sources"
-					users={totalUsers}
 					conversionRate={avgConversionRate}
-					isSelected={selectedReferrer === "all"}
-					onClick={() => handleChange("all")}
 					isAll
+					isSelected={selectedReferrer === "all"}
+					label="All Sources"
+					onClick={() => handleChange("all")}
+					users={totalUsers}
 				/>
 				{referrers.map((source) => (
 					<SourceCard
+						conversionRate={source.conversionRate}
+						domain={source.parsed?.domain}
+						isSelected={selectedReferrer === source.value}
 						key={source.value}
 						label={source.label}
-						domain={source.parsed?.domain}
-						users={source.users}
-						conversionRate={source.conversionRate}
-						isSelected={selectedReferrer === source.value}
 						onClick={() => handleChange(source.value)}
+						users={source.users}
 					/>
 				))}
 			</div>

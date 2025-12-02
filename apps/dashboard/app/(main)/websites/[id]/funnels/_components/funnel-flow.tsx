@@ -1,9 +1,9 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import type { FunnelStepAnalytics } from "@/types/funnels";
 import { CaretDownIcon, CheckCircleIcon } from "@phosphor-icons/react";
 import { useLayoutEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
+import type { FunnelStepAnalytics } from "@/types/funnels";
 
 interface FunnelFlowProps {
 	steps: FunnelStepAnalytics[];
@@ -45,14 +45,13 @@ function LineProgress({ percentage, isLast }: LineProgressProps) {
 
 	return (
 		<div
-			ref={containerRef}
 			className="flex h-5 items-center gap-[2px] rounded bg-secondary px-1"
+			ref={containerRef}
 		>
 			{Array.from({ length: lineCount }).map((_, index) => {
 				const isActive = index < activeLines;
 				return (
 					<div
-						key={index.toString()}
 						className={cn(
 							"h-3 w-px rounded-full transition-all duration-300",
 							isActive
@@ -61,6 +60,7 @@ function LineProgress({ percentage, isLast }: LineProgressProps) {
 									: "scale-y-100 bg-chart-2"
 								: "scale-y-[0.5] bg-border"
 						)}
+						key={index.toString()}
 					/>
 				);
 			})}
@@ -87,8 +87,8 @@ export function FunnelFlow({ steps }: FunnelFlowProps) {
 				const droppedUsers = prevStep ? prevStep.users - step.users : 0;
 				const stepConversion =
 					prevStep && prevStep.users > 0
-					? (step.users / prevStep.users) * 100
-					: 100;
+						? (step.users / prevStep.users) * 100
+						: 100;
 				const totalConversion = (step.users / firstStepUsers) * 100;
 				const isLast = index === steps.length - 1;
 				const avgTime = step.avg_time_to_complete || 0;
@@ -97,7 +97,7 @@ export function FunnelFlow({ steps }: FunnelFlowProps) {
 					<div key={step.step_number}>
 						{/* Drop-off connector */}
 						{index !== 0 && (
-							<div className="flex items-center justify-center gap-3 border-x border-border bg-secondary/50 py-2">
+							<div className="flex items-center justify-center gap-3 border-y bg-secondary/50 py-2">
 								<div className="flex items-center gap-1.5 text-xs">
 									<CaretDownIcon
 										className="size-3 text-muted-foreground"
@@ -119,13 +119,7 @@ export function FunnelFlow({ steps }: FunnelFlowProps) {
 						)}
 
 						{/* Step card */}
-						<div
-							className={cn(
-								"flex items-center gap-4 border-x border-border p-4",
-								index === 0 && "rounded-t border-t",
-								isLast && "rounded-b border-b"
-							)}
-						>
+						<div className="flex items-center gap-4 p-4">
 							{/* Step number badge */}
 							<div
 								className={cn(
@@ -173,7 +167,7 @@ export function FunnelFlow({ steps }: FunnelFlowProps) {
 
 			{/* Summary footer */}
 			{lastStep && steps.length > 1 && (
-				<div className="flex items-center justify-between border-t border-border bg-secondary/50 px-4 py-3">
+				<div className="flex items-center justify-between border-border border-t bg-secondary/50 px-4 py-3">
 					<span className="text-muted-foreground text-sm">
 						Overall conversion
 					</span>

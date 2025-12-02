@@ -247,7 +247,7 @@ export function FlagSheet({
 					</div>
 				</SheetHeader>
 
-				<div className="space-y-8">
+				<div className="mt-5 space-y-8">
 					<Form {...form}>
 						<form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>
 							{/* Basic Information */}
@@ -344,7 +344,7 @@ export function FlagSheet({
 
 							{/* Configuration */}
 							<div className="space-y-4">
-								<div className="flex gap-8">
+								<div className="flex w-full flex-wrap gap-4">
 									<FormField
 										control={form.control}
 										name="type"
@@ -378,14 +378,14 @@ export function FlagSheet({
 										control={form.control}
 										name="status"
 										render={({ field }) => (
-											<FormItem>
+											<FormItem className="flex-1">
 												<FormLabel>Status</FormLabel>
 												<Select
 													onValueChange={field.onChange}
 													value={field.value}
 												>
 													<FormControl>
-														<SelectTrigger>
+														<SelectTrigger className="w-full grow">
 															<SelectValue />
 														</SelectTrigger>
 													</FormControl>

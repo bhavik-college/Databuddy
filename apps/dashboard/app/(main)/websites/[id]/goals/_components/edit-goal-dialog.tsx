@@ -14,7 +14,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import {
 	Sheet,
 	SheetBody,
@@ -24,6 +23,7 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
 import { goalFunnelOperatorOptions, useFilters } from "@/hooks/use-filters";
 import type { AutocompleteData } from "@/hooks/use-funnels";
 import type { CreateGoalData, Goal } from "@/hooks/use-goals";
@@ -68,10 +68,12 @@ export function EditGoalDialog({
 	useEffect(() => {
 		if (goal) {
 			// Ensure all filters have valid operators (default to "equals" if missing)
-			const sanitizedFilters = ((goal.filters as GoalFilter[]) || []).map((f) => ({
-				...f,
-				operator: f.operator || "equals",
-			}));
+			const sanitizedFilters = ((goal.filters as GoalFilter[]) || []).map(
+				(f) => ({
+					...f,
+					operator: f.operator || "equals",
+				})
+			);
 			setFormData({
 				id: goal.id,
 				name: goal.name,
@@ -117,9 +119,12 @@ export function EditGoalDialog({
 		});
 	}, []);
 
-	const updateField = useCallback((field: keyof GoalFormData, value: string) => {
-		setFormData((prev) => (prev ? { ...prev, [field]: value } : prev));
-	}, []);
+	const updateField = useCallback(
+		(field: keyof GoalFormData, value: string) => {
+			setFormData((prev) => (prev ? { ...prev, [field]: value } : prev));
+		},
+		[]
+	);
 
 	const handleFiltersChange = useCallback((newFilters: GoalFilter[]) => {
 		setFormData((prev) => (prev ? { ...prev, filters: newFilters } : prev));
@@ -212,39 +217,37 @@ export function EditGoalDialog({
 							<Label htmlFor="goal-name">Name</Label>
 							<Input
 								id="goal-name"
+								onChange={(e) => updateField("name", e.target.value)}
 								placeholder="e.g., Newsletter Signup"
 								value={formData.name}
-								onChange={(e) => updateField("name", e.target.value)}
 							/>
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="goal-description">Description</Label>
 							<Input
 								id="goal-description"
+								onChange={(e) => updateField("description", e.target.value)}
 								placeholder="Optional"
 								value={formData.description || ""}
-								onChange={(e) => updateField("description", e.target.value)}
 							/>
 						</div>
 					</div>
 
 					{/* Goal Target Section */}
 					<section className="space-y-3">
-						<Label className="text-muted-foreground text-xs">
-							Goal Target
-						</Label>
+						<Label className="text-muted-foreground text-xs">Goal Target</Label>
 
 						<div className="flex items-center gap-2 rounded border bg-card p-2.5">
 							{/* Step number */}
-							<div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary text-xs">
+							<div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground font-semibold text-accent text-xs">
 								1
 							</div>
 
 							{/* Goal fields */}
 							<div className="flex flex-1 gap-2">
 								<Select
-									value={formData.type}
 									onValueChange={(value) => updateField("type", value)}
+									value={formData.type}
 								>
 									<SelectTrigger className="h-8 w-28 shrink-0 text-xs">
 										<SelectValue />
@@ -257,10 +260,12 @@ export function EditGoalDialog({
 								<AutocompleteInput
 									className="flex-1"
 									inputClassName="h-8 text-xs"
-									placeholder={formData.type === "PAGE_VIEW" ? "/path" : "event_name"}
-									value={formData.target}
-									suggestions={getTargetSuggestions(formData.type)}
 									onValueChange={(value) => updateField("target", value)}
+									placeholder={
+										formData.type === "PAGE_VIEW" ? "/path" : "event_name"
+									}
+									suggestions={getTargetSuggestions(formData.type)}
+									value={formData.target}
 								/>
 							</div>
 						</div>
@@ -268,12 +273,13 @@ export function EditGoalDialog({
 
 					{/* Settings Section */}
 					<section className="space-y-3">
-						<Label className="text-muted-foreground text-xs">
-							Settings
-						</Label>
+						<Label className="text-muted-foreground text-xs">Settings</Label>
 						<div className="flex items-center justify-between rounded border bg-card p-3">
 							<div className="space-y-0.5">
-								<Label htmlFor="ignore-historic" className="font-medium text-sm">
+								<Label
+									className="font-medium text-sm"
+									htmlFor="ignore-historic"
+								>
 									Ignore historic data
 								</Label>
 								<p className="text-muted-foreground text-xs">
@@ -281,8 +287,8 @@ export function EditGoalDialog({
 								</p>
 							</div>
 							<Switch
-								id="ignore-historic"
 								checked={formData.ignoreHistoricData ?? false}
+								id="ignore-historic"
 								onCheckedChange={(checked) =>
 									setFormData((prev) =>
 										prev ? { ...prev, ignoreHistoricData: checked } : prev
@@ -302,12 +308,14 @@ export function EditGoalDialog({
 							<div className="space-y-2">
 								{formData.filters.map((filter, index) => (
 									<div
-										key={`filter-${index}`}
 										className="flex items-center gap-2 rounded border bg-card p-2.5"
+										key={`filter-${index}`}
 									>
 										<Select
+											onValueChange={(value) =>
+												updateFilter(index, "field", value)
+											}
 											value={filter.field}
-											onValueChange={(value) => updateFilter(index, "field", value)}
 										>
 											<SelectTrigger className="h-8 w-28 text-xs">
 												<SelectValue />
@@ -322,8 +330,10 @@ export function EditGoalDialog({
 										</Select>
 
 										<Select
+											onValueChange={(value) =>
+												updateFilter(index, "operator", value)
+											}
 											value={filter.operator || "equals"}
-											onValueChange={(value) => updateFilter(index, "operator", value)}
 										>
 											<SelectTrigger className="h-8 w-24 text-xs">
 												<SelectValue placeholder="equals" />
@@ -340,17 +350,19 @@ export function EditGoalDialog({
 										<AutocompleteInput
 											className="h-10 flex-1"
 											inputClassName="text-xs"
+											onValueChange={(value) =>
+												updateFilter(index, "value", value)
+											}
 											placeholder="Value"
-											value={(filter.value as string) || ""}
 											suggestions={getSuggestions(filter.field)}
-											onValueChange={(value) => updateFilter(index, "value", value)}
+											value={(filter.value as string) || ""}
 										/>
 
 										<Button
 											className="size-6 shrink-0 p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+											onClick={() => removeFilter(index)}
 											size="icon"
 											variant="ghost"
-											onClick={() => removeFilter(index)}
 										>
 											<TrashIcon size={14} />
 										</Button>
@@ -361,9 +373,9 @@ export function EditGoalDialog({
 
 						<Button
 							className="w-full"
+							onClick={() => addFilter()}
 							size="sm"
 							variant="outline"
-							onClick={() => addFilter()}
 						>
 							<PlusIcon size={14} />
 							Add Filter
@@ -372,13 +384,10 @@ export function EditGoalDialog({
 				</SheetBody>
 
 				<SheetFooter>
-					<Button variant="ghost" onClick={handleClose}>
+					<Button onClick={handleClose} variant="ghost">
 						Cancel
 					</Button>
-					<Button
-						disabled={!isFormValid || isSaving}
-						onClick={handleSubmit}
-					>
+					<Button disabled={!isFormValid || isSaving} onClick={handleSubmit}>
 						{isSaving ? (
 							<>
 								<div className="size-4 animate-spin rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground" />

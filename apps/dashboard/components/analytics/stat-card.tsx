@@ -283,7 +283,7 @@ export function StatCard({
 					/>
 				</div>
 			)}
-			<div className="flex items-center gap-2.5 border-t px-2.5 py-2.5">
+			<div className="flex items-center gap-2.5 px-2.5 py-2.5">
 				{Icon && (
 					<div className="flex size-7 shrink-0 items-center justify-center rounded bg-accent">
 						<Icon className="size-4 text-muted-foreground" />
@@ -332,7 +332,9 @@ export function StatCard({
 					{/* Comparison */}
 					<div className="grid grid-cols-2 divide-x">
 						<div className="p-3">
-							<p className="font-medium text-muted-foreground text-xs">Previous</p>
+							<p className="font-medium text-muted-foreground text-xs">
+								Previous
+							</p>
 							<p className="mt-1 font-semibold text-foreground text-lg tabular-nums">
 								{formatTrendValue(trend.previous, formatValue)}
 							</p>
@@ -342,7 +344,9 @@ export function StatCard({
 							</p>
 						</div>
 						<div className="p-3">
-							<p className="font-medium text-muted-foreground text-xs">Current</p>
+							<p className="font-medium text-muted-foreground text-xs">
+								Current
+							</p>
 							<p className="mt-1 font-semibold text-foreground text-lg tabular-nums">
 								{formatTrendValue(trend.current, formatValue)}
 							</p>
