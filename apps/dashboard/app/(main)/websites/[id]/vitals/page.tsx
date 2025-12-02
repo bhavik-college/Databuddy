@@ -6,8 +6,8 @@ import { useAtom } from "jotai";
 import { useParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import {
-	VitalGaugeCard,
 	VITAL_CONFIGS,
+	VitalGaugeCard,
 } from "@/components/analytics/vital-gauge-card";
 import { SimpleMetricsChart } from "@/components/charts/simple-metrics-chart";
 import { SegmentedControl } from "@/components/ui/segmented-control";
@@ -74,15 +74,14 @@ export default function VitalsPage() {
 	const { dateRange } = useDateFilters();
 	const [isRefreshing, setIsRefreshing] = useAtom(isAnalyticsRefreshingAtom);
 
-	const [visibleMetrics, setVisibleMetrics] = usePersistentState<VitalVisibility>(
-		`vitals-visibility-${websiteId}`,
-		DEFAULT_VISIBILITY
-	);
+	const [visibleMetrics, setVisibleMetrics] =
+		usePersistentState<VitalVisibility>(
+			`vitals-visibility-${websiteId}`,
+			DEFAULT_VISIBILITY
+		);
 
-	const [selectedPercentile, setSelectedPercentile] = usePersistentState<Percentile>(
-		`vitals-percentile-${websiteId}`,
-		"p75"
-	);
+	const [selectedPercentile, setSelectedPercentile] =
+		usePersistentState<Percentile>(`vitals-percentile-${websiteId}`, "p75");
 
 	const queries = [
 		{
@@ -101,14 +100,25 @@ export default function VitalsPage() {
 		queries
 	);
 
-	const overviewData = (getDataForQuery("vitals-overview", "vitals_overview") as VitalMetric[]) ?? [];
-	const timeSeriesData = (getDataForQuery("vitals-time-series", "vitals_time_series") as VitalTimeSeriesRow[]) ?? [];
+	const overviewData =
+		(getDataForQuery("vitals-overview", "vitals_overview") as VitalMetric[]) ??
+		[];
+	const timeSeriesData =
+		(getDataForQuery(
+			"vitals-time-series",
+			"vitals_time_series"
+		) as VitalTimeSeriesRow[]) ?? [];
 
 	// Pivot time series data from EAV to columnar format for the chart
 	const chartData = useMemo(() => {
-		if (!timeSeriesData.length) return [];
+		if (!timeSeriesData.length) {
+			return [];
+		}
 
-		const grouped = new Map<string, { date: string; [key: string]: string | number }>();
+		const grouped = new Map<
+			string,
+			{ date: string; [key: string]: string | number }
+		>();
 
 		for (const row of timeSeriesData) {
 			const dateKey = dayjs(row.date).format("MMM D");
@@ -124,20 +134,26 @@ export default function VitalsPage() {
 		return Array.from(grouped.values());
 	}, [timeSeriesData, selectedPercentile]);
 
-	// Build chart metrics from visible ones only
-	const chartMetrics = useMemo(() => {
-		return Object.entries(VITAL_CONFIGS)
-			.filter(([key]) => visibleMetrics[key])
-			.map(([key, config]) => ({
-				key,
-				label: config.name,
-				color: config.color,
-				formatValue: (v: number) =>
-					config.name === "CLS" ? v.toFixed(2) : `${Math.round(v)}${config.unit}`,
-			}));
-	}, [visibleMetrics]);
+	const chartMetrics = useMemo(
+		() =>
+			Object.entries(VITAL_CONFIGS)
+				.filter(([key]) => visibleMetrics[key])
+				.map(([key, config]) => ({
+					key,
+					label: config.name,
+					color: config.color,
+					formatValue: (v: number) =>
+						config.name === "CLS"
+							? v.toFixed(2)
+							: `${Math.round(v)}${config.unit}`,
+				})),
+		[visibleMetrics]
+	);
 
-	const totalSamples = overviewData.reduce((sum, m) => sum + (m.samples ?? 0), 0);
+	const totalSamples = overviewData.reduce(
+		(sum, m) => sum + (m.samples ?? 0),
+		0
+	);
 
 	const getMetricValue = (name: string): number | null => {
 		const metric = overviewData.find((m) => m.metric_name === name);
@@ -168,7 +184,9 @@ export default function VitalsPage() {
 		}
 	}, [refetch, setIsRefreshing]);
 
-	const vitalKeys = Object.keys(VITAL_CONFIGS) as Array<keyof typeof VITAL_CONFIGS>;
+	const vitalKeys = Object.keys(VITAL_CONFIGS) as Array<
+		keyof typeof VITAL_CONFIGS
+	>;
 	const activeCount = Object.values(visibleMetrics).filter(Boolean).length;
 
 	return (
@@ -183,7 +201,12 @@ export default function VitalsPage() {
 				}
 				description={`Core Web Vitals and performance metrics (${PERCENTILE_DESCRIPTIONS[selectedPercentile]} values)`}
 				hasError={isError}
-				icon={<HeartbeatIcon className="size-6 text-accent-foreground" weight="duotone" />}
+				icon={
+					<HeartbeatIcon
+						className="size-6 text-accent-foreground"
+						weight="duotone"
+					/>
+				}
 				isLoading={isLoading}
 				isRefreshing={isRefreshing}
 				onRefreshAction={handleRefresh}
@@ -197,7 +220,6 @@ export default function VitalsPage() {
 			/>
 
 			<div className="space-y-4 p-4">
-				{/* Vitals Grid - Clickable to toggle */}
 				<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
 					{vitalKeys.map((key) => (
 						<VitalGaugeCard
@@ -212,7 +234,6 @@ export default function VitalsPage() {
 					))}
 				</div>
 
-				{/* Time Series Chart - Only shows selected metrics */}
 				{chartMetrics.length > 0 ? (
 					<SimpleMetricsChart
 						data={chartData}
@@ -230,7 +251,6 @@ export default function VitalsPage() {
 					</div>
 				)}
 
-				{/* Empty state */}
 				{!isLoading && overviewData.length === 0 && (
 					<div className="rounded border bg-card p-8 text-center">
 						<HeartbeatIcon

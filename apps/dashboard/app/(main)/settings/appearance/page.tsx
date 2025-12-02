@@ -2,11 +2,9 @@
 
 import { DesktopIcon, MoonIcon, SunIcon } from "@phosphor-icons/react";
 import { useTheme } from "next-themes";
-import { useState } from "react";
 import { RightSidebar } from "@/components/right-sidebar";
-import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { SettingsRow, SettingsSection } from "../_components/settings-section";
+import { SettingsSection } from "../_components/settings-section";
 
 type ThemeOption = {
 	id: "light" | "dark" | "system";
@@ -38,9 +36,6 @@ const themeOptions: ThemeOption[] = [
 
 export default function AppearanceSettingsPage() {
 	const { theme, setTheme } = useTheme();
-	const [compactLayout, setCompactLayout] = useState(false);
-	const [highContrast, setHighContrast] = useState(false);
-	const [reduceMotion, setReduceMotion] = useState(false);
 
 	return (
 		<div className="h-full lg:grid lg:grid-cols-[1fr_18rem]">
@@ -92,44 +87,6 @@ export default function AppearanceSettingsPage() {
 							})}
 						</div>
 					</SettingsSection>
-
-					{/* Display Options */}
-					<SettingsSection
-						description="Customize how content is displayed"
-						title="Display Options"
-					>
-						<div className="space-y-4">
-							<SettingsRow
-								description="Use a denser layout with smaller elements"
-								label="Compact Layout"
-							>
-								<Switch
-									checked={compactLayout}
-									onCheckedChange={setCompactLayout}
-								/>
-							</SettingsRow>
-
-							<SettingsRow
-								description="Increase contrast for better visibility"
-								label="High Contrast Mode"
-							>
-								<Switch
-									checked={highContrast}
-									onCheckedChange={setHighContrast}
-								/>
-							</SettingsRow>
-
-							<SettingsRow
-								description="Minimize animations and transitions"
-								label="Reduce Motion"
-							>
-								<Switch
-									checked={reduceMotion}
-									onCheckedChange={setReduceMotion}
-								/>
-							</SettingsRow>
-						</div>
-					</SettingsSection>
 				</div>
 			</div>
 
@@ -140,28 +97,6 @@ export default function AppearanceSettingsPage() {
 							<span className="text-muted-foreground text-sm">Theme</span>
 							<span className="font-medium text-sm capitalize">{theme}</span>
 						</div>
-						<div className="flex items-center justify-between">
-							<span className="text-muted-foreground text-sm">Compact</span>
-							<span className="font-medium text-sm">
-								{compactLayout ? "On" : "Off"}
-							</span>
-						</div>
-						<div className="flex items-center justify-between">
-							<span className="text-muted-foreground text-sm">
-								High contrast
-							</span>
-							<span className="font-medium text-sm">
-								{highContrast ? "On" : "Off"}
-							</span>
-						</div>
-						<div className="flex items-center justify-between">
-							<span className="text-muted-foreground text-sm">
-								Reduce motion
-							</span>
-							<span className="font-medium text-sm">
-								{reduceMotion ? "On" : "Off"}
-							</span>
-						</div>
 					</div>
 				</RightSidebar.Section>
 
@@ -171,21 +106,17 @@ export default function AppearanceSettingsPage() {
 							<span className="text-muted-foreground text-sm">
 								Toggle theme
 							</span>
-							<kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs">
+							<kbd className="rounded border bg-secondary px-1.5 py-0.5 font-mono text-xs">
 								⌘ D
 							</kbd>
 						</div>
 						<div className="flex items-center justify-between">
 							<span className="text-muted-foreground text-sm">Search</span>
-							<kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs">
+							<kbd className="rounded border bg-secondary px-1.5 py-0.5 font-mono text-xs">
 								⌘ K
 							</kbd>
 						</div>
 					</div>
-				</RightSidebar.Section>
-
-				<RightSidebar.Section>
-					<RightSidebar.Tip description="Reduce Motion helps if you're sensitive to animations or want to save battery on mobile devices." />
 				</RightSidebar.Section>
 			</RightSidebar>
 		</div>
