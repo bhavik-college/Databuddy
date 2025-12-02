@@ -1,6 +1,6 @@
 import { HttpClient } from "./client";
 import type { BaseEvent, CustomEventSpan, ErrorSpan, EventContext, TrackerOptions, WebVitalEvent } from "./types";
-import { generateUUIDv4, logger } from "./utils";
+import { generateUUIDv4, isDebugMode, isLocalhost, logger } from "./utils";
 
 const HEADLESS_CHROME_REGEX = /\bHeadlessChrome\b/i;
 const PHANTOMJS_REGEX = /\bPhantomJS\b/i;
@@ -192,6 +192,10 @@ export class BaseTracker {
 
 	protected shouldSkipTracking(): boolean {
 		if (this.isServer() || this.options.disabled || this.isLikelyBot) {
+			return true;
+		}
+
+		if (!isDebugMode() && isLocalhost()) {
 			return true;
 		}
 
