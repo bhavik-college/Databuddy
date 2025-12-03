@@ -136,7 +136,7 @@ function createFallbackIcon(
 	return (
 		<div
 			className={cn(
-				"flex items-center justify-center rounded bg-muted font-medium text-muted-foreground text-xs",
+				"flex items-center justify-center rounded bg-secondary font-medium text-secondary-foreground text-xs",
 				className
 			)}
 			style={{ width: iconSize, height: iconSize }}

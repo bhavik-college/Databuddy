@@ -11,18 +11,9 @@ import {
 import { useAtom } from "jotai";
 import type React from "react";
 import { useEffect, useState } from "react";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DeleteDialog } from "@/components/ui/delete-dialog";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -43,18 +34,18 @@ import { cn } from "@/lib/utils";
 import { websiteDataAtom, websiteIdAtom } from "@/stores/jotai/assistantAtoms";
 import { getChatDB } from "../lib/chat-db";
 
-interface ChatHistoryItem {
+type ChatHistoryItem = {
 	websiteId: string;
 	websiteName?: string;
 	lastUpdated: number;
 	messageCount: number;
 	lastMessage?: string;
-}
+};
 
-interface ChatHistorySheetProps {
+type ChatHistorySheetProps = {
 	isOpen: boolean;
 	onClose: () => void;
-}
+};
 
 function formatRelativeTime(timestamp: number): string {
 	const now = Date.now();
@@ -339,29 +330,14 @@ export function ChatHistorySheet({ isOpen, onClose }: ChatHistorySheetProps) {
 					</div>
 				</SheetContent>
 			</Sheet>
-			<AlertDialog
-				onOpenChange={() => setDeleteConfirm(null)}
-				open={!!deleteConfirm}
-			>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>Are you sure?</AlertDialogTitle>
-						<AlertDialogDescription>
-							This will permanently delete this chat history. This action cannot
-							be undone.
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction
-							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-							onClick={() => deleteConfirm && handleDeleteChat(deleteConfirm)}
-						>
-							Delete
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
+			<DeleteDialog
+				confirmLabel="Delete"
+				description="This will permanently delete this chat history. This action cannot be undone."
+				isOpen={!!deleteConfirm}
+				onClose={() => setDeleteConfirm(null)}
+				onConfirm={() => deleteConfirm && handleDeleteChat(deleteConfirm)}
+				title="Delete Chat History"
+			/>
 		</>
 	);
 }

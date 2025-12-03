@@ -196,7 +196,7 @@ export function InvitationsView({
 								<XIcon className="size-3.5" weight="bold" />
 								Expired
 								{expiredCount > 0 && (
-									<span className="rounded-full bg-muted px-1.5 py-0.5 text-muted-foreground text-xs">
+									<span className="rounded-full bg-secondary px-1.5 py-0.5 text-secondary-foreground text-xs">
 										{expiredCount}
 									</span>
 								)}

@@ -162,7 +162,7 @@ export function WebsiteAudienceTab({
 						<div className="flex items-center gap-3">
 							<BrowserIcon
 								fallback={
-									<div className="flex h-5 w-5 items-center justify-center rounded bg-muted font-medium text-muted-foreground text-xs">
+									<div className="flex h-5 w-5 items-center justify-center rounded bg-secondary font-medium text-secondary-foreground text-xs">
 										{browserName.charAt(0).toUpperCase()}
 									</div>
 								}

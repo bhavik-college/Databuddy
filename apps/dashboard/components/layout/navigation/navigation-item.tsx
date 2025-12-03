@@ -140,7 +140,8 @@ export function NavigationItem({
 							badge.variant === "purple" && "bg-accent text-accent-foreground",
 							badge.variant === "blue" && "bg-accent text-accent-foreground",
 							badge.variant === "green" && "bg-accent text-accent-foreground",
-							badge.variant === "orange" && "bg-muted text-muted-foreground",
+							badge.variant === "orange" &&
+								"bg-amber-500/10 text-amber-600 dark:text-amber-500",
 							badge.variant === "red" && "bg-destructive/10 text-destructive"
 						)}
 					>

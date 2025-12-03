@@ -44,7 +44,7 @@ export const getEventIconAndColor = (
 				color: "text-muted-foreground",
 				bgColor: "bg-muted/30",
 				borderColor: "border-muted",
-				badgeColor: "bg-muted text-muted-foreground border-muted",
+				badgeColor: "bg-secondary text-secondary-foreground border-secondary",
 			};
 	}
 };

@@ -105,7 +105,7 @@ export function GeneralSettings({
 								/>
 								<p className="text-muted-foreground text-xs">
 									Used in URLs:{" "}
-									<code className="rounded bg-muted px-1 py-0.5 text-xs">
+									<code className="rounded bg-secondary px-1.5 py-0.5 font-mono text-foreground text-xs">
 										/{slug}
 									</code>
 								</p>
