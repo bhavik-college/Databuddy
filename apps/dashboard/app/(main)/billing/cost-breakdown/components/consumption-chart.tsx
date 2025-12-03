@@ -323,7 +323,12 @@ export function ConsumptionChart({
 									}
 									return null;
 								}}
-								cursor={{ stroke: "var(--primary)", strokeOpacity: 0.2 }}
+								cursor={{
+									fill: "var(--muted)",
+									fillOpacity: 0.1,
+									stroke: "var(--primary)",
+									strokeOpacity: 0.2,
+								}}
 								wrapperStyle={{ outline: "none" }}
 							/>
 							<Legend
