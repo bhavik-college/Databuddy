@@ -37,6 +37,48 @@ const websiteCache = createDrizzleCache({ redis, namespace: "websites" });
 const CACHE_DURATION = 60; // seconds
 const TREND_THRESHOLD = 5; // percentage
 
+type EventsCheckResult = {
+	hasEvents: boolean;
+	error: string | null;
+};
+
+async function getTrackingEventsStatus(
+	websiteId: string
+): Promise<EventsCheckResult> {
+	try {
+		const trackingCheckResult = await Promise.race([
+			chQuery<{ count: number }>(
+				`SELECT COUNT(*) as count FROM analytics.events WHERE client_id = {websiteId:String} AND event_name = 'screen_view' LIMIT 1`,
+				{ websiteId }
+			),
+			new Promise<never>((_, reject) =>
+				setTimeout(() => reject(new Error("ClickHouse query timeout")), 10_000)
+			),
+		]);
+
+		return {
+			hasEvents: (trackingCheckResult[0]?.count ?? 0) > 0,
+			error: null,
+		};
+	} catch (error) {
+		const message =
+			error instanceof Error ? error.message : "Unknown error checking events";
+		logger.error({ websiteId }, `Error checking tracking events: ${message}`);
+		return { hasEvents: false, error: message };
+	}
+}
+
+const buildStatusMessage = (hasEvents: boolean, eventsError: string | null) => {
+	if (hasEvents) {
+		return "Tracking is active and receiving events.";
+	}
+
+	if (eventsError) {
+		return `Unable to check events: ${eventsError}`;
+	}
+
+	return "Tracking not set up. Please install the script tag.";
+};
 type ChartDataPoint = {
 	websiteId: string;
 	date: string;
@@ -593,35 +635,25 @@ export const websitesRouter = {
 			try {
 				await authorizeWebsiteAccess(context, input.websiteId, "read");
 
-				let hasTrackingEvents = false;
-				try {
-					const trackingCheckResult = await Promise.race([
-						chQuery<{ count: number }>(
-							`SELECT COUNT(*) as count FROM analytics.events WHERE client_id = {websiteId:String} AND event_name = 'screen_view' LIMIT 1`,
-							{ websiteId: input.websiteId }
-						),
-						new Promise<never>((_, reject) =>
-							setTimeout(
-								() => reject(new Error("ClickHouse query timeout")),
-								10_000
-							)
-						),
-					]);
-
-					hasTrackingEvents = (trackingCheckResult[0]?.count ?? 0) > 0;
-				} catch (error) {
-					logger.error(
-						{ websiteId: input.websiteId },
-						`Error checking tracking events: ${error instanceof Error ? error.message : String(error)}`
-					);
-					hasTrackingEvents = false;
-				}
+				const { hasEvents, error: eventsError } = await getTrackingEventsStatus(
+					input.websiteId
+				);
 
 				return {
-					tracking_setup: hasTrackingEvents,
-					integration_type: hasTrackingEvents ? "manual" : null,
+					tracking_setup: hasEvents,
+					integration_type: hasEvents ? "manual" : null,
+					has_events: hasEvents,
+					status_message: buildStatusMessage(hasEvents, eventsError),
 				};
 			} catch (error) {
+				if (error instanceof ORPCError) {
+					if (error.code === "NOT_FOUND") {
+						throw new ORPCError("NOT_FOUND", {
+							message: `Website with ID "${input.websiteId}" not found. Please verify the website ID is correct.`,
+						});
+					}
+					throw error;
+				}
 				logger.error(
 					{ websiteId: input.websiteId },
 					`Error in isTrackingSetup: ${error instanceof Error ? error.message : String(error)}`
