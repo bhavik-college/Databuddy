@@ -103,7 +103,7 @@ function TransferPageContent() {
 				/>
 				<div className="flex flex-1 items-center justify-center">
 					<div className="flex flex-col items-center gap-3">
-						<div className="h-8 w-8 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
+						<div className="size-8 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
 						<p className="text-muted-foreground text-sm">
 							Loading transfer options...
 						</p>
@@ -203,7 +203,7 @@ function TransferPageContent() {
 										availableOrgs.map((org: Organization) => (
 											<SelectItem key={org.id} value={org.id}>
 												<div className="flex items-center gap-2">
-													<BuildingsIcon className="h-4 w-4" />
+													<BuildingsIcon className="size-4" />
 													<span>{org.name}</span>
 												</div>
 											</SelectItem>
@@ -231,7 +231,7 @@ function TransferPageContent() {
 				{selectedOrgId && (
 					<section className="border-b px-4 py-5 sm:px-6">
 						<Alert className="border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-800 dark:bg-orange-950/20 dark:text-orange-200">
-							<WarningIcon className="h-4 w-4" />
+							<WarningIcon className="size-4" />
 							<AlertDescription className="text-xs">
 								<strong className="font-semibold">Important:</strong> This
 								action is irreversible. All data, settings, and analytics will
@@ -391,7 +391,7 @@ export default function TransferPage() {
 					/>
 					<div className="flex flex-1 items-center justify-center">
 						<div className="flex flex-col items-center gap-3">
-							<div className="h-8 w-8 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
+							<div className="size-8 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
 							<p className="text-muted-foreground text-sm">Loading...</p>
 						</div>
 					</div>

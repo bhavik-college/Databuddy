@@ -283,7 +283,7 @@ export function ApiKeyCreateDialog({
 												type="button"
 											>
 												<div
-													className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border ${
+													className={`flex size-4 shrink-0 items-center justify-center rounded-sm border ${
 														isSelected
 															? "border-primary bg-primary text-primary"
 															: "border-muted-foreground/30"
@@ -367,7 +367,7 @@ export function ApiKeyCreateDialog({
 																entry.resourceId}
 														</span>
 														<Button
-															className="h-7 w-7"
+															className="size-7"
 															onClick={() =>
 																removeWebsite(entry.resourceId ?? "")
 															}
@@ -400,7 +400,7 @@ export function ApiKeyCreateDialog({
 																	type="button"
 																>
 																	<div
-																		className={`flex h-3 w-3 shrink-0 items-center justify-center rounded-sm border ${
+																		className={`flex size-3 shrink-0 items-center justify-center rounded-sm border ${
 																			isSelected
 																				? "border-primary bg-primary text-primary-foreground"
 																				: "border-muted-foreground/30"

@@ -135,7 +135,7 @@ export default function RootLayout({
 					<Suspense
 						fallback={
 							<div className="flex h-full items-center justify-center p-8">
-								<SpinnerIcon className="h-8 w-8 animate-spin text-primary" />
+								<SpinnerIcon className="size-8 animate-spin text-primary" />
 							</div>
 						}
 					>

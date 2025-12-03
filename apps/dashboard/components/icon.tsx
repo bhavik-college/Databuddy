@@ -257,7 +257,7 @@ export function CountryFlag({
 				<div
 					className={cn("flex h-4 w-6 items-center justify-center", className)}
 				>
-					<div className="h-4 w-4 text-muted-foreground">🌐</div>
+					<div className="size-4 text-muted-foreground">🌐</div>
 				</div>
 			)
 		);

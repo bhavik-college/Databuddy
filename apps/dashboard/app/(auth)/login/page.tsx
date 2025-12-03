@@ -250,7 +250,7 @@ function LoginPage() {
 							<Button className="w-full" disabled={isLoading} type="submit">
 								{isLoading ? (
 									<>
-										<SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
+										<SpinnerIcon className="mr-2 size-4 animate-spin" />
 										Signing in...
 									</>
 								) : (
@@ -289,7 +289,7 @@ export default function Page() {
 				<div className="flex h-screen items-center justify-center bg-background">
 					<div className="relative">
 						<div className="absolute inset-0 animate-ping rounded-full bg-primary/20 blur-xl" />
-						<SpinnerIcon className="relative h-8 w-8 animate-spin text-primary" />
+						<SpinnerIcon className="relative size-8 animate-spin text-primary" />
 					</div>
 				</div>
 			}

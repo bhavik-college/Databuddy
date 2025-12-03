@@ -361,7 +361,7 @@ export function MapComponent({
 			{passedIsLoading && (
 				<div className="absolute inset-0 z-10 flex items-center justify-center bg-background/70 backdrop-blur-sm">
 					<div className="flex flex-col items-center gap-3">
-						<div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+						<div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
 						<span className="font-medium text-muted-foreground text-sm">
 							Loading map data...
 						</span>

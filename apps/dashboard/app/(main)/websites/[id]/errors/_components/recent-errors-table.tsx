@@ -41,7 +41,7 @@ const SeverityDot = ({ severity }: { severity: "high" | "medium" | "low" }) => {
 
 	return (
 		<span
-			className={`h-2 w-2 shrink-0 rounded-full ${colors[severity]}`}
+			className={`size-2 shrink-0 rounded-full ${colors[severity]}`}
 			title={`${severity} severity`}
 		/>
 	);
@@ -95,7 +95,7 @@ export const RecentErrorsTable = ({ recentErrors }: Props) => {
 				return (
 					<div className="flex max-w-md flex-col gap-1.5">
 						<div className="flex items-center gap-2">
-							<div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary/10">
+							<div className="flex size-5 shrink-0 items-center justify-center rounded bg-primary/10">
 								{getErrorTypeIcon(type)}
 							</div>
 							<Badge
@@ -110,7 +110,7 @@ export const RecentErrorsTable = ({ recentErrors }: Props) => {
 											className="gap-1 border-chart-2/30 bg-chart-2/10 text-chart-2"
 											variant="outline"
 										>
-											<StackIcon className="h-3 w-3" weight="duotone" />
+											<StackIcon className="size-3" weight="duotone" />
 											<span className="hidden sm:inline">Stack</span>
 										</Badge>
 									</TooltipTrigger>
@@ -211,7 +211,7 @@ export const RecentErrorsTable = ({ recentErrors }: Props) => {
 				if (!(countryCode || countryName)) {
 					return (
 						<div className="flex items-center gap-1.5">
-							<GlobeIcon className="h-4 w-4 text-muted-foreground" />
+							<GlobeIcon className="size-4 text-muted-foreground" />
 							<span className="text-muted-foreground text-sm">Unknown</span>
 						</div>
 					);

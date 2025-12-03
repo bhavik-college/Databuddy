@@ -108,7 +108,7 @@ function CodeSnippet({
 					dangerouslySetInnerHTML={{ __html: highlightedCode }}
 				/>
 				<Button
-					className="absolute top-2 right-2 h-7 w-7 bg-white/10 opacity-0 backdrop-blur-sm transition-opacity hover:bg-white/20 group-hover:opacity-100"
+					className="absolute top-2 right-2 size-7 bg-white/10 opacity-0 backdrop-blur-sm transition-opacity hover:bg-white/20 group-hover:opacity-100"
 					onClick={onCopy}
 					size="icon"
 					variant="ghost"

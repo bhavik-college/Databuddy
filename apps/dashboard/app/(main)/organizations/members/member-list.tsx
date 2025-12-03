@@ -131,7 +131,7 @@ function MemberRow({
 
 			{member.role !== "owner" ? (
 				<Button
-					className="h-7 w-7 p-0 hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+					className="size-7 p-0 hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
 					disabled={isRemovingMember}
 					onClick={() =>
 						onConfirmRemove({ id: member.id, name: member.user.name })
@@ -141,7 +141,7 @@ function MemberRow({
 					<TrashIcon size={14} />
 				</Button>
 			) : (
-				<div className="h-7 w-7" />
+				<div className="size-7" />
 			)}
 		</div>
 	);

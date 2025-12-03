@@ -151,7 +151,7 @@ export function NavigationItem({
 				{isExternal && (
 					<ArrowSquareOutIcon
 						aria-hidden="true"
-						className="h-3 w-3 text-sidebar-ring opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+						className="size-3 text-sidebar-ring opacity-0 transition-opacity duration-200 group-hover:opacity-100"
 						weight="duotone"
 					/>
 				)}

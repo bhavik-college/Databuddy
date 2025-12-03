@@ -224,7 +224,7 @@ export const EmptyState = memo(function EmptyState({
 										)}
 										{variant === "default" && (
 											<PlusIcon
-												className="relative z-10 h-5 w-5 transition-transform duration-300 group-hover:rotate-90 motion-reduce:transform-none"
+												className="relative z-10 size-5 transition-transform duration-300 group-hover:rotate-90 motion-reduce:transform-none"
 												size={20}
 											/>
 										)}

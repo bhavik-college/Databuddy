@@ -137,7 +137,7 @@ export function DangerZoneSettings({
 						</div>
 						{isOwner === null ? (
 							<Button disabled size="sm" variant="destructive">
-								<div className="mr-2 h-3 w-3 animate-spin rounded-full border border-destructive-foreground/30 border-t-destructive-foreground" />
+								<div className="mr-2 size-3 animate-spin rounded-full border border-destructive-foreground/30 border-t-destructive-foreground" />
 								Loading
 							</Button>
 						) : isOwner ? (
@@ -227,7 +227,7 @@ export function DangerZoneSettings({
 						>
 							{isLeaving ? (
 								<>
-									<div className="mr-2 h-4 w-4 animate-spin rounded-full border border-destructive-foreground/30 border-t-destructive-foreground" />
+									<div className="mr-2 size-4 animate-spin rounded-full border border-destructive-foreground/30 border-t-destructive-foreground" />
 									Leaving...
 								</>
 							) : (

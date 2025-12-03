@@ -132,7 +132,7 @@ export function CommandSearch({
 									router.push(item.path);
 								}}
 							>
-								<item.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+								<item.icon className="mr-2 size-4 text-muted-foreground" />
 								<span>{item.name}</span>{' '}
 								<span className="text-end text-muted-foreground text-xs">
 									{item.path}

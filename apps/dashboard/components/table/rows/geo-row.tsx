@@ -44,7 +44,7 @@ export function createGeoColumns({ type }: GeoRowProps): ColumnDef<GeoEntry>[] {
 					}
 					return (
 						<MapPinIcon
-							className="h-4 w-4 text-muted-foreground"
+							className="size-4 text-muted-foreground"
 							weight="duotone"
 						/>
 					);

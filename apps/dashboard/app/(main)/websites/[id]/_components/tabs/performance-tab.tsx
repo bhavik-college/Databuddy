@@ -564,7 +564,7 @@ export function WebsitePerformanceTab({
 			) : isLoading ? (
 				<div className="flex items-center justify-center rounded border bg-sidebar py-12">
 					<div className="text-center">
-						<div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-primary border-b-2" />
+						<div className="mx-auto mb-4 size-8 animate-spin rounded-full border-primary border-b-2" />
 						<p className="text-sidebar-foreground/70 text-sm">
 							Loading performance data...
 						</p>

@@ -245,7 +245,7 @@ export function WebsitePageHeader({
 									size="sm"
 									variant="outline"
 								>
-									<ArrowClockwiseIcon className="h-4 w-4" size={16} />
+									<ArrowClockwiseIcon className="size-4" size={16} />
 									Retry
 								</Button>
 							)}

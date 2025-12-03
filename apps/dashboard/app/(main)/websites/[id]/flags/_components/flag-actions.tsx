@@ -84,16 +84,16 @@ export function FlagActions({
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-40">
 					<DropdownMenuItem onClick={onEditAction}>
-						<PencilIcon className="h-4 w-4" weight="duotone" /> Edit
+						<PencilIcon className="size-4" weight="duotone" /> Edit
 					</DropdownMenuItem>
 					<DropdownMenuItem onClick={handleCopyKey}>
-						<CopyIcon className="h-4 w-4" weight="duotone" /> Copy key
+						<CopyIcon className="size-4" weight="duotone" /> Copy key
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						onClick={() => setIsOpen(true)}
 						variant="destructive"
 					>
-						<TrashIcon className="h-4 w-4" weight="duotone" /> Delete
+						<TrashIcon className="size-4" weight="duotone" /> Delete
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>

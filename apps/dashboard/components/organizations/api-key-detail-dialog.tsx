@@ -189,7 +189,7 @@ export function ApiKeyDetailDialog({
 								{newSecret && (
 									<div className="rounded border border-green-200 bg-green-50 p-4 dark:border-green-900/50 dark:bg-green-900/20">
 										<div className="mb-3 flex items-center gap-2">
-											<div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/40">
+											<div className="flex size-6 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/40">
 												<CheckCircleIcon
 													className="text-green-600 dark:text-green-400"
 													size={14}
@@ -205,7 +205,7 @@ export function ApiKeyDetailDialog({
 												{newSecret}
 											</code>
 											<Button
-												className="absolute top-1.5 right-1.5 h-7 w-7 text-muted-foreground hover:text-foreground"
+												className="absolute top-1.5 right-1.5 size-7 text-muted-foreground hover:text-foreground"
 												onClick={handleCopy}
 												size="icon"
 												variant="ghost"
@@ -272,7 +272,7 @@ export function ApiKeyDetailDialog({
 															key={scope.value}
 														>
 															<div
-																className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border ${
+																className={`flex size-4 shrink-0 items-center justify-center rounded-sm border ${
 																	hasScope
 																		? "border-primary bg-primary text-primary-foreground"
 																		: "border-muted-foreground/30"

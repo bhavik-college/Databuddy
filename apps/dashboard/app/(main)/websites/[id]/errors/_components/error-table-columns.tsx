@@ -91,7 +91,7 @@ export const createErrorTypeColumn = () => ({
 			return (
 				<div className="flex flex-col gap-1">
 					<div className="flex items-center gap-2">
-						<BugIcon className="h-4 w-4" size={16} weight="duotone" />
+						<BugIcon className="size-4" size={16} weight="duotone" />
 						<Badge className="border-gray-200 bg-gray-100 text-gray-800">
 							Unknown Error
 						</Badge>
@@ -193,7 +193,7 @@ export const createDeviceColumn = () =>
 		if (!name) {
 			return (
 				<MonitorIcon
-					className="h-4 w-4 text-gray-500"
+					className="size-4 text-gray-500"
 					size={16}
 					weight="duotone"
 				/>
@@ -203,19 +203,19 @@ export const createDeviceColumn = () =>
 		const device = name.toLowerCase();
 		return device.includes("mobile") || device.includes("phone") ? (
 			<PhoneIcon
-				className="h-4 w-4 text-foreground"
+				className="size-4 text-foreground"
 				size={16}
 				weight="duotone"
 			/>
 		) : device.includes("tablet") ? (
 			<TableIcon
-				className="h-4 w-4 text-purple-500"
+				className="size-4 text-purple-500"
 				size={16}
 				weight="duotone"
 			/>
 		) : (
 			<MonitorIcon
-				className="h-4 w-4 text-gray-500"
+				className="size-4 text-gray-500"
 				size={16}
 				weight="duotone"
 			/>

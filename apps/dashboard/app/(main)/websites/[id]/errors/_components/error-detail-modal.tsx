@@ -83,7 +83,7 @@ const CopyButton = ({
 	return (
 		<Button
 			aria-label={ariaLabel || `Copy ${section}`}
-			className="h-7 w-7 shrink-0"
+			className="size-7 shrink-0"
 			onClick={() => onCopy(text, section)}
 			size="icon"
 			variant="ghost"
@@ -245,7 +245,7 @@ Context:
 			value: error.path || "—",
 			icon: (
 				<LinkIcon
-					className="h-4 w-4 shrink-0 text-muted-foreground"
+					className="size-4 shrink-0 text-muted-foreground"
 					weight="duotone"
 				/>
 			),
@@ -258,7 +258,7 @@ Context:
 			value: error.session_id || "—",
 			icon: (
 				<HashIcon
-					className="h-4 w-4 shrink-0 text-muted-foreground"
+					className="size-4 shrink-0 text-muted-foreground"
 					weight="duotone"
 				/>
 			),
@@ -271,7 +271,7 @@ Context:
 			value: error.anonymous_id || "—",
 			icon: (
 				<UserIcon
-					className="h-4 w-4 shrink-0 text-muted-foreground"
+					className="size-4 shrink-0 text-muted-foreground"
 					weight="duotone"
 				/>
 			),
@@ -287,7 +287,7 @@ Context:
 			value: error.event_id,
 			icon: (
 				<StackIcon
-					className="h-4 w-4 shrink-0 text-muted-foreground"
+					className="size-4 shrink-0 text-muted-foreground"
 					weight="duotone"
 				/>
 			),
@@ -298,7 +298,7 @@ Context:
 			value: error.client_id,
 			icon: (
 				<UserIcon
-					className="h-4 w-4 shrink-0 text-muted-foreground"
+					className="size-4 shrink-0 text-muted-foreground"
 					weight="duotone"
 				/>
 			),
@@ -307,7 +307,7 @@ Context:
 			key: "ip",
 			label: "IP Address",
 			value: error.ip,
-			icon: <GlobeIcon className="h-4 w-4 shrink-0 text-muted-foreground" />,
+			icon: <GlobeIcon className="size-4 shrink-0 text-muted-foreground" />,
 		},
 		{
 			key: "agent",
@@ -315,7 +315,7 @@ Context:
 			value: error.user_agent,
 			icon: (
 				<CodeIcon
-					className="h-4 w-4 shrink-0 text-muted-foreground"
+					className="size-4 shrink-0 text-muted-foreground"
 					weight="duotone"
 				/>
 			),
@@ -369,7 +369,7 @@ Context:
 					<section className="space-y-3">
 						<div className="flex items-center justify-between">
 							<div className="flex items-center gap-2">
-								<CodeIcon className="h-4 w-4 text-primary" weight="duotone" />
+								<CodeIcon className="size-4 text-primary" weight="duotone" />
 								<span className="font-medium text-sm">Error Message</span>
 							</div>
 							<CopyButton
@@ -394,7 +394,7 @@ Context:
 									<AccordionTrigger className="px-3">
 										<div className="flex items-center gap-2">
 											<StackIcon
-												className="h-4 w-4 text-chart-2"
+												className="size-4 text-chart-2"
 												weight="duotone"
 											/>
 											<span className="font-medium text-sm">Stack Trace</span>
@@ -424,7 +424,7 @@ Context:
 					{(error.filename || error.lineno) && (
 						<section className="space-y-3">
 							<div className="flex items-center gap-2">
-								<CodeIcon className="h-4 w-4 text-chart-3" weight="duotone" />
+								<CodeIcon className="size-4 text-chart-3" weight="duotone" />
 								<span className="font-medium text-sm">Source Location</span>
 							</div>
 							<div className="rounded border bg-card p-3">
@@ -541,7 +541,7 @@ Context:
 										</>
 									) : (
 										<>
-											<GlobeIcon className="h-4 w-4 text-muted-foreground" />
+											<GlobeIcon className="size-4 text-muted-foreground" />
 											<span className="text-muted-foreground text-sm">
 												Unknown
 											</span>
@@ -593,9 +593,9 @@ Context:
 						variant="outline"
 					>
 						{copiedSection === "all" ? (
-							<CheckIcon className="h-4 w-4 text-green-500" weight="bold" />
+							<CheckIcon className="size-4 text-green-500" weight="bold" />
 						) : (
-							<CopyIcon className="h-4 w-4" />
+							<CopyIcon className="size-4" />
 						)}
 						Copy All
 					</Button>

@@ -112,13 +112,13 @@ function OrganizationSelectorTrigger({
 				{isSettingActiveOrganization ? (
 					<SpinnerGapIcon
 						aria-label="Switching workspace"
-						className="h-4 w-4 animate-spin text-sidebar-accent-foreground/60"
+						className="size-4 animate-spin text-sidebar-accent-foreground/60"
 						weight="duotone"
 					/>
 				) : (
 					<CaretDownIcon
 						className={cn(
-							"h-4 w-4 text-sidebar-accent-foreground/60 transition-transform duration-200",
+							"size-4 text-sidebar-accent-foreground/60 transition-transform duration-200",
 							isOpen && "rotate-180"
 						)}
 					/>
@@ -176,14 +176,14 @@ export function OrganizationSelector() {
 				<div className="flex w-full items-center justify-between">
 					<div className="flex items-center gap-3">
 						<div className="rounded-lg border bg-sidebar/80 p-1.5">
-							<Skeleton className="h-5 w-5 rounded" />
+							<Skeleton className="size-5 rounded" />
 						</div>
 						<div className="flex min-w-0 flex-1 flex-col items-start">
 							<Skeleton className="h-4 w-24 rounded" />
 							<Skeleton className="mt-1 h-3 w-16 rounded" />
 						</div>
 					</div>
-					<Skeleton className="h-4 w-4 rounded" />
+					<Skeleton className="size-4 rounded" />
 				</div>
 			</div>
 		);
@@ -231,7 +231,7 @@ export function OrganizationSelector() {
 						onClick={() => handleSelectOrganization(null)}
 					>
 						<UserIcon
-							className="h-5 w-5 text-accent-foreground"
+							className="size-5 text-accent-foreground"
 							weight="duotone"
 						/>
 						<div className="flex min-w-0 flex-1 flex-col items-start text-left">
@@ -241,7 +241,7 @@ export function OrganizationSelector() {
 							</span>
 						</div>
 						{!activeOrganization && (
-							<CheckIcon className="h-4 w-4 text-accent-foreground" />
+							<CheckIcon className="size-4 text-accent-foreground" />
 						)}
 					</DropdownMenuItem>
 
@@ -272,7 +272,7 @@ export function OrganizationSelector() {
 										</span>
 									</div>
 									{activeOrganization?.id === org.id && (
-										<CheckIcon className="h-4 w-4 text-accent-foreground" />
+										<CheckIcon className="size-4 text-accent-foreground" />
 									)}
 								</DropdownMenuItem>
 							))}
@@ -287,7 +287,7 @@ export function OrganizationSelector() {
 							setIsOpen(false);
 						}}
 					>
-						<PlusIcon className="h-5 w-5 text-accent-foreground" />
+						<PlusIcon className="size-5 text-accent-foreground" />
 						<span className="font-medium text-sm">Create Organization</span>
 					</DropdownMenuItem>
 				</DropdownMenuContent>

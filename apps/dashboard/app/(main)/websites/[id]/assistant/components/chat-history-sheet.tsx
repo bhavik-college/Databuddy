@@ -198,7 +198,7 @@ export function ChatHistorySheet({ isOpen, onClose }: ChatHistorySheetProps) {
 					<div className="space-y-6 pt-6">
 						<div className="space-y-2">
 							<div className="relative">
-								<MagnifyingGlassIcon className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
+								<MagnifyingGlassIcon className="-translate-y-1/2 absolute top-1/2 left-3 size-4 transform text-muted-foreground" />
 								<Input
 									className="rounded border-border/50 pl-9 focus:border-primary/50 focus:ring-primary/20"
 									onChange={(e) => setSearchQuery(e.target.value)}
@@ -217,7 +217,7 @@ export function ChatHistorySheet({ isOpen, onClose }: ChatHistorySheetProps) {
 											key={`skeleton-${i + 1}`}
 										>
 											<div className="flex items-start gap-3">
-												<Skeleton className="h-8 w-8 rounded" />
+												<Skeleton className="size-8 rounded" />
 												<div className="flex-1 space-y-2">
 													<Skeleton className="h-4 w-24" />
 													<Skeleton className="h-3 w-full" />
@@ -229,7 +229,7 @@ export function ChatHistorySheet({ isOpen, onClose }: ChatHistorySheetProps) {
 								</div>
 							) : filteredChats.length === 0 ? (
 								<div className="py-8 text-center">
-									<ChatIcon className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
+									<ChatIcon className="mx-auto mb-3 size-8 text-muted-foreground" />
 									<p className="text-muted-foreground text-sm">
 										{searchQuery
 											? "No chats match your search"
@@ -263,7 +263,7 @@ export function ChatHistorySheet({ isOpen, onClose }: ChatHistorySheetProps) {
 											type="button"
 										>
 											<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-												<ChatIcon className="h-5 w-5 text-primary" />
+												<ChatIcon className="size-5 text-primary" />
 											</div>
 											<div className="min-w-0 flex-1">
 												<div className="mb-1 flex items-center justify-between">
@@ -274,14 +274,14 @@ export function ChatHistorySheet({ isOpen, onClose }: ChatHistorySheetProps) {
 													<DropdownMenu>
 														<DropdownMenuTrigger asChild>
 															<Button
-																className="h-7 w-7 opacity-0 group-hover:opacity-100"
+																className="size-7 opacity-0 group-hover:opacity-100"
 																onClick={(e: React.MouseEvent) =>
 																	e.stopPropagation()
 																}
 																size="icon"
 																variant="ghost"
 															>
-																<DotsThreeOutlineVerticalIcon className="h-4 w-4" />
+																<DotsThreeOutlineVerticalIcon className="size-4" />
 															</Button>
 														</DropdownMenuTrigger>
 														<DropdownMenuContent align="end">
@@ -294,7 +294,7 @@ export function ChatHistorySheet({ isOpen, onClose }: ChatHistorySheetProps) {
 																	);
 																}}
 															>
-																<DownloadIcon className="mr-2 h-4 w-4" />
+																<DownloadIcon className="mr-2 size-4" />
 																Export Chat
 															</DropdownMenuItem>
 															<DropdownMenuSeparator />
@@ -305,7 +305,7 @@ export function ChatHistorySheet({ isOpen, onClose }: ChatHistorySheetProps) {
 																	setDeleteConfirm(chat.websiteId);
 																}}
 															>
-																<TrashIcon className="mr-2 h-4 w-4" />
+																<TrashIcon className="mr-2 size-4" />
 																Delete
 															</DropdownMenuItem>
 														</DropdownMenuContent>
@@ -315,7 +315,7 @@ export function ChatHistorySheet({ isOpen, onClose }: ChatHistorySheetProps) {
 													{chat.lastMessage}
 												</p>
 												<div className="mt-1 flex items-center gap-3 text-muted-foreground/80 text-xs">
-													<ClockIcon className="h-3 w-3" />
+													<ClockIcon className="size-3" />
 													<span>{formatRelativeTime(chat.lastUpdated)}</span>
 													<Badge className="px-1.5 py-0" variant="outline">
 														{chat.messageCount} msg

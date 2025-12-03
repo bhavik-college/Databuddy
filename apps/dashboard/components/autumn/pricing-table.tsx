@@ -59,7 +59,7 @@ function PricingTableSkeleton() {
 					<div className="flex-1 space-y-3">
 						{[1, 2, 3, 4].map((j) => (
 							<div className="flex items-center gap-2" key={j}>
-								<div className="h-4 w-4 rounded bg-muted" />
+								<div className="size-4 rounded bg-muted" />
 								<div className="h-4 flex-1 rounded bg-muted" />
 							</div>
 						))}
@@ -332,7 +332,7 @@ function FeatureItem({ item }: { item: ProductItem }) {
 	return (
 		<div className="flex items-start gap-2 text-sm">
 			<CheckIcon
-				className="mt-0.5 h-4 w-4 shrink-0 text-accent-foreground"
+				className="mt-0.5 size-4 shrink-0 text-accent-foreground"
 				weight="bold"
 			/>
 			<div className="flex flex-col">
@@ -386,11 +386,7 @@ function PricingCardButton({
 			onClick={handleClick}
 			variant={recommended ? "default" : "secondary"}
 		>
-			{loading ? (
-				<CircleNotchIcon className="h-4 w-4 animate-spin" />
-			) : (
-				children
-			)}
+			{loading ? <CircleNotchIcon className="size-4 animate-spin" /> : children}
 		</Button>
 	);
 }

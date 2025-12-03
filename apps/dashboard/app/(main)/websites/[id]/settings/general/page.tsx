@@ -57,7 +57,7 @@ export default function GeneralSettingsPage() {
 	if (!websiteData) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<div className="h-8 w-8 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
+				<div className="size-8 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
 			</div>
 		);
 	}
@@ -171,7 +171,7 @@ export default function GeneralSettingsPage() {
 			>
 				<div className="rounded-md bg-secondary p-3 text-sm">
 					<div className="flex items-start gap-2">
-						<WarningCircleIcon className="h-5 w-5 shrink-0" />
+						<WarningCircleIcon className="size-5 shrink-0" />
 						<div className="space-y-1">
 							<p className="font-medium">Warning:</p>
 							<ul className="list-disc space-y-1 pl-4 text-xs">

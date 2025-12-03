@@ -153,8 +153,8 @@ function NotFoundState({
 		<div className="flex h-full flex-col">
 			<Header onBack={onBack} />
 			<div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4">
-				<div className="flex size-16 items-center justify-center rounded-full bg-muted">
-					<UserIcon className="size-8 text-muted-foreground" weight="duotone" />
+				<div className="flex size-16 items-center justify-center rounded-full bg-secondary">
+					<UserIcon className="size-8 text-secondary-foreground" weight="duotone" />
 				</div>
 				<div className="text-center">
 					<p className="font-semibold text-foreground text-lg">
@@ -552,9 +552,9 @@ export default function UserDetailPage() {
 						</div>
 					) : (
 						<div className="flex flex-col items-center justify-center py-16">
-							<div className="flex size-12 items-center justify-center rounded-full bg-muted">
+							<div className="flex size-12 items-center justify-center rounded-full bg-secondary">
 								<ChartLineIcon
-									className="size-6 text-muted-foreground"
+									className="size-6 text-secondary-foreground"
 									weight="duotone"
 								/>
 							</div>

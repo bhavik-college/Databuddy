@@ -162,7 +162,7 @@ export function WebsiteAudienceTab({
 						<div className="flex items-center gap-3">
 							<BrowserIcon
 								fallback={
-									<div className="flex h-5 w-5 items-center justify-center rounded bg-secondary font-medium text-secondary-foreground text-xs">
+									<div className="flex size-5 items-center justify-center rounded bg-secondary font-medium text-secondary-foreground text-xs">
 										{browserName.charAt(0).toUpperCase()}
 									</div>
 								}
@@ -359,7 +359,7 @@ export function WebsiteAudienceTab({
 								}}
 							>
 								<div className="flex items-center gap-1.5">
-									<div className="h-1 w-1 rounded-full bg-muted-foreground/40" />
+									<div className="size-1 rounded-full bg-muted-foreground/40" />
 									<span className="font-medium">
 										{subRow.version || "Unknown"}
 									</span>
@@ -553,7 +553,7 @@ export function WebsiteAudienceTab({
 															style={{ transform: "translateZ(3px)" }}
 														/>
 														<div
-															className="absolute top-5 left-2 h-1 w-1/2 rounded-full bg-primary/20"
+															className="absolute top-5 left-2 size-1/2 rounded-full bg-primary/20"
 															style={{ transform: "translateZ(3px)" }}
 														/>
 														<div

@@ -59,8 +59,8 @@ function InvitationRow({
 
 	return (
 		<div className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 px-5 py-4">
-			<div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-				<EnvelopeIcon className="text-muted-foreground" size={14} />
+			<div className="flex size-8 items-center justify-center rounded-full bg-secondary">
+				<EnvelopeIcon className="text-secondary-foreground" size={14} />
 			</div>
 
 			<div className="min-w-0">
@@ -78,7 +78,7 @@ function InvitationRow({
 
 			{isPending ? (
 				<Button
-					className="h-7 w-7 p-0 hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+					className="size-7 p-0 hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
 					disabled={isCancellingInvitation}
 					onClick={() =>
 						onConfirmCancel({ id: invitation.id, email: invitation.email })
@@ -89,7 +89,7 @@ function InvitationRow({
 					<TrashIcon size={14} />
 				</Button>
 			) : (
-				<div className="h-7 w-7" />
+				<div className="size-7" />
 			)}
 		</div>
 	);

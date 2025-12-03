@@ -83,7 +83,7 @@ export function HelpDialog({ open, onOpenChangeAction }: HelpDialogProps) {
 							<div className="flex items-start gap-4">
 								<div className="rounded-lg bg-accent-brighter p-2">
 									<KeyboardIcon
-										className="h-5 w-5 text-accent-foreground"
+										className="size-5 text-accent-foreground"
 										weight="duotone"
 									/>
 								</div>
@@ -117,7 +117,7 @@ export function HelpDialog({ open, onOpenChangeAction }: HelpDialogProps) {
 										<div className="flex items-start gap-4">
 											<div className="rounded-lg bg-accent-brighter p-2">
 												<Icon
-													className="h-5 w-5 text-accent-foreground"
+													className="size-5 text-accent-foreground"
 													weight="duotone"
 												/>
 											</div>

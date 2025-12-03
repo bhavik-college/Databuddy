@@ -60,7 +60,7 @@ export default async function AuthLayout({
 						<Suspense
 							fallback={
 								<div className="flex h-40 items-center justify-center">
-									<SpinnerIcon className="h-8 w-8 animate-spin text-primary" />
+									<SpinnerIcon className="size-8 animate-spin text-primary" />
 								</div>
 							}
 						>

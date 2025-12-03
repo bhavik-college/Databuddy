@@ -123,7 +123,7 @@ export function GeneralSettings({
 						<Button disabled={isSaving} onClick={handleSave} size="sm">
 							{isSaving ? (
 								<>
-									<div className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground" />
+									<div className="mr-2 size-3 animate-spin rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground" />
 									Saving…
 								</>
 							) : (

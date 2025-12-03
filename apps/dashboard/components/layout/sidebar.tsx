@@ -170,7 +170,7 @@ export function Sidebar() {
 							type="button"
 							variant="ghost"
 						>
-							<ListIcon className="h-5 w-5" weight="duotone" />
+							<ListIcon className="size-5" weight="duotone" />
 						</Button>
 
 						<Link
@@ -178,7 +178,7 @@ export function Sidebar() {
 							data-track="logo-click"
 							href="/websites"
 						>
-							<div className="flex h-8 w-8 items-center justify-center">
+							<div className="flex size-8 items-center justify-center">
 								<Image
 									alt="Databuddy Logo"
 									className="invert dark:invert-0"
@@ -230,14 +230,14 @@ export function Sidebar() {
 			>
 				<Button
 					aria-label="Close sidebar"
-					className="absolute top-3 right-3 z-110 h-8 w-8 p-0 md:hidden"
+					className="absolute top-3 right-3 z-110 size-8 p-0 md:hidden"
 					data-track="sidebar-close"
 					onClick={closeSidebar}
 					size="sm"
 					type="button"
 					variant="ghost"
 				>
-					<XIcon className="h-4 w-4" size={32} />
+					<XIcon className="size-4" size={32} />
 					<span className="sr-only">Close sidebar</span>
 				</Button>
 

@@ -178,7 +178,7 @@ export function AnalyticsToolbar({
 					>
 						<ArrowClockwiseIcon
 							aria-hidden="true"
-							className={`h-4 w-4 ${isRefreshing || isLoading ? "animate-spin" : ""}`}
+							className={`size-4 ${isRefreshing || isLoading ? "animate-spin" : ""}`}
 						/>
 					</Button>
 				</div>

@@ -139,7 +139,7 @@ export function WebVitalsChart({
 										</div>
 									</div>
 									{isSelected && (
-										<div className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+										<div className="size-2 shrink-0 rounded-full bg-primary" />
 									)}
 								</div>
 								{isLoading ? (

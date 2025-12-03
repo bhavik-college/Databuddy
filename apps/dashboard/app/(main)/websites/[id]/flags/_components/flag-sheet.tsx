@@ -280,10 +280,7 @@ export function FlagSheet({
 													{isEditing ? (
 														<Tooltip>
 															<TooltipTrigger asChild>
-																<InfoIcon
-																	className="h-4 w-4"
-																	weight="duotone"
-																/>
+																<InfoIcon className="size-4" weight="duotone" />
 															</TooltipTrigger>
 															<TooltipContent className="max-w-xs">
 																<div className="space-y-2">
