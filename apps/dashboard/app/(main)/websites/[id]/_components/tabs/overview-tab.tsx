@@ -961,7 +961,7 @@ export function WebsiteOverviewTab({
 					minHeight={350}
 					onAddFilter={onAddFilter}
 					tabs={pagesTabs as any}
-					title="Pages"
+					title="Pages"	
 				/>
 			</div>
 

@@ -33,18 +33,18 @@ const MapComponent = dynamic(
 	}
 );
 
-interface CountryData {
+type CountryData = {
 	country: string;
 	country_code?: string;
 	visitors: number;
 	pageviews: number;
-}
+};
 
-interface CountryRowProps {
+type CountryRowProps = {
 	country: CountryData;
 	totalVisitors: number;
 	onCountrySelect: (countryCode: string) => void;
-}
+};
 
 function CountryRow({
 	country,
@@ -66,7 +66,7 @@ function CountryRow({
 
 	return (
 		<button
-			className="flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-left transition-colors hover:bg-accent"
+			className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-accent sm:gap-2.5 sm:px-2.5 sm:py-2"
 			onClick={() =>
 				onCountrySelect(
 					country.country_code?.toUpperCase() || country.country.toUpperCase()
@@ -80,10 +80,11 @@ function CountryRow({
 			type="button"
 		>
 			<CountryFlag
+				className="sm:size-4"
 				country={
 					country.country_code?.toUpperCase() || country.country.toUpperCase()
 				}
-				size={16}
+				size={14}
 			/>
 			<div className="min-w-0 flex-1">
 				<p className="truncate font-medium text-xs">{country.country}</p>
@@ -171,30 +172,33 @@ function WebsiteMapPage() {
 				selectedCountry={selectedCountry}
 			/>
 
-			<div className="absolute top-3 right-3 z-20">
-				<Card className="w-60 gap-0 border bg-card/95 py-0 shadow-lg backdrop-blur-sm">
-					<CardHeader className="border-b bg-accent px-3 py-2.5">
-						<CardTitle className="flex items-center gap-2 font-semibold text-sm">
-							<GlobeIcon className="size-4 text-primary" weight="duotone" />
+			<div className="absolute right-3 bottom-3 left-3 z-20 sm:top-3 sm:right-3 sm:bottom-auto sm:left-auto sm:w-60">
+				<Card className="w-full gap-0 border bg-card/95 py-0 shadow-lg backdrop-blur-sm">
+					<CardHeader className="border-b bg-accent px-2.5 py-2 sm:px-3 sm:py-2.5">
+						<CardTitle className="flex items-center gap-2 font-semibold text-xs sm:text-sm">
+							<GlobeIcon
+								className="size-3.5 text-primary sm:size-4"
+								weight="duotone"
+							/>
 							Top Countries
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="p-0">
 						{isLoading ? (
-							<div className="space-y-1 p-3">
+							<div className="space-y-1 p-2 sm:p-3">
 								{Array.from({ length: 5 }).map((_, i) => (
 									<div
-										className="flex items-center gap-2.5 py-1.5"
+										className="flex items-center gap-2 py-1 sm:gap-2.5 sm:py-1.5"
 										key={`country-skeleton-${i + 1}`}
 									>
-										<Skeleton className="size-4 rounded" />
+										<Skeleton className="size-3.5 rounded sm:size-4" />
 										<Skeleton className="h-3 flex-1" />
 										<Skeleton className="h-3 w-8" />
 									</div>
 								))}
 							</div>
 						) : topCountries.length > 0 ? (
-							<div className="space-y-0.5 p-1.5">
+							<div className="max-h-[40vh] space-y-0.5 overflow-y-auto p-1 sm:max-h-none sm:p-1.5">
 								{topCountries.map((country) => (
 									<CountryRow
 										country={country}
@@ -205,9 +209,9 @@ function WebsiteMapPage() {
 								))}
 							</div>
 						) : (
-							<div className="flex flex-col items-center justify-center p-6 text-center">
+							<div className="flex flex-col items-center justify-center p-4 text-center sm:p-6">
 								<GlobeIcon
-									className="size-8 text-muted-foreground/30"
+									className="size-6 text-muted-foreground/30 sm:size-8"
 									weight="duotone"
 								/>
 								<p className="mt-2 text-muted-foreground text-xs">
@@ -217,9 +221,9 @@ function WebsiteMapPage() {
 						)}
 
 						{topCountries.length > 0 && (
-							<div className="flex items-center justify-between border-t bg-accent px-3 py-2">
+							<div className="flex items-center justify-between border-t bg-accent px-2.5 py-1.5 sm:px-3 sm:py-2">
 								<span className="text-muted-foreground text-xs">Total</span>
-								<span className="font-semibold text-sm tabular-nums">
+								<span className="font-semibold text-xs tabular-nums sm:text-sm">
 									{totalVisitors.toLocaleString()}
 								</span>
 							</div>
