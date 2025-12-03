@@ -101,7 +101,7 @@ export function CategorySidebar({
 								<button
 									className={cn(
 										isActive && !isLast && "border-accent",
-										"relative flex h-10 w-full items-center justify-center",
+										"relative flex h-10 w-full cursor-pointer items-center justify-center",
 										"focus:outline-none",
 										!isActive && "hover:bg-sidebar-accent-brighter",
 										isLast
