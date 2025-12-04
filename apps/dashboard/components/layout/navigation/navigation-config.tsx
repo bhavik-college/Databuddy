@@ -37,6 +37,7 @@ import {
 	UsersThreeIcon,
 	WarningIcon,
 } from "@phosphor-icons/react";
+import { GATED_FEATURES } from "@/types/features";
 import type { Category, NavigationSection } from "./types";
 
 const createNavItem = (
@@ -232,25 +233,43 @@ export const websiteNavigation: NavigationSection[] = [
 		createNavItem("Web Vitals", HeartbeatIcon, "/vitals", {
 			rootLevel: false,
 			alpha: true,
+			gatedFeature: GATED_FEATURES.WEB_VITALS,
 		}),
 		createNavItem("Performance", ActivityIcon, "/performance", {
 			rootLevel: false,
 			tag: "deprecated",
 		}),
-		createNavItem("Geographic", MapPinIcon, "/map", { rootLevel: false }),
-		createNavItem("Error Tracking", BugIcon, "/errors", { rootLevel: false }),
+		createNavItem("Geographic", MapPinIcon, "/map", {
+			rootLevel: false,
+			gatedFeature: GATED_FEATURES.GEOGRAPHIC,
+		}),
+		createNavItem("Error Tracking", BugIcon, "/errors", {
+			rootLevel: false,
+			gatedFeature: GATED_FEATURES.ERROR_TRACKING,
+		}),
 	]),
 	createNavSection("Product Analytics", TrendUpIcon, [
-		createNavItem("Users", UsersThreeIcon, "/users", { rootLevel: false }),
-		createNavItem("Funnels", FunnelIcon, "/funnels", { rootLevel: false }),
-		createNavItem("Goals", TargetIcon, "/goals", { rootLevel: false }),
+		createNavItem("Users", UsersThreeIcon, "/users", {
+			rootLevel: false,
+			gatedFeature: GATED_FEATURES.USERS,
+		}),
+		createNavItem("Funnels", FunnelIcon, "/funnels", {
+			rootLevel: false,
+			gatedFeature: GATED_FEATURES.FUNNELS,
+		}),
+		createNavItem("Goals", TargetIcon, "/goals", {
+			rootLevel: false,
+			gatedFeature: GATED_FEATURES.GOALS,
+		}),
 		createNavItem("Retention", RepeatIcon, "/retention", {
 			rootLevel: false,
 			alpha: true,
+			gatedFeature: GATED_FEATURES.RETENTION,
 		}),
 		createNavItem("Feature Flags", FlagIcon, "/flags", {
 			alpha: true,
 			rootLevel: false,
+			gatedFeature: GATED_FEATURES.FEATURE_FLAGS,
 		}),
 		// createNavItem("Databunny AI", RobotIcon, "/assistant", {
 		// 	alpha: true,
@@ -276,6 +295,7 @@ export const websiteSettingsNavigation: NavigationSection[] = [
 		),
 		createNavItem("Data Export", FileArrowDownIcon, "/settings/export", {
 			rootLevel: false,
+			gatedFeature: GATED_FEATURES.DATA_EXPORT,
 		}),
 	]),
 ];

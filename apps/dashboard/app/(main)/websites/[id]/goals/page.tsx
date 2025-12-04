@@ -4,6 +4,8 @@ import { TargetIcon, TrendDownIcon } from "@phosphor-icons/react";
 import { useAtom } from "jotai";
 import { useParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
+import { FeatureGate } from "@/components/feature-gate";
+import { GATED_FEATURES } from "@/components/providers/billing-provider";
 import { Card, CardContent } from "@/components/ui/card";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { useDateFilters } from "@/hooks/use-date-filters";
@@ -153,9 +155,10 @@ export default function GoalsPage() {
 	}
 
 	return (
-		<div className="relative flex h-full flex-col">
-			<WebsitePageHeader
-				createActionLabel="Create Goal"
+		<FeatureGate feature={GATED_FEATURES.GOALS}>
+			<div className="relative flex h-full flex-col">
+				<WebsitePageHeader
+					createActionLabel="Create Goal"
 				description="Track key conversions and measure success"
 				hasError={!!goalsError}
 				icon={
@@ -215,15 +218,16 @@ export default function GoalsPage() {
 			)}
 
 			{deletingGoalId && (
-				<DeleteDialog
-					confirmLabel="Delete Goal"
-					description="Are you sure you want to delete this goal? This action cannot be undone and will permanently remove all associated analytics data."
-					isOpen={!!deletingGoalId}
-					onClose={() => setDeletingGoalId(null)}
-					onConfirm={() => deletingGoalId && handleDeleteGoal(deletingGoalId)}
-					title="Delete Goal"
-				/>
-			)}
-		</div>
+					<DeleteDialog
+						confirmLabel="Delete Goal"
+						description="Are you sure you want to delete this goal? This action cannot be undone and will permanently remove all associated analytics data."
+						isOpen={!!deletingGoalId}
+						onClose={() => setDeletingGoalId(null)}
+						onConfirm={() => deletingGoalId && handleDeleteGoal(deletingGoalId)}
+						title="Delete Goal"
+					/>
+				)}
+			</div>
+		</FeatureGate>
 	);
 }

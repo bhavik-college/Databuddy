@@ -5,6 +5,8 @@ import { useAtom } from "jotai";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
+import { FeatureGate } from "@/components/feature-gate";
+import { GATED_FEATURES } from "@/components/providers/billing-provider";
 import { Card, CardContent } from "@/components/ui/card";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { useDateFilters } from "@/hooks/use-date-filters";
@@ -240,7 +242,8 @@ export default function FunnelsPage() {
 	}
 
 	return (
-		<div className="relative flex h-full flex-col">
+		<FeatureGate feature={GATED_FEATURES.FUNNELS}>
+			<div className="relative flex h-full flex-col">
 			<WebsitePageHeader
 				createActionLabel="Create Funnel"
 				description="Track user journeys and optimize conversion drop-off points"
@@ -350,6 +353,7 @@ export default function FunnelsPage() {
 					title="Delete Funnel"
 				/>
 			)}
-		</div>
+			</div>
+		</FeatureGate>
 	);
 }
