@@ -8,36 +8,33 @@
  * - tools/    - Tool implementations for agents
  */
 
+// Agent exports
+export { analyticsAgent, createAgent, mainAgent, triageAgent } from "./agents";
 // Config exports
 export {
+	type AppContext,
+	buildAppContext,
+	defaultMemoryConfig,
+	formatContextForLLM,
+	type ModelKey,
+	memoryProvider,
 	models,
 	openrouter,
-	memoryProvider,
-	defaultMemoryConfig,
-	buildAppContext,
-	formatContextForLLM,
-	type AppContext,
-	type ModelKey,
 } from "./config";
-
-// Agent exports
-export { createAgent, triageAgent, mainAgent, analyticsAgent } from "./agents";
-
+// Prompt exports (for customization/testing)
+export {
+	buildAnalyticsInstructions,
+	buildTriageInstructions,
+	CLICKHOUSE_SCHEMA_DOCS,
+	COMMON_AGENT_RULES,
+} from "./prompts";
 // Tool exports
 export { analyticsTools, executeSqlQueryTool, getTopPagesTool } from "./tools";
 
-// Prompt exports (for customization/testing)
-export {
-	COMMON_AGENT_RULES,
-	CLICKHOUSE_SCHEMA_DOCS,
-	buildTriageInstructions,
-	buildAnalyticsInstructions,
-} from "./prompts";
-
 // Type exports
 export type {
-	UIChatMessage,
-	UITools,
 	ChatMessageMetadata,
 	MessageDataParts,
+	UIChatMessage,
+	UITools,
 } from "./types";

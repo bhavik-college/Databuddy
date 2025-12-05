@@ -1,7 +1,7 @@
 import { models } from "../config";
 import { buildTriageInstructions } from "../prompts";
-import { createAgent } from "./factory";
 import { analyticsAgent } from "./analytics";
+import { createAgent } from "./factory";
 
 /**
  * Triage agent that routes user requests to the appropriate specialist.

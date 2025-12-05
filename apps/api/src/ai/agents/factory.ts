@@ -1,5 +1,5 @@
 import { Agent, type AgentConfig } from "@ai-sdk-tools/agents";
-import { defaultMemoryConfig, type AppContext } from "../config";
+import { type AppContext, defaultMemoryConfig } from "../config";
 
 /**
  * Creates an agent with the default memory configuration.

@@ -19,4 +19,3 @@ export function AgentHeader({ showBackButton = false }: AgentHeaderProps) {
 		</div>
 	);
 }
-

@@ -244,115 +244,117 @@ export default function FunnelsPage() {
 	return (
 		<FeatureGate feature={GATED_FEATURES.FUNNELS}>
 			<div className="relative flex h-full flex-col">
-			<WebsitePageHeader
-				createActionLabel="Create Funnel"
-				description="Track user journeys and optimize conversion drop-off points"
-				hasError={!!funnelsError}
-				icon={
-					<FunnelIcon
-						className="size-6 text-accent-foreground"
-						weight="duotone"
-					/>
-				}
-				isLoading={funnelsLoading}
-				isRefreshing={isRefreshing}
-				onCreateAction={() => {
-					setEditingFunnel(null);
-					setIsDialogOpen(true);
-				}}
-				onRefreshAction={handleRefresh}
-				subtitle={
-					funnelsLoading
-						? undefined
-						: `${funnels.length} funnel${funnels.length !== 1 ? "s" : ""}`
-				}
-				title="Conversion Funnels"
-				websiteId={websiteId}
-			/>
-
-			{funnelsLoading ? (
-				<FunnelsListSkeleton />
-			) : (
-				<FunnelsList
-					analyticsMap={analyticsMap}
-					expandedFunnelId={expandedFunnelId}
-					funnels={funnels ?? []}
-					loadingAnalyticsIds={loadingAnalyticsIds}
-					onCreateFunnel={() => {
+				<WebsitePageHeader
+					createActionLabel="Create Funnel"
+					description="Track user journeys and optimize conversion drop-off points"
+					hasError={!!funnelsError}
+					icon={
+						<FunnelIcon
+							className="size-6 text-accent-foreground"
+							weight="duotone"
+						/>
+					}
+					isLoading={funnelsLoading}
+					isRefreshing={isRefreshing}
+					onCreateAction={() => {
 						setEditingFunnel(null);
 						setIsDialogOpen(true);
 					}}
-					onDeleteFunnel={setDeletingFunnelId}
-					onEditFunnel={(funnel) => {
-						setEditingFunnel(funnel);
-						setIsDialogOpen(true);
-					}}
-					onToggleFunnel={handleToggleFunnel}
-				>
-					{(funnel) => {
-						if (expandedFunnelId !== funnel.id) {
-							return null;
+					onRefreshAction={handleRefresh}
+					subtitle={
+						funnelsLoading
+							? undefined
+							: `${funnels.length} funnel${funnels.length !== 1 ? "s" : ""}`
+					}
+					title="Conversion Funnels"
+					websiteId={websiteId}
+				/>
+
+				{funnelsLoading ? (
+					<FunnelsListSkeleton />
+				) : (
+					<FunnelsList
+						analyticsMap={analyticsMap}
+						expandedFunnelId={expandedFunnelId}
+						funnels={funnels ?? []}
+						loadingAnalyticsIds={loadingAnalyticsIds}
+						onCreateFunnel={() => {
+							setEditingFunnel(null);
+							setIsDialogOpen(true);
+						}}
+						onDeleteFunnel={setDeletingFunnelId}
+						onEditFunnel={(funnel) => {
+							setEditingFunnel(funnel);
+							setIsDialogOpen(true);
+						}}
+						onToggleFunnel={handleToggleFunnel}
+					>
+						{(funnel) => {
+							if (expandedFunnelId !== funnel.id) {
+								return null;
+							}
+
+							return (
+								<div className="space-y-4">
+									<FunnelAnalyticsByReferrer
+										data={referrerAnalyticsData}
+										error={referrerAnalyticsError}
+										isLoading={referrerAnalyticsLoading}
+										onReferrerChange={handleReferrerChange}
+									/>
+
+									<FunnelAnalytics
+										data={analyticsData}
+										error={analyticsError as Error | null}
+										isLoading={analyticsLoading}
+										onRetry={refetchAnalytics}
+										referrerAnalytics={
+											referrerAnalyticsData?.referrer_analytics
+										}
+										selectedReferrer={selectedReferrer}
+									/>
+								</div>
+							);
+						}}
+					</FunnelsList>
+				)}
+
+				{isDialogOpen && (
+					<EditFunnelDialog
+						autocompleteData={autocompleteQuery.data}
+						funnel={
+							editingFunnel
+								? {
+										...editingFunnel,
+										createdAt: String(editingFunnel.createdAt),
+										updatedAt: String(editingFunnel.updatedAt),
+									}
+								: null
 						}
+						isCreating={isCreating}
+						isOpen={isDialogOpen}
+						isUpdating={isUpdating}
+						onClose={() => {
+							setIsDialogOpen(false);
+							setEditingFunnel(null);
+						}}
+						onCreate={handleCreateFunnel}
+						onSubmit={handleUpdateFunnel}
+					/>
+				)}
 
-						return (
-							<div className="space-y-4">
-								<FunnelAnalyticsByReferrer
-									data={referrerAnalyticsData}
-									error={referrerAnalyticsError}
-									isLoading={referrerAnalyticsLoading}
-									onReferrerChange={handleReferrerChange}
-								/>
-
-								<FunnelAnalytics
-									data={analyticsData}
-									error={analyticsError as Error | null}
-									isLoading={analyticsLoading}
-									onRetry={refetchAnalytics}
-									referrerAnalytics={referrerAnalyticsData?.referrer_analytics}
-									selectedReferrer={selectedReferrer}
-								/>
-							</div>
-						);
-					}}
-				</FunnelsList>
-			)}
-
-			{isDialogOpen && (
-				<EditFunnelDialog
-					autocompleteData={autocompleteQuery.data}
-					funnel={
-						editingFunnel
-							? {
-									...editingFunnel,
-									createdAt: String(editingFunnel.createdAt),
-									updatedAt: String(editingFunnel.updatedAt),
-								}
-							: null
-					}
-					isCreating={isCreating}
-					isOpen={isDialogOpen}
-					isUpdating={isUpdating}
-					onClose={() => {
-						setIsDialogOpen(false);
-						setEditingFunnel(null);
-					}}
-					onCreate={handleCreateFunnel}
-					onSubmit={handleUpdateFunnel}
-				/>
-			)}
-
-			{!!deletingFunnelId && (
-				<DeleteDialog
-					confirmLabel="Delete Funnel"
-					isOpen={!!deletingFunnelId}
-					itemName="this funnel"
-					onClose={() => setDeletingFunnelId(null)}
-					onConfirm={() =>
-						deletingFunnelId && handleDeleteFunnel(deletingFunnelId)
-					}
-					title="Delete Funnel"
-				/>
-			)}
+				{!!deletingFunnelId && (
+					<DeleteDialog
+						confirmLabel="Delete Funnel"
+						isOpen={!!deletingFunnelId}
+						itemName="this funnel"
+						onClose={() => setDeletingFunnelId(null)}
+						onConfirm={() =>
+							deletingFunnelId && handleDeleteFunnel(deletingFunnelId)
+						}
+						title="Delete Funnel"
+					/>
+				)}
 			</div>
 		</FeatureGate>
 	);

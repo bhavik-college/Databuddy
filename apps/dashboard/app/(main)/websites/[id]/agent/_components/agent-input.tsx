@@ -11,14 +11,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { AgentCommandMenu } from "./agent-command-menu";
-import { RecordButton } from "./record-button";
 import { useAgentChat, useAgentCommands } from "./hooks";
+import { RecordButton } from "./record-button";
 
 export function AgentInput() {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [isFocused, setIsFocused] = useState(false);
 	const { sendMessage, stop, isLoading } = useAgentChat();
-	const { input, handleInputChange, handleKeyDown, showCommands } = useAgentCommands();
+	const { input, handleInputChange, handleKeyDown, showCommands } =
+		useAgentCommands();
 
 	const handleSubmit = (e?: React.FormEvent) => {
 		e?.preventDefault();
@@ -56,7 +57,7 @@ export function AgentInput() {
 						<div className="relative flex-1">
 							<Input
 								className={cn(
-									"h-12 pl-4 pr-24 text-base",
+									"h-12 pr-24 pl-4 text-base",
 									isFocused && "ring-2 ring-primary/20"
 								)}
 								disabled={isLoading}
@@ -69,7 +70,7 @@ export function AgentInput() {
 								value={input}
 							/>
 
-							<div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
+							<div className="-translate-y-1/2 absolute top-1/2 right-2 flex items-center gap-1">
 								<Button
 									className="size-8"
 									disabled={isLoading}
@@ -118,7 +119,11 @@ export function AgentInput() {
 					<kbd className="rounded border border-border/50 bg-accent px-1 font-mono text-[10px] text-foreground/70">
 						Enter
 					</kbd>{" "}
-					to send · <kbd className="rounded border border-border/50 bg-accent px-1 font-mono text-[10px] text-foreground/70">/</kbd> for commands
+					to send ·{" "}
+					<kbd className="rounded border border-border/50 bg-accent px-1 font-mono text-[10px] text-foreground/70">
+						/
+					</kbd>{" "}
+					for commands
 				</p>
 			</div>
 		</div>

@@ -1,3 +1,3 @@
-export { createAgent } from "./factory";
 export { analyticsAgent } from "./analytics";
-export { triageAgent, mainAgent } from "./triage";
+export { createAgent } from "./factory";
+export { mainAgent, triageAgent } from "./triage";

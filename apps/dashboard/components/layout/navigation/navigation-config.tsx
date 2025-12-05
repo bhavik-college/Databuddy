@@ -28,7 +28,6 @@ import {
 	ReceiptIcon,
 	RepeatIcon,
 	RoadHorizonIcon,
-	RobotIcon,
 	ShieldCheckIcon,
 	SpeakerHighIcon,
 	TargetIcon,

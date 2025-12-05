@@ -29,7 +29,8 @@ function getCommandIcon(command: string) {
 
 export function AgentCommandMenu() {
 	const menuRef = useRef<HTMLDivElement>(null);
-	const { showCommands, filteredCommands, selectedIndex, executeCommand } = useAgentCommands();
+	const { showCommands, filteredCommands, selectedIndex, executeCommand } =
+		useAgentCommands();
 
 	if (!showCommands || filteredCommands.length === 0) return null;
 
@@ -37,7 +38,7 @@ export function AgentCommandMenu() {
 		<AnimatePresence>
 			<motion.div
 				animate={{ opacity: 1, y: 0 }}
-				className="absolute bottom-full left-0 right-0 z-30 mb-2"
+				className="absolute right-0 bottom-full left-0 z-30 mb-2"
 				exit={{ opacity: 0, y: 8 }}
 				initial={{ opacity: 0, y: 8 }}
 				ref={menuRef}
@@ -63,13 +64,22 @@ export function AgentCommandMenu() {
 									type="button"
 								>
 									<div className="flex size-8 shrink-0 items-center justify-center rounded border bg-background">
-										<Icon className="size-4 text-foreground/60" weight="duotone" />
+										<Icon
+											className="size-4 text-foreground/60"
+											weight="duotone"
+										/>
 									</div>
 									<div className="min-w-0 flex-1">
-										<p className="truncate font-medium text-sm">{command.title}</p>
-										<p className="truncate text-foreground/50 text-xs">{command.description}</p>
+										<p className="truncate font-medium text-sm">
+											{command.title}
+										</p>
+										<p className="truncate text-foreground/50 text-xs">
+											{command.description}
+										</p>
 									</div>
-									<span className="text-foreground/30 text-xs">{command.command}</span>
+									<span className="text-foreground/30 text-xs">
+										{command.command}
+									</span>
 								</button>
 							);
 						})}

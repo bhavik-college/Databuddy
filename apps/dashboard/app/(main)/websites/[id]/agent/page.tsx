@@ -7,16 +7,16 @@ import { GATED_FEATURES } from "@/components/providers/billing-provider";
 import { AgentPageContent } from "./_components/agent-page-content";
 
 export default function AgentPage() {
-    const { id } = useParams();
-    const websiteId = id as string;
+	const { id } = useParams();
+	const websiteId = id as string;
 
-    return (
-        <FeatureGate feature={GATED_FEATURES.GEOGRAPHIC}>
-            <ChatProvider initialMessages={[]} key={websiteId}>
-                <div className="relative flex h-full flex-col">
-                    <AgentPageContent websiteId={websiteId} />
-                </div>
-            </ChatProvider>
-        </FeatureGate>
-    );
+	return (
+		<FeatureGate feature={GATED_FEATURES.GEOGRAPHIC}>
+			<ChatProvider initialMessages={[]} key={websiteId}>
+				<div className="relative flex h-full flex-col">
+					<AgentPageContent websiteId={websiteId} />
+				</div>
+			</ChatProvider>
+		</FeatureGate>
+	);
 }

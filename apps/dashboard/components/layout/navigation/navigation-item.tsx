@@ -83,7 +83,7 @@ export function NavigationItem({
 				<div className="flex items-center gap-1.5">
 					<LockSimpleIcon aria-hidden className="size-3" />
 					{lockedPlanName && (
-						<span className="rounded bg-sidebar-accent px-1.5 py-0.5 font-medium text-sidebar-foreground/50 text-[10px] uppercase">
+						<span className="rounded bg-sidebar-accent px-1.5 py-0.5 font-medium text-[10px] text-sidebar-foreground/50 uppercase">
 							{lockedPlanName}
 						</span>
 					)}

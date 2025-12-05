@@ -1,3 +1,3 @@
-export { COMMON_AGENT_RULES, CLICKHOUSE_SCHEMA_DOCS } from "./shared";
-export { buildTriageInstructions } from "./triage";
 export { buildAnalyticsInstructions } from "./analytics";
+export { CLICKHOUSE_SCHEMA_DOCS, COMMON_AGENT_RULES } from "./shared";
+export { buildTriageInstructions } from "./triage";

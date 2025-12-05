@@ -14,7 +14,7 @@ export function Conversation({ className, ...props }: ConversationProps) {
 		<StickToBottom
 			className={cn(
 				"relative flex-1 overflow-y-auto",
-				"[&_div::-webkit-scrollbar]:hidden [&_div]:[scrollbar-width:none] [&_div]:[-ms-overflow-style:none]",
+				"[&_div::-webkit-scrollbar]:hidden [&_div]:[-ms-overflow-style:none] [&_div]:[scrollbar-width:none]",
 				className
 			)}
 			initial="smooth"
@@ -25,15 +25,15 @@ export function Conversation({ className, ...props }: ConversationProps) {
 	);
 }
 
-export type ConversationContentProps = ComponentProps<typeof StickToBottom.Content>;
+export type ConversationContentProps = ComponentProps<
+	typeof StickToBottom.Content
+>;
 
-export function ConversationContent({ className, ...props }: ConversationContentProps) {
-	return (
-		<StickToBottom.Content 
-			className={cn("p-4", className)} 
-			{...props} 
-		/>
-	);
+export function ConversationContent({
+	className,
+	...props
+}: ConversationContentProps) {
+	return <StickToBottom.Content className={cn("p-4", className)} {...props} />;
 }
 
 export type ConversationEmptyStateProps = ComponentProps<"div"> & {
@@ -90,9 +90,9 @@ export function ConversationScrollButton({
 	return (
 		<Button
 			className={cn(
-				"absolute bottom-32 left-1/2 -translate-x-1/2",
+				"-translate-x-1/2 absolute bottom-32 left-1/2",
 				"rounded-full bg-sidebar/80 backdrop-blur-lg",
-				"shadow-lg border",
+				"border shadow-lg",
 				className
 			)}
 			onClick={handleScrollToBottom}
@@ -105,4 +105,3 @@ export function ConversationScrollButton({
 		</Button>
 	);
 }
-

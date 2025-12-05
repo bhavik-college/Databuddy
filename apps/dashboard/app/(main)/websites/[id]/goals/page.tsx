@@ -159,65 +159,65 @@ export default function GoalsPage() {
 			<div className="relative flex h-full flex-col">
 				<WebsitePageHeader
 					createActionLabel="Create Goal"
-				description="Track key conversions and measure success"
-				hasError={!!goalsError}
-				icon={
-					<TargetIcon
-						className="size-6 text-accent-foreground"
-						weight="duotone"
-					/>
-				}
-				isLoading={goalsLoading}
-				isRefreshing={isRefreshing}
-				onCreateAction={() => {
-					setEditingGoal(null);
-					setIsDialogOpen(true);
-				}}
-				onRefreshAction={handleRefresh}
-				subtitle={
-					goalsLoading
-						? undefined
-						: `${goals.length} goal${goals.length !== 1 ? "s" : ""}`
-				}
-				title="Goals"
-				websiteId={websiteId}
-			/>
-
-			{goalsLoading ? (
-				<GoalsListSkeleton />
-			) : (
-				<GoalsList
-					analyticsLoading={analyticsLoading}
-					goalAnalytics={goalAnalytics}
-					goals={goals}
+					description="Track key conversions and measure success"
+					hasError={!!goalsError}
+					icon={
+						<TargetIcon
+							className="size-6 text-accent-foreground"
+							weight="duotone"
+						/>
+					}
 					isLoading={goalsLoading}
-					onCreateGoal={() => {
+					isRefreshing={isRefreshing}
+					onCreateAction={() => {
 						setEditingGoal(null);
 						setIsDialogOpen(true);
 					}}
-					onDeleteGoal={(goalId) => setDeletingGoalId(goalId)}
-					onEditGoal={(goal) => {
-						setEditingGoal(goal);
-						setIsDialogOpen(true);
-					}}
+					onRefreshAction={handleRefresh}
+					subtitle={
+						goalsLoading
+							? undefined
+							: `${goals.length} goal${goals.length !== 1 ? "s" : ""}`
+					}
+					title="Goals"
+					websiteId={websiteId}
 				/>
-			)}
 
-			{isDialogOpen && (
-				<EditGoalDialog
-					autocompleteData={autocompleteQuery.data}
-					goal={editingGoal}
-					isOpen={isDialogOpen}
-					isSaving={isCreating || isUpdating}
-					onClose={() => {
-						setIsDialogOpen(false);
-						setEditingGoal(null);
-					}}
-					onSave={handleSaveGoal}
-				/>
-			)}
+				{goalsLoading ? (
+					<GoalsListSkeleton />
+				) : (
+					<GoalsList
+						analyticsLoading={analyticsLoading}
+						goalAnalytics={goalAnalytics}
+						goals={goals}
+						isLoading={goalsLoading}
+						onCreateGoal={() => {
+							setEditingGoal(null);
+							setIsDialogOpen(true);
+						}}
+						onDeleteGoal={(goalId) => setDeletingGoalId(goalId)}
+						onEditGoal={(goal) => {
+							setEditingGoal(goal);
+							setIsDialogOpen(true);
+						}}
+					/>
+				)}
 
-			{deletingGoalId && (
+				{isDialogOpen && (
+					<EditGoalDialog
+						autocompleteData={autocompleteQuery.data}
+						goal={editingGoal}
+						isOpen={isDialogOpen}
+						isSaving={isCreating || isUpdating}
+						onClose={() => {
+							setIsDialogOpen(false);
+							setEditingGoal(null);
+						}}
+						onSave={handleSaveGoal}
+					/>
+				)}
+
+				{deletingGoalId && (
 					<DeleteDialog
 						confirmLabel="Delete Goal"
 						description="Are you sure you want to delete this goal? This action cannot be undone and will permanently remove all associated analytics data."

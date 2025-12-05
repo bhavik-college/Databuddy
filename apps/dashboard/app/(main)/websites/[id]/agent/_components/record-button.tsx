@@ -17,12 +17,8 @@ export function RecordButton({
 	className,
 	size = 16,
 }: RecordButtonProps) {
-	const {
-		isRecording,
-		isProcessing,
-		startRecording,
-		stopRecording,
-	} = useAudioRecording();
+	const { isRecording, isProcessing, startRecording, stopRecording } =
+		useAudioRecording();
 
 	const handleClick = useCallback(async () => {
 		if (isRecording) {
@@ -65,7 +61,13 @@ export function RecordButton({
 	);
 }
 
-function RecordIcon({ size = 16, isRecording = false }: { size?: number; isRecording?: boolean }) {
+function RecordIcon({
+	size = 16,
+	isRecording = false,
+}: {
+	size?: number;
+	isRecording?: boolean;
+}) {
 	return (
 		<svg
 			fill="currentColor"
@@ -182,4 +184,3 @@ function RecordIcon({ size = 16, isRecording = false }: { size?: number; isRecor
 		</svg>
 	);
 }
-

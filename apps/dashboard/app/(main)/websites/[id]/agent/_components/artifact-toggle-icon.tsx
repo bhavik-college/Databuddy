@@ -21,7 +21,8 @@ export function ArtifactToggleIcon({ artifactId }: ArtifactToggleIconProps) {
 	const currentArtifact = useAtomValue(currentArtifactAtom);
 
 	// Check if this specific artifact is currently shown
-	const isCurrentlyOpen = isCanvasOpen && (!artifactId || currentArtifact?.id === artifactId);
+	const isCurrentlyOpen =
+		isCanvasOpen && (!artifactId || currentArtifact?.id === artifactId);
 
 	const handleToggle = useCallback(() => {
 		if (isCurrentlyOpen) {
@@ -52,4 +53,3 @@ export function ArtifactToggleIcon({ artifactId }: ArtifactToggleIconProps) {
 		</TooltipProvider>
 	);
 }
-

@@ -25,7 +25,9 @@ interface AgentMessageActionsProps {
 export function AgentMessageActions({
 	messageContent,
 }: AgentMessageActionsProps) {
-	const [feedbackGiven, setFeedbackGiven] = useState<"positive" | "negative" | null>(null);
+	const [feedbackGiven, setFeedbackGiven] = useState<
+		"positive" | "negative" | null
+	>(null);
 	const [copied, setCopied] = useState(false);
 	const { reset } = useAgentChat();
 
@@ -158,4 +160,3 @@ export function AgentMessageActions({
 		</div>
 	);
 }
-

@@ -3,6 +3,8 @@
 import { BugIcon } from "@phosphor-icons/react";
 import { useAtom } from "jotai";
 import { use, useCallback, useEffect } from "react";
+import { FeatureGate } from "@/components/feature-gate";
+import { GATED_FEATURES } from "@/components/providers/billing-provider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDateFilters } from "@/hooks/use-date-filters";
 import { useEnhancedErrorData } from "@/hooks/use-dynamic-query";
@@ -13,7 +15,6 @@ import { ErrorSummaryStats } from "./error-summary-stats";
 import { ErrorTrendsChart } from "./error-trends-chart";
 import { RecentErrorsTable } from "./recent-errors-table";
 import { TopErrorCard } from "./top-error-card";
-import { FeatureGate } from "@/components/feature-gate";	
 import type {
 	ErrorByPage,
 	ErrorChartData,
@@ -22,7 +23,6 @@ import type {
 	ProcessedChartData,
 	RecentError,
 } from "./types";
-import { GATED_FEATURES } from "@/components/providers/billing-provider";
 
 interface ErrorsPageContentProps {
 	params: Promise<{ id: string }>;
@@ -107,34 +107,34 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
 
 	return (
 		<FeatureGate feature={GATED_FEATURES.ERROR_TRACKING}>
-		<div className="space-y-4 p-4">
-			{isLoading ? (
-				<ErrorsLoadingSkeleton />
-			) : (
-				<div className="space-y-4">
-					{/* Main Grid - Chart + Stats */}
-					<div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-						<div className="lg:col-span-2">
-							<ErrorTrendsChart errorChartData={processedChartData} />
+			<div className="space-y-4 p-4">
+				{isLoading ? (
+					<ErrorsLoadingSkeleton />
+				) : (
+					<div className="space-y-4">
+						{/* Main Grid - Chart + Stats */}
+						<div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+							<div className="lg:col-span-2">
+								<ErrorTrendsChart errorChartData={processedChartData} />
+							</div>
+							<div className="flex flex-col gap-4">
+								<ErrorSummaryStats errorSummary={errorSummary} />
+								<TopErrorCard topError={topError} />
+							</div>
 						</div>
-						<div className="flex flex-col gap-4">
-							<ErrorSummaryStats errorSummary={errorSummary} />
-							<TopErrorCard topError={topError} />
-						</div>
-					</div>
 
-					{/* Recent Errors */}
-					<RecentErrorsTable recentErrors={recentErrors} />
+						{/* Recent Errors */}
+						<RecentErrorsTable recentErrors={recentErrors} />
 
-					{/* Detailed Tables */}
-					<ErrorDataTable
-						isLoading={isLoading}
-						isRefreshing={isRefreshing}
-						processedData={{
-							error_types: errorTypes,
-							errors_by_page: errorsByPage,
-						}}
-					/>
+						{/* Detailed Tables */}
+						<ErrorDataTable
+							isLoading={isLoading}
+							isRefreshing={isRefreshing}
+							processedData={{
+								error_types: errorTypes,
+								errors_by_page: errorsByPage,
+							}}
+						/>
 					</div>
 				)}
 			</div>

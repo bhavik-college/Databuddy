@@ -3,16 +3,16 @@
 import type { Customer, CustomerFeature, Product } from "autumn-js";
 import { useCustomer, usePricingTable } from "autumn-js/react";
 import dayjs from "dayjs";
-import { createContext, useContext, useMemo, type ReactNode } from "react";
+import { createContext, type ReactNode, useContext, useMemo } from "react";
 import {
 	FEATURE_IDS,
 	FEATURE_METADATA,
-	GATED_FEATURES,
-	PLAN_IDS,
-	isPlanFeatureEnabled,
-	getMinimumPlanForFeature,
 	type FeatureId,
+	GATED_FEATURES,
 	type GatedFeatureId,
+	getMinimumPlanForFeature,
+	isPlanFeatureEnabled,
+	PLAN_IDS,
 	type PlanId,
 } from "@/types/features";
 
@@ -109,7 +109,13 @@ export function BillingProvider({ children }: { children: ReactNode }) {
 					? Math.round(((limit - balance) / limit) * 100)
 					: null;
 
-			return { allowed: unlimited || balance > 0, balance, limit, unlimited, usagePercent };
+			return {
+				allowed: unlimited || balance > 0,
+				balance,
+				limit,
+				unlimited,
+				usagePercent,
+			};
 		};
 
 		const isFeatureEnabled = (feature: GatedFeatureId): boolean =>
@@ -131,7 +137,8 @@ export function BillingProvider({ children }: { children: ReactNode }) {
 		const getUpgradeMessage = (
 			id: FeatureId | GatedFeatureId | string
 		): string | null =>
-			FEATURE_METADATA[id as FeatureId | GatedFeatureId]?.upgradeMessage ?? null;
+			FEATURE_METADATA[id as FeatureId | GatedFeatureId]?.upgradeMessage ??
+			null;
 
 		const refetch = () => {
 			refetchCustomer();

@@ -2,9 +2,9 @@ import { tool } from "ai";
 import { z } from "zod";
 import {
 	executeTimedQuery,
-	validateSQL,
-	SQL_VALIDATION_ERROR,
 	type QueryResult,
+	SQL_VALIDATION_ERROR,
+	validateSQL,
 } from "./utils";
 
 /**

@@ -1,6 +1,6 @@
 import type { AppContext } from "../config/context";
 import { formatContextForLLM } from "../config/context";
-import { COMMON_AGENT_RULES, CLICKHOUSE_SCHEMA_DOCS } from "./shared";
+import { CLICKHOUSE_SCHEMA_DOCS, COMMON_AGENT_RULES } from "./shared";
 
 /**
  * Analytics-specific rules for data analysis and presentation.

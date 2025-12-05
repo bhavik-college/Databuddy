@@ -34,9 +34,9 @@ import { getPricingTableContent } from "@/lib/autumn/pricing-table-content";
 import { cn } from "@/lib/utils";
 import {
 	FEATURE_METADATA,
+	type GatedFeatureId,
 	PLAN_FEATURES,
 	PLAN_IDS,
-	type GatedFeatureId,
 	type PlanId,
 } from "@/types/features";
 
@@ -74,7 +74,10 @@ function getNewFeaturesForPlan(planId: string): GatedFeatureId[] {
 	const previousFeatures = PLAN_FEATURES[previousPlan] ?? {};
 
 	return Object.entries(planFeatures)
-		.filter(([feature, enabled]) => enabled && !previousFeatures[feature as GatedFeatureId])
+		.filter(
+			([feature, enabled]) =>
+				enabled && !previousFeatures[feature as GatedFeatureId]
+		)
 		.map(([feature]) => feature as GatedFeatureId);
 }
 

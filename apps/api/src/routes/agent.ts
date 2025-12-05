@@ -1,7 +1,7 @@
 import { auth, websitesApi } from "@databuddy/auth";
 import { smoothStream } from "ai";
 import { Elysia, t } from "elysia";
-import { triageAgent, buildAppContext } from "../ai";
+import { buildAppContext, triageAgent } from "../ai";
 import { record, setAttributes } from "../lib/tracing";
 import { validateWebsite } from "../lib/website-utils";
 
@@ -91,7 +91,7 @@ export const agent = new Elysia({ prefix: "/v1/agent" })
 
 				try {
 					const websiteValidation = await validateWebsite(body.websiteId);
-					if (!websiteValidation.success || !websiteValidation.website) {
+					if (!(websiteValidation.success && websiteValidation.website)) {
 						return new Response(
 							JSON.stringify({
 								error: websiteValidation.error ?? "Website not found",

@@ -11,8 +11,8 @@ import {
 import Link from "next/link";
 import type { ReactNode } from "react";
 import {
-	useBillingContext,
 	type GatedFeatureId,
+	useBillingContext,
 } from "@/components/providers/billing-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -23,8 +23,16 @@ const PLAN_CONFIG: Record<
 	string,
 	{ name: string; icon: typeof StarIcon; color: string }
 > = {
-	[PLAN_IDS.FREE]: { name: "Free", icon: SparkleIcon, color: "text-muted-foreground" },
-	[PLAN_IDS.HOBBY]: { name: "Hobby", icon: RocketLaunchIcon, color: "text-success" },
+	[PLAN_IDS.FREE]: {
+		name: "Free",
+		icon: SparkleIcon,
+		color: "text-muted-foreground",
+	},
+	[PLAN_IDS.HOBBY]: {
+		name: "Hobby",
+		icon: RocketLaunchIcon,
+		color: "text-success",
+	},
 	[PLAN_IDS.PRO]: { name: "Pro", icon: StarIcon, color: "text-primary" },
 	[PLAN_IDS.SCALE]: { name: "Scale", icon: CrownIcon, color: "text-amber-500" },
 };
@@ -57,7 +65,8 @@ export function FeatureGate({
 	const metadata = FEATURE_METADATA[feature];
 	const requiredPlan = metadata?.minPlan ?? PLAN_IDS.HOBBY;
 	const planConfig = PLAN_CONFIG[requiredPlan] ?? PLAN_CONFIG[PLAN_IDS.HOBBY];
-	const currentConfig = PLAN_CONFIG[currentPlanId ?? PLAN_IDS.FREE] ?? PLAN_CONFIG[PLAN_IDS.FREE];
+	const currentConfig =
+		PLAN_CONFIG[currentPlanId ?? PLAN_IDS.FREE] ?? PLAN_CONFIG[PLAN_IDS.FREE];
 	const PlanIcon = planConfig.icon;
 	const CurrentIcon = currentConfig.icon;
 
@@ -76,7 +85,9 @@ export function FeatureGate({
 							{title ?? `Unlock ${metadata?.name ?? "this feature"}`}
 						</h2>
 						<p className="mt-1 text-muted-foreground text-sm">
-							{description ?? metadata?.description ?? "Upgrade to access this feature."}
+							{description ??
+								metadata?.description ??
+								"Upgrade to access this feature."}
 						</p>
 					</div>
 				</CardHeader>
@@ -86,7 +97,10 @@ export function FeatureGate({
 					<div className="flex items-center justify-between rounded border bg-accent/50 px-3 py-2.5">
 						<span className="text-muted-foreground text-sm">Required plan</span>
 						<div className="flex items-center gap-1.5">
-							<PlanIcon className={cn("size-4", planConfig.color)} weight="duotone" />
+							<PlanIcon
+								className={cn("size-4", planConfig.color)}
+								weight="duotone"
+							/>
 							<span className={cn("font-semibold text-sm", planConfig.color)}>
 								{planConfig.name}
 							</span>
@@ -97,7 +111,10 @@ export function FeatureGate({
 					<div className="flex items-center justify-between rounded border px-3 py-2.5">
 						<span className="text-muted-foreground text-sm">Your plan</span>
 						<div className="flex items-center gap-1.5">
-							<CurrentIcon className={cn("size-4", currentConfig.color)} weight="duotone" />
+							<CurrentIcon
+								className={cn("size-4", currentConfig.color)}
+								weight="duotone"
+							/>
 							<span className="font-medium text-foreground text-sm">
 								{currentConfig.name}
 							</span>
@@ -119,7 +136,8 @@ export function FeatureGate({
 }
 
 export function useFeatureGate(feature: GatedFeatureId) {
-	const { isFeatureEnabled, getGatedFeatureAccess, isLoading } = useBillingContext();
+	const { isFeatureEnabled, getGatedFeatureAccess, isLoading } =
+		useBillingContext();
 
 	const access = getGatedFeatureAccess(feature);
 	const metadata = FEATURE_METADATA[feature];

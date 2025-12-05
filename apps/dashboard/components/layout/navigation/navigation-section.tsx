@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { memo, useMemo } from "react";
 import { useBillingContext } from "@/components/providers/billing-provider";
 import type { useAccordionStates } from "@/hooks/use-persistent-state";
-import { FEATURE_METADATA, type GatedFeatureId } from "@/types/features";
+import { FEATURE_METADATA } from "@/types/features";
 import { NavigationItem } from "./navigation-item";
 import type { NavigationSection as NavigationSectionType } from "./types";
 
@@ -49,9 +49,7 @@ const isItemActive = (
 		return pathname === buildFullPath(`/demo/${currentWebsiteId}`, item.href);
 	}
 
-	return (
-		pathname === buildFullPath(`/websites/${currentWebsiteId}`, item.href)
-	);
+	return pathname === buildFullPath(`/websites/${currentWebsiteId}`, item.href);
 };
 
 export const NavigationSection = memo(function NavigationSectionComponent({
