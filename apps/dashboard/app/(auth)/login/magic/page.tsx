@@ -4,6 +4,7 @@ import { authClient } from "@databuddy/auth/client";
 import { ArrowLeftIcon, SparkleIcon, SpinnerIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { parseAsString, useQueryState } from "nuqs";
 import { Suspense, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,10 @@ import { Label } from "@/components/ui/label";
 
 function MagicLinkPage() {
 	const router = useRouter();
+	const [callback] = useQueryState(
+		"callback",
+		parseAsString.withDefault("/websites")
+	);
 	const [email, setEmail] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -25,7 +30,7 @@ function MagicLinkPage() {
 
 		await authClient.signIn.magicLink({
 			email,
-			callbackURL: "/home",
+			callbackURL: callback,
 			fetchOptions: {
 				onSuccess: () => {
 					setIsLoading(false);

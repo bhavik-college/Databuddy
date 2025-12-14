@@ -31,25 +31,16 @@ function LoginPage() {
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
 
-	const defaultCallbackUrl = callback;
 	const lastUsed = authClient.getLastUsedLoginMethod();
 
 	const handleSocialLogin = async (provider: "github" | "google") => {
 		setIsLoading(true);
 
-		const callbackUrl = callback;
-		const finalCallbackUrl = callbackUrl || defaultCallbackUrl;
-
 		await authClient.signIn.social({
 			provider,
-			callbackURL: finalCallbackUrl,
+			callbackURL: callback,
 			newUserCallbackURL: "/onboarding",
 			fetchOptions: {
-				onSuccess: () => {
-					if (callbackUrl) {
-						router.push(callbackUrl);
-					}
-				},
 				onError: () => {
 					setIsLoading(false);
 					toast.error(
@@ -72,7 +63,7 @@ function LoginPage() {
 		await authClient.signIn.email({
 			email,
 			password,
-			callbackURL: defaultCallbackUrl,
+			callbackURL: callback,
 			fetchOptions: {
 				onError: (error) => {
 					setIsLoading(false);
