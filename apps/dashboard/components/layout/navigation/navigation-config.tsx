@@ -22,11 +22,9 @@ import {
 	IdentificationCardIcon,
 	KeyIcon,
 	MapPinIcon,
-	MonitorIcon,
 	PlayIcon,
 	PlugIcon,
 	PlusIcon,
-	PulseIcon,
 	ReceiptIcon,
 	RepeatIcon,
 	RoadHorizonIcon,
@@ -284,19 +282,6 @@ export const websiteNavigation: NavigationSection[] = [
 			// gatedFeature: GATED_FEATURES.AI_AGENT,
 		}),
 	]),
-	createNavSection(
-		"Pulse",
-		HeartbeatIcon,
-		[
-			createNavItem("Uptime", ChartLineUpIcon, "/pulse", {
-				rootLevel: false,
-				alpha: true,
-			}),
-		],
-		{
-			flag: "pulse",
-		}
-	),
 ];
 
 export const websiteSettingsNavigation: NavigationSection[] = [
@@ -326,55 +311,6 @@ const createCategoryConfig = (
 	navigationMap: Record<string, NavigationSection[]>
 ) => ({ categories, defaultCategory, navigationMap });
 
-export const createPulseNavigation = (
-	monitors: Array<{
-		id: string;
-		websiteId: string | null;
-		url: string | null;
-		name: string | null;
-		website: { id: string; name: string | null; domain: string } | null;
-	}>
-): NavigationSection[] => {
-	const monitorItems = monitors.map((monitor) => {
-		const isWebsiteMonitor = !!monitor.websiteId;
-		const displayName = isWebsiteMonitor
-			? monitor.website?.name || monitor.website?.domain || "Unknown"
-			: monitor.name || monitor.url || "Unknown";
-		const href = isWebsiteMonitor
-			? `/websites/${monitor.websiteId}/pulse`
-			: "/pulse";
-		return createNavItem(displayName, HeartbeatIcon, href, {
-			highlight: true,
-			domain: monitor.website?.domain || monitor.url || undefined,
-		});
-	});
-
-	return [
-		createNavSection("Monitors", MonitorIcon, [
-			createNavItem("All Monitors", MonitorIcon, "/pulse", {
-				highlight: true,
-			}),
-			...monitorItems,
-		]),
-		createNavSection("Status Pages", GlobeSimpleIcon, [
-			createNavItem("Status Pages", GlobeSimpleIcon, "/pulse/status-pages", {
-				disabled: true,
-				tag: "soon",
-			}),
-		]),
-	];
-};
-
-export const createLoadingPulseNavigation = (): NavigationSection[] =>
-	createLoadingNavigation(
-		"Monitors",
-		MonitorIcon,
-		"All Monitors",
-		"/pulse",
-		"Loading monitors...",
-		HeartbeatIcon
-	);
-
 export const categoryConfig = {
 	main: createCategoryConfig(
 		[
@@ -382,12 +318,6 @@ export const categoryConfig = {
 				id: "websites",
 				name: "Websites",
 				icon: GlobeSimpleIcon,
-				production: true,
-			},
-			{
-				id: "pulse",
-				name: "Pulse",
-				icon: PulseIcon,
 				production: true,
 			},
 			{
@@ -419,7 +349,6 @@ export const categoryConfig = {
 		"websites",
 		{
 			websites: [],
-			pulse: [],
 			organizations: organizationNavigation,
 			billing: billingNavigation,
 			settings: personalNavigation,
@@ -458,7 +387,6 @@ const CATEGORY_PATH_MAP = [
 	{ pattern: "/organizations", category: "organizations" as const },
 	{ pattern: "/billing", category: "billing" as const },
 	{ pattern: "/settings", category: "settings" as const },
-	{ pattern: "/pulse", category: "pulse" as const },
 ] as const;
 
 export const getContextConfig = (pathname: string) => {
