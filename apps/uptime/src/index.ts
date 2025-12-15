@@ -1,7 +1,7 @@
-import { clickHouse, formatClickhouseDate } from "@databuddy/db";
 import { Receiver } from "@upstash/qstash";
 import Elysia from "elysia";
 import { checkUptime, lookupWebsite } from "./actions";
+import { sendUptimeEvent } from "./lib/producer";
 import {
 	captureError,
 	endRequestSpan,
@@ -125,43 +125,15 @@ const app = new Elysia()
 
 			const { data } = result;
 
-			// TO-DO: migrate this to use redpanda & vector instead of clickhouse.
+			// Send event to Redpanda for ingestion via Vector
 			try {
-				await clickHouse.insert({
-					table: "uptime.uptime_monitor",
-					values: [
-						{
-							site_id: data.site_id,
-							url: data.url,
-							timestamp: formatClickhouseDate(new Date(data.timestamp)),
-							status: data.status,
-							http_code: data.http_code,
-							ttfb_ms: data.ttfb_ms,
-							total_ms: data.total_ms,
-							attempt: data.attempt,
-							retries: data.retries,
-							failure_streak: data.failure_streak,
-							response_bytes: data.response_bytes,
-							content_hash: data.content_hash,
-							redirect_count: data.redirect_count,
-							probe_region: data.probe_region,
-							probe_ip: data.probe_ip,
-							ssl_expiry: data.ssl_expiry
-								? formatClickhouseDate(new Date(data.ssl_expiry))
-								: null,
-							ssl_valid: data.ssl_valid,
-							env: data.env,
-							check_type: data.check_type,
-							user_agent: data.user_agent,
-							error: data.error,
-						},
-					],
-					format: "JSONEachRow",
-				});
+				await sendUptimeEvent(data, data.site_id);
 			} catch (error) {
-				console.error("Failed to store uptime data in ClickHouse:", error);
-				// continue execution even if clickhouse insert fails
+				console.error("Failed to send uptime event to Redpanda:", error);
+				captureError(error);
+				// continue execution even if redpanda send fails
 			}
+
 			return new Response("Uptime check complete", { status: 200 });
 		} catch (error) {
 			captureError(error);

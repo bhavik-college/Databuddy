@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { connect } from "node:tls";
-import { chQuery } from "@databuddy/db";
+// import { chQuery } from "@databuddy/db";
 import { websiteService } from "@databuddy/services/websites";
 import { captureError, record } from "./lib/tracing";
 import type { ActionResult, UptimeData } from "./types";
@@ -35,11 +35,11 @@ type FetchFailure = {
 	error: string;
 };
 
-type Heartbeat = {
-	status: number;
-	retries: number;
-	streak: number;
-};
+// type Heartbeat = {
+// 	status: number;
+// 	retries: number;
+// 	streak: number;
+// };
 
 export function lookupWebsite(
 	id: string
@@ -237,80 +237,86 @@ function getProbeMetadata(): Promise<{ ip: string; region: string }> {
 	});
 }
 
-function getLastHeartbeat(siteId: string): Promise<Heartbeat | null> {
-	return record("uptime.get_last_heartbeat", async () => {
-		try {
-			const rows = await chQuery<{
-				status: number;
-				retries: number;
-				failure_streak: number;
-			}>(
-				`
-            SELECT status, retries, failure_streak
-            FROM uptime.uptime_monitor
-            WHERE site_id = {siteId:String}
-            ORDER BY timestamp DESC
-            LIMIT 1
-            `,
-				{ siteId }
-			);
+// function getLastHeartbeat(siteId: string): Promise<Heartbeat | null> {
+// 	return record("uptime.get_last_heartbeat", async () => {
+// 		try {
+// 			const rows = await chQuery<{
+// 				status: number;
+// 				retries: number;
+// 				failure_streak: number;
+// 			}>(
+// 				`
+//             SELECT status, retries, failure_streak
+//             FROM uptime.uptime_monitor
+//             WHERE site_id = {siteId:String}
+//             ORDER BY timestamp DESC
+//             LIMIT 1
+//             `,
+// 				{ siteId }
+// 			);
 
-			if (!rows || rows.length === 0) {
-				return null;
-			}
+// 			if (!rows || rows.length === 0) {
+// 				return null;
+// 			}
 
-			return {
-				status: rows[0].status,
-				retries: rows[0].retries,
-				streak: rows[0].failure_streak,
-			};
-		} catch (error) {
-			console.error("Failed to fetch last heartbeat:", error);
-			return null;
-		}
-	});
-}
+// 			return {
+// 				status: rows[0].status,
+// 				retries: rows[0].retries,
+// 				streak: rows[0].failure_streak,
+// 			};
+// 		} catch (error) {
+// 			console.error("Failed to fetch last heartbeat:", error);
+// 			return null;
+// 		}
+// 	});
+// }
 
 // the retry logic - this prevents false alarms when a site has a temporary hiccup
-function calculateStatus(
-	isUp: boolean,
-	last: Heartbeat | null,
-	maxRetries: number
-): { status: number; retries: number; streak: number } {
+// function calculateStatus(
+// 	isUp: boolean,
+// 	last: Heartbeat | null,
+// 	maxRetries: number
+// ): { status: number; retries: number; streak: number } {
+// 	const { UP, DOWN } = MonitorStatus;
+// 	// const { UP, DOWN, PENDING } = MonitorStatus;
+
+// 	// first time checking this site
+// 	if (!last) {
+// 		// if (!isUp && maxRetries > 0) {
+// 		// 	return { status: PENDING, retries: 1, streak: 0 };
+// 		// }
+// 		return { status: isUp ? UP : DOWN, retries: 0, streak: isUp ? 0 : 1 };
+// 	}
+
+// 	// site was up, now it's down
+// 	if (last.status === UP && !isUp) {
+// 		// if (maxRetries > 0 && last.retries < maxRetries) {
+// 		// 	return {
+// 		// 		status: PENDING,
+// 		// 		retries: last.retries + 1,
+// 		// 		streak: last.streak,
+// 		// 	};
+// 		// }
+// 		return { status: DOWN, retries: 0, streak: last.streak + 1 };
+// 	}
+
+// 	// still pending, still down
+// 	// if (last.status === PENDING && !isUp && last.retries < maxRetries) {
+// 	// 	return { status: PENDING, retries: last.retries + 1, streak: last.streak };
+// 	// }
+
+// 	// confirmed down or recovered
+// 	if (!isUp) {
+// 		return { status: DOWN, retries: 0, streak: last.streak + 1 };
+// 	}
+
+// 	return { status: UP, retries: 0, streak: 0 };
+// }
+
+// simplified status calculation - just UP or DOWN based on current check
+function calculateStatus(isUp: boolean): { status: number; retries: number; streak: number } {
 	const { UP, DOWN } = MonitorStatus;
-	// const { UP, DOWN, PENDING } = MonitorStatus;
-
-	// first time checking this site
-	if (!last) {
-		// if (!isUp && maxRetries > 0) {
-		// 	return { status: PENDING, retries: 1, streak: 0 };
-		// }
-		return { status: isUp ? UP : DOWN, retries: 0, streak: isUp ? 0 : 1 };
-	}
-
-	// site was up, now it's down
-	if (last.status === UP && !isUp) {
-		// if (maxRetries > 0 && last.retries < maxRetries) {
-		// 	return {
-		// 		status: PENDING,
-		// 		retries: last.retries + 1,
-		// 		streak: last.streak,
-		// 	};
-		// }
-		return { status: DOWN, retries: 0, streak: last.streak + 1 };
-	}
-
-	// still pending, still down
-	// if (last.status === PENDING && !isUp && last.retries < maxRetries) {
-	// 	return { status: PENDING, retries: last.retries + 1, streak: last.streak };
-	// }
-
-	// confirmed down or recovered
-	if (!isUp) {
-		return { status: DOWN, retries: 0, streak: last.streak + 1 };
-	}
-
-	return { status: UP, retries: 0, streak: 0 };
+	return { status: isUp ? UP : DOWN, retries: 0, streak: 0 };
 }
 
 export function checkUptime(
@@ -325,17 +331,22 @@ export function checkUptime(
 			const timestamp = Date.now();
 
 			// gather all the data we need in parallel
-			const [pingResult, lastBeat, probe] = await Promise.all([
+			const [pingResult, probe] = await Promise.all([
 				pingWebsite(normalizedUrl),
-				getLastHeartbeat(siteId),
 				getProbeMetadata(),
 			]);
+			// const [pingResult, lastBeat, probe] = await Promise.all([
+			// 	pingWebsite(normalizedUrl),
+			// 	getLastHeartbeat(siteId),
+			// 	getProbeMetadata(),
+			// ]);
 
-			const { status, retries, streak } = calculateStatus(
-				pingResult.ok,
-				lastBeat,
-				maxRetries
-			);
+			const { status, retries, streak } = calculateStatus(pingResult.ok);
+			// const { status, retries, streak } = calculateStatus(
+			// 	pingResult.ok,
+			// 	lastBeat,
+			// 	maxRetries
+			// );
 
 			// site is down - minimal data
 			if (!pingResult.ok) {
