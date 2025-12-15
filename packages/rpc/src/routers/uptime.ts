@@ -1,12 +1,15 @@
-import { db, eq, and, uptimeSchedules } from "@databuddy/db";
+import { and, db, eq, uptimeSchedules } from "@databuddy/db";
 import { logger } from "@databuddy/shared/logger";
 import { ORPCError } from "@orpc/server";
 import { Client } from "@upstash/qstash";
 import { z } from "zod";
 import { recordORPCError } from "../lib/otel";
 import { protectedProcedure } from "../orpc";
-import { authorizeWebsiteAccess, authorizeUptimeScheduleAccess } from "../utils/auth";
-import { nanoid } from "nanoid";
+import {
+	authorizeUptimeScheduleAccess,
+	authorizeWebsiteAccess,
+} from "../utils/auth";
+
 if (!process.env.UPSTASH_QSTASH_TOKEN) {
 	logger.error("UPSTASH_QSTASH_TOKEN environment variable is required");
 }
@@ -52,17 +55,12 @@ async function findScheduleByWebsiteId(websiteId: string) {
 	return schedule;
 }
 
-async function createQStashSchedule(
-	scheduleId: string,
-	granularity: z.infer<typeof granularityEnum>
-) {
+async function createQStashSchedule(granularity: z.infer<typeof granularityEnum>) {
 	const result = await client.schedules.create({
-		scheduleId,
 		destination: UPTIME_URL_GROUP,
 		cron: CRON_GRANULARITIES[granularity],
 		headers: {
 			"Content-Type": "application/json",
-			"X-Schedule-Id": scheduleId,
 		},
 	});
 
@@ -195,8 +193,7 @@ export const uptimeRouter = {
 				input.websiteId ?? null
 			);
 
-			const scheduleId = input.websiteId ? input.websiteId : nanoid(10);
-			await createQStashSchedule(scheduleId, input.granularity);
+			const scheduleId = await createQStashSchedule(input.granularity);
 
 			await db.insert(uptimeSchedules).values({
 				id: scheduleId,
@@ -208,19 +205,6 @@ export const uptimeRouter = {
 				cron: CRON_GRANULARITIES[input.granularity],
 				isPaused: false,
 			});
-
-			try {
-				await client.publish({
-					urlGroup: UPTIME_URL_GROUP,
-					headers: {
-						"Content-Type": "application/json",
-						"X-Schedule-Id": scheduleId,
-					},
-				});
-				logger.info({ scheduleId }, "Triggered uptime check after creation");
-			} catch (error) {
-				logger.error({ scheduleId, error }, "Failed to trigger initial check");
-			}
 
 			logger.info(
 				{
@@ -245,6 +229,8 @@ export const uptimeRouter = {
 		.input(
 			z.object({
 				scheduleId: z.string().min(1, "Schedule ID is required"),
+				url: z.string().url("Valid URL is required"),
+				name: z.string().optional(),
 				granularity: granularityEnum,
 			})
 		)
@@ -266,47 +252,36 @@ export const uptimeRouter = {
 				userId: schedule.userId,
 			});
 
-			try {
-				await client.schedules.delete(input.scheduleId);
-			} catch (error) {
-				logger.error(
-					{ scheduleId: input.scheduleId, error },
-					"Failed to delete old QStash schedule during update"
-				);
-				recordORPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: "Failed to delete old QStash schedule",
-				});
-				throw new ORPCError("INTERNAL_SERVER_ERROR", {
-					message: "Failed to delete old QStash schedule. Please try again.",
-				});
-			}
+			await client.schedules.delete(input.scheduleId);
+			const newScheduleId = await createQStashSchedule(input.granularity);
 
-			await db
-				.update(uptimeSchedules)
-				.set({
-					granularity: input.granularity,
-					cron: CRON_GRANULARITIES[input.granularity],
-					updatedAt: new Date(),
-				})
-				.where(eq(uptimeSchedules.id, input.scheduleId));
+			await db.delete(uptimeSchedules).where(eq(uptimeSchedules.id, input.scheduleId));
 
-			const newScheduleId = await createQStashSchedule(
-				input.scheduleId,
-				input.granularity
-			);
+			await db.insert(uptimeSchedules).values({
+				id: newScheduleId,
+				websiteId: schedule.websiteId,
+				userId: schedule.userId,
+				url: input.url,
+				name: input.name ?? null,
+				granularity: input.granularity,
+				cron: CRON_GRANULARITIES[input.granularity],
+				isPaused: false,
+			});
 
 			logger.info(
 				{
-					scheduleId: input.scheduleId,
+					oldScheduleId: input.scheduleId,
+					newScheduleId,
+					url: input.url,
 					granularity: input.granularity,
-					userId: context.user.id,
 				},
 				"Uptime schedule updated"
 			);
 
 			return {
-				scheduleId: input.scheduleId,
+				scheduleId: newScheduleId,
+				url: input.url,
+				name: input.name,
 				granularity: input.granularity,
 				cron: CRON_GRANULARITIES[input.granularity],
 			};

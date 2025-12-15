@@ -89,8 +89,8 @@ const app = new Elysia()
 
 			const headerSchema = z.object({
 				"upstash-signature": z.string(),
-				"x-schedule-id": z.string(),
-				"x-max-retries": z.string().optional(),
+				"upstash-schedule-id": z.string(),
+				"upstash-retried": z.string().optional(),
 			});
 
 			const parsed = headerSchema.safeParse(headers);
@@ -108,7 +108,7 @@ const app = new Elysia()
 				);
 			}
 
-			const { "upstash-signature": signature, "x-schedule-id": scheduleId } =
+			const { "upstash-signature": signature, "upstash-schedule-id": scheduleId } =
 				parsed.data;
 
 			const isValid = await receiver.verify({
@@ -143,8 +143,8 @@ const app = new Elysia()
 
 			const monitorId = schedule.data.websiteId || scheduleId;
 
-			const maxRetries = parsed.data["x-max-retries"]
-				? Number.parseInt(parsed.data["x-max-retries"], 10)
+			const maxRetries = parsed.data["upstash-retried"]
+				? Number.parseInt(parsed.data["upstash-retried"], 10) + 3
 				: 3;
 
 			const result = await checkUptime(monitorId, schedule.data.url, 1, maxRetries);
