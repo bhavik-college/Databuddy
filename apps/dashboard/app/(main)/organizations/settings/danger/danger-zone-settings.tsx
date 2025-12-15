@@ -37,8 +37,7 @@ export function DangerZoneSettings({
 	const [isOwner, setIsOwner] = useState<boolean | null>(null);
 	const [confirmText, setConfirmText] = useState("");
 
-	const { deleteOrganizationAsync, leaveOrganizationAsync } =
-		useOrganizations();
+	const { deleteOrganization, leaveOrganization } = useOrganizations();
 
 	useEffect(() => {
 		const checkOwnership = async () => {
@@ -63,36 +62,38 @@ export function DangerZoneSettings({
 		checkOwnership();
 	}, [organization.id, session?.user?.id]);
 
-	const handleDelete = async () => {
+	const handleDelete = () => {
 		if (confirmText !== organization.name) {
 			toast.error("Organization name does not match");
 			return;
 		}
 
 		setIsDeleting(true);
-		try {
-			await deleteOrganizationAsync(organization.id);
-			router.push("/organizations");
-		} catch {
-			toast.error("Failed to delete organization");
-		} finally {
-			setIsDeleting(false);
-			setShowDeleteDialog(false);
-			setConfirmText("");
-		}
+		deleteOrganization(organization.id, {
+			onSuccess: () => {
+				router.push("/organizations");
+				setIsDeleting(false);
+				setShowDeleteDialog(false);
+				setConfirmText("");
+			},
+			onError: () => {
+				setIsDeleting(false);
+			},
+		});
 	};
 
-	const handleLeave = async () => {
+	const handleLeave = () => {
 		setIsLeaving(true);
-		try {
-			await leaveOrganizationAsync(organization.id);
-			router.push("/organizations");
-		} catch {
-			toast.error("Failed to leave organization");
-		} finally {
-			setIsLeaving(false);
-			setShowLeaveDialog(false);
-		}
+		leaveOrganization(organization.id, {
+			onSuccess: () => {
+				router.push("/organizations");
+				setIsLeaving(false);
+				setShowLeaveDialog(false);
+			},
+			onError: () => {
+				setIsLeaving(false);
+			},
+		});
 	};
 
 	return (

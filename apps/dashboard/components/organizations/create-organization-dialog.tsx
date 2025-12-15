@@ -64,9 +64,9 @@ export function CreateOrganizationDialog({
 	onClose,
 }: CreateOrganizationDialogProps) {
 	const {
-		createOrganizationAsync,
+		createOrganization,
 		isCreatingOrganization,
-		uploadOrganizationLogoAsync,
+		setActiveOrganization,
 	} = useOrganizations();
 	// const router = useRouter();
 
@@ -232,44 +232,27 @@ export function CreateOrganizationDialog({
 			.toUpperCase()
 			.slice(0, 2);
 
-	const handleSubmit = async () => {
+	const handleSubmit = () => {
 		if (!isFormValid) {
 			return;
 		}
-		try {
-			const organization = await createOrganizationAsync({
+
+		createOrganization(
+			{
 				name: formData.name,
 				slug: formData.slug,
+				logo: preview || undefined,
 				metadata: formData.metadata,
-			});
-
-			if (logoFile && organization?.id) {
-				try {
-					const reader = new FileReader();
-					const fileData = await new Promise<string>((resolve) => {
-						reader.onloadend = () => resolve(reader.result as string);
-						reader.readAsDataURL(logoFile);
-					});
-
-					await uploadOrganizationLogoAsync({
-						organizationId: organization.id,
-						fileData,
-						fileName: logoFile.name,
-						fileType: logoFile.type,
-					});
-				} catch (logoError) {
-					toast.warning(
-						"Organization created, but logo upload failed. You can upload it later from settings."
-					);
-					console.error("Logo upload failed:", logoError);
-				}
+			},
+			{
+				onSuccess: (organization) => {
+					if (organization?.id) {
+						setActiveOrganization(organization.id);
+					}
+					handleClose();
+				},
 			}
-
-			handleClose();
-			// router.push('/organizations');
-		} catch {
-			// handled by mutation toast
-		}
+		);
 	};
 
 	return (

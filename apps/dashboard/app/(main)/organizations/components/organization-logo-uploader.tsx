@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactCrop, {
 	type Crop,
 	centerCrop,
@@ -33,12 +33,16 @@ export function OrganizationLogoUploader({
 	organization,
 }: OrganizationLogoUploaderProps) {
 	const {
-		uploadOrganizationLogo,
-		isUploadingOrganizationLogo,
+		updateOrganization,
+		isUpdatingOrganization,
 		deleteOrganizationLogo,
 		isDeletingOrganizationLogo,
 	} = useOrganizations();
 	const [preview, setPreview] = useState(organization.logo);
+
+	useEffect(() => {
+		setPreview(organization.logo);
+	}, [organization.logo]);
 	const [imageSrc, setImageSrc] = useState<string | null>(null);
 	const [crop, setCrop] = useState<Crop>();
 	const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
@@ -117,21 +121,19 @@ export function OrganizationLogoUploader({
 			const reader = new FileReader();
 			reader.onloadend = () => {
 				const fileData = reader.result as string;
-				uploadOrganizationLogo(
+				updateOrganization(
 					{
 						organizationId: organization.id,
-						fileData,
-						fileName: croppedFile.name,
-						fileType: croppedFile.type,
+						data: { logo: fileData },
 					},
 					{
-						onSuccess: (data) => {
-							setPreview(data.logoUrl);
+						onSuccess: () => {
+							setPreview(fileData);
 							handleModalOpenChange(false);
 							setTimeout(() => resetCropState(), 100);
 						},
 						onError: (error) => {
-							toast.error(error.message || "Failed to upload logo.");
+							toast.error(error.message || "Failed to update logo.");
 						},
 					}
 				);
@@ -251,17 +253,17 @@ export function OrganizationLogoUploader({
 						</Button>
 						<Button
 							disabled={
-								isUploadingOrganizationLogo || !imageSrc || !completedCrop
+								isUpdatingOrganization || !imageSrc || !completedCrop
 							}
 							onClick={handleUpload}
 						>
-							{isUploadingOrganizationLogo ? (
+							{isUpdatingOrganization ? (
 								<>
 									<div className="mr-2 size-3 animate-spin rounded-full border border-primary-foreground/30 border-t-primary-foreground" />
-									Uploading...
+									Updating...
 								</>
 							) : (
-								"Save and Upload"
+								"Save Logo"
 							)}
 						</Button>
 					</DialogFooter>
