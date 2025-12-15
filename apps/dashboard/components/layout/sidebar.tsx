@@ -8,10 +8,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-	useAccordionStates,
-	usePersistentState,
-} from "@/hooks/use-persistent-state";
+import { useAccordionStates } from "@/hooks/use-persistent-state";
 import { useWebsites } from "@/hooks/use-websites";
 import { cn } from "@/lib/utils";
 import { CategorySidebar } from "./category-sidebar";
@@ -37,9 +34,9 @@ type NavigationConfig = {
 export function Sidebar() {
 	const pathname = usePathname();
 	const [isMobileOpen, setIsMobileOpen] = useState(false);
-	const [selectedCategory, setSelectedCategory] = usePersistentState<
+	const [selectedCategory, setSelectedCategory] = useState<
 		string | undefined
-	>("sidebar-selected-category", undefined);
+	>(undefined);
 	const { websites, isLoading: isLoadingWebsites } = useWebsites();
 	const accordionStates = useAccordionStates();
 	const sidebarRef = useRef<HTMLDivElement>(null);
@@ -150,6 +147,10 @@ export function Sidebar() {
 		document.addEventListener("keydown", handleKeyDown);
 		return () => document.removeEventListener("keydown", handleKeyDown);
 	}, [isMobileOpen, closeSidebar]);
+
+	useEffect(() => {
+		setSelectedCategory(undefined);
+	}, [pathname]);
 
 	useEffect(() => {
 		if (isMobileOpen && sidebarRef.current) {

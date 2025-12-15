@@ -130,7 +130,7 @@ function OrganizationSelectorTrigger({
 								{activeOrganization?.name || "Personal"}
 							</span>
 							<Badge
-								className="shrink-0 text-xs"
+								className="shrink-0 py-1 text-xs leading-none"
 								variant={planInfo?.variant || "gray"}
 							>
 								{planInfo?.name || "Free"}
