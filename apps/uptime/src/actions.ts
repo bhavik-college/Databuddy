@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
 import { connect } from "node:tls";
-// import { chQuery } from "@databuddy/db";
-import { websiteService } from "@databuddy/services/websites";
+import { db, eq, uptimeSchedules } from "@databuddy/db";
 import { captureError, record } from "./lib/tracing";
 import type { ActionResult, UptimeData } from "./types";
 import { MonitorStatus } from "./types";
@@ -41,20 +40,29 @@ type FetchFailure = {
 // 	streak: number;
 // };
 
-export function lookupWebsite(
+export function lookupSchedule(
 	id: string
-): Promise<ActionResult<{ id: string; domain: string }>> {
-	return record("uptime.lookup_website", async () => {
+): Promise<ActionResult<{ id: string; url: string; websiteId: string | null }>> {
+	return record("uptime.lookup_schedule", async () => {
 		try {
-			const site = await websiteService.getById(id);
+			const schedule = await db.query.uptimeSchedules.findFirst({
+				where: eq(uptimeSchedules.id, id),
+			});
 
-			if (!site) {
-				return { success: false, error: `Website ${id} not found` };
+			if (!schedule) {
+				return { success: false, error: `Schedule ${id} not found` };
 			}
 
-			return { success: true, data: { id: site.id, domain: site.domain } };
+			return {
+				success: true,
+				data: {
+					id: schedule.id,
+					url: schedule.url,
+					websiteId: schedule.websiteId,
+				},
+			};
 		} catch (error) {
-			console.error("Database lookup failed:", error);
+			console.error("Schedule lookup failed:", error);
 			return {
 				success: false,
 				error: error instanceof Error ? error.message : "Database error",

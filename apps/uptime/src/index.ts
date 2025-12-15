@@ -1,6 +1,7 @@
 import { Receiver } from "@upstash/qstash";
 import Elysia from "elysia";
-import { checkUptime, lookupWebsite } from "./actions";
+import { z } from "zod";
+import { checkUptime, lookupSchedule } from "./actions";
 import { sendUptimeEvent } from "./lib/producer";
 import {
 	captureError,
@@ -84,13 +85,23 @@ const app = new Elysia()
 	.get("/health", () => ({ status: "ok" }))
 	.post("/", async ({ headers, body }) => {
 		try {
-			const siteId = headers["x-website-id"];
-			const signature = headers["upstash-signature"];
+			const headerSchema = z.object({
+				"upstash-signature": z.string(),
+				"x-schedule-id": z.string(),
+				"x-max-retries": z.string().optional(),
+			});
+
+			const parsed = headerSchema.safeParse(headers);
+			if (!parsed.success) {
+				return new Response("Missing required headers", { status: 400 });
+			}
+
+			const { "upstash-signature": signature, "x-schedule-id": scheduleId } =
+				parsed.data;
 
 			const isValid = await receiver.verify({
 				// @ts-expect-error, this doesn't require type assertions
 				body,
-				// @ts-expect-error, these don't require type assertions
 				signature,
 				url: "https://uptime.databuddy.cc",
 			});
@@ -99,23 +110,19 @@ const app = new Elysia()
 				return new Response("Invalid signature", { status: 401 });
 			}
 
-			if (!siteId || typeof siteId !== "string") {
-				return new Response("Website ID is required", { status: 400 });
+			const schedule = await lookupSchedule(scheduleId);
+			if (!schedule.success) {
+				captureError(schedule.error);
+				return new Response("Schedule not found", { status: 404 });
 			}
 
-			const site = await lookupWebsite(siteId);
+			const monitorId = schedule.data.websiteId || scheduleId;
 
-			if (!site.success) {
-				captureError(site.error);
-				return new Response("Website not found", { status: 404 });
-			}
-
-			const maxRetriesHeader = headers["x-max-retries"];
-			const maxRetries = maxRetriesHeader
-				? Number.parseInt(maxRetriesHeader as string, 10)
+			const maxRetries = parsed.data["x-max-retries"]
+				? Number.parseInt(parsed.data["x-max-retries"], 10)
 				: 3;
 
-			const result = await checkUptime(siteId, site.data.domain, 1, maxRetries);
+			const result = await checkUptime(monitorId, schedule.data.url, 1, maxRetries);
 
 			if (!result.success) {
 				console.error("Uptime check failed:", result.error);
@@ -123,15 +130,11 @@ const app = new Elysia()
 				return new Response("Failed to check uptime", { status: 500 });
 			}
 
-			const { data } = result;
-
-			// Send event to Redpanda for ingestion via Vector
 			try {
-				await sendUptimeEvent(data, data.site_id);
+				await sendUptimeEvent(result.data, monitorId);
 			} catch (error) {
-				console.error("Failed to send uptime event to Redpanda:", error);
+				console.error("Failed to send uptime event:", error);
 				captureError(error);
-				// continue execution even if redpanda send fails
 			}
 
 			return new Response("Uptime check complete", { status: 200 });

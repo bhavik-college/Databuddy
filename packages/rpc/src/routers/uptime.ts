@@ -1,12 +1,12 @@
-import { db, eq, uptimeSchedules } from "@databuddy/db";
+import { db, eq, and, uptimeSchedules } from "@databuddy/db";
 import { logger } from "@databuddy/shared/logger";
 import { ORPCError } from "@orpc/server";
 import { Client } from "@upstash/qstash";
 import { z } from "zod";
 import { recordORPCError } from "../lib/otel";
 import { protectedProcedure } from "../orpc";
-import { authorizeWebsiteAccess } from "../utils/auth";
-
+import { authorizeWebsiteAccess, authorizeUptimeScheduleAccess } from "../utils/auth";
+import { nanoid } from "nanoid";
 if (!process.env.UPSTASH_QSTASH_TOKEN) {
 	logger.error("UPSTASH_QSTASH_TOKEN environment variable is required");
 }
@@ -53,33 +53,45 @@ async function findScheduleByWebsiteId(websiteId: string) {
 }
 
 async function createQStashSchedule(
-	websiteId: string,
+	scheduleId: string,
 	granularity: z.infer<typeof granularityEnum>
 ) {
-	const { scheduleId } = await client.schedules.create({
+	const result = await client.schedules.create({
+		scheduleId,
 		destination: UPTIME_URL_GROUP,
 		cron: CRON_GRANULARITIES[granularity],
 		headers: {
 			"Content-Type": "application/json",
-			"X-Website-Id": websiteId,
+			"X-Schedule-Id": scheduleId,
 		},
 	});
 
-	if (!scheduleId) {
+	if (!result.scheduleId) {
 		throw new ORPCError("INTERNAL_SERVER_ERROR", {
 			message: "Failed to create uptime schedule",
 		});
 	}
 
-	return scheduleId;
+	return result.scheduleId;
 }
 
 async function ensureNoDuplicateSchedule(
-	websiteId: string,
+	url: string,
+	userId: string,
+	websiteId?: string | null,
 	excludeScheduleId?: string
 ) {
+	const conditions = [
+		eq(uptimeSchedules.url, url),
+		eq(uptimeSchedules.userId, userId),
+	];
+
+	if (websiteId) {
+		conditions.push(eq(uptimeSchedules.websiteId, websiteId));
+	}
+
 	const schedules = await db.query.uptimeSchedules.findMany({
-		where: eq(uptimeSchedules.websiteId, websiteId),
+		where: and(...conditions),
 	});
 
 	const conflictingSchedules = excludeScheduleId
@@ -87,10 +99,10 @@ async function ensureNoDuplicateSchedule(
 		: schedules;
 
 	if (conflictingSchedules.length > 0) {
-		throw new ORPCError("CONFLICT", {
-			message:
-				"A monitor already exists for this website. Please delete the existing monitor before creating a new one.",
-		});
+		const message = websiteId
+			? "A monitor already exists for this website. Please delete the existing monitor before creating a new one."
+			: "A monitor already exists for this URL. Please delete the existing monitor before creating a new one.";
+		throw new ORPCError("CONFLICT", { message });
 	}
 }
 
@@ -108,6 +120,28 @@ export const uptimeRouter = {
 			return schedule || null;
 		}),
 
+	listSchedules: protectedProcedure
+		.input(
+			z.object({
+				websiteId: z.string().optional(),
+			})
+		)
+		.handler(async ({ context, input }) => {
+			const conditions = [eq(uptimeSchedules.userId, context.user.id)];
+
+			if (input.websiteId) {
+				await authorizeWebsiteAccess(context, input.websiteId, "read");
+				conditions.push(eq(uptimeSchedules.websiteId, input.websiteId));
+			}
+
+			const schedules = await db.query.uptimeSchedules.findMany({
+				where: and(...conditions),
+				orderBy: (table, { desc }) => [desc(table.createdAt)],
+			});
+
+			return schedules;
+		}),
+
 	getSchedule: protectedProcedure
 		.input(
 			z.object({
@@ -120,7 +154,7 @@ export const uptimeRouter = {
 				client.schedules.get(input.scheduleId).catch(() => null),
 			]);
 
-			if (!(dbSchedule && qstashSchedule)) {
+			if (!dbSchedule) {
 				recordORPCError({
 					code: "NOT_FOUND",
 					message: "Schedule not found",
@@ -130,7 +164,10 @@ export const uptimeRouter = {
 				});
 			}
 
-			await authorizeWebsiteAccess(context, dbSchedule.websiteId, "read");
+			await authorizeUptimeScheduleAccess(context, {
+				websiteId: dbSchedule.websiteId,
+				userId: dbSchedule.userId,
+			});
 
 			return {
 				...dbSchedule,
@@ -141,22 +178,32 @@ export const uptimeRouter = {
 	createSchedule: protectedProcedure
 		.input(
 			z.object({
-				websiteId: z.string().min(1, "Website ID is required"),
+				url: z.string().url("Valid URL is required"),
+				name: z.string().optional(),
+				websiteId: z.string().optional(),
 				granularity: granularityEnum,
 			})
 		)
 		.handler(async ({ context, input }) => {
-			await authorizeWebsiteAccess(context, input.websiteId, "update");
-			await ensureNoDuplicateSchedule(input.websiteId);
+			if (input.websiteId) {
+				await authorizeWebsiteAccess(context, input.websiteId, "update");
+			}
 
-			const scheduleId = await createQStashSchedule(
-				input.websiteId,
-				input.granularity
+			await ensureNoDuplicateSchedule(
+				input.url,
+				context.user.id,
+				input.websiteId ?? null
 			);
+
+			const scheduleId = input.websiteId ? input.websiteId : nanoid(10);
+			await createQStashSchedule(scheduleId, input.granularity);
 
 			await db.insert(uptimeSchedules).values({
 				id: scheduleId,
-				websiteId: input.websiteId,
+				websiteId: input.websiteId ?? null,
+				userId: context.user.id,
+				url: input.url,
+				name: input.name ?? null,
 				granularity: input.granularity,
 				cron: CRON_GRANULARITIES[input.granularity],
 				isPaused: false,
@@ -167,32 +214,19 @@ export const uptimeRouter = {
 					urlGroup: UPTIME_URL_GROUP,
 					headers: {
 						"Content-Type": "application/json",
-						"X-Website-Id": input.websiteId,
+						"X-Schedule-Id": scheduleId,
 					},
 				});
-				logger.info(
-					{
-						scheduleId,
-						websiteId: input.websiteId,
-					},
-					"Uptime schedule triggered manually after creation"
-				);
+				logger.info({ scheduleId }, "Triggered uptime check after creation");
 			} catch (error) {
-				logger.error(
-					{
-						scheduleId,
-						websiteId: input.websiteId,
-						error,
-					},
-					"Failed to trigger uptime schedule manually after creation"
-				);
+				logger.error({ scheduleId, error }, "Failed to trigger initial check");
 			}
 
 			logger.info(
 				{
 					scheduleId,
+					url: input.url,
 					websiteId: input.websiteId,
-					granularity: input.granularity,
 					userId: context.user.id,
 				},
 				"Uptime schedule created"
@@ -200,6 +234,8 @@ export const uptimeRouter = {
 
 			return {
 				scheduleId,
+				url: input.url,
+				name: input.name,
 				granularity: input.granularity,
 				cron: CRON_GRANULARITIES[input.granularity],
 			};
@@ -225,26 +261,10 @@ export const uptimeRouter = {
 				});
 			}
 
-			await authorizeWebsiteAccess(context, schedule.websiteId, "update");
-
-			const otherSchedules = await db.query.uptimeSchedules.findMany({
-				where: eq(uptimeSchedules.websiteId, schedule.websiteId),
+			await authorizeUptimeScheduleAccess(context, {
+				websiteId: schedule.websiteId,
+				userId: schedule.userId,
 			});
-
-			if (
-				otherSchedules.length > 1 ||
-				(otherSchedules.length === 1 &&
-					otherSchedules[0].id !== input.scheduleId)
-			) {
-				logger.warn(
-					{
-						scheduleId: input.scheduleId,
-						websiteId: schedule.websiteId,
-						foundSchedules: otherSchedules.map((s) => s.id),
-					},
-					"Multiple schedules found for website during update"
-				);
-			}
 
 			try {
 				await client.schedules.delete(input.scheduleId);
@@ -263,27 +283,22 @@ export const uptimeRouter = {
 			}
 
 			await db
-				.delete(uptimeSchedules)
+				.update(uptimeSchedules)
+				.set({
+					granularity: input.granularity,
+					cron: CRON_GRANULARITIES[input.granularity],
+					updatedAt: new Date(),
+				})
 				.where(eq(uptimeSchedules.id, input.scheduleId));
 
 			const newScheduleId = await createQStashSchedule(
-				schedule.websiteId,
+				input.scheduleId,
 				input.granularity
 			);
 
-			await db.insert(uptimeSchedules).values({
-				id: newScheduleId,
-				websiteId: schedule.websiteId,
-				granularity: input.granularity,
-				cron: CRON_GRANULARITIES[input.granularity],
-				isPaused: schedule.isPaused,
-			});
-
 			logger.info(
 				{
-					oldScheduleId: input.scheduleId,
-					newScheduleId,
-					websiteId: schedule.websiteId,
+					scheduleId: input.scheduleId,
 					granularity: input.granularity,
 					userId: context.user.id,
 				},
@@ -291,7 +306,7 @@ export const uptimeRouter = {
 			);
 
 			return {
-				scheduleId: newScheduleId,
+				scheduleId: input.scheduleId,
 				granularity: input.granularity,
 				cron: CRON_GRANULARITIES[input.granularity],
 			};
@@ -316,7 +331,10 @@ export const uptimeRouter = {
 				});
 			}
 
-			await authorizeWebsiteAccess(context, schedule.websiteId, "update");
+			await authorizeUptimeScheduleAccess(context, {
+				websiteId: schedule.websiteId,
+				userId: schedule.userId,
+			});
 
 			try {
 				await client.schedules.delete(input.scheduleId);
@@ -380,7 +398,10 @@ export const uptimeRouter = {
 				});
 			}
 
-			await authorizeWebsiteAccess(context, schedule.websiteId, "update");
+			await authorizeUptimeScheduleAccess(context, {
+				websiteId: schedule.websiteId,
+				userId: schedule.userId,
+			});
 
 			if (schedule.isPaused) {
 				recordORPCError({
@@ -431,7 +452,10 @@ export const uptimeRouter = {
 				});
 			}
 
-			await authorizeWebsiteAccess(context, schedule.websiteId, "update");
+			await authorizeUptimeScheduleAccess(context, {
+				websiteId: schedule.websiteId,
+				userId: schedule.userId,
+			});
 
 			if (!schedule.isPaused) {
 				recordORPCError({
