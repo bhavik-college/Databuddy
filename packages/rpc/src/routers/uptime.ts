@@ -247,15 +247,25 @@ export const uptimeRouter = {
 				});
 			}
 
-			await Promise.all([
-				input.pause
-					? client.schedules.pause({ schedule: input.scheduleId })
-					: client.schedules.resume({ schedule: input.scheduleId }),
-				db
-					.update(uptimeSchedules)
-					.set({ isPaused: input.pause, updatedAt: new Date() })
-					.where(eq(uptimeSchedules.id, input.scheduleId)),
-			]);
+			try {
+				await Promise.all([
+					input.pause
+						? client.schedules.pause({ schedule: input.scheduleId })
+						: client.schedules.resume({ schedule: input.scheduleId }),
+					db
+						.update(uptimeSchedules)
+						.set({ isPaused: input.pause, updatedAt: new Date() })
+						.where(eq(uptimeSchedules.id, input.scheduleId)),
+				]);
+			} catch (error) {
+				logger.error(
+					{ scheduleId: input.scheduleId, error },
+					"Failed to toggle QStash schedule"
+				);
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: "Failed to update monitor status",
+				});
+			}
 
 			logger.info(
 				{ scheduleId: input.scheduleId, paused: input.pause },
@@ -277,13 +287,20 @@ export const uptimeRouter = {
 				});
 			}
 
-			await Promise.all([
-				client.schedules.pause({ schedule: input.scheduleId }),
-				db
-					.update(uptimeSchedules)
-					.set({ isPaused: true, updatedAt: new Date() })
-					.where(eq(uptimeSchedules.id, input.scheduleId)),
-			]);
+			try {
+				await Promise.all([
+					client.schedules.pause({ schedule: input.scheduleId }),
+					db
+						.update(uptimeSchedules)
+						.set({ isPaused: true, updatedAt: new Date() })
+						.where(eq(uptimeSchedules.id, input.scheduleId)),
+				]);
+			} catch (error) {
+				logger.error({ scheduleId: input.scheduleId, error }, "Failed to pause");
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: "Failed to pause monitor",
+				});
+			}
 
 			logger.info({ scheduleId: input.scheduleId }, "Schedule paused");
 			return { success: true, isPaused: true };
@@ -300,13 +317,20 @@ export const uptimeRouter = {
 				});
 			}
 
-			await Promise.all([
-				client.schedules.resume({ schedule: input.scheduleId }),
-				db
-					.update(uptimeSchedules)
-					.set({ isPaused: false, updatedAt: new Date() })
-					.where(eq(uptimeSchedules.id, input.scheduleId)),
-			]);
+			try {
+				await Promise.all([
+					client.schedules.resume({ schedule: input.scheduleId }),
+					db
+						.update(uptimeSchedules)
+						.set({ isPaused: false, updatedAt: new Date() })
+						.where(eq(uptimeSchedules.id, input.scheduleId)),
+				]);
+			} catch (error) {
+				logger.error({ scheduleId: input.scheduleId, error }, "Failed to resume");
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: "Failed to resume monitor",
+				});
+			}
 
 			logger.info({ scheduleId: input.scheduleId }, "Schedule resumed");
 			return { success: true, isPaused: false };
