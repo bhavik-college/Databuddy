@@ -179,8 +179,8 @@ export const uptimeRouter = {
 			);
 
 			const scheduleId = input.websiteId || nanoid(10);
-			await createQStashSchedule(scheduleId, input.granularity);
 
+			// Insert to DB first
 			await db.insert(uptimeSchedules).values({
 				id: scheduleId,
 				websiteId: input.websiteId ?? null,
@@ -192,6 +192,18 @@ export const uptimeRouter = {
 				isPaused: false,
 			});
 
+			// Then create QStash schedule, rollback DB if it fails
+			try {
+				await createQStashSchedule(scheduleId, input.granularity);
+			} catch (error) {
+				await db.delete(uptimeSchedules).where(eq(uptimeSchedules.id, scheduleId));
+				logger.error({ scheduleId, error }, "QStash creation failed, rolled back");
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: "Failed to create monitor",
+				});
+			}
+
+			// Trigger initial check (fire-and-forget)
 			client
 				.publish({
 					urlGroup: UPTIME_URL_GROUP,
