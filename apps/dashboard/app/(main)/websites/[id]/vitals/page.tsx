@@ -2,7 +2,6 @@
 
 import { HeartbeatIcon } from "@phosphor-icons/react";
 import dayjs from "dayjs";
-import { useAtom } from "jotai";
 import { useParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import {
@@ -14,7 +13,6 @@ import { DataTable, type TabConfig } from "@/components/table/data-table";
 import { useDateFilters } from "@/hooks/use-date-filters";
 import { useBatchDynamicQuery } from "@/hooks/use-dynamic-query";
 import { usePersistentState } from "@/hooks/use-persistent-state";
-import { isAnalyticsRefreshingAtom } from "@/stores/jotai/filterAtoms";
 import {
 	createBrowserColumns,
 	createCityColumns,
@@ -71,7 +69,6 @@ export default function VitalsPage() {
 	const { id } = useParams();
 	const websiteId = id as string;
 	const { dateRange } = useDateFilters();
-	const [isRefreshing, setIsRefreshing] = useAtom(isAnalyticsRefreshingAtom);
 
 	const [visibleMetrics, setVisibleMetrics] =
 		usePersistentState<VitalVisibility>(
@@ -114,7 +111,7 @@ export default function VitalsPage() {
 		},
 	];
 
-	const { isLoading, getDataForQuery, refetch, isError } = useBatchDynamicQuery(
+	const { isLoading, getDataForQuery } = useBatchDynamicQuery(
 		websiteId,
 		dateRange,
 		queries
@@ -204,11 +201,6 @@ export default function VitalsPage() {
 		[visibleMetrics]
 	);
 
-	const totalSamples = overviewData.reduce(
-		(sum, m) => sum + (m.samples ?? 0),
-		0
-	);
-
 	const getMetricValue = (name: string): number | null => {
 		const metric = overviewData.find((m) => m.metric_name === name);
 		return metric?.p50 ?? null;
@@ -229,16 +221,6 @@ export default function VitalsPage() {
 		[setVisibleMetrics]
 	);
 
-	const handleRefresh = useCallback(async () => {
-		setIsRefreshing(true);
-		try {
-			await refetch();
-		} finally {
-			setIsRefreshing(false);
-		}
-	}, [refetch, setIsRefreshing]);
-
-	// Transform page breakdown data from EAV format to columnar format
 	const pageVitalsTable = useMemo(() => {
 		if (!pageBreakdownData.length) {
 			return [];

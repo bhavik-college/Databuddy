@@ -199,17 +199,17 @@ export function RetentionContent({ websiteId }: RetentionContentProps) {
 				onValueChange={setActiveTab}
 				value={activeTab}
 			>
-				<div className="shrink-0 rounded border bg-sidebar">
+				<div className="shrink-0 rounded border bg-card">
 					<div className="flex items-center justify-between border-b px-4 py-3">
 						<div>
-							<h2 className="font-semibold text-sidebar-foreground">
+							<h2 className="font-semibold text-foreground">
 								Retention Analysis
 							</h2>
 							<p className="text-muted-foreground text-sm">
 								Track user retention over time
 							</p>
 						</div>
-						<TabsList className="h-9 bg-sidebar-accent">
+						<TabsList className="h-9">
 							<TabsTrigger className="gap-1.5 px-3 text-xs" value="cohorts">
 								<TableIcon className="size-4" weight="duotone" />
 								Cohorts
@@ -222,19 +222,17 @@ export function RetentionContent({ websiteId }: RetentionContentProps) {
 					</div>
 
 					<TabsContent
-						className="mt-0 min-h-0 flex-1 data-[state=inactive]:hidden"
+						className="mt-0 min-h-0 flex-1 overflow-auto data-[state=inactive]:hidden"
 						value="cohorts"
 					>
-						<div className="p-4">
-							<RetentionCohortsGrid cohorts={cohorts} isLoading={isLoading} />
-						</div>
+						<RetentionCohortsGrid cohorts={cohorts} isLoading={isLoading} />
 					</TabsContent>
 
 					<TabsContent
 						className="mt-0 min-h-0 flex-1 data-[state=inactive]:hidden"
 						value="rate"
 					>
-						<div className="h-[400px] p-4">
+						<div className="h-[400px]">
 							<RetentionRateChart data={rates} isLoading={isLoading} />
 						</div>
 					</TabsContent>
