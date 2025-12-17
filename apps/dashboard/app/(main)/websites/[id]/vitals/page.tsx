@@ -15,7 +15,6 @@ import { useDateFilters } from "@/hooks/use-date-filters";
 import { useBatchDynamicQuery } from "@/hooks/use-dynamic-query";
 import { usePersistentState } from "@/hooks/use-persistent-state";
 import { isAnalyticsRefreshingAtom } from "@/stores/jotai/filterAtoms";
-import { WebsitePageHeader } from "../_components/website-page-header";
 import {
 	createBrowserColumns,
 	createCityColumns,
@@ -423,31 +422,9 @@ export default function VitalsPage() {
 	const vitalKeys = Object.keys(VITAL_CONFIGS) as Array<
 		keyof typeof VITAL_CONFIGS
 	>;
-	const activeCount = Object.values(visibleMetrics).filter(Boolean).length;
 
 	return (
 		<div className="relative flex h-full flex-col">
-			<WebsitePageHeader
-				description="Core Web Vitals and performance metrics (p50 values)"
-				hasError={isError}
-				icon={
-					<HeartbeatIcon
-						className="size-6 text-accent-foreground"
-						weight="duotone"
-					/>
-				}
-				isLoading={isLoading}
-				isRefreshing={isRefreshing}
-				onRefreshAction={handleRefresh}
-				subtitle={
-					isLoading
-						? undefined
-						: `${totalSamples.toLocaleString()} measurements · ${activeCount} metrics selected`
-				}
-				title="Web Vitals"
-				websiteId={websiteId}
-			/>
-
 			<div className="space-y-4 p-4">
 				<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
 					{vitalKeys.map((key) => (
