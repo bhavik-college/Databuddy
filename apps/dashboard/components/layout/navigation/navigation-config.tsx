@@ -253,6 +253,7 @@ export const websiteNavigation: NavigationSection[] = [
 		createNavItem("Pulse", HeartbeatIcon, "/pulse", {
 			rootLevel: false,
 			flag: "pulse",
+			alpha: true,
 		}),
 	]),
 	createNavSection("Product Analytics", TrendUpIcon, [

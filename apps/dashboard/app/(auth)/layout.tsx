@@ -69,7 +69,7 @@ export default async function AuthLayout({
 					</div>
 				</div>
 
-				<div className="flex justify-center p-6 pb-8 text-center text-muted-foreground text-sm">
+			<div className="flex justify-center p-6 pb-8 text-center text-muted-foreground text-sm">
 					<p>
 						Powered by{" "}
 						<a

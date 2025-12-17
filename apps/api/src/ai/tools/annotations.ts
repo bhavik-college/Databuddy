@@ -51,7 +51,7 @@ async function callRPCProcedure(
 							: error.code === "FORBIDDEN"
 								? "You don't have permission to access this resource."
 								: error.message ||
-									"An error occurred while processing your request.";
+								"An error occurred while processing your request.";
 
 			throw new Error(userMessage);
 		}

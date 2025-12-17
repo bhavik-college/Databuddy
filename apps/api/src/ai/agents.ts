@@ -38,6 +38,7 @@ function createAnalyticsTools(context: {
 	};
 	const funnelTools = createFunnelTools(appContext);
 	const annotationTools = createAnnotationTools(appContext);
+
 	return {
 		get_top_pages: getTopPagesTool,
 		execute_query_builder: executeQueryBuilderTool,
