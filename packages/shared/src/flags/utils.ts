@@ -47,7 +47,6 @@ export const getScopeCondition = (
 interface FlagUpdateDependencyCascadingParams {
     updatedFlag: {
         id: string;
-        key: string;
         status: "active" | "inactive" | "archived";
         websiteId: string | null;
         organizationId: string | null;

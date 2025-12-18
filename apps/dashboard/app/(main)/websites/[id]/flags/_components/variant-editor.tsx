@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Trash } from "@phosphor-icons/react";
+import { PlusIcon, TrashIcon } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -191,7 +191,7 @@ export function VariantEditor({ variants, onChange }: VariantEditorProps) {
             onClick={handleAddVariant}
             className="h-8"
           >
-            <Plus className="mr-2 h-3 w-3" />
+            <PlusIcon className="mr-2 h-3 w-3" />
             Add Variant
           </Button>
         </div>
@@ -240,7 +240,7 @@ export function VariantEditor({ variants, onChange }: VariantEditorProps) {
                 onClick={() => handleRemoveVariant(index)}
                 disabled={variants.length <= 1}
               >
-                <Trash className="h-4 w-4" />
+                <TrashIcon className="h-4 w-4" />
               </Button>
             </div>
 

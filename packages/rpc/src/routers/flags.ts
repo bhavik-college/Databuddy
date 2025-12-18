@@ -124,7 +124,6 @@ const updateFlagSchema = z
 		dependencies: z.array(z.string()).optional(),
 		forceCancelScheduledRollout: z.boolean().optional(),
 	})
-	.passthrough()
 	.superRefine((data, ctx) => {
 		if (data.type === "multivariant" && data.variants) {
 			const hasAnyWeight = data.variants.some(

@@ -113,7 +113,7 @@ export async function createQStashRolloutSchedule(
 
             // Cleanup successful schedules since the batch failed
             await Promise.allSettled(
-                successes.map((id) => client.schedules.delete(id))
+                successes.map((id) => client.messages.delete(id))
             );
 
             throw new Error(
@@ -148,7 +148,6 @@ export async function updateQStashSchedule(
     oldQStashScheduleId: string | null,
     scheduledAt: Date
 ): Promise<string> {
-    // Delete old schedule if it exists
     if (oldQStashScheduleId) {
         try {
             await deleteQStashSchedule(oldQStashScheduleId);
@@ -160,7 +159,6 @@ export async function updateQStashSchedule(
         }
     }
 
-    // Create new schedule
     return createQStashSchedule(scheduleId, scheduledAt);
 }
 
@@ -194,7 +192,7 @@ export async function deleteQStashSchedule(
     qstashScheduleId: string
 ): Promise<void> {
     try {
-        await client.schedules.delete(qstashScheduleId);
+        await client.messages.delete(qstashScheduleId);
         logger.info({ qstashScheduleId }, "Deleted QStash schedule");
     } catch (error) {
         logger.error(
