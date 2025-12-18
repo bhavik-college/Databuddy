@@ -12,19 +12,43 @@ import { contents } from "./sidebar-content";
 
 export default function CustomSidebar() {
 	const [currentOpen, setCurrentOpen] = useState<number>(0);
+	const [nestedOpen, setNestedOpen] = useState<Set<string>>(new Set());
 	const pathname = usePathname();
 	const { setOpenSearch } = useSearchContext();
 
 	const getDefaultValue = useCallback(() => {
 		const defaultValue = contents.findIndex((item) =>
-			item.list.some((listItem) => listItem.href === pathname)
+			item.list.some((listItem) => {
+				if (listItem.href === pathname) {
+					return true;
+				}
+				if (listItem.children) {
+					return listItem.children.some((child) => child.href === pathname);
+				}
+				return false;
+			})
 		);
 		return defaultValue === -1 ? 0 : defaultValue;
 	}, [pathname]);
 
 	useEffect(() => {
 		setCurrentOpen(getDefaultValue());
-	}, [getDefaultValue]);
+		// Auto-open nested items that contain the current path
+		const openNested = new Set<string>();
+		for (const section of contents) {
+			for (const item of section.list) {
+				if (item.children) {
+					const hasActiveChild = item.children.some(
+						(child) => child.href === pathname
+					);
+					if (hasActiveChild) {
+						openNested.add(item.title);
+					}
+				}
+			}
+		}
+		setNestedOpen(openNested);
+	}, [getDefaultValue, pathname]);
 
 	const handleSearch = () => {
 		setOpenSearch(true);
@@ -65,7 +89,7 @@ export default function CustomSidebar() {
 											weight="fill"
 										/>
 										<span className="flex-1 text-sm">{item.title}</span>
-										{item.isNew && <NewBadge />}
+										{item.isNew ? <NewBadge /> : null}
 										<motion.div
 											animate={{ rotate: currentOpen === index ? 180 : 0 }}
 											className="shrink-0"
@@ -77,7 +101,7 @@ export default function CustomSidebar() {
 										</motion.div>
 									</button>
 									<AnimatePresence initial={false}>
-										{currentOpen === index && (
+										{currentOpen === index ? (
 											<motion.div
 												animate={{ opacity: 1, height: "auto" }}
 												className="relative overflow-hidden"
@@ -95,6 +119,85 @@ export default function CustomSidebar() {
 																		</p>
 																		<div className="h-px flex-grow bg-linear-to-r from-stone-800/90 to-stone-800/60" />
 																	</div>
+																) : listItem.children ? (
+																	<div>
+																		<button
+																			className="flex w-full items-center gap-3 px-6 py-2 text-left text-muted-foreground text-sm hover:bg-muted/50 hover:text-foreground"
+																			onClick={() => {
+																				const newOpen = new Set(nestedOpen);
+																				if (newOpen.has(listItem.title)) {
+																					newOpen.delete(listItem.title);
+																				} else {
+																					newOpen.add(listItem.title);
+																				}
+																				setNestedOpen(newOpen);
+																			}}
+																			type="button"
+																		>
+																			{listItem.icon ? (
+																				<listItem.icon
+																					className="size-5 shrink-0"
+																					weight="duotone"
+																				/>
+																			) : null}
+																			<span className="flex-1">
+																				{listItem.title}
+																			</span>
+																			{listItem.isNew ? <NewBadge /> : null}
+																			<motion.div
+																				animate={{
+																					rotate: nestedOpen.has(listItem.title)
+																						? 90
+																						: 0,
+																				}}
+																				className="shrink-0"
+																			>
+																				<CaretDownIcon
+																					className="size-3 text-muted-foreground"
+																					weight="duotone"
+																				/>
+																			</motion.div>
+																		</button>
+																		<AnimatePresence initial={false}>
+																			{nestedOpen.has(listItem.title) && (
+																				<motion.div
+																					animate={{
+																						opacity: 1,
+																						height: "auto",
+																					}}
+																					className="relative overflow-hidden"
+																					exit={{ opacity: 0, height: 0 }}
+																					initial={{ opacity: 0, height: 0 }}
+																				>
+																					<div className="ml-4 border-border border-l pl-2">
+																						{listItem.children.map((child) => (
+																							<AsideLink
+																								activeClassName="!bg-muted !text-foreground font-medium"
+																								className="flex items-center gap-3 px-6 py-2 text-muted-foreground text-sm hover:bg-muted/50 hover:text-foreground"
+																								href={child.href || "#"}
+																								key={child.title}
+																								startWith="/docs"
+																								title={child.title}
+																							>
+																								{child.icon ? (
+																									<child.icon
+																										className="size-4 shrink-0"
+																										weight="duotone"
+																									/>
+																								) : null}
+																								<span className="flex-1">
+																									{child.title}
+																								</span>
+																								{child.isNew ? (
+																									<NewBadge />
+																								) : null}
+																							</AsideLink>
+																						))}
+																					</div>
+																				</motion.div>
+																			)}
+																		</AnimatePresence>
+																	</div>
 																) : (
 																	<AsideLink
 																		activeClassName="!bg-muted !text-foreground font-medium"
@@ -103,14 +206,16 @@ export default function CustomSidebar() {
 																		startWith="/docs"
 																		title={listItem.title}
 																	>
-																		<listItem.icon
-																			className="size-5 shrink-0"
-																			weight="duotone"
-																		/>
+																		{listItem.icon ? (
+																			<listItem.icon
+																				className="size-5 shrink-0"
+																				weight="duotone"
+																			/>
+																		) : null}
 																		<span className="flex-1">
 																			{listItem.title}
 																		</span>
-																		{listItem.isNew && <NewBadge />}
+																		{listItem.isNew ? <NewBadge /> : null}
 																	</AsideLink>
 																)}
 															</Suspense>
@@ -118,7 +223,7 @@ export default function CustomSidebar() {
 													))}
 												</motion.div>
 											</motion.div>
-										)}
+										) : null}
 									</AnimatePresence>
 								</div>
 							))}
@@ -136,7 +241,7 @@ function NewBadge({ isSelected }: { isSelected?: boolean }) {
 			<Badge
 				className={cn(
 					"!no-underline !decoration-transparent pointer-events-none border-dashed",
-					isSelected && "!border-solid"
+					isSelected ? "!border-solid" : ""
 				)}
 				variant={isSelected ? "default" : "outline"}
 			>

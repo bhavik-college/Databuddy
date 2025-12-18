@@ -3,13 +3,16 @@ import {
 	BookOpenIcon,
 	CalendarIcon,
 	ChartBarIcon,
+	CircleIcon,
 	CodeIcon,
 	CreditCardIcon,
 	DatabaseIcon,
+	DiamondIcon,
 	FileTextIcon,
 	FlagIcon,
 	GlobeIcon,
 	GoogleLogoIcon,
+	HexagonIcon,
 	type IconWeight,
 	KeyIcon,
 	LightningAIcon,
@@ -22,25 +25,30 @@ import {
 	ShieldCheckIcon,
 	ShieldStarIcon,
 	ShoppingCartIcon,
+	SparkleIcon,
 	SpeedometerIcon,
+	SquareIcon,
+	StarIcon,
 	TrendUpIcon,
+	TriangleIcon,
 	UserCheckIcon,
 } from "@phosphor-icons/react";
 
-export interface SidebarItem {
+export type SidebarItem = {
 	title: string;
 	href?: string;
-	icon: React.ComponentType<{ className?: string; weight?: IconWeight }>;
+	icon?: React.ComponentType<{ className?: string; weight?: IconWeight }>;
 	isNew?: boolean;
 	group?: boolean;
-}
+	children?: SidebarItem[];
+};
 
-export interface SidebarSection {
+export type SidebarSection = {
 	title: string;
 	Icon: React.ComponentType<{ className?: string; weight?: IconWeight }>;
 	isNew?: boolean;
 	list: SidebarItem[];
-}
+};
 
 export const contents: SidebarSection[] = [
 	{
@@ -108,6 +116,11 @@ export const contents: SidebarSection[] = [
 		Icon: PlugIcon,
 		list: [
 			{
+				title: "Angular",
+				href: "/docs/Integrations/angular",
+				icon: CircleIcon,
+			},
+			{
 				title: "React",
 				href: "/docs/Integrations/react",
 				icon: AtomIcon,
@@ -118,14 +131,45 @@ export const contents: SidebarSection[] = [
 				icon: LightningIcon,
 			},
 			{
+				title: "Svelte",
+				icon: HexagonIcon,
+				children: [
+					{
+						title: "Svelte",
+						href: "/docs/Integrations/svelte",
+						icon: HexagonIcon,
+					},
+					{
+						title: "SvelteKit",
+						href: "/docs/Integrations/sveltekit",
+						icon: DiamondIcon,
+					},
+				],
+			},
+			{
 				title: "WordPress",
 				href: "/docs/Integrations/wordpress",
 				icon: GlobeIcon,
 			},
 			{
+				title: "Webflow",
+				href: "/docs/Integrations/webflow",
+				icon: SquareIcon,
+			},
+			{
+				title: "Wix",
+				href: "/docs/Integrations/wix",
+				icon: TriangleIcon,
+			},
+			{
 				title: "Shopify",
 				href: "/docs/Integrations/shopify",
 				icon: ShoppingCartIcon,
+			},
+			{
+				title: "Squarespace",
+				href: "/docs/Integrations/squarespace",
+				icon: StarIcon,
 			},
 			{
 				title: "Stripe",
@@ -138,6 +182,11 @@ export const contents: SidebarSection[] = [
 				icon: PaletteIcon,
 			},
 			{
+				title: "Bubble.io",
+				href: "/docs/Integrations/bubble",
+				icon: SparkleIcon,
+			},
+			{
 				title: "Cal.com",
 				href: "/docs/Integrations/cal",
 				icon: CalendarIcon,
@@ -146,6 +195,21 @@ export const contents: SidebarSection[] = [
 				title: "Google Tag Manager",
 				href: "/docs/Integrations/gtm",
 				icon: GoogleLogoIcon,
+			},
+			{
+				title: "Hugo",
+				href: "/docs/Integrations/hugo",
+				icon: FileTextIcon,
+			},
+			{
+				title: "Jekyll",
+				href: "/docs/Integrations/jekyll",
+				icon: BookOpenIcon,
+			},
+			{
+				title: "Laravel",
+				href: "/docs/Integrations/laravel",
+				icon: CodeIcon,
 			},
 		],
 	},

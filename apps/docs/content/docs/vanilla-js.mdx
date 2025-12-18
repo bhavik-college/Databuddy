@@ -32,10 +32,9 @@ Configure the tracker using data attributes on the script tag:
 <script
   src="https://cdn.databuddy.cc/databuddy.js"
   data-client-id="your-client-id"
-  data-track-screen-views="true"
-  data-track-performance="true"
-  data-track-errors="true"
-  data-enable-batching="true"
+  data-track-performance
+  data-track-errors
+  data-enable-batching
   data-batch-size="20"
   async
 ></script>
@@ -176,7 +175,7 @@ Automatically track JavaScript errors:
 <script
   src="https://cdn.databuddy.cc/databuddy.js"
   data-client-id="your-client-id"
-  data-track-errors="true"
+  data-track-errors
   async
 ></script>
 ```
@@ -205,7 +204,7 @@ Track clicks on elements with `data-track` attributes:
 <script
   src="https://cdn.databuddy.cc/databuddy.js"
   data-client-id="your-client-id"
-  data-track-attributes="true"
+  data-track-attributes
   async
 ></script>
 
@@ -227,7 +226,7 @@ Track clicks on external links:
 <script
   src="https://cdn.databuddy.cc/databuddy.js"
   data-client-id="your-client-id"
-  data-track-outgoing-links="true"
+  data-track-outgoing-links
   async
 ></script>
 
@@ -243,7 +242,7 @@ Enable batching to reduce network requests:
 <script
   src="https://cdn.databuddy.cc/databuddy.js"
   data-client-id="your-client-id"
-  data-enable-batching="true"
+  data-enable-batching
   data-batch-size="20"
   data-batch-timeout="2000"
   async
@@ -311,9 +310,9 @@ Opt-out is stored in localStorage and persists across sessions.
   <script
     src="https://cdn.databuddy.cc/databuddy.js"
     data-client-id="your-client-id"
-    data-track-performance="true"
-    data-track-errors="true"
-    data-enable-batching="true"
+    data-track-performance
+    data-track-errors
+    data-enable-batching
     async
   ></script>
   
