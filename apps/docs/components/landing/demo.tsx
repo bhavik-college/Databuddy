@@ -70,7 +70,7 @@ export default function DemoContainer() {
 		<div className="mx-auto mt-24 mb-24 w-full">
 			<div className="group relative bg-background/80 p-2 shadow-2xl backdrop-blur-sm">
 				<div
-					className="-top-px absolute inset-x-0 h-px opacity-30"
+					className="absolute inset-x-0 -top-px h-px opacity-30"
 					style={{
 						backgroundImage: `url("${dotPattern}")`,
 						WebkitMaskImage:
@@ -83,7 +83,7 @@ export default function DemoContainer() {
 				/>
 
 				<div
-					className="-left-px absolute inset-y-0 w-px opacity-30"
+					className="absolute inset-y-0 -left-px w-px opacity-30"
 					style={{
 						backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 4'%3E%3Crect width='1' height='1' fill='%23666666'/%3E%3C/svg%3E")`,
 						WebkitMaskImage:
@@ -95,7 +95,7 @@ export default function DemoContainer() {
 					}}
 				/>
 				<div
-					className="-right-px absolute inset-y-0 w-px opacity-30"
+					className="absolute inset-y-0 -right-px w-px opacity-30"
 					style={{
 						backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 4'%3E%3Crect width='1' height='1' fill='%23666666'/%3E%3C/svg%3E")`,
 						WebkitMaskImage:

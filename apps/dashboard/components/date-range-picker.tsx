@@ -19,10 +19,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { formatMonthDay } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 
-type PresetRange = {
+interface PresetRange {
 	label: string;
 	getValue: () => DateRange;
-};
+}
 
 const PRESET_RANGES: PresetRange[] = [
 	{
@@ -83,14 +83,14 @@ const PRESET_RANGES: PresetRange[] = [
 	},
 ];
 
-type DateRangePickerProps = {
+interface DateRangePickerProps {
 	className?: string;
 	value?: DateRange;
 	onChange?: (dateRange: DateRange | undefined) => void;
 	disabled?: boolean;
 	maxDate?: Date;
 	minDate?: Date;
-};
+}
 
 export function DateRangePicker({
 	className,
@@ -111,12 +111,16 @@ export function DateRangePicker({
 	}, [value, isOpen]);
 
 	const daysDiff = useMemo(() => {
-		if (!(tempRange?.from && tempRange?.to)) return 0;
+		if (!(tempRange?.from && tempRange?.to)) {
+			return 0;
+		}
 		return dayjs(tempRange.to).diff(dayjs(tempRange.from), "day") + 1;
 	}, [tempRange]);
 
 	const activePreset = useMemo(() => {
-		if (!(tempRange?.from && tempRange?.to)) return null;
+		if (!(tempRange?.from && tempRange?.to)) {
+			return null;
+		}
 		return PRESET_RANGES.find((preset) => {
 			const presetRange = preset.getValue();
 			return (
@@ -158,7 +162,9 @@ export function DateRangePicker({
 	);
 
 	const formatDisplayRange = useCallback((range: DateRange | undefined) => {
-		if (!(range?.from && range?.to)) return "Select dates";
+		if (!(range?.from && range?.to)) {
+			return "Select dates";
+		}
 
 		const from = dayjs(range.from);
 		const to = dayjs(range.to);
@@ -317,8 +323,12 @@ export function DateRangePicker({
 								<Calendar
 									defaultMonth={tempRange?.from || value?.from || new Date()}
 									disabled={(date) => {
-										if (minDate && date < minDate) return true;
-										if (maxDate && date > maxDate) return true;
+										if (minDate && date < minDate) {
+											return true;
+										}
+										if (maxDate && date > maxDate) {
+											return true;
+										}
 										return false;
 									}}
 									mode="range"

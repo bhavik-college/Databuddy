@@ -28,11 +28,11 @@ export default function CTA() {
 	const trackingParams = getTrackingParams(searchParams);
 
 	return (
-		<div className="-pr-2 relative mx-auto rounded-none border-border bg-background/95 font-geist md:w-10/12 md:border-[1.2px] md:border-b-0 md:border-l-0">
+		<div className="relative mx-auto rounded-none border-border bg-background/95 -pr-2 font-geist md:w-10/12 md:border-[1.2px] md:border-b-0 md:border-l-0">
 			<div className="w-full md:mx-0">
 				{/* CTA grid */}
 				<div className="relative grid grid-cols-1 border-border border-t-[1.2px] md:grid-cols-3 md:grid-rows-1">
-					<div className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-0 z-10 hidden w-full select-none grid-cols-3 md:grid">
+					<div className="pointer-events-none absolute top-1/2 left-0 z-10 hidden w-full -translate-y-1/2 select-none grid-cols-3 md:grid">
 						<Plus className="ml-auto size-8 translate-x-[16.5px] translate-y-[.5px] text-muted-foreground" />
 						<Plus className="ml-auto size-8 translate-x-[16.5px] translate-y-[.5px] text-muted-foreground" />
 					</div>

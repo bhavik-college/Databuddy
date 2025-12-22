@@ -13,12 +13,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { TagsChat } from "@/components/ui/tags";
 import { cn } from "@/lib/utils";
-import type { UserRule } from "./types";
-
-interface UserRulesBuilderProps {
-	rules: UserRule[];
-	onChange: (rules: UserRule[]) => void;
-}
+import type { UserRule, UserRulesBuilderProps } from "./types";
 
 export function UserRulesBuilder({ rules, onChange }: UserRulesBuilderProps) {
 	const addRule = () => {
@@ -109,10 +104,12 @@ export function UserRulesBuilder({ rules, onChange }: UserRulesBuilderProps) {
 									{index + 1}
 								</div>
 								<span className="text-muted-foreground text-sm">
-									{rule.type === "user_id" && "User ID"}
-									{rule.type === "email" && "Email"}
-									{rule.type === "property" && "Property"}
-									{rule.batch && " (Batch)"}
+									{rule.type === "user_id"
+										? "User ID"
+										: rule.type === "email"
+											? "Email"
+											: "Property"}
+									{rule.batch ? " (Batch)" : ""}
 								</span>
 							</div>
 							<Button
@@ -158,7 +155,7 @@ export function UserRulesBuilder({ rules, onChange }: UserRulesBuilderProps) {
 									</Select>
 								</div>
 
-								{supportsBatch && (
+								{supportsBatch ? (
 									<div>
 										<label
 											className="mb-1 block font-medium text-sm"
@@ -179,7 +176,7 @@ export function UserRulesBuilder({ rules, onChange }: UserRulesBuilderProps) {
 											</span>
 										</div>
 									</div>
-								)}
+								) : null}
 							</div>
 
 							{/* Property Field */}

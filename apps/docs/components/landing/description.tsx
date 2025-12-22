@@ -140,7 +140,7 @@ export const Description = () => {
 					</div>
 
 					{/* Divider */}
-					<div className="-mt-8 lg:-mt-12 w-px shrink-0 self-stretch bg-border" />
+					<div className="-mt-8 w-px shrink-0 self-stretch bg-border lg:-mt-12" />
 
 					{/* Right Column - Content */}
 					<div className="flex flex-1 flex-col justify-center py-12 pl-12 xl:py-16">

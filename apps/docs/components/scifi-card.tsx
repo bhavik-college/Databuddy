@@ -53,7 +53,7 @@ export function SciFiCard({
 				</div>
 				<div
 					className={cn(
-						"-scale-x-[1] absolute top-0 right-0",
+						"absolute top-0 right-0 -scale-x-[1]",
 						cornerSize,
 						cornerClasses
 					)}
@@ -66,7 +66,7 @@ export function SciFiCard({
 				</div>
 				<div
 					className={cn(
-						"-scale-y-[1] absolute bottom-0 left-0",
+						"absolute bottom-0 left-0 -scale-y-[1]",
 						cornerSize,
 						cornerClasses
 					)}
@@ -79,7 +79,7 @@ export function SciFiCard({
 				</div>
 				<div
 					className={cn(
-						"-scale-[1] absolute right-0 bottom-0",
+						"absolute right-0 bottom-0 -scale-[1]",
 						cornerSize,
 						cornerClasses
 					)}

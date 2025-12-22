@@ -35,7 +35,7 @@ export function QueryTypesGrid({ items }: { items: QueryTypeItem[] }) {
 					>
 						<Card
 							aria-label={`View details for ${name}`}
-							className="group hover:-translate-y-0.5 relative cursor-pointer rounded border-border/60 bg-card/80 transition-all hover:shadow-md"
+							className="group relative cursor-pointer rounded border-border/60 bg-card/80 transition-all hover:-translate-y-0.5 hover:shadow-md"
 						>
 							<CardContent className="p-4">
 								<div className="flex items-start justify-between gap-3">

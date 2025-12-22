@@ -266,15 +266,15 @@ function FlipCard() {
 											<div className="absolute top-0 left-0.5 h-0.5 w-0.5 origin-left bg-foreground" />
 											<div className="absolute top-0 left-0 h-0.5 w-0.5 origin-top bg-foreground" />
 										</div>
-										<div className="-scale-x-[1] absolute top-0 right-0 h-0.5 w-0.5 group-hover/contributor:animate-[cornerGlitch_0.6s_ease-in-out]">
+										<div className="absolute top-0 right-0 h-0.5 w-0.5 -scale-x-[1] group-hover/contributor:animate-[cornerGlitch_0.6s_ease-in-out]">
 											<div className="absolute top-0 left-0.5 h-0.5 w-0.5 origin-left bg-foreground" />
 											<div className="absolute top-0 left-0 h-0.5 w-0.5 origin-top bg-foreground" />
 										</div>
-										<div className="-scale-y-[1] absolute bottom-0 left-0 h-0.5 w-0.5 group-hover/contributor:animate-[cornerGlitch_0.6s_ease-in-out]">
+										<div className="absolute bottom-0 left-0 h-0.5 w-0.5 -scale-y-[1] group-hover/contributor:animate-[cornerGlitch_0.6s_ease-in-out]">
 											<div className="absolute top-0 left-0.5 h-0.5 w-0.5 origin-left bg-foreground" />
 											<div className="absolute top-0 left-0 h-0.5 w-0.5 origin-top bg-foreground" />
 										</div>
-										<div className="-scale-[1] absolute right-0 bottom-0 h-0.5 w-0.5 group-hover/contributor:animate-[cornerGlitch_0.6s_ease-in-out]">
+										<div className="absolute right-0 bottom-0 h-0.5 w-0.5 -scale-[1] group-hover/contributor:animate-[cornerGlitch_0.6s_ease-in-out]">
 											<div className="absolute top-0 left-0.5 h-0.5 w-0.5 origin-left bg-foreground" />
 											<div className="absolute top-0 left-0 h-0.5 w-0.5 origin-top bg-foreground" />
 										</div>

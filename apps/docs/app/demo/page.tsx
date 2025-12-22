@@ -18,7 +18,7 @@ export default function DemoPage() {
 					href="/"
 				>
 					<ArrowLeftIcon
-						className="group-hover:-translate-x-0.5 size-4 text-foreground transition-transform"
+						className="size-4 text-foreground transition-transform group-hover:-translate-x-0.5"
 						weight="fill"
 					/>
 					<span className="text-foreground">Back to Home</span>

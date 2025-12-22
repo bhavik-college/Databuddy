@@ -242,8 +242,9 @@ export class CoreFlagsManager implements FlagsManager {
 				isReady: false,
 			};
 		}
-		// Trigger fetch but don't await
-		this.getFlag(key);
+		this.getFlag(key).catch((err) =>
+			logger.error(`Background fetch error for ${key}:`, err)
+		);
 		return {
 			enabled: false,
 			isLoading: true,

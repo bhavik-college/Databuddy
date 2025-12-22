@@ -171,7 +171,7 @@ export default async function PostPage({
 				<div className="mb-4 flex flex-wrap items-center gap-4 text-muted-foreground text-xs sm:text-sm">
 					<div className="flex items-center gap-2">
 						<UserIcon className="size-4" weight="duotone" />
-						<div className="-space-x-2 flex">
+						<div className="flex -space-x-2">
 							{post.authors.slice(0, 3).map((author) => (
 								<Avatar
 									className="size-6 rounded border-2 border-background"

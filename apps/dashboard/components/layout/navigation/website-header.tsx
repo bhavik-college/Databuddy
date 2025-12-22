@@ -57,7 +57,7 @@ export function WebsiteHeader({
 					href="/websites"
 				>
 					<CaretLeftIcon
-						className="group-hover:-translate-x-0.5 size-3 text-sidebar-accent-foreground/80 transition-transform group-hover:text-sidebar-accent-foreground"
+						className="size-3 text-sidebar-accent-foreground/80 transition-transform group-hover:-translate-x-0.5 group-hover:text-sidebar-accent-foreground"
 						weight="fill"
 					/>
 					<span className="font-semibold text-sidebar-accent-foreground/80 text-xs group-hover:text-sidebar-accent-foreground">

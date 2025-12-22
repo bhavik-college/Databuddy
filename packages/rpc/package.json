@@ -19,6 +19,7 @@
     "@types/jszip": "^3.4.1",
     "@upstash/qstash": "^2.8.4",
     "ai": "^5.0.112",
+    "bullmq": "^5.34.0",
     "autumn-js": "^0.0.101",
     "dayjs": "^1.11.19",
     "drizzle-orm": "^0.44.7",

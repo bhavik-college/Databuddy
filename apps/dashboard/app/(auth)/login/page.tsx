@@ -111,7 +111,7 @@ function LoginPage() {
 								Sign in with GitHub
 								{lastUsed === "github" && (
 									<Badge
-										className="-top-3 -right-0.5 absolute z-10 rounded-full px-1 py-0 text-[10px]"
+										className="absolute -top-3 -right-0.5 z-10 rounded-full px-1 py-0 text-[10px]"
 										variant="secondary"
 									>
 										Last used
@@ -130,7 +130,7 @@ function LoginPage() {
 								Sign in with Google
 								{lastUsed === "google" && (
 									<Badge
-										className="-top-3 -right-0.5 absolute z-10 rounded-full px-1 py-0 text-[10px]"
+										className="absolute -top-3 -right-0.5 z-10 rounded-full px-1 py-0 text-[10px]"
 										variant="secondary"
 									>
 										Last used
@@ -153,7 +153,7 @@ function LoginPage() {
 								</Button>
 								{lastUsed === "magic-link" && (
 									<Badge
-										className="-top-3 -right-0.5 absolute z-10 rounded-full px-1 py-0 text-[10px]"
+										className="absolute -top-3 -right-0.5 z-10 rounded-full px-1 py-0 text-[10px]"
 										variant="secondary"
 									>
 										Last used
@@ -185,7 +185,7 @@ function LoginPage() {
 								/>
 								{lastUsed === "email" && (
 									<Badge
-										className="-translate-y-1/2 absolute top-5 right-0 rounded-full px-1 py-0 text-[10px]"
+										className="absolute top-5 right-0 -translate-y-1/2 rounded-full px-1 py-0 text-[10px]"
 										variant="secondary"
 									>
 										Last used

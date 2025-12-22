@@ -59,7 +59,7 @@ export function AgentCommandMenu({
 			<PopoverTrigger asChild>
 				<Button
 					aria-expanded={showCommands}
-					className="-z-1 absolute inset-0 justify-between opacity-0"
+					className="absolute inset-0 -z-1 justify-between opacity-0"
 					role="combobox"
 					variant="outline"
 				>

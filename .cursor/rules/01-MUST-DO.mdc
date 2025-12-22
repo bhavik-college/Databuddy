@@ -30,13 +30,7 @@ Decouple state management, data transformations, and API interactions from the R
 Simplify data flow to eliminate prop drilling and callback hell.
 Prioritize modularity and testability in all components.
 
-Never throw errors in server actions, use try catch and return the error to the client
-
-For all blogs and content pages, add TL;DRs near the title on the top for better conversion
-
 ALWAYS use error boundaries properly
-
-use console properly, like console.error, console.time, console.json, console.table, etc
 
 Use Dayjs NEVER date-fns, and Tanstack query for hooks, NEVER SWR
 
@@ -47,3 +41,7 @@ use json.stringify() when adding debugging
 Almost NEVER use useEffect unless it's critical
 
 do NOT use types any, unknown or never, use proper explicit types
+
+Suffix functions with Action in types, like type Test = { testAction }
+
+Never use barrel exports or create index files

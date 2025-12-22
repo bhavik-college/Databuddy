@@ -168,11 +168,11 @@ export default function AcceptInvitationPage() {
 								<UserPlus className="h-12 w-12 text-primary" weight="duotone" />
 							</div>
 							<Sparkle
-								className="-top-2 -right-2 absolute size-6 animate-pulse text-primary/60"
+								className="absolute -top-2 -right-2 size-6 animate-pulse text-primary/60"
 								weight="duotone"
 							/>
 							<Sparkle
-								className="-bottom-1 -left-3 absolute size-4 animate-pulse text-primary/40"
+								className="absolute -bottom-1 -left-3 size-4 animate-pulse text-primary/40"
 								style={{ animationDelay: "1s" }}
 								weight="duotone"
 							/>
@@ -289,7 +289,7 @@ export default function AcceptInvitationPage() {
 								/>
 							</div>
 							<Sparkle
-								className="-top-2 -right-2 absolute size-6 animate-pulse text-green-500/60"
+								className="absolute -top-2 -right-2 size-6 animate-pulse text-green-500/60"
 								weight="duotone"
 							/>
 						</div>

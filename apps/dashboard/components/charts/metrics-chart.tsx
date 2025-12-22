@@ -527,7 +527,7 @@ export function MetricsChart({
 				>
 					{/* Range Selection Instructions */}
 					{refAreaLeft !== null && refAreaRight === null && (
-						<div className="-translate-x-1/2 absolute top-4 left-1/2 z-10 transform">
+						<div className="absolute top-4 left-1/2 z-10 -translate-x-1/2 transform">
 							<div className="rounded bg-primary px-3 py-1.5 font-medium text-primary-foreground text-xs shadow-lg">
 								Drag to select range or click to annotate this point
 							</div>

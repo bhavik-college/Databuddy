@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-export type EmptyStateAction = {
+export interface EmptyStateAction {
 	label: string;
 	onClick: () => void;
 	variant?: "default" | "outline" | "secondary";
 	size?: "default" | "sm" | "lg" | "icon";
-};
+}
 
-export type EmptyStateProps = {
+export interface EmptyStateProps {
 	/** Main icon to display */
 	icon: ReactElement<IconProps>;
 	/** Main heading */
@@ -38,7 +38,7 @@ export type EmptyStateProps = {
 	"aria-label"?: string;
 	/** Whether this is the main content area */
 	isMainContent?: boolean;
-};
+}
 
 export const EmptyState = memo(function EmptyState({
 	icon,
@@ -220,7 +220,7 @@ export const EmptyState = memo(function EmptyState({
 										variant={action.variant || "default"}
 									>
 										{variant === "default" && (
-											<div className="absolute inset-0 translate-x-[-100%] bg-linear-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-700 group-hover:translate-x-[100%] motion-reduce:transform-none" />
+											<div className="absolute inset-0 translate-x-full bg-linear-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-700 group-hover:translate-x-full motion-reduce:transform-none" />
 										)}
 										{variant === "default" && (
 											<PlusIcon

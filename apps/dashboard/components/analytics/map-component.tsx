@@ -12,6 +12,7 @@ import { useTheme } from "next-themes";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CountryFlag } from "@/components/icon";
 import { type Country, useCountries } from "@/lib/geo";
+import "leaflet/dist/leaflet.css";
 
 const MapContainer = dynamic(
 	() => import("react-leaflet").then((mod) => mod.MapContainer),
@@ -53,21 +54,6 @@ export function MapComponent({
 	const mapRef = useRef<LeafletMap | null>(null);
 	const locationsData = locationData;
 	const { resolvedTheme } = useTheme();
-
-	useEffect(() => {
-		if (typeof window !== "undefined") {
-			const link = document.createElement("link");
-			link.rel = "stylesheet";
-			link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-			link.integrity = "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
-			link.crossOrigin = "anonymous";
-			document.head.appendChild(link);
-
-			return () => {
-				document.head.removeChild(link);
-			};
-		}
-	}, []);
 
 	const countryData = useMemo(() => {
 		if (!locationsData?.countries) {
@@ -278,7 +264,7 @@ export function MapComponent({
 		[countryData?.data]
 	);
 
-	const zoom = 1.0;
+	const zoom = 1.8;
 
 	useEffect(() => {
 		if (mapRef.current) {
@@ -372,7 +358,7 @@ export function MapComponent({
 			{Boolean(countriesGeoData) && (
 				<MapContainer
 					attributionControl={false}
-					center={[40, 3]}
+					center={[20, 10]}
 					className={resolvedTheme === "dark" ? "map-dark" : "map-light"}
 					maxBounds={[
 						[-90, -200],
@@ -380,7 +366,7 @@ export function MapComponent({
 					]}
 					maxBoundsViscosity={0.5}
 					maxZoom={12}
-					minZoom={0.5}
+					minZoom={1.0}
 					preferCanvas
 					ref={mapRef}
 					style={{
@@ -417,44 +403,22 @@ export function MapComponent({
 					</div>
 				)}
 
-			<div className="pointer-events-none absolute top-3 left-3 z-20 flex max-w-[240px] flex-col gap-2 rounded border bg-card p-3 text-sm shadow-sm">
-				<div className="flex items-center gap-2 font-semibold text-foreground">
-					{tooltipContent?.code ? (
-						<>
-							<CountryFlag country={tooltipContent.code} />
-							<span>{tooltipContent.name}</span>
-						</>
-					) : (
-						<span>Move over a country</span>
-					)}
+			{tooltipContent && (
+				<div className="pointer-events-none absolute top-3 left-3 z-20 rounded border bg-card/95 p-2.5 shadow-lg backdrop-blur-sm">
+					<div className="flex items-center gap-2 text-sm">
+						<CountryFlag country={tooltipContent.code} size={16} />
+						<span className="font-semibold text-foreground">
+							{tooltipContent.name}
+						</span>
+					</div>
+					<div className="mt-1 text-muted-foreground text-xs">
+						<span className="font-semibold text-foreground">
+							{tooltipContent.count.toLocaleString()}
+						</span>{" "}
+						visitors ({tooltipContent.percentage.toFixed(1)}%)
+					</div>
 				</div>
-				<div className="text-muted-foreground text-xs">
-					{tooltipContent ? (
-						<>
-							<span className="font-semibold text-foreground">
-								{tooltipContent.count.toLocaleString()}
-							</span>{" "}
-							visitors ({tooltipContent.percentage.toFixed(1)}%)
-						</>
-					) : (
-						"Hover to explore visitor share"
-					)}
-				</div>
-			</div>
-
-			<div className="pointer-events-none absolute bottom-3 left-3 z-20 flex w-[210px] flex-col gap-2 rounded border bg-card p-3 text-muted-foreground text-xs shadow-sm">
-				<div className="flex items-center justify-between">
-					<span>Lower share</span>
-					<span>Higher share</span>
-				</div>
-				<div
-					className="h-2 rounded-full"
-					style={{
-						background:
-							"linear-gradient(90deg, oklch(0.81 0.1 252 / 0.4) 0%, oklch(0.55 0.22 263 / 0.95) 100%)",
-					}}
-				/>
-			</div>
+			)}
 		</div>
 	);
 }

@@ -288,7 +288,7 @@ export default async function ComparisonPage({ params }: PageProps) {
 						href="/compare"
 					>
 						<ArrowLeftIcon
-							className="group-hover:-translate-x-0.5 size-4 transition-transform"
+							className="size-4 transition-transform group-hover:-translate-x-0.5"
 							weight="fill"
 						/>
 						<span>Back to Comparisons</span>

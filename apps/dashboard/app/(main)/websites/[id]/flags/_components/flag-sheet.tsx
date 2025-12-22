@@ -1,13 +1,22 @@
 "use client";
 
+import type { FlagWithScheduleForm } from "@databuddy/shared/flags";
+import { flagWithScheduleSchema } from "@databuddy/shared/flags";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FlagIcon, InfoIcon } from "@phosphor-icons/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { DATE_FORMATS, formatDate } from "@lib/formatters";
+import {
+	CalendarIcon,
+	FlagIcon,
+	InfoIcon,
+	TrashIcon,
+} from "@phosphor-icons/react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Slider } from "@/components/ui/elastic-slider";
 import {
 	Form,
 	FormControl,
@@ -18,7 +27,11 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { LineSlider } from "@/components/ui/line-slider";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 import {
 	Select,
 	SelectContent,
@@ -40,63 +53,15 @@ import { Textarea } from "@/components/ui/textarea";
 import {
 	Tooltip,
 	TooltipContent,
+	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { orpc } from "@/lib/orpc";
 import { cn } from "@/lib/utils";
-import type { Flag } from "./types";
+import { DependencySelector } from "./dependency-selector";
+import { ScheduleManager } from "./schedule-manager";
+import type { Flag, FlagSheetProps } from "./types";
 import { UserRulesBuilder } from "./user-rules-builder";
-
-const userRuleSchema = z.object({
-	type: z.enum(["user_id", "email", "property"]),
-	operator: z.enum([
-		"equals",
-		"contains",
-		"starts_with",
-		"ends_with",
-		"in",
-		"not_in",
-		"exists",
-		"not_exists",
-	]),
-	field: z.string().optional(),
-	value: z.string().optional(),
-	values: z.array(z.string()).optional(),
-	enabled: z.boolean(),
-	batch: z.boolean(),
-	batchValues: z.array(z.string()).optional(),
-});
-
-const flagFormSchema = z.object({
-	key: z
-		.string()
-		.min(1, "Key is required")
-		.max(100, "Key too long")
-		.regex(
-			/^[a-zA-Z0-9_-]+$/,
-			"Key must contain only letters, numbers, underscores, and hyphens"
-		),
-	name: z
-		.string()
-		.min(1, "Name is required")
-		.max(100, "Name too long")
-		.optional(),
-	description: z.string().optional(),
-	type: z.enum(["boolean", "rollout"]),
-	status: z.enum(["active", "inactive", "archived"]),
-	defaultValue: z.boolean(),
-	rolloutPercentage: z.number().min(0).max(100),
-	rules: z.array(userRuleSchema).optional(),
-});
-
-type FlagFormData = z.infer<typeof flagFormSchema>;
-
-type FlagSheetProps = {
-	isOpen: boolean;
-	onCloseAction: () => void;
-	websiteId: string;
-	flag?: Flag | null;
-};
 
 export function FlagSheet({
 	isOpen,
@@ -105,23 +70,43 @@ export function FlagSheet({
 	flag,
 }: FlagSheetProps) {
 	const [keyManuallyEdited, setKeyManuallyEdited] = useState(false);
-	const isEditing = Boolean(flag);
+	const queryClient = useQueryClient();
 
-	const form = useForm<FlagFormData>({
-		resolver: zodResolver(flagFormSchema),
-		defaultValues: {
-			key: "",
-			name: "",
-			description: "",
-			type: "boolean",
-			status: "active",
-			defaultValue: false,
-			rolloutPercentage: 0,
-			rules: [],
-		},
+	const { data: flagsList } = useQuery({
+		...orpc.flags.list.queryOptions({
+			input: { websiteId },
+		}),
 	});
 
-	const queryClient = useQueryClient();
+	const { data: schedule } = useQuery({
+		...orpc.flagSchedules.getByFlagId.queryOptions({
+			input: { flagId: flag?.id ?? "" },
+		}),
+		enabled: Boolean(flag?.id),
+		retry: false,
+		throwOnError: false,
+	});
+	const isEditing = Boolean(flag);
+
+	const form = useForm<FlagWithScheduleForm>({
+		resolver: zodResolver(flagWithScheduleSchema),
+		defaultValues: {
+			flag: {
+				key: "",
+				name: "",
+				description: "",
+				type: "boolean",
+				status: "active",
+				defaultValue: false,
+				rolloutPercentage: 0,
+				rules: [],
+				variants: [],
+				dependencies: [],
+				environment: undefined,
+			},
+			schedule: undefined,
+		},
+	});
 	const createMutation = useMutation({
 		...orpc.flags.create.mutationOptions(),
 	});
@@ -133,26 +118,67 @@ export function FlagSheet({
 		if (isOpen) {
 			if (flag && isEditing) {
 				form.reset({
-					key: flag.key,
-					name: flag.name || "",
-					description: flag.description || "",
-					type: flag.type as "boolean" | "rollout",
-					status: flag.status as "active" | "inactive" | "archived",
-					defaultValue: Boolean(flag.defaultValue),
-					rolloutPercentage: flag.rolloutPercentage || 0,
-					rules: flag.rules || [],
+					flag: {
+						key: flag.key,
+						name: flag.name || "",
+						description: flag.description || "",
+						type: flag.type,
+						status: flag.status,
+						defaultValue: Boolean(flag.defaultValue),
+						rolloutPercentage: flag.rolloutPercentage ?? 0,
+						rules: flag.rules ?? [],
+						variants: flag.variants ?? [],
+						dependencies: flag.dependencies ?? [],
+						environment: flag.environment || undefined,
+					},
+					schedule: schedule
+						? {
+								id: schedule?.id,
+								type: schedule?.type,
+								isEnabled: schedule?.isEnabled,
+								scheduledAt: schedule?.scheduledAt
+									? new Date(schedule.scheduledAt).toISOString()
+									: undefined,
+								rolloutSteps: schedule?.rolloutSteps ?? [],
+								flagId: schedule?.flagId,
+							}
+						: undefined,
 				});
 			} else {
-				form.reset();
+				form.reset({
+					flag: {
+						key: "",
+						name: "",
+						description: "",
+						type: "boolean",
+						status: "active",
+						defaultValue: false,
+						rolloutPercentage: 0,
+						rules: [],
+						variants: [],
+						dependencies: [],
+					},
+					schedule: undefined,
+				});
 			}
+
 			setKeyManuallyEdited(false);
 		}
-	}, [isOpen, flag, isEditing, form]);
+	}, [isOpen, flag, isEditing, form, schedule]);
 
-	const watchedName = form.watch("name");
-	const watchedType = form.watch("type");
+	const watchedName = form.watch("flag.name");
+	const watchedType = form.watch("flag.type");
+	const watchedIsScheduleEnabled = form.watch("schedule.isEnabled");
+	const watchedRolloutSteps = form.watch("schedule.rolloutSteps");
+	const rolloutStepsErrors =
+		form.formState.errors.schedule?.rolloutSteps?.message;
 
 	useEffect(() => {
+		if (watchedIsScheduleEnabled === false) {
+			form.setValue("schedule", undefined);
+		} else if (watchedIsScheduleEnabled === true && flag?.id) {
+			form.setValue("schedule.flagId", flag.id);
+		}
 		if (isEditing || keyManuallyEdited || !watchedName) {
 			return;
 		}
@@ -164,49 +190,95 @@ export function FlagSheet({
 			.replace(/-+/g, "-")
 			.replace(/^-+|-+$/g, "")
 			.slice(0, 50);
-		form.setValue("key", key);
-	}, [watchedName, keyManuallyEdited, isEditing, form]);
+		form.setValue("flag.key", key);
+	}, [watchedName, keyManuallyEdited, isEditing, watchedIsScheduleEnabled]);
 
-	// Show rollout percentage only for rollout type
+	useEffect(() => {
+		if (watchedType === "boolean") {
+			const currentValue = form.getValues("flag.defaultValue");
+			if (currentValue === undefined || currentValue === null) {
+				form.setValue("flag.defaultValue", false);
+			}
+		}
+	}, [watchedType, form]);
+
 	const showRolloutPercentage = watchedType === "rollout";
+	const showDefaultValue = watchedType === "boolean";
 
-	const onSubmit = async (data: FlagFormData) => {
+	const createFlagScheduleMutation = useMutation({
+		...orpc.flagSchedules.create.mutationOptions(),
+	});
+	const updateFlagScheduleMutation = useMutation({
+		...orpc.flagSchedules.update.mutationOptions(),
+	});
+
+	const onSubmit = async (formData: FlagWithScheduleForm) => {
 		try {
-			const mutation = isEditing ? updateMutation : createMutation;
-			const mutationData =
-				isEditing && flag
-					? {
-							id: flag.id,
-							name: data.name,
-							description: data.description,
-							type: data.type,
-							status: data.status,
-							defaultValue: data.defaultValue,
-							rolloutPercentage: data.rolloutPercentage,
-							rules: data.rules || [],
-						}
-					: {
-							websiteId,
-							key: data.key,
-							name: data.name,
-							description: data.description,
-							type: data.type,
-							status: data.status,
-							defaultValue: data.defaultValue,
-							rolloutPercentage: data.rolloutPercentage,
-							rules: data.rules || [],
-						};
+			const data = formData.flag;
+			const scheduleData = formData.schedule;
 
-			await mutation.mutateAsync(mutationData as any);
+			const mutation = isEditing ? updateMutation : createMutation;
+
+			const mutationData: any = {
+				name: data.name,
+				description: data.description,
+				type: data.type,
+				status: data.status,
+				rules: data.rules || [],
+				variants: data.variants || [],
+				dependencies: data.dependencies || [],
+				environment: data.environment?.trim() || null,
+			};
+
+			mutationData.defaultValue = data.defaultValue;
+			mutationData.rolloutPercentage = data.rolloutPercentage ?? 0;
+
+			if (isEditing && flag) {
+				mutationData.id = flag.id;
+			} else {
+				mutationData.websiteId = websiteId;
+				mutationData.key = data.key;
+				mutationData.name = data.name;
+			}
+
+			const updatedFlag = await mutation.mutateAsync(mutationData as any);
+			const flagIdToUse = isEditing && flag ? flag.id : updatedFlag.id;
+
+			// Handle Schedule Creation
+			if (scheduleData) {
+				const scheduleMutationData: any = {
+					flagId: flagIdToUse,
+					type: scheduleData.type,
+					scheduledAt: scheduleData.scheduledAt,
+					rolloutSteps: scheduleData.rolloutSteps || [],
+					isEnabled: scheduleData.isEnabled,
+				};
+				if (schedule?.id) {
+					scheduleMutationData.id = schedule.id;
+					await updateFlagScheduleMutation.mutateAsync(scheduleMutationData);
+				} else {
+					await createFlagScheduleMutation.mutateAsync(scheduleMutationData);
+				}
+			}
+
 			toast.success(`Flag ${isEditing ? "updated" : "created"} successfully`);
+
+			queryClient.invalidateQueries({
+				queryKey: orpc.flagSchedules.getByFlagId.queryKey({
+					input: { flagId: flagIdToUse },
+				}),
+			});
 
 			queryClient.invalidateQueries({
 				queryKey: orpc.flags.list.key({ input: { websiteId } }),
 			});
+
 			onCloseAction();
 		} catch (error) {
+			console.error("Flag creation error:", error);
 			const errorMessage =
 				error instanceof Error ? error.message : "Unknown error";
+
 			if (
 				errorMessage.includes("unique") ||
 				errorMessage.includes("CONFLICT")
@@ -215,7 +287,9 @@ export function FlagSheet({
 			} else if (errorMessage.includes("FORBIDDEN")) {
 				toast.error("You do not have permission to perform this action");
 			} else {
-				toast.error(`Failed to ${isEditing ? "update" : "create"} flag`);
+				toast.error(
+					`Failed to ${isEditing ? "update" : "create"} flag: ${errorMessage}`
+				);
 			}
 		}
 	};
@@ -250,7 +324,15 @@ export function FlagSheet({
 				<Form {...form}>
 					<form
 						className="flex flex-1 flex-col overflow-y-auto"
-						onSubmit={form.handleSubmit(onSubmit)}
+						onSubmit={form.handleSubmit(onSubmit, (errors) => {
+							console.error("Form validation errors:", errors);
+							const firstError = Object.values(errors)[0];
+							if (firstError) {
+								const message =
+									firstError.message || "Please fix the form errors";
+								toast.error(message);
+							}
+						})}
 					>
 						<SheetBody className="space-y-6">
 							{/* Basic Information */}
@@ -258,7 +340,7 @@ export function FlagSheet({
 								<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 									<FormField
 										control={form.control}
-										name="name"
+										name="flag.name"
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>Flag Name</FormLabel>
@@ -275,7 +357,7 @@ export function FlagSheet({
 
 									<FormField
 										control={form.control}
-										name="key"
+										name="flag.key"
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
@@ -283,7 +365,10 @@ export function FlagSheet({
 													{isEditing ? (
 														<Tooltip>
 															<TooltipTrigger asChild>
-																<InfoIcon className="size-4" weight="duotone" />
+																<InfoIcon
+																	className="h-4 w-4"
+																	weight="duotone"
+																/>
 															</TooltipTrigger>
 															<TooltipContent className="max-w-xs">
 																<div className="space-y-2">
@@ -320,7 +405,7 @@ export function FlagSheet({
 
 								<FormField
 									control={form.control}
-									name="description"
+									name="flag.description"
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
@@ -344,10 +429,10 @@ export function FlagSheet({
 
 							{/* Configuration */}
 							<section className="space-y-3">
-								<div className="flex w-full flex-wrap gap-4">
+								<div className="flex flex-wrap gap-8">
 									<FormField
 										control={form.control}
-										name="type"
+										name="flag.type"
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>Flag Type</FormLabel>
@@ -376,66 +461,142 @@ export function FlagSheet({
 
 									<FormField
 										control={form.control}
-										name="status"
-										render={({ field }) => (
-											<FormItem className="flex-1">
-												<FormLabel>Status</FormLabel>
-												<Select
-													onValueChange={field.onChange}
-													value={field.value}
-												>
-													<FormControl>
-														<SelectTrigger className="w-full grow">
-															<SelectValue />
-														</SelectTrigger>
-													</FormControl>
-													<SelectContent>
-														<SelectItem value="active">Active</SelectItem>
-														<SelectItem value="inactive">Inactive</SelectItem>
-														<SelectItem value="archived">Archived</SelectItem>
-													</SelectContent>
-												</Select>
-												<FormMessage />
-											</FormItem>
-										)}
+										name="flag.status"
+										render={({ field }) => {
+											const watchedDependencies: string[] =
+												form.watch("flag.dependencies") || [];
+
+											// Find all inactive dependencies
+											const inactiveDeps = (flagsList || []).filter(
+												(flag) =>
+													watchedDependencies.includes(flag.key) &&
+													flag.status !== "active"
+											);
+
+											const canBeActive = inactiveDeps.length === 0;
+
+											return (
+												<FormItem>
+													<FormLabel className="flex items-center gap-2">
+														Status
+														{!canBeActive && (
+															<TooltipProvider>
+																<Tooltip>
+																	<TooltipTrigger asChild>
+																		<InfoIcon className="h-4 w-4 text-amber-500" />
+																	</TooltipTrigger>
+																	<TooltipContent className="max-w-xs">
+																		<p className="mb-1 font-medium">
+																			Cannot activate flag
+																		</p>
+																		<p className="text-sm">
+																			The following dependencies are inactive:
+																		</p>
+																		<ul className="mt-1 list-inside list-disc text-sm">
+																			{inactiveDeps.map((dep) => (
+																				<li key={dep.key}>
+																					{dep.name || dep.key}
+																				</li>
+																			))}
+																		</ul>
+																	</TooltipContent>
+																</Tooltip>
+															</TooltipProvider>
+														)}
+													</FormLabel>
+													<Select
+														onValueChange={(value) => {
+															if (value === "active" && !canBeActive) {
+																return;
+															}
+															field.onChange(value);
+														}}
+														value={field.value}
+													>
+														<FormControl>
+															<SelectTrigger>
+																<SelectValue />
+															</SelectTrigger>
+														</FormControl>
+														<SelectContent>
+															<SelectItem
+																disabled={!canBeActive}
+																value="active"
+															>
+																Active
+																{!canBeActive && " (Dependencies inactive)"}
+															</SelectItem>
+															<SelectItem value="inactive">Inactive</SelectItem>
+															<SelectItem value="archived">Archived</SelectItem>
+														</SelectContent>
+													</Select>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
 									/>
+
+									{showDefaultValue ? (
+										<FormField
+											control={form.control}
+											name="flag.defaultValue"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Default Value</FormLabel>
+													<FormControl>
+														<div className="flex h-9 w-fit items-center justify-center rounded-md border bg-accent-brighter/80 px-3 will-change-contents">
+															<div className="flex items-center gap-2">
+																<span
+																	className={cn(
+																		"text-sm",
+																		field.value === false
+																			? "text-muted-foreground"
+																			: "text-muted-foreground/50"
+																	)}
+																>
+																	Off
+																</span>
+																<Switch
+																	aria-label="Toggle default flag value"
+																	checked={field.value}
+																	onCheckedChange={field.onChange}
+																/>
+																<span
+																	className={cn(
+																		"text-sm",
+																		field.value === true
+																			? "text-muted-foreground"
+																			: "text-muted-foreground/50"
+																	)}
+																>
+																	On
+																</span>
+															</div>
+														</div>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									) : null}
 
 									<FormField
 										control={form.control}
-										name="defaultValue"
+										name="flag.environment"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Default Value</FormLabel>
+												<FormLabel>
+													Environment
+													<span className="text-muted-foreground text-xs">
+														(Optional)
+													</span>
+												</FormLabel>
 												<FormControl>
-													<div className="flex h-9 w-fit items-center justify-center rounded-md border bg-accent-brighter/80 px-3 will-change-contents">
-														<div className="flex items-center gap-2">
-															<span
-																className={cn(
-																	"text-sm",
-																	field.value === false
-																		? "text-muted-foreground"
-																		: "text-muted-foreground/50"
-																)}
-															>
-																Off
-															</span>
-															<Switch
-																aria-label="Toggle default flag value"
-																checked={field.value}
-																onCheckedChange={field.onChange}
-															/>
-															<span
-																className={cn(
-																	"text-sm",
-																	field.value === true
-																		? "text-muted-foreground"
-																		: "text-muted-foreground/50"
-																)}
-															>
-																On
-															</span>
-														</div>
-													</div>
+													<Input
+														placeholder="e.g. production"
+														{...field}
+														value={field.value || ""}
+													/>
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -445,69 +606,275 @@ export function FlagSheet({
 							</section>
 
 							{/* Rollout Percentage */}
-							{showRolloutPercentage && (
+							{showRolloutPercentage ? (
 								<section className="space-y-3">
 									<FormField
 										control={form.control}
-										name="rolloutPercentage"
+										name="flag.rolloutPercentage"
 										render={({ field }) => {
 											const currentValue = Number(field.value) || 0;
+											const hasRolloutSteps =
+												(watchedRolloutSteps || []).length > 0;
+
 											return (
 												<FormItem>
-													<FormLabel>
-														Rollout Percentage:{" "}
-														<span className="text-muted-foreground text-xs tabular-nums">
-															{currentValue}%
-														</span>
-													</FormLabel>
+													<FormLabel>Rollout Percentage</FormLabel>
 													<FormControl>
-														<div className="space-y-4">
-															<LineSlider
-																max={100}
-																min={0}
-																onValueChange={field.onChange}
-																value={currentValue}
-															/>
-															<div className="flex flex-wrap justify-center gap-2">
-																{[0, 25, 50, 75, 100].map((preset) => (
-																	<button
-																		aria-label={`Set rollout to ${preset}% ${preset === 0 ? "(disabled)" : preset === 100 ? "(enabled)" : ""}`}
-																		className={cn(
-																			"flex-1 rounded border px-3 py-2 text-sm",
-																			{
-																				"border-primary bg-primary text-primary-foreground":
-																					currentValue === preset,
-																				"border-border hover:border-primary/50":
-																					currentValue !== preset,
-																			}
-																		)}
-																		key={preset}
-																		onClick={() => field.onChange(preset)}
-																		type="button"
-																	>
-																		{preset}%
-																	</button>
-																))}
+														{hasRolloutSteps ? (
+															<div className="rounded-md border border-dashed p-4 text-center">
+																<p className="text-muted-foreground text-sm">
+																	Rollout percentage will be controlled by
+																	scheduled steps below.
+																	<br />
+																	Current:{" "}
+																	<span className="font-medium text-foreground">
+																		{currentValue}%
+																	</span>
+																</p>
 															</div>
-														</div>
+														) : (
+															<div className="space-y-4">
+																<Slider
+																	max={100}
+																	min={0}
+																	onValueChange={field.onChange}
+																	step={5}
+																	value={currentValue}
+																/>
+																<div className="flex flex-wrap justify-center gap-2">
+																	{[0, 25, 50, 75, 100].map((preset) => (
+																		<button
+																			aria-label={`Set rollout to ${preset}% ${preset === 0 ? "(disabled)" : preset === 100 ? "(enabled)" : ""}`}
+																			className={`rounded border px-3 py-2 text-sm ${
+																				currentValue === preset
+																					? "border-primary bg-primary text-primary-foreground"
+																					: "border-border hover:border-primary/50"
+																			}`}
+																			key={preset}
+																			onClick={() => field.onChange(preset)}
+																			type="button"
+																		>
+																			{preset}%
+																		</button>
+																	))}
+																</div>
+															</div>
+														)}
 													</FormControl>
-													<FormDescription className="mx-auto text-muted-foreground text-xs">
-														Percentage of users who will see this flag enabled.
-														0% = disabled, 100% = fully enabled.
-													</FormDescription>
+													{!hasRolloutSteps && (
+														<FormDescription className="mx-auto text-muted-foreground text-xs">
+															Percentage of users who will see this flag
+															enabled. 0% = disabled, 100% = fully enabled.
+														</FormDescription>
+													)}
 													<FormMessage />
 												</FormItem>
 											);
 										}}
 									/>
+
+									{/* Scheduled Rollout Steps */}
+									<div className="space-y-4 border-t pt-4">
+										<div className="flex items-center justify-between">
+											<div>
+												<FormLabel>Scheduled Rollout Steps</FormLabel>
+												<FormDescription>
+													Automatically update rollout percentage over time
+												</FormDescription>
+											</div>
+											<Button
+												onClick={() => {
+													const currentSchedule = form.getValues("schedule");
+													form.setValue("schedule.rolloutSteps", [
+														...(watchedRolloutSteps || []),
+														{
+															scheduledAt: new Date(
+																Date.now() + 60 * 60 * 1000
+															).toISOString(),
+															value: 0,
+														},
+													]);
+													// Ensure all required schedule fields are set
+													if (!currentSchedule?.type) {
+														form.setValue("schedule.type", "update_rollout");
+													}
+													if (
+														currentSchedule?.isEnabled === undefined ||
+														currentSchedule?.isEnabled === null
+													) {
+														form.setValue("schedule.isEnabled", true);
+													}
+													if (!currentSchedule?.flagId && flag?.id) {
+														form.setValue("schedule.flagId", flag.id);
+													}
+												}}
+												size="sm"
+												type="button"
+												variant="outline"
+											>
+												Add Step
+											</Button>
+										</div>
+
+										<div className="space-y-3">
+											{(watchedRolloutSteps || []).map((step, idx) => {
+												// Helper function to ensure schedule fields are set when modifying steps
+												const ensureScheduleFields = () => {
+													const currentSchedule = form.getValues("schedule");
+													if (!currentSchedule?.type) {
+														form.setValue("schedule.type", "update_rollout");
+													}
+													if (
+														currentSchedule?.isEnabled === false ||
+														currentSchedule?.isEnabled === undefined
+													) {
+														form.setValue("schedule.isEnabled", true);
+													}
+													if (!currentSchedule?.flagId && flag?.id) {
+														form.setValue("schedule.flagId", flag.id);
+													}
+												};
+
+												return (
+													<div
+														className="flex items-end gap-4 rounded-md border p-4"
+														key={idx}
+													>
+														<FormItem className="grow">
+															<FormLabel>Step Date</FormLabel>
+															<Popover>
+																<PopoverTrigger asChild>
+																	<Button
+																		className={cn(
+																			"w-full pl-3 text-left font-normal",
+																			!step.scheduledAt &&
+																				"text-muted-foreground"
+																		)}
+																		variant="outline"
+																	>
+																		{step.scheduledAt
+																			? formatDate(
+																					new Date(step.scheduledAt),
+																					DATE_FORMATS.DATE_TIME_12H
+																				)
+																			: "Pick a Time"}
+																		<CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+																	</Button>
+																</PopoverTrigger>
+																<PopoverContent
+																	align="start"
+																	className="w-auto p-0"
+																>
+																	<Calendar
+																		mode="single"
+																		onSelect={(date) => {
+																			if (date) {
+																				ensureScheduleFields();
+																				const newSteps = [
+																					...(watchedRolloutSteps || []),
+																				];
+																				newSteps[idx].scheduledAt =
+																					date.toISOString();
+																				form.setValue(
+																					"schedule.rolloutSteps",
+																					newSteps
+																				);
+																			}
+																		}}
+																		selected={
+																			step.scheduledAt
+																				? new Date(step.scheduledAt)
+																				: (undefined as Date | undefined)
+																		}
+																	/>
+																	<div className="border-t p-3">
+																		<Input
+																			defaultValue={
+																				step.scheduledAt
+																					? formatDate(
+																							new Date(step.scheduledAt),
+																							DATE_FORMATS.DATE_TIME_12H
+																						)
+																					: ""
+																			}
+																			onChange={(e) => {
+																				ensureScheduleFields();
+																				const date = step.scheduledAt
+																					? new Date(step.scheduledAt)
+																					: new Date();
+																				const [h, m] =
+																					e.target.value.split(":");
+																				date.setHours(Number(h), Number(m));
+																				const newSteps = [
+																					...(watchedRolloutSteps || []),
+																				];
+																				newSteps[idx].scheduledAt =
+																					date.toISOString();
+																				form.setValue(
+																					"schedule.rolloutSteps",
+																					newSteps
+																				);
+																			}}
+																			type="time"
+																		/>
+																	</div>
+																</PopoverContent>
+															</Popover>
+														</FormItem>
+
+														<FormItem className="grow">
+															<FormLabel>Rollout %</FormLabel>
+															<Input
+																max={100}
+																min={0}
+																onChange={(e) => {
+																	ensureScheduleFields();
+																	const newSteps = [
+																		...(watchedRolloutSteps || []),
+																	];
+																	newSteps[idx].value = Number(e.target.value);
+																	form.setValue(
+																		"schedule.rolloutSteps",
+																		newSteps
+																	);
+																}}
+																type="number"
+																value={step.value}
+															/>
+														</FormItem>
+
+														<Button
+															onClick={() => {
+																const filtered = (
+																	watchedRolloutSteps || []
+																).filter((_, i) => i !== idx);
+																form.setValue(
+																	"schedule.rolloutSteps",
+																	filtered
+																);
+															}}
+															size="icon"
+															type="button"
+															variant="destructive"
+														>
+															<TrashIcon className="h-4 w-4" weight="duotone" />
+														</Button>
+													</div>
+												);
+											})}
+										</div>
+										{rolloutStepsErrors ? (
+											<FormMessage>{rolloutStepsErrors}</FormMessage>
+										) : null}
+									</div>
 								</section>
-							)}
+							) : null}
 
 							{/* User Targeting Rules */}
 							<section className="space-y-3">
 								<FormField
 									control={form.control}
-									name="rules"
+									name="flag.rules"
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
@@ -530,6 +897,35 @@ export function FlagSheet({
 									)}
 								/>
 							</section>
+
+							{/* Dependencies */}
+							<div className="space-y-4">
+								<FormField
+									control={form.control}
+									name="flag.dependencies"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Dependencies (Optional)</FormLabel>
+											<FormControl>
+												<DependencySelector
+													availableFlags={(flagsList as Flag[]) || []}
+													currentFlagKey={flag?.key}
+													onChange={field.onChange}
+													value={field.value || []}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+
+							{/* Scheduled Changes */}
+							{watchedType !== "rollout" && (
+								<div className="space-y-4 border-t pt-4">
+									<ScheduleManager form={form} />
+								</div>
+							)}
 						</SheetBody>
 
 						<SheetFooter>

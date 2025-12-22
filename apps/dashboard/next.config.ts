@@ -41,6 +41,14 @@ const nextConfig: NextConfig = {
 	],
 	transpilePackages: [],
 	output: "standalone",
+	async rewrites() {
+		return [
+			{
+				source: "/geojson/:path*",
+				destination: "https://cdn.databuddy.cc/geojson/:path*",
+			},
+		];
+	},
 };
 
 export function headers() {

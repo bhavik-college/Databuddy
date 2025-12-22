@@ -39,8 +39,8 @@ export default function PaymentSuccess() {
 			</div>
 
 			<div className="pointer-events-none absolute inset-0 overflow-hidden opacity-5">
-				<div className="-right-24 -top-24 absolute h-96 w-96 rounded-full border-8 border-green-500 border-dashed" />
-				<div className="-left-24 -bottom-24 absolute h-96 w-96 rounded-full border-8 border-green-500 border-dashed" />
+				<div className="absolute -top-24 -right-24 h-96 w-96 rounded-full border-8 border-green-500 border-dashed" />
+				<div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full border-8 border-green-500 border-dashed" />
 			</div>
 		</div>
 	);

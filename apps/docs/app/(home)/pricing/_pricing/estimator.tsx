@@ -234,15 +234,15 @@ export function Estimator({
 						<div className="absolute top-0 left-0 h-2 w-0.5 origin-top bg-foreground" />
 						<div className="absolute top-0 left-0.5 h-0.5 w-1.5 origin-left bg-foreground" />
 					</div>
-					<div className="-scale-x-[1] absolute top-0 right-0 size-2">
+					<div className="absolute top-0 right-0 size-2 -scale-x-[1]">
 						<div className="absolute top-0 left-0 h-2 w-0.5 origin-top bg-foreground" />
 						<div className="absolute top-0 left-0.5 h-0.5 w-1.5 origin-left bg-foreground" />
 					</div>
-					<div className="-scale-y-[1] absolute bottom-0 left-0 size-2">
+					<div className="absolute bottom-0 left-0 size-2 -scale-y-[1]">
 						<div className="absolute top-0 left-0 h-2 w-0.5 origin-top bg-foreground" />
 						<div className="absolute top-0 left-0.5 h-0.5 w-1.5 origin-left bg-foreground" />
 					</div>
-					<div className="-scale-[1] absolute right-0 bottom-0 size-2">
+					<div className="absolute right-0 bottom-0 size-2 -scale-[1]">
 						<div className="absolute top-0 left-0 h-2 w-0.5 origin-top bg-foreground" />
 						<div className="absolute top-0 left-0.5 h-0.5 w-1.5 origin-left bg-foreground" />
 					</div>

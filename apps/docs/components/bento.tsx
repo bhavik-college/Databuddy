@@ -573,7 +573,7 @@ const WebVitalsFeature = () => {
 					transition={{ duration: 0.5, delay: i * 0.15, ease: "easeOut" }}
 				>
 					<div className="relative flex size-14 items-center justify-center">
-						<svg className="-rotate-90 h-full w-full" viewBox="0 0 36 36">
+						<svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
 							<title>Score indicator</title>
 							{/* Background track */}
 							<circle
