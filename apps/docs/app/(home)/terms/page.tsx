@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 };
 
 export default function TermsPage() {
-	const lastUpdated = "June 23rd, 2025";
+	const lastUpdated = "December 22nd, 2025";
 
 	return (
 		<>
@@ -117,13 +117,17 @@ export default function TermsPage() {
 							Terms. If you disagree with any part of these terms, then you may
 							not access the Service.
 						</p>
-						<div className="my-4 rounded border border-accent bg-accent/50 p-4">
-							<p className="text-sm">
-								<strong className="text-primary">Quick Summary:</strong> These
-								terms cover how you can use our service, your responsibilities,
-								our responsibilities, and what happens if things go wrong.
-							</p>
-						</div>
+						<p className="mb-4">
+							Our{" "}
+							<a className="text-primary hover:text-primary/80" href="/dpa">
+								Data Processing Agreement
+							</a>{" "}
+							and{" "}
+							<a className="text-primary hover:text-primary/80" href="/privacy">
+								Privacy Policy
+							</a>{" "}
+							are part of these terms and explain how we handle your data.
+						</p>
 					</section>
 
 					<section className="mb-8">
@@ -166,7 +170,8 @@ export default function TermsPage() {
 							<li>Keep your account information up to date</li>
 							<li>Maintain the security of your password</li>
 							<li>
-								Accept responsibility for all activities under your account
+								Accept responsibility for all activities under your account,
+								including actions by team members you've given access to
 							</li>
 							<li>Notify us immediately of any unauthorized use</li>
 						</ul>
@@ -245,6 +250,15 @@ export default function TermsPage() {
 							<li>We don't sell your data to third parties</li>
 							<li>We comply with GDPR, CCPA, and other privacy regulations</li>
 						</ul>
+						<p className="mb-4">
+							You agree not to use the service to send sensitive information
+							where unauthorized disclosure could cause material, severe, or
+							catastrophic harm. This includes credit card information,
+							government issued identification numbers, financial account
+							information, and personally identifiable information that could be
+							used to directly identify, contact, or precisely locate an
+							individual.
+						</p>
 					</section>
 
 					<section className="mb-8">
@@ -306,6 +320,13 @@ export default function TermsPage() {
 							<li>You cannot copy, modify, or distribute our Service</li>
 							<li>Our trademarks and logos are our property</li>
 						</ul>
+						<p className="mb-4">
+							You may provide us with feedback, suggestions, and ideas about the
+							service. You agree that we own all rights to use and incorporate
+							the feedback you provide in any way, including in future
+							enhancements and modifications to the service, without payment or
+							attribution to you.
+						</p>
 					</section>
 
 					<section className="mb-8">
@@ -406,7 +427,7 @@ export default function TermsPage() {
 							If you have questions about these Terms of Service, please contact
 							us:
 						</p>
-						<div className="rounded-lg bg-slate-100 p-4 dark:bg-slate-800">
+						<div className="rounded bg-accent p-4">
 							<ul className="mb-0 space-y-2">
 								<li>
 									<strong>Email:</strong> legal@databuddy.cc
@@ -430,10 +451,25 @@ export default function TermsPage() {
 					</section>
 
 					<section className="mb-8">
-						<h2 className="mb-4 font-bold text-2xl">15. Entire Agreement</h2>
+						<h2 className="mb-4 font-bold text-2xl">13. Entire Agreement</h2>
 						<p className="mb-4">
-							These Terms, together with our Privacy Policy, constitute the
-							entire agreement between you and Databuddy regarding the Service.
+							These Terms, together with our{" "}
+							<a className="text-primary hover:text-primary/80" href="/privacy">
+								Privacy Policy
+							</a>
+							,{" "}
+							<a
+								className="text-primary hover:text-primary/80"
+								href="/data-policy"
+							>
+								Data Policy
+							</a>
+							, and{" "}
+							<a className="text-primary hover:text-primary/80" href="/dpa">
+								Data Processing Agreement
+							</a>
+							, constitute the entire agreement between you and Databuddy
+							regarding the Service.
 						</p>
 					</section>
 
