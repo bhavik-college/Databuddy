@@ -202,7 +202,7 @@ sinks:
     inputs:
       - route_analytics.ai_call_spans
     endpoint: "${CLICKHOUSE_URL}"
-    database: analytics
+    database: observability
     table: ai_call_spans
     auth:
       strategy: basic

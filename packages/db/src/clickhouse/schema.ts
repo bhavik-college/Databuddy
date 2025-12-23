@@ -2,6 +2,7 @@ import { clickHouse } from "./client";
 
 const ANALYTICS_DATABASE = "analytics";
 const UPTIME_DATABASE = "uptime";
+const OBSERVABILITY_DATABASE = "observability";
 
 const CREATE_DATABASE = `
 CREATE DATABASE IF NOT EXISTS ${ANALYTICS_DATABASE}
@@ -362,7 +363,7 @@ SETTINGS index_granularity = 8192
  * Lean AI call spans table - stores individual AI model calls
  */
 const CREATE_AI_CALL_SPANS_TABLE = `
-CREATE TABLE IF NOT EXISTS ${ANALYTICS_DATABASE}.ai_call_spans (
+CREATE TABLE IF NOT EXISTS ${OBSERVABILITY_DATABASE}.ai_call_spans (
   website_id String CODEC(ZSTD(1)),
   user_id Nullable(String) CODEC(ZSTD(1)),
   
@@ -371,7 +372,7 @@ CREATE TABLE IF NOT EXISTS ${ANALYTICS_DATABASE}.ai_call_spans (
   type LowCardinality(String) CODEC(ZSTD(1)),
   model String CODEC(ZSTD(1)),
   provider LowCardinality(String) CODEC(ZSTD(1)),
-  finish_reason Nullable(LowCardinality(String)) CODEC(ZSTD(1)),
+  finish_reason LowCardinality(Nullable(String)) CODEC(ZSTD(1)),
   
   input_tokens UInt32 CODEC(ZSTD(1)),
   output_tokens UInt32 CODEC(ZSTD(1)),
@@ -388,7 +389,7 @@ CREATE TABLE IF NOT EXISTS ${ANALYTICS_DATABASE}.ai_call_spans (
   
   duration_ms UInt32 CODEC(ZSTD(1)),
   
-  error_name Nullable(LowCardinality(String)) CODEC(ZSTD(1)),
+  error_name LowCardinality(Nullable(String)) CODEC(ZSTD(1)),
   error_message Nullable(String) CODEC(ZSTD(1)),
   error_stack Nullable(String) CODEC(ZSTD(1)),
   
