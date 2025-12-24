@@ -14,9 +14,8 @@ export const openrouter = createOpenRouter({
 });
 
 // Create Databuddy LLM instance with transport
-const aiLogsApiUrl = "https://staging-basket.databuddy.cc"
 const { track } = databuddyLLM({
-	apiUrl: aiLogsApiUrl,
+	apiUrl: "https://staging-basket.databuddy.cc/llm",
 });
 
 /**

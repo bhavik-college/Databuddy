@@ -61,8 +61,8 @@ export type Transport = (call: AICall) => Promise<void> | void;
  */
 export interface DatabuddyLLMOptions {
     /**
-     * API endpoint for sending logs
-     * @default process.env.DATABUDDY_BASKET_URL + '/llm' or 'https://basket.databuddy.cc/llm'
+     * API endpoint for sending logs (should include /llm path)
+     * @default process.env.DATABUDDY_API_URL or 'https://basket.databuddy.cc/llm'
      */
     apiUrl?: string;
     /**

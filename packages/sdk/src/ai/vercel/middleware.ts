@@ -243,8 +243,14 @@ const createMiddleware = (
  * ```ts
  * import { databuddyLLM } from "@databuddy/sdk/ai/vercel";
  *
+ * // Use default endpoint (basket.databuddy.cc/llm)
  * const { track } = databuddyLLM({
- *   apiUrl: "https://api.databuddy.cc/ai-logs",
+ *   apiKey: "your-api-key",
+ * });
+ *
+ * // Or override with custom endpoint
+ * const { track } = databuddyLLM({
+ *   apiUrl: "https://custom.example.com/llm",
  *   apiKey: "your-api-key",
  * });
  *
@@ -272,13 +278,7 @@ export const databuddyLLM = (options: DatabuddyLLMOptions = {}) => {
 	if (customTransport) {
 		transport = customTransport;
 	} else {
-		const endpoint =
-			apiUrl ??
-			(process.env.DATABUDDY_BASKET_URL
-				? `${process.env.DATABUDDY_BASKET_URL}/llm`
-				: process.env.DATABUDDY_API_URL
-					? `${process.env.DATABUDDY_API_URL}/llm`
-					: "https://basket.databuddy.cc/llm");
+		const endpoint = apiUrl ?? process.env.DATABUDDY_API_URL ?? "https://basket.databuddy.cc/llm";
 		const key = apiKey ?? process.env.DATABUDDY_API_KEY;
 		transport = createDefaultTransport(endpoint, key);
 	}
