@@ -70,7 +70,7 @@ export const NavigationSection = memo(function NavigationSectionComponent({
 	const isExpanded = getAccordionState(title, true);
 	const currentPathname = usePathname();
 	const { isFeatureEnabled, isLoading } = useBillingContext();
-	const { isEnabled } = useFlags();
+	const { isOn } = useFlags();
 
 	const searchParams = useMemo(() => {
 		if (typeof window === "undefined") {
@@ -79,11 +79,8 @@ export const NavigationSection = memo(function NavigationSectionComponent({
 		return new URLSearchParams(window.location.search);
 	}, [currentPathname]);
 
-	if (flag) {
-		const flagState = isEnabled(flag);
-		if (!(flagState.isReady && flagState.enabled)) {
-			return null;
-		}
+	if (flag && !isOn(flag)) {
+		return null;
 	}
 
 	const visibleItems = items.filter((item) => {
@@ -97,11 +94,8 @@ export const NavigationSection = memo(function NavigationSectionComponent({
 		if (item.showOnlyOnDemo && !isDemo) {
 			return false;
 		}
-		if (item.flag) {
-			const flagState = isEnabled(item.flag);
-			if (!(flagState.isReady && flagState.enabled)) {
-				return false;
-			}
+		if (item.flag && !isOn(item.flag)) {
+			return false;
 		}
 		return true;
 	});

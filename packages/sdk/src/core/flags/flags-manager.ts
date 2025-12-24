@@ -328,18 +328,24 @@ export class CoreFlagsManager implements FlagsManager {
 			}
 
 			return {
+				on: cached.result.enabled,
 				enabled: cached.result.enabled,
-				value: cached.result.value,
-				variant: cached.result.variant,
+				status: cached.result.reason === "ERROR" ? "error" : "ready",
+				loading: false,
 				isLoading: false,
 				isReady: true,
+				value: cached.result.value,
+				variant: cached.result.variant,
 			};
 		}
 
 		// Check if request is in flight
 		if (this.inFlight.has(cacheKey)) {
 			return {
+				on: false,
 				enabled: false,
+				status: "loading",
+				loading: true,
 				isLoading: true,
 				isReady: false,
 			};
@@ -351,7 +357,10 @@ export class CoreFlagsManager implements FlagsManager {
 		);
 
 		return {
+			on: false,
 			enabled: false,
+			status: "loading",
+			loading: true,
 			isLoading: true,
 			isReady: false,
 		};

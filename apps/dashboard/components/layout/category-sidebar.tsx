@@ -34,17 +34,17 @@ const HelpDialog = dynamic(
 	}
 );
 
-type User = {
+interface User {
 	name?: string | null;
 	email?: string | null;
 	image?: string | null;
-};
+}
 
-type CategorySidebarProps = {
+interface CategorySidebarProps {
 	onCategoryChangeAction?: (categoryId: string) => void;
 	selectedCategory?: string;
 	user: User;
-};
+}
 
 export function CategorySidebar({
 	onCategoryChangeAction,
@@ -54,7 +54,7 @@ export function CategorySidebar({
 	const pathname = usePathname();
 	const { websites, isLoading: isLoadingWebsites } = useWebsites();
 	const [helpOpen, setHelpOpen] = useState(false);
-	const { isEnabled } = useFlags();
+	const { isOn } = useFlags();
 
 	const { categories, defaultCategory } = useMemo(() => {
 		const baseConfig = getContextConfig(pathname);
@@ -76,15 +76,14 @@ export function CategorySidebar({
 			config.categories,
 			pathname
 		).filter((category) => {
-			if (category.flag) {
-				const flagState = isEnabled(category.flag);
-				return flagState.isReady && flagState.enabled;
+			if (category.flag && !isOn(category.flag)) {
+				return false;
 			}
 			return true;
 		});
 
 		return { categories: filteredCategories, defaultCategory: defaultCat };
-	}, [pathname, websites, isLoadingWebsites, isEnabled]);
+	}, [pathname, websites, isLoadingWebsites, isOn]);
 
 	const activeCategory = selectedCategory || defaultCategory;
 

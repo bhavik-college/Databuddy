@@ -40,23 +40,62 @@ export interface FlagsConfig {
 	staleTime?: number;
 }
 
+/** Flag status for clear state management */
+export type FlagStatus = "loading" | "ready" | "error" | "pending";
+
 /** Synchronous flag state for React hooks */
 export interface FlagState {
+	/** Whether the flag is enabled (true/false) */
+	on: boolean;
+	/** @deprecated Use `on` instead */
 	enabled: boolean;
+	/**  Current status: loading, ready, error, or pending  */
+	status: FlagStatus;
+	/** Whether the flag is still loading */
+	loading: boolean;
+	/** @deprecated Use `status === 'ready'` instead */
 	isLoading: boolean;
+	/** @deprecated Use `status === 'ready'` instead */
 	isReady: boolean;
+	/** The flag's value (boolean, string, or number) */
 	value?: boolean | string | number;
+	/** Variant name for multivariate flags */
+	variant?: string;
+}
+
+/** Feature state returned by useFeature hook */
+export interface FeatureState {
+	/** Whether the feature is enabled */
+	on: boolean;
+	/** Whether the flag is loading */
+	loading: boolean;
+	/** Current status */
+	status: FlagStatus;
+	/** The flag's value */
+	value?: boolean | string | number;
+	/** Variant for A/B tests */
 	variant?: string;
 }
 
 /** Context returned by useFlags hook */
 export interface FlagsContext {
+	/** @deprecated Use getFlag instead - confusing name */
 	isEnabled: (key: string) => FlagState;
+	/** Get a flag's full state */
+	getFlag: (key: string) => FlagState;
+	/** Get a flag's value with type safety */
 	getValue: <T extends boolean | string | number = boolean>(key: string, defaultValue?: T) => T;
-	getFlag: (key: string) => Promise<FlagResult>;
+	/** Check if a flag is on (simple boolean) */
+	isOn: (key: string) => boolean;
+	/** Async fetch a specific flag */
+	fetchFlag: (key: string) => Promise<FlagResult>;
+	/** Fetch all flags */
 	fetchAllFlags: () => Promise<void>;
+	/** Update user context */
 	updateUser: (user: UserContext) => void;
+	/** Refresh all flags */
 	refresh: (forceClear?: boolean) => Promise<void>;
+	/** Whether the SDK is ready */
 	isReady: boolean;
 }
 

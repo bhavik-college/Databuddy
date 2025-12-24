@@ -2,6 +2,7 @@
 import React, {
 	createContext,
 	type ReactNode,
+	useCallback,
 	useContext,
 	useEffect,
 	useMemo,
@@ -11,8 +12,10 @@ import React, {
 import { BrowserFlagStorage } from "@/core/flags/browser-storage";
 import { CoreFlagsManager } from "@/core/flags/flags-manager";
 import type {
+	FeatureState,
 	FlagResult,
 	FlagState,
+	FlagStatus,
 	FlagsConfig,
 	FlagsContext,
 	UserContext,
@@ -29,6 +32,50 @@ const FlagsReactContext = createContext<FlagsContext | null>(null);
 
 export interface FlagsProviderProps extends FlagsConfig {
 	children: ReactNode;
+}
+
+/**
+ * Helper to create FlagState from result or loading state
+ */
+function createFlagState(
+	result: FlagResult | undefined,
+	isLoading: boolean,
+	isPending: boolean
+): FlagState {
+	if (isPending) {
+		return {
+			on: false,
+			enabled: false,
+			status: "pending",
+			loading: true,
+			isLoading: true,
+			isReady: false,
+		};
+	}
+
+	if (isLoading || !result) {
+		return {
+			on: false,
+			enabled: false,
+			status: "loading",
+			loading: true,
+			isLoading: true,
+			isReady: false,
+		};
+	}
+
+	const status: FlagStatus = result.reason === "ERROR" ? "error" : "ready";
+
+	return {
+		on: result.enabled,
+		enabled: result.enabled,
+		status,
+		loading: false,
+		isLoading: false,
+		isReady: true,
+		value: result.value,
+		variant: result.variant,
+	};
 }
 
 /**
@@ -64,11 +111,9 @@ export function FlagsProvider({ children, ...config }: FlagsProviderProps) {
 	}, [config.clientId]); // Only recreate if clientId changes
 
 	// Update config when props change (isPending, user, etc.)
-	// Use a ref to track previous config and avoid unnecessary updates
 	const prevConfigRef = useRef(config);
 	useEffect(() => {
 		const prevConfig = prevConfigRef.current;
-		// Check if config actually changed
 		const configChanged =
 			prevConfig.apiUrl !== config.apiUrl ||
 			prevConfig.isPending !== config.isPending ||
@@ -112,20 +157,29 @@ export function FlagsProvider({ children, ...config }: FlagsProviderProps) {
 	// Build context value
 	const contextValue = useMemo<FlagsContext>(
 		() => ({
-			isEnabled: (key: string): FlagState => {
+			// Cleaner API: getFlag returns FlagState
+			getFlag: (key: string): FlagState => {
 				const result = store.flags[key];
-				if (result) {
-					return {
-						enabled: result.enabled,
-						value: result.value,
-						variant: result.variant,
-						isLoading: false,
-						isReady: true,
-					};
-				}
-				return manager.isEnabled(key);
+				const managerState = manager.isEnabled(key);
+				return createFlagState(
+					result,
+					managerState.isLoading,
+					config.isPending ?? false
+				);
 			},
 
+			// Simple boolean check
+			isOn: (key: string): boolean => {
+				const result = store.flags[key];
+				if (result) {
+					return result.enabled;
+				}
+				// Check manager cache
+				const state = manager.isEnabled(key);
+				return state.enabled;
+			},
+
+			// Get typed value
 			getValue: <T extends boolean | string | number>(
 				key: string,
 				defaultValue?: T
@@ -137,7 +191,8 @@ export function FlagsProvider({ children, ...config }: FlagsProviderProps) {
 				return manager.getValue(key, defaultValue);
 			},
 
-			getFlag: (key: string) => manager.getFlag(key),
+			// Async fetch
+			fetchFlag: (key: string) => manager.getFlag(key),
 
 			fetchAllFlags: () => manager.fetchAllFlags(),
 
@@ -146,8 +201,19 @@ export function FlagsProvider({ children, ...config }: FlagsProviderProps) {
 			refresh: (forceClear = false) => manager.refresh(forceClear),
 
 			isReady: store.isReady,
+
+			// Deprecated: kept for backwards compatibility
+			isEnabled: (key: string): FlagState => {
+				const result = store.flags[key];
+				const managerState = manager.isEnabled(key);
+				return createFlagState(
+					result,
+					managerState.isLoading,
+					config.isPending ?? false
+				);
+			},
 		}),
-		[manager, store]
+		[manager, store, config.isPending]
 	);
 
 	return (
@@ -157,22 +223,29 @@ export function FlagsProvider({ children, ...config }: FlagsProviderProps) {
 	);
 }
 
+// ============================================================================
+// HOOKS
+// ============================================================================
+
 /**
- * Hook to access flags context
+ * Access the full flags context
+ * @example
+ * const { isOn, getFlag, refresh } = useFlags();
  */
 export function useFlags(): FlagsContext {
 	const context = useContext(FlagsReactContext);
 
 	if (!context) {
 		logger.warn("useFlags called outside FlagsProvider");
-		// Return a no-op context for safety
 		return {
-			isEnabled: () => ({ enabled: false, isLoading: false, isReady: false }),
+			isEnabled: () => createFlagState(undefined, false, false),
+			getFlag: () => createFlagState(undefined, false, false),
+			isOn: () => false,
 			getValue: <T extends boolean | string | number = boolean>(
 				_key: string,
 				defaultValue?: T
 			) => (defaultValue ?? false) as T,
-			getFlag: async () => ({
+			fetchFlag: async () => ({
 				enabled: false,
 				value: false,
 				payload: null,
@@ -189,15 +262,59 @@ export function useFlags(): FlagsContext {
 }
 
 /**
- * Hook to get a specific flag's state
+ * Get a flag's full state with loading/error handling
+ * @example
+ * const flag = useFlag("my-feature");
+ * if (flag.loading) return <Skeleton />;
+ * return flag.on ? <NewFeature /> : <OldFeature />;
  */
 export function useFlag(key: string): FlagState {
-	const { isEnabled } = useFlags();
-	return isEnabled(key);
+	const { getFlag } = useFlags();
+	return getFlag(key);
 }
 
 /**
- * Hook to get a flag's value with type safety
+ * Simple feature check - returns { on, loading, value, variant }
+ * @example
+ * const { on, loading } = useFeature("dark-mode");
+ * if (loading) return <Skeleton />;
+ * return on ? <DarkTheme /> : <LightTheme />;
+ */
+export function useFeature(key: string): FeatureState {
+	const flag = useFlag(key);
+	return {
+		on: flag.on,
+		loading: flag.loading,
+		status: flag.status,
+		value: flag.value,
+		variant: flag.variant,
+	};
+}
+
+/**
+ * Boolean-only feature check with default value
+ * Useful for SSR-safe rendering where you need a boolean immediately
+ * @example
+ * const isDarkMode = useFeatureOn("dark-mode", false);
+ * return isDarkMode ? <DarkTheme /> : <LightTheme />;
+ */
+export function useFeatureOn(key: string, defaultValue = false): boolean {
+	const { isOn, isReady } = useFlags();
+	const flag = useFlag(key);
+
+	// Return default while loading
+	if (flag.loading || !isReady) {
+		return defaultValue;
+	}
+
+	return isOn(key);
+}
+
+/**
+ * Get a flag's typed value
+ * @example
+ * const maxItems = useFlagValue("max-items", 10);
+ * const theme = useFlagValue<"light" | "dark">("theme", "light");
  */
 export function useFlagValue<T extends boolean | string | number = boolean>(
 	key: string,
@@ -205,4 +322,17 @@ export function useFlagValue<T extends boolean | string | number = boolean>(
 ): T {
 	const { getValue } = useFlags();
 	return getValue(key, defaultValue);
+}
+
+/**
+ * Get variant for A/B testing
+ * @example
+ * const variant = useVariant("checkout-experiment");
+ * if (variant === "control") return <OldCheckout />;
+ * if (variant === "treatment-a") return <NewCheckoutA />;
+ * return <NewCheckoutB />;
+ */
+export function useVariant(key: string): string | undefined {
+	const flag = useFlag(key);
+	return flag.variant;
 }

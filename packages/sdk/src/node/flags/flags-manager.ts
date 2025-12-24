@@ -220,17 +220,24 @@ export class ServerFlagsManager implements FlagsManager {
 
 		if (cached) {
 			return {
+				on: cached.result.enabled,
 				enabled: cached.result.enabled,
-				value: cached.result.value,
-				variant: cached.result.variant,
+				status: cached.result.reason === "ERROR" ? "error" : "ready",
+				loading: false,
 				isLoading: false,
 				isReady: true,
+				value: cached.result.value,
+				variant: cached.result.variant,
 			};
 		}
 
+		const loading = this.inFlight.has(cacheKey);
 		return {
+			on: false,
 			enabled: false,
-			isLoading: this.inFlight.has(cacheKey),
+			status: "loading",
+			loading,
+			isLoading: loading,
 			isReady: false,
 		};
 	}

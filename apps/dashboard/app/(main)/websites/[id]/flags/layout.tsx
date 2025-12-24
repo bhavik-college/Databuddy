@@ -1,6 +1,6 @@
 "use client";
 
-import { useFlags } from "@databuddy/sdk/react";
+import { useFeature } from "@databuddy/sdk/react";
 import { FlagIcon, InfoIcon, UsersThreeIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
@@ -56,8 +56,8 @@ export default function FlagsLayout({
 	const isGroupsPage = pathname?.includes("/groups");
 	const isLoading = isGroupsPage ? groupsLoading : flagsLoading;
 
-	const { isEnabled } = useFlags();
-	const experimentFlag = isEnabled("experiment-50");
+	const { on: isExperimentOn, loading: experimentLoading } =
+		useFeature("experiment-50");
 
 	const handleRefresh = useCallback(async () => {
 		setIsRefreshing(true);
@@ -183,16 +183,16 @@ export default function FlagsLayout({
 			</div>
 
 			{/* Experiment Flag Banner */}
-			{experimentFlag.isReady && flags && (
+			{!experimentLoading && flags && (
 				<div className="flex h-10 items-center border-border border-b bg-accent px-4">
 					<div className="flex items-center gap-3">
 						<div className="flex items-center gap-2">
-							{experimentFlag.enabled ? (
+							{isExperimentOn ? (
 								<FlagIcon className="size-4 text-destructive" weight="fill" />
 							) : (
 								<FlagIcon className="size-4 text-blue-600" weight="fill" />
 							)}
-							{experimentFlag.enabled ? (
+							{isExperimentOn ? (
 								<Badge variant="destructive">Red Team</Badge>
 							) : (
 								<Badge variant="blue">Blue Team</Badge>

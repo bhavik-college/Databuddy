@@ -93,6 +93,7 @@ function FlagsProviderWrapper({ children }: { children: React.ReactNode }) {
 			clientId={clientId}
 			isPending={isPending}
 			user={user}
+			
 		>
 			{children}
 		</FlagsProvider>
