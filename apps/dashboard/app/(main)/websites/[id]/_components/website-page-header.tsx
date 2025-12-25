@@ -133,7 +133,13 @@ export function WebsitePageHeader({
 							<WarningIcon className="mr-1 size-3" weight="fill" />
 						)}
 						{currentUsage} /{" "}
-						{limit === "unlimited" ? "∞" : (limit?.toLocaleString() ?? "0")}
+						{limit === "unlimited"
+							? "∞"
+							: limit === false
+								? "—"
+								: typeof limit === "number"
+									? limit.toLocaleString()
+									: "0"}
 					</Badge>
 				</TooltipTrigger>
 				<TooltipContent>
@@ -141,7 +147,7 @@ export function WebsitePageHeader({
 						<p>Unlimited on your current plan</p>
 					) : withinLimit && typeof limit === "number" ? (
 						<p className="max-w-xs">
-							You've created {currentUsage} out of {limit?.toLocaleString()}{" "}
+							You've created {currentUsage} out of {limit.toLocaleString()}{" "}
 							available on your current plan.
 							{currentUsage / limit >= 0.8 && (
 								<>
@@ -156,7 +162,9 @@ export function WebsitePageHeader({
 						<p className="max-w-xs">
 							<span className="font-semibold text-red-600">Limit reached!</span>
 							<br />
-							You've used all {limit?.toLocaleString()} available slots.
+							You've used all{" "}
+							{typeof limit === "number" ? limit.toLocaleString() : "available"}{" "}
+							slots.
 							<br />
 							<a className="underline" href="/billing">
 								Upgrade your plan
@@ -336,7 +344,11 @@ export function WebsitePageHeader({
 								{!withinLimit && (
 									<TooltipContent>
 										<p>
-											You've reached your limit of {limit?.toLocaleString()}.
+											You've reached your limit of{" "}
+											{typeof limit === "number"
+												? limit.toLocaleString()
+												: "available"}
+											.
 											<br />
 											<a className="underline" href="/billing">
 												Upgrade to create more
