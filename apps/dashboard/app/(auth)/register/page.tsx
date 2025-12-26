@@ -425,14 +425,12 @@ function RegisterPageContent() {
 				</div>
 
 				<VisuallyHidden>
-					<div className="flex items-center space-x-2" id="honeypot">
-						<Checkbox
-							checked={isHoneypot}
-							disabled={isLoading}
-							id="honeypot"
-							onCheckedChange={(checked) => setIsHoneypot(checked as boolean)}
-						/>
-					</div>
+					<Checkbox
+						checked={isHoneypot}
+						disabled={isLoading}
+						onCheckedChange={(checked) => setIsHoneypot(checked as boolean)}
+						tabIndex={-1}
+					/>
 				</VisuallyHidden>
 
 				<div className="space-y-3">
