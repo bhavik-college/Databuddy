@@ -4,14 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlusIcon } from "@phosphor-icons/react";
 import { useForm } from "react-hook-form";
 import { z } from "zod/v4";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import {
 	Form,
 	FormControl,
@@ -19,6 +11,7 @@ import {
 	FormItem,
 	FormMessage,
 } from "@/components/ui/form";
+import { FormDialog } from "@/components/ui/form-dialog";
 import { Input } from "@/components/ui/input";
 import {
 	Select,
@@ -29,11 +22,11 @@ import {
 } from "@/components/ui/select";
 import { useOrganizationInvitations } from "@/hooks/use-organization-invitations";
 
-type InviteMemberDialogProps = {
+interface InviteMemberDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	organizationId: string;
-};
+}
 
 const formSchema = z.object({
 	email: z.email("Please enter a valid email address"),
@@ -79,100 +72,67 @@ export function InviteMemberDialog({
 	};
 
 	return (
-		<Dialog onOpenChange={handleClose} open={open}>
-			<DialogContent className="max-w-md p-4">
-				<div className="mb-3 flex items-center gap-3">
-					<div className="rounded-full border bg-secondary p-2.5">
-						<UserPlusIcon
-							className="size-4 text-accent-foreground"
-							weight="duotone"
-						/>
-					</div>
-					<div>
-						<DialogTitle className="font-medium text-base">
-							Invite Member
-						</DialogTitle>
-						<DialogDescription className="text-muted-foreground text-xs">
-							Send invitation to join organization
-						</DialogDescription>
-					</div>
+		<FormDialog
+			description="Send invitation to join organization"
+			icon={
+				<UserPlusIcon
+					className="size-5 text-accent-foreground"
+					weight="duotone"
+				/>
+			}
+			isSubmitting={isInviting}
+			onOpenChange={handleClose}
+			onSubmit={form.handleSubmit(onSubmit)}
+			open={open}
+			size="sm"
+			submitDisabled={!form.formState.isValid}
+			submitLabel="Send Invite"
+			title="Invite Member"
+		>
+			<Form {...form}>
+				<div className="flex gap-2">
+					<FormField
+						control={form.control}
+						name="email"
+						render={({ field }) => (
+							<FormItem className="flex-1">
+								<FormControl>
+									<Input
+										className="text-sm"
+										placeholder="email@company.com"
+										type="email"
+										{...field}
+									/>
+								</FormControl>
+								<FormMessage className="text-xs" />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="role"
+						render={({ field }) => (
+							<FormItem>
+								<Select
+									defaultValue={field.value}
+									onValueChange={field.onChange}
+								>
+									<FormControl>
+										<SelectTrigger className="h-10 w-[100px] text-sm">
+											<SelectValue />
+										</SelectTrigger>
+									</FormControl>
+									<SelectContent>
+										<SelectItem value="member">Member</SelectItem>
+										<SelectItem value="admin">Admin</SelectItem>
+									</SelectContent>
+								</Select>
+								<FormMessage className="text-xs" />
+							</FormItem>
+						)}
+					/>
 				</div>
-
-				<Form {...form}>
-					<form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)}>
-						<div className="flex gap-2">
-							<FormField
-								control={form.control}
-								name="email"
-								render={({ field }) => (
-									<FormItem className="flex-1">
-										<FormControl>
-											<Input
-												className="text-sm"
-												placeholder="email@company.com"
-												type="email"
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage className="text-xs" />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="role"
-								render={({ field }) => (
-									<FormItem>
-										<Select
-											defaultValue={field.value}
-											onValueChange={field.onChange}
-										>
-											<FormControl>
-												<SelectTrigger className="h-8 text-sm">
-													<SelectValue />
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												<SelectItem value="member">Member</SelectItem>
-												<SelectItem value="admin">Admin</SelectItem>
-											</SelectContent>
-										</Select>
-										<FormMessage className="text-xs" />
-									</FormItem>
-								)}
-							/>
-						</div>
-						<DialogFooter>
-							<Button
-								className="flex-1"
-								disabled={isInviting}
-								onClick={handleClose}
-								type="button"
-								variant="secondary"
-							>
-								Cancel
-							</Button>
-							<Button
-								className="flex-1"
-								disabled={isInviting || !form.formState.isValid}
-								type="submit"
-							>
-								{isInviting ? (
-									<>
-										<div className="mr-1 size-3 animate-spin rounded-full border border-primary-foreground/30 border-t-primary-foreground" />
-										Sending...
-									</>
-								) : (
-									<>
-										<UserPlusIcon className="mr-1 size-3" weight="duotone" />
-										Send Invite
-									</>
-								)}
-							</Button>
-						</DialogFooter>
-					</form>
-				</Form>
-			</DialogContent>
-		</Dialog>
+			</Form>
+		</FormDialog>
 	);
 }

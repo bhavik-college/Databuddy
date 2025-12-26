@@ -7,14 +7,6 @@ import { FloppyDiskIcon } from "@phosphor-icons/react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import {
 	Form,
 	FormControl,
@@ -22,6 +14,7 @@ import {
 	FormItem,
 	FormMessage,
 } from "@/components/ui/form";
+import { FormDialog } from "@/components/ui/form-dialog";
 import { Input } from "@/components/ui/input";
 import { getOperatorLabel } from "@/hooks/use-filters";
 
@@ -99,103 +92,79 @@ export function SaveFilterDialog({
 	const isEditing = Boolean(editingFilter);
 
 	return (
-		<Dialog onOpenChange={handleClose} open={isOpen}>
-			<DialogContent className="max-w-md p-4">
-				<div className="mb-3 flex items-center gap-3">
-					<div className="rounded-full border bg-secondary p-2.5">
-						<FloppyDiskIcon
-							className="size-4 text-accent-foreground"
-							weight="duotone"
-						/>
-					</div>
-					<div>
-						<DialogTitle className="font-medium text-base">
-							{isEditing ? "Rename Filter" : "Save Filter"}
-						</DialogTitle>
-						<DialogDescription className="text-muted-foreground text-xs">
-							{isEditing
-								? `Update the name for "${editingFilter?.name}"`
-								: `Save ${filters.length} filter${filters.length === 1 ? "" : "s"} for later`}
-						</DialogDescription>
-					</div>
+		<FormDialog
+			description={
+				isEditing
+					? `Update the name for "${editingFilter?.name}"`
+					: `Save ${filters.length} filter${filters.length === 1 ? "" : "s"} for later`
+			}
+			icon={
+				<FloppyDiskIcon
+					className="size-5 text-accent-foreground"
+					weight="duotone"
+				/>
+			}
+			isSubmitting={isLoading}
+			onOpenChange={handleClose}
+			onSubmit={form.handleSubmit(onSubmit)}
+			open={isOpen}
+			size="sm"
+			submitDisabled={
+				isLoading || filters.length === 0 || !form.formState.isValid
+			}
+			submitLabel={isLoading ? "Saving…" : isEditing ? "Update" : "Save"}
+			title={isEditing ? "Rename Filter" : "Save Filter"}
+		>
+			{filters.length === 0 ? (
+				<div className="rounded border border-amber-200/50 bg-amber-50/50 px-3 py-2 text-amber-900 text-xs dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200">
+					No filters applied
 				</div>
+			) : (
+				<div className="space-y-1.5 rounded border bg-secondary/30 p-2">
+					{filters.slice(0, 4).map((filter, i) => (
+						<div
+							className="flex items-center gap-1.5 text-xs"
+							key={`${filter.field}-${i.toString()}`}
+						>
+							<span className="font-medium">{getFieldLabel(filter.field)}</span>
+							<span className="text-muted-foreground">
+								{getOperatorLabel(filter.operator)}
+							</span>
+							<span className="truncate font-mono">
+								{Array.isArray(filter.value)
+									? filter.value.join(", ")
+									: filter.value}
+							</span>
+						</div>
+					))}
+					{filters.length > 4 && (
+						<p className="text-muted-foreground text-xs">
+							+{filters.length - 4} more
+						</p>
+					)}
+				</div>
+			)}
 
-				{filters.length === 0 ? (
-					<div className="rounded border border-amber-200/50 bg-amber-50/50 px-3 py-2 text-amber-900 text-xs">
-						No filters applied
-					</div>
-				) : (
-					<div className="space-y-1.5 rounded border bg-secondary/30 p-2">
-						{filters.slice(0, 4).map((filter, i) => (
-							<div
-								className="flex items-center gap-1.5 text-xs"
-								key={`${filter.field}-${i.toString()}`}
-							>
-								<span className="font-medium">
-									{getFieldLabel(filter.field)}
-								</span>
-								<span className="text-muted-foreground">
-									{getOperatorLabel(filter.operator)}
-								</span>
-								<span className="truncate font-mono">
-									{Array.isArray(filter.value)
-										? filter.value.join(", ")
-										: filter.value}
-								</span>
-							</div>
-						))}
-						{filters.length > 4 && (
-							<p className="text-muted-foreground text-xs">
-								+{filters.length - 4} more
-							</p>
-						)}
-					</div>
-				)}
-
-				<Form {...form}>
-					<form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)}>
-						<FormField
-							control={form.control}
-							name="name"
-							render={({ field }) => (
-								<FormItem>
-									<FormControl>
-										<Input
-											autoFocus
-											className="text-sm"
-											disabled={isLoading || filters.length === 0}
-											placeholder="Filter name…"
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage className="text-xs" />
-								</FormItem>
-							)}
-						/>
-
-						<DialogFooter>
-							<Button
-								className="flex-1"
-								disabled={isLoading}
-								onClick={handleClose}
-								type="button"
-								variant="secondary"
-							>
-								Cancel
-							</Button>
-							<Button
-								className="flex-1"
-								disabled={
-									isLoading || filters.length === 0 || !form.formState.isValid
-								}
-								type="submit"
-							>
-								{isLoading ? "Saving…" : isEditing ? "Update" : "Save"}
-							</Button>
-						</DialogFooter>
-					</form>
-				</Form>
-			</DialogContent>
-		</Dialog>
+			<Form {...form}>
+				<FormField
+					control={form.control}
+					name="name"
+					render={({ field }) => (
+						<FormItem>
+							<FormControl>
+								<Input
+									autoFocus
+									className="text-sm"
+									disabled={isLoading || filters.length === 0}
+									placeholder="Filter name…"
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage className="text-xs" />
+						</FormItem>
+					)}
+				/>
+			</Form>
+		</FormDialog>
 	);
 }

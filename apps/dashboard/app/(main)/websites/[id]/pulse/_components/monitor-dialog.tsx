@@ -1,22 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CircleNotchIcon, InfoIcon, PlusIcon } from "@phosphor-icons/react";
+import { InfoIcon } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
 import clsx from "clsx";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import {
 	Form,
 	FormField,
@@ -24,6 +16,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
+import { FormDialog } from "@/components/ui/form-dialog";
 import {
 	Tooltip,
 	TooltipContent,
@@ -52,7 +45,7 @@ const monitorFormSchema = z.object({
 
 type MonitorFormData = z.infer<typeof monitorFormSchema>;
 
-type MonitorDialogProps = {
+interface MonitorDialogProps {
 	open: boolean;
 	onCloseAction: (open: boolean) => void;
 	websiteId: string;
@@ -61,7 +54,7 @@ type MonitorDialogProps = {
 		id: string;
 		granularity: string;
 	} | null;
-};
+}
 
 export function MonitorDialog({
 	open,
@@ -70,7 +63,6 @@ export function MonitorDialog({
 	onSaveAction,
 	schedule,
 }: MonitorDialogProps) {
-	const formRef = useRef<HTMLFormElement>(null);
 	const isEditing = !!schedule;
 	const { data: website } = useWebsite(websiteId);
 
@@ -129,7 +121,9 @@ export function MonitorDialog({
 		return rpcError?.message || defaultMessage;
 	};
 
-	const handleSubmit = form.handleSubmit(async (data) => {
+	const handleSubmit = async () => {
+		const data = form.getValues();
+
 		try {
 			if (isEditing && schedule) {
 				await updateMutation.mutateAsync({
@@ -161,107 +155,79 @@ export function MonitorDialog({
 			const message = getErrorMessage(error);
 			toast.error(message);
 		}
-	});
+	};
+
+	const isPending = createMutation.isPending || updateMutation.isPending;
 
 	return (
-		<Dialog onOpenChange={onCloseAction} open={open}>
-			<DialogContent className="w-[95vw] max-w-md sm:w-full">
-				<DialogHeader>
-					<DialogTitle>
-						{isEditing ? "Edit Monitor" : "Create Monitor"}
-					</DialogTitle>
-					<DialogDescription>
-						{isEditing
-							? "Update your uptime monitor settings"
-							: "Set up a new uptime monitor for your website"}
-					</DialogDescription>
-				</DialogHeader>
-				<Form {...form}>
-					<form className="space-y-4" onSubmit={handleSubmit} ref={formRef}>
-						<fieldset
-							className="space-y-4"
-							disabled={createMutation.isPending || updateMutation.isPending}
-						>
-							<FormField
-								control={form.control}
-								name="granularity"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel className="flex items-center gap-2">
-											Check Frequency
-											<Tooltip>
-												<TooltipTrigger asChild>
-													<InfoIcon className="size-4" weight="duotone" />
-												</TooltipTrigger>
-												<TooltipContent className="max-w-xs">
-													<div className="space-y-2">
-														<p className="text-xs leading-relaxed">
-															How often the monitor will check your website's
-															availability. More frequent checks provide faster
-															alerting but may be limited by your plan.
-														</p>
-													</div>
-												</TooltipContent>
-											</Tooltip>
-										</FormLabel>
-										<div className="flex items-center justify-center gap-0 rounded border">
-											{granularityOptions.map((option, index) => {
-												const isActive = field.value === option.value;
-												const isFirst = index === 0;
-												const isLast = index === granularityOptions.length - 1;
-												return (
-													<Button
-														className={clsx(
-															"h-10 flex-1 cursor-pointer touch-manipulation whitespace-nowrap rounded-none border-r px-0 font-medium text-sm",
-															isFirst ? "rounded-l" : "",
-															isLast ? "rounded-r border-r-0" : "",
-															isActive
-																? "bg-accent text-accent-foreground hover:bg-accent"
-																: "hover:bg-accent/50"
-														)}
-														disabled={createMutation.isPending}
-														key={option.value}
-														onClick={() => field.onChange(option.value)}
-														type="button"
-														variant={isActive ? "secondary" : "ghost"}
-													>
-														{option.label}
-													</Button>
-												);
-											})}
+		<FormDialog
+			description={
+				isEditing
+					? "Update your uptime monitor settings"
+					: "Set up a new uptime monitor for your website"
+			}
+			isSubmitting={isPending}
+			onOpenChange={onCloseAction}
+			onSubmit={form.handleSubmit(handleSubmit)}
+			open={open}
+			submitDisabled={!form.formState.isValid}
+			submitLabel={isEditing ? "Update Monitor" : "Create Monitor"}
+			title={isEditing ? "Edit Monitor" : "Create Monitor"}
+		>
+			<Form {...form}>
+				<FormField
+					control={form.control}
+					name="granularity"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel className="flex items-center gap-2">
+								Check Frequency
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<InfoIcon className="size-4" weight="duotone" />
+									</TooltipTrigger>
+									<TooltipContent className="max-w-xs">
+										<div className="space-y-2">
+											<p className="text-xs leading-relaxed">
+												How often the monitor will check your website's
+												availability. More frequent checks provide faster
+												alerting but may be limited by your plan.
+											</p>
 										</div>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</fieldset>
-					</form>
-				</Form>
-				<DialogFooter>
-					<Button
-						className="w-full"
-						disabled={
-							createMutation.isPending ||
-							updateMutation.isPending ||
-							!form.formState.isValid
-						}
-						onClick={handleSubmit}
-						type="submit"
-					>
-						{createMutation.isPending || updateMutation.isPending ? (
-							<CircleNotchIcon
-								className="mr-2 size-4 animate-spin"
-								weight="duotone"
-							/>
-						) : (
-							<>
-								<PlusIcon size={16} />
-								{isEditing ? "Update Monitor" : "Create Monitor"}
-							</>
-						)}
-					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+									</TooltipContent>
+								</Tooltip>
+							</FormLabel>
+							<div className="flex items-center justify-center gap-0 rounded border">
+								{granularityOptions.map((option, index) => {
+									const isActive = field.value === option.value;
+									const isFirst = index === 0;
+									const isLast = index === granularityOptions.length - 1;
+									return (
+										<Button
+											className={clsx(
+												"h-10 flex-1 cursor-pointer touch-manipulation whitespace-nowrap rounded-none border-r px-0 font-medium text-sm",
+												isFirst ? "rounded-l" : "",
+												isLast ? "rounded-r border-r-0" : "",
+												isActive
+													? "bg-accent text-accent-foreground hover:bg-accent"
+													: "hover:bg-accent/50"
+											)}
+											disabled={isPending}
+											key={option.value}
+											onClick={() => field.onChange(option.value)}
+											type="button"
+											variant={isActive ? "secondary" : "ghost"}
+										>
+											{option.label}
+										</Button>
+									);
+								})}
+							</div>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+			</Form>
+		</FormDialog>
 	);
 }
