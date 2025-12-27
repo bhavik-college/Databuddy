@@ -307,15 +307,16 @@ function AddToCartButton({ product }) {
 
 ## Error Tracking
 
+Use `trackError` for manual error tracking. For automatic JavaScript error capture, enable `trackErrors` on the `<Databuddy />` component.
+
 ### Error Boundaries
 
 ```tsx
-import { track } from '@databuddy/sdk';
+import { trackError } from '@databuddy/sdk/react';
 
 function ErrorBoundary({ children }) {
-  const handleError = (error: Error, errorInfo: any) => {
-    track('error', {
-      message: error.message,
+  const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
+    trackError(error.message, {
       error_type: 'react_error_boundary',
       stack: error.stack,
       component_stack: errorInfo.componentStack
@@ -415,7 +416,7 @@ function App() {
 
 ```tsx
 import { useCallback } from 'react';
-import { track } from '@databuddy/sdk';
+import { track, trackError } from '@databuddy/sdk/react';
 
 export function useAnalytics() {
   const trackButtonClick = useCallback((buttonText: string, location: string) => {
@@ -426,11 +427,15 @@ export function useAnalytics() {
     track('screen_view', { screen_name: pageName, screen_class: category });
   }, []);
   
-  const trackError = useCallback((error: Error, context?: string) => {
-    track('error', { message: error.message, error_type: 'custom', context });
+  const handleError = useCallback((error: Error, context?: string) => {
+    trackError(error.message, { 
+      error_type: error.name, 
+      stack: error.stack,
+      context 
+    });
   }, []);
 
-  return { trackButtonClick, trackPageView, trackError };
+  return { trackButtonClick, trackPageView, trackError: handleError };
 }
 ```
 

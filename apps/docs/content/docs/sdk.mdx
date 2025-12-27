@@ -406,14 +406,14 @@ Import and use these methods directly in your code:
 import { track, clear, flush, trackError } from "@databuddy/sdk";
 
 // Track custom events
-await track("product_viewed", {
+track("product_viewed", {
   product_id: "P12345",
   category: "Electronics",
   price: 299.99
 });
 
 // Track errors
-await trackError("API request failed", {
+trackError("API request failed", {
   endpoint: "/api/products",
   error_type: "network_error"
 });
@@ -433,7 +433,7 @@ Track custom events with optional properties:
 import { track } from "@databuddy/sdk";
 
 // Track a product view
-await track("product_viewed", {
+track("product_viewed", {
   product_id: "P12345",
   category: "Electronics",
   price: 299.99,
@@ -441,7 +441,7 @@ await track("product_viewed", {
 });
 
 // Track a button click
-await track("button_click", {
+track("button_click", {
   button_text: "Add to Cart",
   button_id: "add-to-cart-btn"
 });
@@ -477,12 +477,16 @@ tracker?.setGlobalProperties({
 
 ### `trackError(message, properties)`
 
-Track error events with additional context:
+Track error events with additional context. This is a convenience wrapper around `track("error", ...)`.
+
+<Callout type="info">
+  **Note:** `trackError()` is for *manual* error tracking. To automatically capture all JavaScript errors, use the `trackErrors` prop on the `<Databuddy />` component instead.
+</Callout>
 
 ```javascript
 import { trackError } from "@databuddy/sdk";
 
-await trackError("API request failed", {
+trackError("API request failed", {
   filename: "api.js",
   lineno: 42,
   error_type: "network_error"
@@ -552,14 +556,14 @@ Track business-specific events with rich properties:
 import { track } from "@databuddy/sdk";
 
 // E-commerce events
-await track("product_viewed", {
+track("product_viewed", {
   product_id: "P12345",
   category: "Electronics",
   price: 299.99,
   currency: "USD"
 });
 
-await track("purchase_completed", {
+track("purchase_completed", {
   order_id: "ORD-789",
   revenue: 299.99,
   currency: "USD",
@@ -567,14 +571,14 @@ await track("purchase_completed", {
 });
 
 // User engagement
-await track("feature_used", {
+track("feature_used", {
   feature: "export_data",
   user_tier: "premium",
   page: window.location.pathname
 });
 
 // Content interaction
-await track("video_engagement", {
+track("video_engagement", {
   video_id: "intro-video",
   action: "completed", // play, pause, complete
   duration: 120,
@@ -592,7 +596,7 @@ await track("video_engagement", {
 import { track } from "@databuddy/sdk";
 
 // ✅ Good
-await track("purchase_completed", {
+track("purchase_completed", {
   product_category: "software",
   payment_method: "credit_card",
   value: 299.99,
@@ -600,7 +604,7 @@ await track("purchase_completed", {
 });
 
 // ❌ Avoid
-await track("purchase", {
+track("purchase", {
   email: "user@example.com", // PII violation
   productCat: "software",    // Inconsistent naming
   Price: 299.99             // Inconsistent capitalization
@@ -682,20 +686,19 @@ const isDevelopment = import.meta.env.DEV;
 ### Console Testing
 
 ```javascript
-import { track, isTrackerAvailable } from "@databuddy/sdk";
+import { track, trackError, isTrackerAvailable } from "@databuddy/sdk";
 
 // Test if SDK tracker is available
 console.log(isTrackerAvailable() ? "Tracker available ✅" : "Tracker not available ❌");
 
 // Send test event using SDK
-await track("test_event", { source: "console" });
+track("test_event", { source: "console" });
 
 // Check network requests in DevTools Network tab
 // Look for requests to basket.databuddy.cc
 
 // Test error tracking
-import { trackError } from "@databuddy/sdk";
-await trackError("Test error", { context: "debugging" });
+trackError("Test error", { context: "debugging" });
 ```
 
 ### Troubleshooting
@@ -714,14 +717,14 @@ The SDK is fully typed and provides excellent TypeScript support:
 import { track, getTracker, type DatabuddyTracker, type EventName, type PropertiesForEvent } from "@databuddy/sdk";
 
 // Type-safe event tracking with SDK imports
-await track("product_viewed", {
+track("product_viewed", {
   product_id: "P12345", // ✅ Type-safe
   category: "Electronics",
   price: 299.99
 });
 
 // Custom event with proper typing
-await track("feature_used", {
+track("feature_used", {
   feature: "export_data",
   user_tier: "premium"
 });
@@ -735,7 +738,7 @@ if (tracker) {
 // Type-safe custom events
 type CustomEventName = "signup_completed" | "feature_used" | "purchase_completed";
 
-await track<CustomEventName>("signup_completed", {
+track<CustomEventName>("signup_completed", {
   method: "email",
   source: "landing_page"
 });
