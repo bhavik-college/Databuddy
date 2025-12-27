@@ -235,7 +235,6 @@ export const websiteNavigation: NavigationSection[] = [
 		}),
 		createNavItem("Web Vitals", HeartbeatIcon, "/vitals", {
 			rootLevel: false,
-			alpha: true,
 			gatedFeature: GATED_FEATURES.WEB_VITALS,
 		}),
 		createNavItem("Geographic", MapPinIcon, "/map", {
