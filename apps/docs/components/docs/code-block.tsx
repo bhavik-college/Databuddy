@@ -62,6 +62,8 @@ function CodeBlock({
 						},
 						code(node) {
 							node.properties.style = "";
+							node.properties.className = "border-none";
+							node.properties.className = "rounded-none";
 						},
 					},
 				],
@@ -73,7 +75,7 @@ function CodeBlock({
 
 	return (
 		<SciFiCard
-			className="group/code relative my-4 w-full overflow-hidden rounded border border-border bg-muted/50 text-sm backdrop-blur-sm transition-all duration-300 hover:border-primary/20 dark:bg-[#101010]"
+			className="group/code relative my-4 w-full overflow-hidden rounded-none border border-border bg-muted/50 text-sm backdrop-blur-sm transition-all duration-300 hover:border-primary/20 dark:bg-[#101010]"
 			cornerOpacity="opacity-0 group-hover/code:opacity-100"
 			variant="primary"
 		>
@@ -86,7 +88,7 @@ function CodeBlock({
 							</span>
 						)}
 						{language !== "text" && (
-							<span className="rounded bg-primary/10 px-2 py-0.5 font-medium font-mono text-[10px] text-primary uppercase tracking-wider">
+							<span className="rounded-none bg-primary/10 px-2 py-0.5 font-medium font-mono text-[10px] text-primary uppercase tracking-wider">
 								{language}
 							</span>
 						)}
@@ -109,7 +111,7 @@ function CodeBlock({
 					<div
 						className={cn(
 							"font-mono! text-[13px] leading-relaxed",
-							"[&>pre]:m-0 [&>pre]:overflow-visible [&>pre]:p-4 [&>pre]:leading-relaxed",
+							"[&>pre]:m-0 [&>pre]:overflow-visible [&>pre]:p-0 [&>pre]:leading-relaxed",
 							"[&>pre>code]:block [&>pre>code]:w-full [&>pre>code]:overflow-x-auto [&>pre>code]:p-4",
 							"[&_.line]:min-h-5",
 							className
@@ -119,7 +121,7 @@ function CodeBlock({
 				) : (
 					<pre
 						className={cn(
-							"overflow-x-auto p-4 font-mono! text-foreground text-sm leading-relaxed",
+							"overflow-x-auto font-mono! text-foreground text-sm leading-relaxed",
 							"[&>code]:block [&>code]:w-full [&>code]:p-0 [&>code]:text-inherit",
 							className
 						)}
@@ -137,7 +139,7 @@ function InlineCode({ className, ...props }: React.ComponentProps<"code">) {
 	return (
 		<code
 			className={cn(
-				"relative rounded border border-accent bg-accent/50 px-1.5 py-0.5 font-medium font-mono! text-primary text-sm",
+				"relative rounded-none border-none bg-accent/50 font-medium font-mono! text-primary text-sm",
 				className
 			)}
 			{...props}
