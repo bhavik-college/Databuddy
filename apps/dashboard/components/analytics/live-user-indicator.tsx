@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRealTimeStats } from "@/hooks/use-dynamic-query";
+import { useRealTimeStats } from "./use-realtime-stats";
 
-type LiveUserIndicatorProps = {
+interface LiveUserIndicatorProps {
 	websiteId: string;
-};
+}
 
 export function LiveUserIndicator({ websiteId }: LiveUserIndicatorProps) {
 	const { activeUsers: count } = useRealTimeStats(websiteId);

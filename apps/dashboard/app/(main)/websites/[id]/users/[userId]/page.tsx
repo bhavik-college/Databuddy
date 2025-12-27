@@ -20,10 +20,10 @@ import { BrowserIcon, CountryFlag, OSIcon } from "@/components/icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useDateFilters } from "@/hooks/use-date-filters";
-import { useUserProfile } from "@/hooks/use-dynamic-query";
 import { getDeviceIcon } from "@/lib/utils";
 import { generateProfileName } from "./_components/generate-profile-name";
 import { SessionRow } from "./_components/session-row";
+import { useUserProfile } from "./use-user-profile";
 
 function StatItem({
 	icon: Icon,

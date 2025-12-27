@@ -10,8 +10,8 @@ import { CountryFlag } from "@/components/icon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDateFilters } from "@/hooks/use-date-filters";
-import { useMapLocationData } from "@/hooks/use-dynamic-query";
 import { dynamicQueryFiltersAtom } from "@/stores/jotai/filterAtoms";
+import { useMapLocationData } from "./use-map";
 
 const MapComponent = dynamic(
 	() =>
@@ -33,18 +33,18 @@ const MapComponent = dynamic(
 	}
 );
 
-type CountryData = {
+interface CountryData {
 	country: string;
 	country_code?: string;
 	visitors: number;
 	pageviews: number;
-};
+}
 
-type CountryRowProps = {
+interface CountryRowProps {
 	country: CountryData;
 	totalVisitors: number;
 	onCountrySelect: (countryCode: string) => void;
-};
+}
 
 function CountryRow({
 	country,

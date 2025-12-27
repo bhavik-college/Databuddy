@@ -43,10 +43,10 @@ import {
 } from "@/components/ui/tooltip";
 import { UserAvatar } from "@/components/user-avatar";
 import { useDateFilters } from "@/hooks/use-date-filters";
-import { useProfilesData } from "@/hooks/use-dynamic-query";
 import { getDeviceIcon } from "@/lib/utils";
 import { dynamicQueryFiltersAtom } from "@/stores/jotai/filterAtoms";
 import { generateProfileName } from "./[userId]/_components/generate-profile-name";
+import { useProfilesData } from "./use-users";
 
 const wwwRegex = /^www\./;
 
