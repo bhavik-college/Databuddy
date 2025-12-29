@@ -51,6 +51,9 @@ function getCurrentValues(rule: UserRule): string[] {
 	if (rule.values?.length) {
 		return rule.values;
 	}
+	if (rule.batchValues?.length) {
+		return rule.batchValues;
+	}
 	if (rule.value) {
 		return [rule.value];
 	}
@@ -255,6 +258,7 @@ export function UserRulesBuilder({ rules, onChange }: UserRulesBuilderProps) {
 				type: "user_id",
 				operator: "equals",
 				values: [],
+				batchValues: [],
 				enabled: true,
 				batch: true,
 			},
@@ -263,7 +267,11 @@ export function UserRulesBuilder({ rules, onChange }: UserRulesBuilderProps) {
 
 	const updateRule = (index: number, updates: Partial<UserRule>) => {
 		const newRules = [...rules];
-		newRules[index] = { ...newRules[index], ...updates, batch: true };
+		const syncedUpdates = { ...updates };
+		if (syncedUpdates.values !== undefined) {
+			syncedUpdates.batchValues = syncedUpdates.values;
+		}
+		newRules[index] = { ...newRules[index], ...syncedUpdates, batch: true };
 		onChange(newRules);
 	};
 
