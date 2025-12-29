@@ -9,6 +9,7 @@ import {
 	XIcon,
 } from "@phosphor-icons/react";
 import { useState } from "react";
+import { z } from "zod/mini";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -39,49 +40,52 @@ const CONDITIONS = [
 ] as const;
 
 function getConditionsForType(type: UserRule["type"]) {
-	if (type === "property") {
-		return CONDITIONS;
-	}
-	return CONDITIONS.filter(
-		(c) => c.value !== "exists" && c.value !== "not_exists"
-	);
+	return type === "property"
+		? CONDITIONS
+		: CONDITIONS.filter(
+				(c) => c.value !== "exists" && c.value !== "not_exists"
+			);
 }
 
-function getCurrentValues(rule: UserRule): string[] {
-	if (rule.values?.length) {
-		return rule.values;
-	}
-	if (rule.batchValues?.length) {
-		return rule.batchValues;
-	}
-	if (rule.value) {
-		return [rule.value];
-	}
-	return [];
+function getRuleValues(rule: UserRule): string[] {
+	return rule.batch && rule.batchValues
+		? rule.batchValues
+		: (rule.values ?? []);
 }
 
 function InlineTagsInput({
 	values,
 	onChange,
 	placeholder,
+	validate,
 }: {
 	values: string[];
 	onChange: (values: string[]) => void;
 	placeholder: string;
+	validate?: (value: string) => { success: boolean; error?: string };
 }) {
 	const [draft, setDraft] = useState("");
+	const [error, setError] = useState<string | null>(null);
 
 	const addValue = (val: string) => {
 		const trimmed = val.trim();
-		if (!trimmed) {
-			return;
-		}
-		if (values.includes(trimmed)) {
+		if (!trimmed || values.includes(trimmed)) {
 			setDraft("");
+			setError(null);
 			return;
 		}
+
+		if (validate) {
+			const result = validate(trimmed);
+			if (!result.success) {
+				setError(result.error ?? "Invalid value");
+				return;
+			}
+		}
+
 		onChange([...values, trimmed]);
 		setDraft("");
+		setError(null);
 	};
 
 	const removeValue = (index: number) => {
@@ -92,38 +96,55 @@ function InlineTagsInput({
 		if (e.key === "Enter" || e.key === ",") {
 			e.preventDefault();
 			addValue(draft);
-		}
-		if (e.key === "Backspace" && draft === "" && values.length > 0) {
+		} else if (e.key === "Backspace" && !draft && values.length > 0) {
 			e.preventDefault();
 			removeValue(values.length - 1);
+			setError(null);
+		}
+	};
+
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setDraft(e.target.value);
+		if (error) {
+			setError(null);
 		}
 	};
 
 	return (
-		<div className="flex min-h-[38px] flex-wrap items-center gap-1.5 rounded border bg-background px-2 py-1.5 focus-within:ring-1 focus-within:ring-ring">
-			{values.map((val, i) => (
-				<span
-					className="inline-flex items-center gap-1 rounded bg-secondary px-2 py-0.5 text-sm"
-					key={`${val}-${i}`}
-				>
-					{val}
-					<button
-						className="cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
-						onClick={() => removeValue(i)}
-						type="button"
+		<div className="space-y-1">
+			<div
+				className={cn(
+					"flex min-h-[38px] flex-wrap items-center gap-1.5 rounded border bg-background px-2 py-1.5 focus-within:ring-1",
+					error
+						? "border-destructive focus-within:ring-destructive"
+						: "focus-within:ring-ring"
+				)}
+			>
+				{values.map((val, i) => (
+					<span
+						className="inline-flex items-center gap-1 rounded bg-secondary px-2 py-0.5 text-sm"
+						key={`${val}-${i}`}
 					>
-						<XIcon size={12} />
-					</button>
-				</span>
-			))}
-			<input
-				className="min-w-[120px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-				onChange={(e) => setDraft(e.target.value)}
-				onKeyDown={handleKeyDown}
-				placeholder={values.length === 0 ? placeholder : "Add more…"}
-				type="text"
-				value={draft}
-			/>
+						{val}
+						<button
+							className="cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
+							onClick={() => removeValue(i)}
+							type="button"
+						>
+							<XIcon size={12} />
+						</button>
+					</span>
+				))}
+				<input
+					className="min-w-[120px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+					onChange={handleChange}
+					onKeyDown={handleKeyDown}
+					placeholder={values.length === 0 ? placeholder : "Add more…"}
+					type="text"
+					value={draft}
+				/>
+			</div>
+			{error && <p className="text-destructive text-xs">{error}</p>}
 		</div>
 	);
 }
@@ -138,27 +159,37 @@ function RuleRow({
 	onRemove: () => void;
 }) {
 	const conditions = getConditionsForType(rule.type);
-	const condition = CONDITIONS.find((c) => c.value === rule.operator);
-	const needsValue = condition?.needsValue ?? true;
-	const currentValues = getCurrentValues(rule);
+	const needsValue =
+		CONDITIONS.find((c) => c.value === rule.operator)?.needsValue ?? true;
+	const currentValues = getRuleValues(rule);
 
 	const handleTypeChange = (newType: UserRule["type"]) => {
-		const updates: Partial<UserRule> = { type: newType };
-		if (
+		const needsReset =
 			newType !== "property" &&
-			(rule.operator === "exists" || rule.operator === "not_exists")
-		) {
-			updates.operator = "equals";
-		}
-		onUpdate(updates);
+			(rule.operator === "exists" || rule.operator === "not_exists");
+
+		onUpdate({
+			type: newType,
+			...(needsReset && { operator: "equals" }),
+		});
 	};
 
-	const placeholderText =
-		rule.type === "email"
-			? "Enter emails…"
-			: rule.type === "user_id"
-				? "Enter user IDs…"
-				: "Enter values…";
+	const getPlaceholder = () => {
+		if (rule.type === "email") {
+			return "Enter emails…";
+		}
+		if (rule.type === "user_id") {
+			return "Enter user IDs…";
+		}
+		return "Enter values…";
+	};
+
+	const validateEmail = (value: string) => {
+		const result = z.email().safeParse(value);
+		return result.success
+			? { success: true }
+			: { success: false, error: "Please enter a valid email address" };
+	};
 
 	return (
 		<div className="space-y-2 rounded border p-3">
@@ -198,7 +229,8 @@ function RuleRow({
 					onValueChange={(v) =>
 						onUpdate({
 							operator: v as UserRule["operator"],
-							values: currentValues,
+							batchValues: currentValues,
+							batch: true,
 						})
 					}
 					value={rule.operator}
@@ -241,8 +273,9 @@ function RuleRow({
 
 			{needsValue && (
 				<InlineTagsInput
-					onChange={(values) => onUpdate({ values })}
-					placeholder={placeholderText}
+					onChange={(values) => onUpdate({ batchValues: values, batch: true })}
+					placeholder={getPlaceholder()}
+					validate={rule.type === "email" ? validateEmail : undefined}
 					values={currentValues}
 				/>
 			)}
@@ -266,13 +299,9 @@ export function UserRulesBuilder({ rules, onChange }: UserRulesBuilderProps) {
 	};
 
 	const updateRule = (index: number, updates: Partial<UserRule>) => {
-		const newRules = [...rules];
-		const syncedUpdates = { ...updates };
-		if (syncedUpdates.values !== undefined) {
-			syncedUpdates.batchValues = syncedUpdates.values;
-		}
-		newRules[index] = { ...newRules[index], ...syncedUpdates, batch: true };
-		onChange(newRules);
+		onChange(
+			rules.map((rule, i) => (i === index ? { ...rule, ...updates } : rule))
+		);
 	};
 
 	const removeRule = (index: number) => {
