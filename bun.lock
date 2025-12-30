@@ -511,7 +511,7 @@
     },
     "packages/sdk": {
       "name": "@databuddy/sdk",
-      "version": "2.3.2",
+      "version": "2.3.21",
       "devDependencies": {
         "@ai-sdk/provider": "^2.0.0",
         "@types/node": "^20.0.0",

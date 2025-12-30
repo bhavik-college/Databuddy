@@ -1,17 +1,28 @@
 import type { FlagResult, StorageInterface } from "./types";
 
+const isBrowser = typeof window !== "undefined" && typeof localStorage !== "undefined";
+
 export class BrowserFlagStorage implements StorageInterface {
 	private readonly ttl = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 	get(key: string) {
+		if (!isBrowser) {
+			return null;
+		}
 		return this.getFromLocalStorage(key);
 	}
 
 	set(key: string, value: unknown) {
+		if (!isBrowser) {
+			return;
+		}
 		this.setToLocalStorage(key, value);
 	}
 
 	getAll(): Record<string, FlagResult> {
+		if (!isBrowser) {
+			return {};
+		}
 		const result: Record<string, FlagResult> = {};
 		const now = Date.now();
 
@@ -31,12 +42,15 @@ export class BrowserFlagStorage implements StorageInterface {
 						result[flagKey] = (parsed.value || parsed) as FlagResult;
 					}
 				}
-			} catch {}
+			} catch { }
 		}
 		return result;
 	}
 
 	clear(): void {
+		if (!isBrowser) {
+			return;
+		}
 		const keys = Object.keys(localStorage).filter((key) =>
 			key.startsWith("db-flag-")
 		);
@@ -76,7 +90,7 @@ export class BrowserFlagStorage implements StorageInterface {
 				expiresAt: Date.now() + this.ttl,
 			};
 			localStorage.setItem(`db-flag-${key}`, JSON.stringify(item));
-		} catch {}
+		} catch { }
 	}
 
 	private isExpired(expiresAt?: number): boolean {
@@ -87,16 +101,25 @@ export class BrowserFlagStorage implements StorageInterface {
 	}
 
 	delete(key: string): void {
+		if (!isBrowser) {
+			return;
+		}
 		localStorage.removeItem(`db-flag-${key}`);
 	}
 
 	deleteMultiple(keys: string[]): void {
+		if (!isBrowser) {
+			return;
+		}
 		for (const key of keys) {
 			localStorage.removeItem(`db-flag-${key}`);
 		}
 	}
 
 	setAll(flags: Record<string, FlagResult>): void {
+		if (!isBrowser) {
+			return;
+		}
 		const currentFlags = this.getAll();
 		const currentKeys = Object.keys(currentFlags);
 		const newKeys = Object.keys(flags);
@@ -113,6 +136,9 @@ export class BrowserFlagStorage implements StorageInterface {
 	}
 
 	cleanupExpired(): void {
+		if (!isBrowser) {
+			return;
+		}
 		const now = Date.now();
 		const keys = Object.keys(localStorage).filter((key) =>
 			key.startsWith("db-flag-")

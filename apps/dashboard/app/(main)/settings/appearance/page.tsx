@@ -4,6 +4,7 @@ import {
 	CaretDownIcon,
 	ChartBarIcon,
 	ChartLineIcon,
+	CursorClickIcon,
 	DesktopIcon,
 	FunnelIcon,
 	MoonIcon,
@@ -94,6 +95,7 @@ const LOCATION_ICONS: Record<ChartLocation, typeof ChartLineIcon> = {
 	funnels: FunnelIcon,
 	retention: UsersIcon,
 	"website-list": ChartLineIcon,
+	events: CursorClickIcon,
 };
 
 export default function AppearanceSettingsPage() {
@@ -319,21 +321,28 @@ export default function AppearanceSettingsPage() {
 										};
 										const isBar = prefs.chartType === "bar";
 										const isActive = location === previewLocation;
-										const Icon = LOCATION_ICONS[location];
+										const LocationIcon = LOCATION_ICONS[location];
 
 										return (
-											<button
+											<div
 												className={cn(
-													"grid w-full grid-cols-[1fr_6.5rem_7.5rem] items-center gap-3 px-4 py-2.5 text-left",
+													"grid w-full cursor-pointer grid-cols-[1fr_6.5rem_7.5rem] items-center gap-3 px-4 py-2.5 transition-colors hover:bg-accent/30 focus-visible:bg-accent/30 focus-visible:outline-none",
 													i < CHART_LOCATIONS.length - 1 && "border-b",
 													isActive && "bg-accent/50"
 												)}
 												key={location}
 												onClick={() => setPreviewLocation(location)}
-												type="button"
+												onKeyDown={(e) => {
+													if (e.key === "Enter" || e.key === " ") {
+														e.preventDefault();
+														setPreviewLocation(location);
+													}
+												}}
+												role="tablist"
+												tabIndex={0}
 											>
 												<div className="flex items-center gap-2">
-													<Icon
+													<LocationIcon
 														className="size-4 shrink-0 text-muted-foreground"
 														weight="duotone"
 													/>
@@ -410,7 +419,7 @@ export default function AppearanceSettingsPage() {
 														))}
 													</SelectContent>
 												</Select>
-											</button>
+											</div>
 										);
 									})}
 								</div>
