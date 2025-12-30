@@ -10,9 +10,9 @@ import {
 } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
-import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { useCallback, useMemo } from "react";
+import { PageNavigation } from "@/components/layout/page-navigation";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/tooltip";
 import { useWebsite } from "@/hooks/use-websites";
 import { orpc } from "@/lib/orpc";
-import { cn } from "@/lib/utils";
 import { isAnalyticsRefreshingAtom } from "@/stores/jotai/filterAtoms";
 import {
 	isFlagSheetOpenAtom,
@@ -167,110 +166,32 @@ export default function FlagsLayout({
 			/>
 
 			{/* Navigation Tabs */}
-			<div className="box-border flex h-10 shrink-0 border-border border-b bg-accent/30">
-				<Link
-					className={cn(
-						"flex cursor-pointer items-center gap-2 border-b-2 px-3 py-2.5 font-medium text-sm transition-all",
-						pathname === `/websites/${websiteId}/flags`
-							? "border-primary text-foreground"
-							: "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
-					)}
-					href={`/websites/${websiteId}/flags`}
-				>
-					<FlagIcon
-						className={cn(
-							"size-4",
-							pathname === `/websites/${websiteId}/flags` && "text-primary"
-						)}
-						weight={
-							pathname === `/websites/${websiteId}/flags` ? "fill" : "duotone"
-						}
-					/>
-					Flags
-					{flags && flags.length > 0 && (
-						<span
-							className={cn(
-								"flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 font-semibold text-xs tabular-nums",
-								pathname === `/websites/${websiteId}/flags`
-									? "bg-primary text-primary-foreground"
-									: "bg-muted text-foreground"
-							)}
-						>
-							{flags.length}
-						</span>
-					)}
-				</Link>
-				<Link
-					className={cn(
-						"flex cursor-pointer items-center gap-2 border-b-2 px-3 py-2.5 font-medium text-sm transition-all",
-						pathname === `/websites/${websiteId}/flags/groups`
-							? "border-primary text-foreground"
-							: "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
-					)}
-					href={`/websites/${websiteId}/flags/groups`}
-				>
-					<UsersThreeIcon
-						className={cn(
-							"size-4",
-							pathname === `/websites/${websiteId}/flags/groups` &&
-								"text-primary"
-						)}
-						weight={
-							pathname === `/websites/${websiteId}/flags/groups`
-								? "fill"
-								: "duotone"
-						}
-					/>
-					Groups
-					{groups && groups.length > 0 && (
-						<span
-							className={cn(
-								"flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 font-semibold text-xs tabular-nums",
-								pathname === `/websites/${websiteId}/flags/groups`
-									? "bg-primary text-primary-foreground"
-									: "bg-muted text-foreground"
-							)}
-						>
-							{groups.length}
-						</span>
-					)}
-				</Link>
-				<Link
-					className={cn(
-						"flex cursor-pointer items-center gap-2 border-b-2 px-3 py-2.5 font-medium text-sm transition-all",
-						pathname === `/websites/${websiteId}/flags/templates`
-							? "border-primary text-foreground"
-							: "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
-					)}
-					href={`/websites/${websiteId}/flags/templates`}
-				>
-					<LayoutIcon
-						className={cn(
-							"size-4",
-							pathname === `/websites/${websiteId}/flags/templates` &&
-								"text-primary"
-						)}
-						weight={
-							pathname === `/websites/${websiteId}/flags/templates`
-								? "fill"
-								: "duotone"
-						}
-					/>
-					Templates
-					{templates && templates.length > 0 && (
-						<span
-							className={cn(
-								"flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 font-semibold text-xs tabular-nums",
-								pathname === `/websites/${websiteId}/flags/templates`
-									? "bg-primary text-primary-foreground"
-									: "bg-muted text-foreground"
-							)}
-						>
-							{templates.length}
-						</span>
-					)}
-				</Link>
-			</div>
+			<PageNavigation
+				tabs={[
+					{
+						id: "flags",
+						label: "Flags",
+						href: `/websites/${websiteId}/flags`,
+						icon: FlagIcon,
+						count: flags?.length,
+					},
+					{
+						id: "groups",
+						label: "Groups",
+						href: `/websites/${websiteId}/flags/groups`,
+						icon: UsersThreeIcon,
+						count: groups?.length,
+					},
+					{
+						id: "templates",
+						label: "Templates",
+						href: `/websites/${websiteId}/flags/templates`,
+						icon: LayoutIcon,
+						count: templates?.length,
+					},
+				]}
+				variant="tabs"
+			/>
 
 			{/* Experiment Flag Banner */}
 			<div className="flex h-10 items-center border-border border-b bg-accent px-4">
