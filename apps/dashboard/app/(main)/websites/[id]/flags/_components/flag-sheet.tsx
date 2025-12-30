@@ -128,15 +128,6 @@ export function FlagSheet({
 		}),
 	});
 
-	const { data: schedule } = useQuery({
-		...orpc.flagSchedules.getByFlagId.queryOptions({
-			input: { flagId: flag?.id ?? "" },
-		}),
-		enabled: Boolean(flag?.id),
-		retry: false,
-		throwOnError: false,
-	});
-
 	const { data: targetGroups } = useQuery({
 		...orpc.targetGroups.list.queryOptions({
 			input: { websiteId },
@@ -172,12 +163,6 @@ export function FlagSheet({
 	const updateMutation = useMutation({
 		...orpc.flags.update.mutationOptions(),
 	});
-	const createFlagScheduleMutation = useMutation({
-		...orpc.flagSchedules.create.mutationOptions(),
-	});
-	const updateFlagScheduleMutation = useMutation({
-		...orpc.flagSchedules.update.mutationOptions(),
-	});
 
 	const resetForm = useCallback(() => {
 		if (flag && isEditing) {
@@ -209,18 +194,7 @@ export function FlagSheet({
 					environment: flag.environment || undefined,
 					targetGroupIds: extractTargetGroupIds(),
 				},
-				schedule: schedule
-					? {
-							id: schedule?.id,
-							type: schedule?.type,
-							isEnabled: schedule?.isEnabled,
-							scheduledAt: schedule?.scheduledAt
-								? new Date(schedule.scheduledAt).toISOString()
-								: undefined,
-							rolloutSteps: schedule?.rolloutSteps ?? [],
-							flagId: schedule?.flagId,
-						}
-					: undefined,
+				schedule: undefined,
 			});
 		} else if (template) {
 			const templateKey = template.name.toLowerCase().replaceAll(/\s+/g, "-");
@@ -268,7 +242,7 @@ export function FlagSheet({
 		if (!template) {
 			setExpandedSection(null);
 		}
-	}, [flag, isEditing, form, schedule, template]);
+	}, [flag, isEditing, form, template]);
 
 	const handleOpenChange = (open: boolean) => {
 		if (!open) {
@@ -312,9 +286,6 @@ export function FlagSheet({
 	const onSubmit = async (formData: FlagWithScheduleForm) => {
 		try {
 			const data = formData.flag;
-			const scheduleData = formData.schedule;
-
-			let flagIdToUse: string;
 
 			if (isEditing && flag) {
 				const updateData = {
@@ -332,7 +303,6 @@ export function FlagSheet({
 					targetGroupIds: data.targetGroupIds || [],
 				};
 				await updateMutation.mutateAsync(updateData);
-				flagIdToUse = flag.id;
 			} else {
 				const createData = {
 					websiteId,
@@ -349,38 +319,11 @@ export function FlagSheet({
 					rolloutPercentage: data.rolloutPercentage ?? 0,
 					targetGroupIds: data.targetGroupIds || [],
 				};
-				const updatedFlag = await createMutation.mutateAsync(createData);
-				flagIdToUse = updatedFlag.id;
-			}
-
-			if (scheduleData) {
-				if (schedule?.id) {
-					await updateFlagScheduleMutation.mutateAsync({
-						id: schedule.id,
-						flagId: flagIdToUse,
-						type: scheduleData.type,
-						scheduledAt: scheduleData.scheduledAt,
-						rolloutSteps: scheduleData.rolloutSteps || [],
-						isEnabled: scheduleData.isEnabled,
-					});
-				} else {
-					await createFlagScheduleMutation.mutateAsync({
-						flagId: flagIdToUse,
-						type: scheduleData.type,
-						scheduledAt: scheduleData.scheduledAt,
-						rolloutSteps: scheduleData.rolloutSteps || [],
-						isEnabled: scheduleData.isEnabled,
-					});
-				}
+				await createMutation.mutateAsync(createData);
 			}
 
 			toast.success(`Flag ${isEditing ? "updated" : "created"} successfully`);
 
-			queryClient.invalidateQueries({
-				queryKey: orpc.flagSchedules.getByFlagId.queryKey({
-					input: { flagId: flagIdToUse },
-				}),
-			});
 			queryClient.invalidateQueries({
 				queryKey: orpc.flags.list.key({ input: { websiteId } }),
 			});
@@ -394,7 +337,6 @@ export function FlagSheet({
 			if (error instanceof Error) {
 				errorMessage = error.message;
 			} else if (typeof error === "object" && error !== null) {
-				// Handle orpc error format
 				if ("message" in error && typeof error.message === "string") {
 					errorMessage = error.message;
 				} else if ("error" in error && typeof error.error === "string") {
