@@ -3,6 +3,7 @@
 import {
 	ArrowClockwiseIcon,
 	BookOpenIcon,
+	BugIcon,
 	CaretDownIcon,
 	CheckIcon,
 	ClipboardIcon,
@@ -47,9 +48,9 @@ import {
 import { generateNpmCode, generateScriptTag } from "../utils/code-generators";
 import type { TrackingOptionConfig, TrackingOptions } from "../utils/types";
 
-type TrackingSetupTabProps = {
+interface TrackingSetupTabProps {
 	websiteId: string;
-};
+}
 
 const highlighter = createHighlighterCoreSync({
 	themes: [vesper],
@@ -521,6 +522,196 @@ function ConfigurationStep({
 	);
 }
 
+function DiagnosticsStep() {
+	const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
+
+	return (
+		<div className="space-y-3">
+			<Collapsible onOpenChange={setDiagnosticsOpen} open={diagnosticsOpen}>
+				<CollapsibleTrigger asChild>
+					<button
+						className="flex w-full items-center justify-between rounded border bg-card p-3 hover:bg-accent"
+						type="button"
+					>
+						<div className="flex items-center gap-3">
+							<div className="flex size-8 items-center justify-center rounded bg-accent">
+								<BugIcon
+									className="size-4 text-muted-foreground"
+									weight="duotone"
+								/>
+							</div>
+							<div className="text-left">
+								<h4 className="font-medium text-sm">Troubleshooting Guide</h4>
+								<p className="text-muted-foreground text-xs">
+									Common issues and how to fix them
+								</p>
+							</div>
+						</div>
+						<CaretDownIcon
+							className={cn(
+								"size-4 text-muted-foreground transition-transform",
+								diagnosticsOpen && "rotate-180"
+							)}
+							weight="bold"
+						/>
+					</button>
+				</CollapsibleTrigger>
+				<CollapsibleContent className="pt-3">
+					<div className="space-y-3">
+						<div className="space-y-3 rounded border bg-background/50 p-4">
+							<div className="space-y-2">
+								<div className="flex items-start gap-2">
+									<WarningCircleIcon
+										className="mt-0.5 size-4 shrink-0 text-amber-500"
+										weight="duotone"
+									/>
+									<div className="min-w-0 flex-1">
+										<h5 className="font-semibold text-sm">
+											Localhost events are disabled
+										</h5>
+										<p className="text-muted-foreground text-xs">
+											Events from localhost are disabled by default.
+										</p>
+									</div>
+								</div>
+							</div>
+
+							<div className="space-y-2">
+								<div className="flex items-start gap-2">
+									<WarningCircleIcon
+										className="mt-0.5 size-4 shrink-0 text-amber-500"
+										weight="duotone"
+									/>
+									<div className="min-w-0 flex-1">
+										<h5 className="font-semibold text-sm">Origin mismatch</h5>
+										<p className="text-muted-foreground text-xs">
+											Events must be sent from the same domain configured for
+											your website. Cross-origin requests are blocked for
+											security. Verify your website URL matches the domain in
+											website settings.
+										</p>
+									</div>
+								</div>
+							</div>
+
+							<div className="space-y-2">
+								<div className="flex items-start gap-2">
+									<WarningCircleIcon
+										className="mt-0.5 size-4 shrink-0 text-amber-500"
+										weight="duotone"
+									/>
+									<div className="min-w-0 flex-1">
+										<h5 className="font-semibold text-sm">
+											Script not loading
+										</h5>
+										<p className="text-muted-foreground text-xs">
+											Open your browser's Developer Tools (F12) → Network tab
+											and reload your page. Look for a request to{" "}
+											<code className="rounded bg-accent px-1 py-0.5 font-mono">
+												databuddy.js
+											</code>{" "}
+											or similar. If it fails, verify the script tag is in the{" "}
+											<code className="rounded bg-accent px-1 py-0.5 font-mono">
+												{"<head>"}
+											</code>{" "}
+											section and your website ID is correct.
+										</p>
+									</div>
+								</div>
+							</div>
+
+							<div className="space-y-2">
+								<div className="flex items-start gap-2">
+									<WarningCircleIcon
+										className="mt-0.5 size-4 shrink-0 text-amber-500"
+										weight="duotone"
+									/>
+									<div className="min-w-0 flex-1">
+										<h5 className="font-semibold text-sm">
+											Ad blockers & privacy tools
+										</h5>
+										<p className="text-muted-foreground text-xs">
+											Browser extensions like uBlock Origin, Privacy Badger, or
+											strict browser privacy settings may block analytics
+											scripts. Test with extensions disabled or use a custom
+											tracking domain (contact support for setup).
+										</p>
+									</div>
+								</div>
+							</div>
+
+							<div className="space-y-2">
+								<div className="flex items-start gap-2">
+									<LightningIcon
+										className="mt-0.5 size-4 shrink-0 text-blue-500"
+										weight="duotone"
+									/>
+									<div className="min-w-0 flex-1">
+										<h5 className="font-semibold text-sm">
+											Data appears delayed
+										</h5>
+										<p className="text-muted-foreground text-xs">
+											Analytics data typically appears within 10-20 seconds
+											after events are sent.
+										</p>
+									</div>
+								</div>
+							</div>
+
+							<div className="space-y-2">
+								<div className="flex items-start gap-2">
+									<WarningCircleIcon
+										className="mt-0.5 size-4 shrink-0 text-amber-500"
+										weight="duotone"
+									/>
+									<div className="min-w-0 flex-1">
+										<h5 className="font-semibold text-sm">
+											Content Security Policy (CSP)
+										</h5>
+										<p className="text-muted-foreground text-xs">
+											If your site has strict CSP headers, you may need to
+											whitelist our tracking domain. Check browser console for
+											CSP errors and add the appropriate directives to your CSP
+											configuration.
+										</p>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div className="rounded border border-blue-500/30 bg-blue-500/5 p-4">
+							<div className="flex items-start gap-2">
+								<BookOpenIcon
+									className="mt-0.5 size-4 shrink-0 text-blue-500"
+									weight="duotone"
+								/>
+								<div className="min-w-0 flex-1">
+									<h5 className="font-semibold text-sm">
+										Still having issues?
+									</h5>
+									<p className="mt-1 text-muted-foreground text-xs">
+										Check our{" "}
+										<a
+											className="text-primary underline-offset-4 hover:underline"
+											href="https://www.databuddy.cc/docs/troubleshooting"
+											rel="noopener noreferrer"
+											target="_blank"
+										>
+											troubleshooting documentation
+										</a>{" "}
+										for detailed debugging steps, or contact support with your
+										website ID for personalized help.
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</CollapsibleContent>
+			</Collapsible>
+		</div>
+	);
+}
+
 export function WebsiteTrackingSetupTab({ websiteId }: TrackingSetupTabProps) {
 	const [copiedBlockId, setCopiedBlockId] = useState<string | null>(null);
 	const [isRefreshing, setIsRefreshing] = useState(false);
@@ -613,6 +804,22 @@ export function WebsiteTrackingSetupTab({ websiteId }: TrackingSetupTabProps) {
 								onToggleOption={handleToggleOption}
 								trackingOptions={trackingOptions}
 							/>
+						</div>
+					</CardContent>
+				</Card>
+
+				{/* Step 3: Diagnostics */}
+				<Card className="gap-0 py-0">
+					<CardContent className="p-0">
+						<div className="border-b p-4">
+							<StepIndicator
+								description="Test your setup and troubleshoot issues"
+								step={3}
+								title="Verify & Troubleshoot"
+							/>
+						</div>
+						<div className="p-4">
+							<DiagnosticsStep />
 						</div>
 					</CardContent>
 				</Card>
