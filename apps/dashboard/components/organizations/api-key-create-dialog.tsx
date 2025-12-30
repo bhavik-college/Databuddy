@@ -77,7 +77,12 @@ export function ApiKeyCreateDialog({
 	const [globalScopes, setGlobalScopes] = useState<ApiScope[]>([]);
 	const [websiteAccess, setWebsiteAccess] = useState<ApiKeyAccessEntry[]>([]);
 	const [websiteToAdd, setWebsiteToAdd] = useState<string | undefined>();
-	const [created, setCreated] = useState<{ secret: string } | null>(null);
+	const [created, setCreated] = useState<{
+		id: string;
+		secret: string;
+		prefix: string;
+		start: string;
+	} | null>(null);
 	const [copied, setCopied] = useState(false);
 
 	const { data: websites } = useQuery({
@@ -94,11 +99,13 @@ export function ApiKeyCreateDialog({
 		onSuccess: (res) => {
 			queryClient.invalidateQueries({ queryKey: orpc.apikeys.list.key() });
 			setCreated(res);
-			onSuccessAction(res);
 		},
 	});
 
 	const handleClose = () => {
+		if (created) {
+			onSuccessAction(created);
+		}
 		onOpenChangeAction(false);
 		setTimeout(() => {
 			form.reset();
@@ -158,16 +165,22 @@ export function ApiKeyCreateDialog({
 
 	const onSubmit = form.handleSubmit((values) => {
 		const resources: Record<string, ApiScope[]> = {};
+
+		if (globalScopes.length > 0) {
+			resources.global = globalScopes;
+		}
+
+		// Add website-specific scopes with proper prefix
 		for (const entry of websiteAccess) {
-			if (entry.resourceId) {
-				resources[entry.resourceId] = entry.scopes;
+			if (entry.resourceId && entry.scopes.length > 0) {
+				resources[`website:${entry.resourceId}`] = entry.scopes;
 			}
 		}
 
 		mutation.mutate({
 			name: values.name,
 			organizationId,
-			scopes: globalScopes,
+			scopes: [],
 			resources: Object.keys(resources).length > 0 ? resources : undefined,
 		});
 	});
