@@ -242,7 +242,7 @@ export function WebsiteAudienceTab({
 	isRefreshing,
 	filters,
 	addFilter,
-}: Omit<FullTabProps, "setIsRefreshing">) {
+}: Omit<FullTabProps, "setIsRefreshing" | "websiteData">) {
 	const batchQueries = useMemo(
 		() => [
 			{

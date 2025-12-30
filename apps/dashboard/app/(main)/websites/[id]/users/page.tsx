@@ -15,7 +15,7 @@ import {
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
-import { useAtom } from "jotai";
+import { useAtomValue } from "jotai";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -104,7 +104,7 @@ export default function UsersPage() {
 
 	const router = useRouter();
 	const { dateRange } = useDateFilters();
-	const [filters] = useAtom(dynamicQueryFiltersAtom);
+	const filters = useAtomValue(dynamicQueryFiltersAtom);
 
 	const [page, setPage] = useState(1);
 	const [allUsers, setAllUsers] = useState<ProfileData[]>([]);
