@@ -11,7 +11,7 @@ import {
 	TrashIcon,
 } from "@phosphor-icons/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { type Dispatch, type SetStateAction, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { orpc } from "@/lib/orpc";
@@ -37,19 +37,17 @@ import {
 } from "../ui/sheet";
 import type { ApiKeyAccessEntry, ApiScope } from "./api-key-types";
 
-type ApiKeyCreateDialogProps = {
+interface ApiKeyCreateDialogProps {
 	open: boolean;
-	onOpenChange: (open: boolean) => void;
+	onOpenChangeAction: (open: boolean) => void;
 	organizationId?: string;
-	onSuccess: Dispatch<
-		SetStateAction<{
-			id: string;
-			secret: string;
-			prefix: string;
-			start: string;
-		} | null>
-	>;
-};
+	onSuccessAction: (data: {
+		id: string;
+		secret: string;
+		prefix: string;
+		start: string;
+	}) => void;
+}
 
 const SCOPES: { value: ApiScope; label: string }[] = [
 	{ value: "read:data", label: "Read Data" },
@@ -71,9 +69,9 @@ type FormData = z.infer<typeof formSchema>;
 
 export function ApiKeyCreateDialog({
 	open,
-	onOpenChange,
+	onOpenChangeAction,
 	organizationId,
-	onSuccess,
+	onSuccessAction,
 }: ApiKeyCreateDialogProps) {
 	const queryClient = useQueryClient();
 	const [globalScopes, setGlobalScopes] = useState<ApiScope[]>([]);
@@ -96,12 +94,12 @@ export function ApiKeyCreateDialog({
 		onSuccess: (res) => {
 			queryClient.invalidateQueries({ queryKey: orpc.apikeys.list.key() });
 			setCreated(res);
-			onSuccess(res);
+			onSuccessAction(res);
 		},
 	});
 
 	const handleClose = () => {
-		onOpenChange(false);
+		onOpenChangeAction(false);
 		setTimeout(() => {
 			form.reset();
 			setGlobalScopes([]);
@@ -127,8 +125,12 @@ export function ApiKeyCreateDialog({
 	};
 
 	const addWebsite = () => {
-		if (!websiteToAdd) return;
-		if (websiteAccess.some((e) => e.resourceId === websiteToAdd)) return;
+		if (!websiteToAdd) {
+			return;
+		}
+		if (websiteAccess.some((e) => e.resourceId === websiteToAdd)) {
+			return;
+		}
 		setWebsiteAccess((prev) => [
 			...prev,
 			{ resourceType: "website", resourceId: websiteToAdd, scopes: [] },
@@ -143,7 +145,9 @@ export function ApiKeyCreateDialog({
 	const toggleWebsiteScope = (resourceId: string, scope: ApiScope) => {
 		setWebsiteAccess((prev) =>
 			prev.map((entry) => {
-				if (entry.resourceId !== resourceId) return entry;
+				if (entry.resourceId !== resourceId) {
+					return entry;
+				}
 				const scopes = entry.scopes.includes(scope)
 					? entry.scopes.filter((s) => s !== scope)
 					: [...entry.scopes, scope];

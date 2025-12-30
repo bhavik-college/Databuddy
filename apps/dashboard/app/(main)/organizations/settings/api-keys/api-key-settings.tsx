@@ -6,16 +6,17 @@ import { useState } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { ApiKeyCreateDialog } from "@/components/organizations/api-key-create-dialog";
 import { ApiKeyDetailDialog } from "@/components/organizations/api-key-detail-dialog";
+import type { ApiKeyListItem } from "@/components/organizations/api-key-types";
 import { RightSidebar } from "@/components/right-sidebar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Organization } from "@/hooks/use-organizations";
 import { orpc } from "@/lib/orpc";
-import { ApiKeyRow, type ApiKeyRowItem } from "./api-key-row";
+import { ApiKeyRow } from "./api-key-row";
 
-type ApiKeySettingsProps = {
+interface ApiKeySettingsProps {
 	organization: Organization;
-};
+}
 
 function SkeletonRow() {
 	return (
@@ -51,7 +52,7 @@ function ApiKeysSkeleton() {
 export function ApiKeySettings({ organization }: ApiKeySettingsProps) {
 	const [showCreateDialog, setShowCreateDialog] = useState(false);
 	const [showDetailDialog, setShowDetailDialog] = useState(false);
-	const [selectedKey, setSelectedKey] = useState<ApiKeyRowItem | null>(null);
+	const [selectedKey, setSelectedKey] = useState<ApiKeyListItem | null>(null);
 
 	const { data, isLoading, isError } = useQuery({
 		...orpc.apikeys.list.queryOptions({
@@ -62,7 +63,7 @@ export function ApiKeySettings({ organization }: ApiKeySettingsProps) {
 		staleTime: 0,
 	});
 
-	const items = (data ?? []) as ApiKeyRowItem[];
+	const items = (data ?? []) as ApiKeyListItem[];
 	const activeCount = items.filter((k) => k.enabled && !k.revokedAt).length;
 	const isEmpty = items.length === 0;
 
@@ -129,7 +130,10 @@ export function ApiKeySettings({ organization }: ApiKeySettingsProps) {
 			</div>
 
 			<ApiKeyCreateDialog
-				onOpenChange={setShowCreateDialog}
+				onOpenChangeAction={setShowCreateDialog}
+				onSuccessAction={() => {
+					setShowCreateDialog(false);
+				}}
 				open={showCreateDialog}
 				organizationId={organization.id}
 			/>

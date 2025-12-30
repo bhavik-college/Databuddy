@@ -30,27 +30,27 @@ export type ApiResourceType =
 	| "custom_events"
 	| "export_data";
 
-export type ApiKeyAccessEntry = {
+export interface ApiKeyAccessEntry {
 	resourceType: ApiResourceType;
 	resourceId?: string | null;
 	scopes: ApiScope[];
 };
 
-export type ApiKeyListItem = {
+export interface ApiKeyListItem {
 	id: string;
 	name: string;
 	prefix: string;
 	start: string;
 	type: "user" | "sdk" | "automation";
 	enabled: boolean;
-	revokedAt?: string | null;
+	revokedAt?: Date | null;
 	expiresAt?: string | null;
 	scopes: ApiScope[];
 	rateLimitEnabled?: boolean;
 	rateLimitTimeWindow?: number | null;
 	rateLimitMax?: number | null;
-	createdAt: string;
-	updatedAt: string;
+	createdAt: Date;
+	updatedAt: Date;
 	metadata?: Record<string, unknown>;
 };
 
@@ -58,7 +58,7 @@ export interface ApiKeyDetail extends ApiKeyListItem {
 	access: Array<{ id: string } & ApiKeyAccessEntry>;
 }
 
-export type CreateApiKeyInput = {
+export interface CreateApiKeyInput {
 	name: string;
 	organizationId?: string;
 	type?: "user" | "sdk" | "automation";

@@ -8,25 +8,14 @@ import {
 	WarningIcon,
 } from "@phosphor-icons/react";
 import dayjs from "dayjs";
+import type { ApiKeyListItem } from "@/components/organizations/api-key-types";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-export type ApiKeyRowItem = {
-	id: string;
-	name: string;
-	prefix: string;
-	start: string;
-	enabled: boolean;
-	revokedAt: Date | null;
-	expiresAt: string | null;
-	createdAt: Date;
-	scopes: string[];
-};
-
-type ApiKeyRowProps = {
-	apiKey: ApiKeyRowItem;
+interface ApiKeyRowProps {
+	apiKey: ApiKeyListItem;
 	onSelect: () => void;
-};
+}
 
 export function ApiKeyRow({ apiKey, onSelect }: ApiKeyRowProps) {
 	const isActive = apiKey.enabled && !apiKey.revokedAt;
