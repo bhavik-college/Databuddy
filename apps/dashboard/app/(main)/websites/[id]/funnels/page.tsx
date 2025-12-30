@@ -2,10 +2,10 @@
 
 import { GATED_FEATURES } from "@databuddy/shared/types/features";
 import { FunnelIcon, TrendDownIcon } from "@phosphor-icons/react";
-import { useAtom } from "jotai";
+import { useAtomValue } from "jotai";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { FeatureGate } from "@/components/feature-gate";
 import { Card, CardContent } from "@/components/ui/card";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
@@ -18,7 +18,6 @@ import {
 	useFunnelPerformance,
 	useFunnels,
 } from "@/hooks/use-funnels";
-import { useTrackingSetup } from "@/hooks/use-tracking-setup";
 import { isAnalyticsRefreshingAtom } from "@/stores/jotai/filterAtoms";
 import type { FunnelAnalyticsData } from "@/types/funnels";
 import { WebsitePageHeader } from "../_components/website-page-header";
@@ -30,7 +29,6 @@ import {
 	FunnelsList,
 } from "./_components";
 
-// Only dialogs are lazy loaded since they're conditionally rendered
 const EditFunnelDialog = dynamic(
 	() =>
 		import("./_components/edit-funnel-dialog").then((m) => ({
@@ -52,7 +50,7 @@ function FunnelsListSkeleton() {
 export default function FunnelsPage() {
 	const { id } = useParams();
 	const websiteId = id as string;
-	const [isRefreshing, setIsRefreshing] = useAtom(isAnalyticsRefreshingAtom);
+	const isRefreshing = useAtomValue(isAnalyticsRefreshingAtom);
 	const [expandedFunnelId, setExpandedFunnelId] = useState<string | null>(null);
 	const [selectedReferrer, setSelectedReferrer] = useState("all");
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -61,14 +59,12 @@ export default function FunnelsPage() {
 	);
 	const [deletingFunnelId, setDeletingFunnelId] = useState<string | null>(null);
 
-	const { refetchTrackingSetup } = useTrackingSetup(websiteId);
 	const { formattedDateRangeState, dateRange } = useDateFilters();
 
 	const {
 		data: funnels,
 		isLoading: funnelsLoading,
 		error: funnelsError,
-		refetch: refetchFunnels,
 		createFunnel,
 		updateFunnel,
 		deleteFunnel,
@@ -76,11 +72,9 @@ export default function FunnelsPage() {
 		isUpdating,
 	} = useFunnels(websiteId);
 
-	// Preload analytics for all funnels
 	const { data: performanceData, isLoading: performanceLoading } =
 		useFunnelPerformance(websiteId, dateRange, !!funnels && funnels.length > 0);
 
-	// Detailed analytics for expanded funnel
 	const {
 		data: analyticsData,
 		isLoading: analyticsLoading,
@@ -94,7 +88,6 @@ export default function FunnelsPage() {
 		data: referrerAnalyticsData,
 		isLoading: referrerAnalyticsLoading,
 		error: referrerAnalyticsError,
-		refetch: refetchReferrerAnalytics,
 	} = useFunnelAnalyticsByReferrer(
 		websiteId,
 		expandedFunnelId ?? "",
@@ -107,7 +100,6 @@ export default function FunnelsPage() {
 
 	const autocompleteQuery = useAutocompleteData(websiteId);
 
-	// Analytics map from preloaded data
 	const analyticsMap = useMemo(() => {
 		const map = new Map<string, FunnelAnalyticsData | null>();
 
@@ -119,7 +111,6 @@ export default function FunnelsPage() {
 			}
 		}
 
-		// Override with detailed data for expanded funnel
 		if (expandedFunnelId && analyticsData) {
 			map.set(expandedFunnelId, analyticsData);
 		}
@@ -127,7 +118,6 @@ export default function FunnelsPage() {
 		return map;
 	}, [performanceData, expandedFunnelId, analyticsData]);
 
-	// Loading states
 	const loadingAnalyticsIds = useMemo(() => {
 		const set = new Set<string>();
 		if (performanceLoading && funnels) {
@@ -140,33 +130,6 @@ export default function FunnelsPage() {
 		}
 		return set;
 	}, [performanceLoading, funnels, expandedFunnelId, analyticsLoading]);
-
-	const handleRefresh = useCallback(async () => {
-		setIsRefreshing(true);
-		try {
-			const promises: Promise<unknown>[] = [
-				refetchFunnels(),
-				autocompleteQuery.refetch(),
-				refetchTrackingSetup(),
-			];
-			if (expandedFunnelId) {
-				promises.push(refetchAnalytics(), refetchReferrerAnalytics());
-			}
-			await Promise.all(promises);
-		} catch (error) {
-			console.error("Failed to refresh funnel data:", error);
-		} finally {
-			setIsRefreshing(false);
-		}
-	}, [
-		refetchFunnels,
-		refetchAnalytics,
-		refetchReferrerAnalytics,
-		autocompleteQuery.refetch,
-		refetchTrackingSetup,
-		expandedFunnelId,
-		setIsRefreshing,
-	]);
 
 	const handleCreateFunnel = async (data: CreateFunnelData) => {
 		try {
@@ -262,7 +225,6 @@ export default function FunnelsPage() {
 						setEditingFunnel(null);
 						setIsDialogOpen(true);
 					}}
-					onRefreshAction={handleRefresh}
 					subtitle={
 						funnelsLoading
 							? undefined

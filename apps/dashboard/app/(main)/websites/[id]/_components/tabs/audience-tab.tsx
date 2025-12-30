@@ -10,7 +10,7 @@ import type { CellContext, ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { BrowserIcon } from "@/components/icon";
 import { DataTable } from "@/components/table/data-table";
@@ -240,10 +240,9 @@ export function WebsiteAudienceTab({
 	websiteId,
 	dateRange,
 	isRefreshing,
-	setIsRefreshing,
 	filters,
 	addFilter,
-}: FullTabProps) {
+}: Omit<FullTabProps, "setIsRefreshing">) {
 	const batchQueries = useMemo(
 		() => [
 			{
@@ -267,27 +266,8 @@ export function WebsiteAudienceTab({
 		[filters]
 	);
 
-	const {
-		results: batchResults,
-		isLoading: isBatchLoading,
-		refetch: refetchBatch,
-	} = useBatchDynamicQuery(websiteId, dateRange, batchQueries);
-
-	const handleRefresh = useCallback(async () => {
-		try {
-			await refetchBatch();
-		} catch (error) {
-			console.error("Failed to refresh audience data:", error);
-		} finally {
-			setIsRefreshing(false);
-		}
-	}, [refetchBatch, setIsRefreshing]);
-
-	useEffect(() => {
-		if (isRefreshing) {
-			handleRefresh();
-		}
-	}, [isRefreshing, handleRefresh]);
+	const { results: batchResults, isLoading: isBatchLoading } =
+		useBatchDynamicQuery(websiteId, dateRange, batchQueries);
 
 	const geographicData = useMemo(
 		() =>

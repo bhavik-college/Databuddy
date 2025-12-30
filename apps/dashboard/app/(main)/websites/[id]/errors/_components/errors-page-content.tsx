@@ -2,8 +2,8 @@
 
 import { GATED_FEATURES } from "@databuddy/shared/types/features";
 import { BugIcon } from "@phosphor-icons/react";
-import { useAtom } from "jotai";
-import { use, useCallback, useEffect } from "react";
+import { useAtomValue } from "jotai";
+import { use } from "react";
 import { FeatureGate } from "@/components/feature-gate";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDateFilters } from "@/hooks/use-date-filters";
@@ -32,33 +32,16 @@ export const ErrorsPageContent = ({ params }: ErrorsPageContentProps) => {
 	const resolvedParams = use(params);
 	const websiteId = resolvedParams.id;
 
-	const [isRefreshing, setIsRefreshing] = useAtom(isAnalyticsRefreshingAtom);
+	const isRefreshing = useAtomValue(isAnalyticsRefreshingAtom);
 	const { dateRange } = useDateFilters();
 
 	const {
 		results: errorResults,
 		isLoading,
-		refetch,
 		error,
 	} = useEnhancedErrorData(websiteId, dateRange, {
 		queryKey: ["enhancedErrorData", websiteId, dateRange],
 	});
-
-	const handleRefresh = useCallback(async () => {
-		if (isRefreshing) {
-			try {
-				await refetch();
-			} finally {
-				setIsRefreshing(false);
-			}
-		}
-	}, [isRefreshing, refetch, setIsRefreshing]);
-
-	useEffect(() => {
-		if (isRefreshing) {
-			handleRefresh();
-		}
-	}, [isRefreshing, handleRefresh]);
 
 	const getData = <T,>(id: string): T[] =>
 		(errorResults?.find((r) => r.queryId === id)?.data?.[id] as T[]) || [];

@@ -2,9 +2,9 @@
 
 import { GATED_FEATURES } from "@databuddy/shared/types/features";
 import { TargetIcon, TrendDownIcon } from "@phosphor-icons/react";
-import { useAtom } from "jotai";
+import { useAtomValue } from "jotai";
 import { useParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { FeatureGate } from "@/components/feature-gate";
 import { Card, CardContent } from "@/components/ui/card";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
@@ -35,7 +35,7 @@ function GoalsListSkeleton() {
 export default function GoalsPage() {
 	const { id } = useParams();
 	const websiteId = id as string;
-	const [isRefreshing, setIsRefreshing] = useAtom(isAnalyticsRefreshingAtom);
+	const isRefreshing = useAtomValue(isAnalyticsRefreshingAtom);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
 	const [deletingGoalId, setDeletingGoalId] = useState<string | null>(null);
@@ -46,7 +46,6 @@ export default function GoalsPage() {
 		data: goals,
 		isLoading: goalsLoading,
 		error: goalsError,
-		refetch: refetchGoals,
 		createGoal,
 		updateGoal,
 		deleteGoal,
@@ -56,33 +55,10 @@ export default function GoalsPage() {
 
 	const goalIds = useMemo(() => goals.map((goal) => goal.id), [goals]);
 
-	const {
-		data: goalAnalytics,
-		isLoading: analyticsLoading,
-		refetch: refetchAnalytics,
-	} = useBulkGoalAnalytics(websiteId, goalIds, dateRange);
+	const { data: goalAnalytics, isLoading: analyticsLoading } =
+		useBulkGoalAnalytics(websiteId, goalIds, dateRange);
 
 	const autocompleteQuery = useAutocompleteData(websiteId);
-
-	const handleRefresh = useCallback(async () => {
-		setIsRefreshing(true);
-		try {
-			await Promise.all([refetchGoals(), autocompleteQuery.refetch()]);
-			if (goalIds.length > 0) {
-				refetchAnalytics();
-			}
-		} catch (error) {
-			console.error("Failed to refresh goal data:", error);
-		} finally {
-			setIsRefreshing(false);
-		}
-	}, [
-		refetchGoals,
-		refetchAnalytics,
-		goalIds.length,
-		autocompleteQuery.refetch,
-		setIsRefreshing,
-	]);
 
 	const handleSaveGoal = async (
 		data: Goal | Omit<CreateGoalData, "websiteId">
@@ -175,7 +151,6 @@ export default function GoalsPage() {
 						setEditingGoal(null);
 						setIsDialogOpen(true);
 					}}
-					onRefreshAction={handleRefresh}
 					subtitle={
 						goalsLoading
 							? undefined
