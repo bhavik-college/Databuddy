@@ -1,7 +1,6 @@
 import { and, desc, eq, goals, inArray, isNull } from "@databuddy/db";
 import { createDrizzleCache, redis } from "@databuddy/redis";
 import { GATED_FEATURES } from "@databuddy/shared/types/features";
-import { ORPCError } from "@orpc/server";
 import { randomUUIDv7 } from "bun";
 import { z } from "zod";
 import {
@@ -64,7 +63,7 @@ export const goalsRouter = {
 
 	getById: publicProcedure
 		.input(z.object({ id: z.string(), websiteId: z.string() }))
-		.handler(async ({ context, input }) => {
+		.handler(async ({ context, input, errors }) => {
 			await authorizeWebsiteAccess(context, input.websiteId, "read");
 			const [goal] = await context.db
 				.select()
@@ -79,7 +78,10 @@ export const goalsRouter = {
 				.limit(1);
 
 			if (!goal) {
-				throw new ORPCError("NOT_FOUND", { message: "Goal not found" });
+				throw errors.NOT_FOUND({
+					message: "Goal not found",
+					data: { resourceType: "goal", resourceId: input.id },
+				});
 			}
 			return goal;
 		}),
@@ -149,7 +151,7 @@ export const goalsRouter = {
 				isActive: z.boolean().optional(),
 			})
 		)
-		.handler(async ({ context, input }) => {
+		.handler(async ({ context, input, errors }) => {
 			const [existingGoal] = await context.db
 				.select({ websiteId: goals.websiteId })
 				.from(goals)
@@ -157,7 +159,10 @@ export const goalsRouter = {
 				.limit(1);
 
 			if (!existingGoal) {
-				throw new ORPCError("NOT_FOUND", { message: "Goal not found" });
+				throw errors.NOT_FOUND({
+					message: "Goal not found",
+					data: { resourceType: "goal", resourceId: input.id },
+				});
 			}
 
 			await authorizeWebsiteAccess(context, existingGoal.websiteId, "update");
@@ -174,7 +179,7 @@ export const goalsRouter = {
 
 	delete: protectedProcedure
 		.input(z.object({ id: z.string() }))
-		.handler(async ({ context, input }) => {
+		.handler(async ({ context, input, errors }) => {
 			const [existingGoal] = await context.db
 				.select({ websiteId: goals.websiteId })
 				.from(goals)
@@ -182,7 +187,10 @@ export const goalsRouter = {
 				.limit(1);
 
 			if (!existingGoal) {
-				throw new ORPCError("NOT_FOUND", { message: "Goal not found" });
+				throw errors.NOT_FOUND({
+					message: "Goal not found",
+					data: { resourceType: "goal", resourceId: input.id },
+				});
 			}
 
 			await authorizeWebsiteAccess(context, existingGoal.websiteId, "delete");
@@ -204,7 +212,7 @@ export const goalsRouter = {
 				endDate: z.string().optional(),
 			})
 		)
-		.handler(async ({ context, input }) => {
+		.handler(async ({ context, input, errors }) => {
 			await authorizeWebsiteAccess(context, input.websiteId, "read");
 
 			const { startDate, endDate } =
@@ -225,7 +233,10 @@ export const goalsRouter = {
 				.limit(1);
 
 			if (!goal) {
-				throw new ORPCError("NOT_FOUND", { message: "Goal not found" });
+				throw errors.NOT_FOUND({
+					message: "Goal not found",
+					data: { resourceType: "goal", resourceId: input.goalId },
+				});
 			}
 
 			const effectiveStartDate = getEffectiveStartDate(
@@ -326,10 +337,10 @@ export const goalsRouter = {
 					const filters = (goal.filters as Filter[]) || [];
 					const totalUsers = goal.ignoreHistoricData
 						? await getTotalWebsiteUsers(
-								input.websiteId,
-								effectiveStartDate,
-								endDate
-							)
+							input.websiteId,
+							effectiveStartDate,
+							endDate
+						)
 						: baseTotalUsers;
 
 					try {

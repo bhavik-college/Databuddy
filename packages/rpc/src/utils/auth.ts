@@ -40,7 +40,12 @@ const getWebsiteById = cacheable(
  * It verifies if a user has the required permissions for a specific website,
  * checking for ownership or organization roles.
  *
- * @throws {ORPCError} if the user is not authorized.
+ * Note: Uses ORPCError directly which is compatible with type-safe errors
+ * when error codes match the baseErrors definitions.
+ *
+ * @throws {ORPCError} NOT_FOUND if website doesn't exist
+ * @throws {ORPCError} UNAUTHORIZED if user is not authenticated
+ * @throws {ORPCError} FORBIDDEN if user lacks permission
  */
 export async function authorizeWebsiteAccess(
 	ctx: Context,
@@ -50,7 +55,10 @@ export async function authorizeWebsiteAccess(
 	const website = await getWebsiteById(websiteId);
 
 	if (!website) {
-		throw new ORPCError("NOT_FOUND", { message: "Website not found." });
+		throw new ORPCError("NOT_FOUND", {
+			message: "Website not found",
+			data: { resourceType: "website", resourceId: websiteId },
+		});
 	}
 
 	if (permission === "read" && website.isPublic) {
@@ -59,7 +67,7 @@ export async function authorizeWebsiteAccess(
 
 	if (!ctx.user) {
 		throw new ORPCError("UNAUTHORIZED", {
-			message: "Authentication is required for this action.",
+			message: "Authentication is required for this action",
 		});
 	}
 
@@ -74,12 +82,12 @@ export async function authorizeWebsiteAccess(
 		});
 		if (!success) {
 			throw new ORPCError("FORBIDDEN", {
-				message: "You do not have permission to perform this action.",
+				message: "You do not have permission to perform this action",
 			});
 		}
 	} else if (website.userId !== ctx.user.id) {
 		throw new ORPCError("FORBIDDEN", {
-			message: "You are not the owner of this website.",
+			message: "You are not the owner of this website",
 		});
 	}
 
@@ -132,7 +140,8 @@ export async function isFullyAuthorized(
  * If schedule has websiteId, checks website access.
  * Otherwise, checks that user owns the schedule.
  *
- * @throws {ORPCError} if the user is not authorized.
+ * @throws {ORPCError} UNAUTHORIZED if user is not authenticated
+ * @throws {ORPCError} FORBIDDEN if user lacks permission
  */
 export async function authorizeUptimeScheduleAccess(
 	ctx: Context,
@@ -140,7 +149,7 @@ export async function authorizeUptimeScheduleAccess(
 ) {
 	if (!ctx.user) {
 		throw new ORPCError("UNAUTHORIZED", {
-			message: "Authentication is required for this action.",
+			message: "Authentication is required for this action",
 		});
 	}
 
@@ -152,15 +161,7 @@ export async function authorizeUptimeScheduleAccess(
 		await authorizeWebsiteAccess(ctx, schedule.websiteId, "update");
 	} else if (schedule.userId !== ctx.user.id) {
 		throw new ORPCError("FORBIDDEN", {
-			message: "You do not have permission to access this monitor.",
+			message: "You do not have permission to access this monitor",
 		});
 	}
 }
-
-/**
- * A utility to centralize authorization checks for database connections.
- * It verifies if a user has the required permissions for a specific database connection,
- * checking for ownership or organization roles.
- *
- * @throws {ORPCError} if the user is not authorized.
- */

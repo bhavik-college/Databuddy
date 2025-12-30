@@ -1,7 +1,6 @@
 import { and, desc, eq, funnelDefinitions, isNull, sql } from "@databuddy/db";
 import { createDrizzleCache, redis } from "@databuddy/redis";
 import { GATED_FEATURES } from "@databuddy/shared/types/features";
-import { ORPCError } from "@orpc/server";
 import { randomUUIDv7 } from "bun";
 import { z } from "zod";
 import {
@@ -110,7 +109,7 @@ export const funnelsRouter = {
 
 	getById: protectedProcedure
 		.input(z.object({ id: z.string(), websiteId: z.string() }))
-		.handler(({ context, input }) =>
+		.handler(({ context, input, errors }) =>
 			cache.withCache({
 				key: `byId:${input.id}:${input.websiteId}`,
 				ttl: CACHE_TTL,
@@ -130,7 +129,10 @@ export const funnelsRouter = {
 						.limit(1);
 
 					if (!funnel) {
-						throw new ORPCError("NOT_FOUND", { message: "Funnel not found" });
+						throw errors.NOT_FOUND({
+							message: "Funnel not found",
+							data: { resourceType: "funnel", resourceId: input.id },
+						});
 					}
 					return funnel;
 				},
@@ -200,7 +202,7 @@ export const funnelsRouter = {
 				isActive: z.boolean().optional(),
 			})
 		)
-		.handler(async ({ context, input }) => {
+		.handler(async ({ context, input, errors }) => {
 			const [existingFunnel] = await context.db
 				.select({ websiteId: funnelDefinitions.websiteId })
 				.from(funnelDefinitions)
@@ -213,7 +215,10 @@ export const funnelsRouter = {
 				.limit(1);
 
 			if (!existingFunnel) {
-				throw new ORPCError("NOT_FOUND", { message: "Funnel not found" });
+				throw errors.NOT_FOUND({
+					message: "Funnel not found",
+					data: { resourceType: "funnel", resourceId: input.id },
+				});
 			}
 
 			await authorizeWebsiteAccess(context, existingFunnel.websiteId, "update");
@@ -233,7 +238,7 @@ export const funnelsRouter = {
 
 	delete: protectedProcedure
 		.input(z.object({ id: z.string() }))
-		.handler(async ({ context, input }) => {
+		.handler(async ({ context, input, errors }) => {
 			const [existingFunnel] = await context.db
 				.select({ websiteId: funnelDefinitions.websiteId })
 				.from(funnelDefinitions)
@@ -246,7 +251,10 @@ export const funnelsRouter = {
 				.limit(1);
 
 			if (!existingFunnel) {
-				throw new ORPCError("NOT_FOUND", { message: "Funnel not found" });
+				throw errors.NOT_FOUND({
+					message: "Funnel not found",
+					data: { resourceType: "funnel", resourceId: input.id },
+				});
 			}
 
 			await authorizeWebsiteAccess(context, existingFunnel.websiteId, "delete");
@@ -274,7 +282,7 @@ export const funnelsRouter = {
 				endDate: z.string().optional(),
 			})
 		)
-		.handler(async ({ context, input }) => {
+		.handler(async ({ context, input, errors }) => {
 			await authorizeWebsiteAccess(context, input.websiteId, "read");
 
 			const { startDate, endDate } =
@@ -295,12 +303,15 @@ export const funnelsRouter = {
 				.limit(1);
 
 			if (!funnel) {
-				throw new ORPCError("NOT_FOUND", { message: "Funnel not found" });
+				throw errors.NOT_FOUND({
+					message: "Funnel not found",
+					data: { resourceType: "funnel", resourceId: input.funnelId },
+				});
 			}
 
 			const steps = funnel.steps as Step[];
 			if (!steps?.length) {
-				throw new ORPCError("BAD_REQUEST", { message: "Funnel has no steps" });
+				throw errors.BAD_REQUEST({ message: "Funnel has no steps" });
 			}
 
 			const effectiveStartDate = getEffectiveStartDate(
@@ -337,7 +348,7 @@ export const funnelsRouter = {
 				endDate: z.string().optional(),
 			})
 		)
-		.handler(async ({ context, input }) => {
+		.handler(async ({ context, input, errors }) => {
 			await authorizeWebsiteAccess(context, input.websiteId, "read");
 
 			const { startDate, endDate } =
@@ -358,12 +369,15 @@ export const funnelsRouter = {
 				.limit(1);
 
 			if (!funnel) {
-				throw new ORPCError("NOT_FOUND", { message: "Funnel not found" });
+				throw errors.NOT_FOUND({
+					message: "Funnel not found",
+					data: { resourceType: "funnel", resourceId: input.funnelId },
+				});
 			}
 
 			const steps = funnel.steps as Step[];
 			if (!steps?.length) {
-				throw new ORPCError("BAD_REQUEST", { message: "Funnel has no steps" });
+				throw errors.BAD_REQUEST({ message: "Funnel has no steps" });
 			}
 
 			const effectiveStartDate = getEffectiveStartDate(

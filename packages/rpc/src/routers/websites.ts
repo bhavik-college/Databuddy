@@ -40,7 +40,7 @@ const websiteCache = createDrizzleCache({ redis, namespace: "websites" });
 const CACHE_DURATION = 60; // seconds
 const TREND_THRESHOLD = 5; // percentage
 
-type EventsCheckResult = {
+interface EventsCheckResult {
 	hasEvents: boolean;
 	error: string | null;
 };
@@ -82,11 +82,11 @@ const buildStatusMessage = (hasEvents: boolean, eventsError: string | null) => {
 
 	return "Tracking not set up. Please install the script tag.";
 };
-type ChartDataPoint = {
+interface ChartDataPoint {
 	websiteId: string;
 	date: string;
 	value: number;
-};
+}
 
 const calculateAverage = (values: { value: number }[]) =>
 	values.length > 0
@@ -123,7 +123,7 @@ const calculateTrend = (dataPoints: { date: string; value: number }[]) => {
 	return { type: "neutral" as const, value: Math.abs(percentageChange) };
 };
 
-type ActiveUsersRow = {
+interface ActiveUsersRow {
 	websiteId: string;
 	activeUsers: number;
 };

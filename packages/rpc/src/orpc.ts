@@ -8,8 +8,9 @@ import {
 	session as sessionTable,
 	user as userTable,
 } from "@databuddy/db";
-import { os as createOS, ORPCError } from "@orpc/server";
+import { os as createOS } from "@orpc/server";
 import { Autumn as autumn } from "autumn-js";
+import { baseErrors } from "./errors";
 import {
 	enrichSpanWithContext,
 	recordORPCError,
@@ -76,11 +77,11 @@ export const createRPCContext = async (opts: { headers: Headers }) => {
 	// Get billing information if user is authenticated
 	let billingContext:
 		| {
-				customerId: string;
-				isOrganization: boolean;
-				canUserUpgrade: boolean;
-				planId: string;
-		  }
+			customerId: string;
+			isOrganization: boolean;
+			canUserUpgrade: boolean;
+			planId: string;
+		}
 		| undefined;
 
 	if (session?.user) {
@@ -104,7 +105,11 @@ export const createRPCContext = async (opts: { headers: Headers }) => {
 
 export type Context = Awaited<ReturnType<typeof createRPCContext>>;
 
-const os = createOS.$context<Context>();
+/**
+ * Base oRPC instance with context and type-safe errors.
+ * All procedures inherit these error definitions for client-side type inference.
+ */
+const os = createOS.$context<Context>().errors(baseErrors);
 
 export const publicProcedure = os.use(({ context, next }) => {
 	setProcedureAttributes("public");
@@ -112,7 +117,7 @@ export const publicProcedure = os.use(({ context, next }) => {
 	return next();
 });
 
-export const protectedProcedure = os.use(({ context, next }) => {
+export const protectedProcedure = os.use(({ context, next, errors }) => {
 	setProcedureAttributes("protected");
 	enrichSpanWithContext(context);
 
@@ -127,9 +132,8 @@ export const protectedProcedure = os.use(({ context, next }) => {
 	}
 
 	if (!(context.user && context.session)) {
-		console.log("UNAUTHORIZED", context.user, context.session);
 		recordORPCError({ code: "UNAUTHORIZED" });
-		throw new ORPCError("UNAUTHORIZED");
+		throw errors.UNAUTHORIZED();
 	}
 
 	return next({
@@ -141,27 +145,27 @@ export const protectedProcedure = os.use(({ context, next }) => {
 	});
 });
 
-export const adminProcedure = protectedProcedure.use(({ context, next }) => {
-	setProcedureAttributes("admin");
-	enrichSpanWithContext(context);
+export const adminProcedure = protectedProcedure.use(
+	({ context, next, errors }) => {
+		setProcedureAttributes("admin");
+		enrichSpanWithContext(context);
 
-	if (context.user.role !== "ADMIN") {
-		recordORPCError({
-			code: "FORBIDDEN",
-			message: "You do not have permission to access this resource",
-		});
-		throw new ORPCError("FORBIDDEN", {
-			message: "You do not have permission to access this resource",
+		if (context.user.role !== "ADMIN") {
+			recordORPCError({
+				code: "FORBIDDEN",
+				message: "Admin access required",
+			});
+			throw errors.FORBIDDEN({ message: "Admin access required" });
+		}
+
+		return next({
+			context: {
+				...context,
+				session: context.session,
+				user: context.user,
+			},
 		});
 	}
-
-	return next({
-		context: {
-			...context,
-			session: context.session,
-			user: context.user,
-		},
-	});
-});
+);
 
 export { os };

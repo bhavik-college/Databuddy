@@ -9,7 +9,6 @@ import {
 	type SQL,
 } from "@databuddy/db";
 import { createDrizzleCache, redis } from "@databuddy/redis";
-import { ORPCError } from "@orpc/server";
 import { randomUUIDv7 } from "bun";
 import { z } from "zod";
 import type { Context } from "../orpc";
@@ -125,15 +124,16 @@ export const annotationsRouter = {
 	// Get annotation by ID
 	getById: publicProcedure
 		.input(z.object({ id: z.string() }))
-		.handler(async ({ context, input }) => {
+		.handler(async ({ context, input, errors }) => {
 			const annotation = await context.db.query.annotations.findFirst({
 				where: and(eq(annotations.id, input.id), isNull(annotations.deletedAt)),
 				columns: { websiteId: true },
 			});
 
 			if (!annotation) {
-				throw new ORPCError("NOT_FOUND", {
+				throw errors.NOT_FOUND({
 					message: "Annotation not found",
+					data: { resourceType: "annotation", resourceId: input.id },
 				});
 			}
 
@@ -155,15 +155,17 @@ export const annotationsRouter = {
 						.limit(1);
 
 					if (result.length === 0) {
-						throw new ORPCError("NOT_FOUND", {
+						throw errors.NOT_FOUND({
 							message: "Annotation not found",
+							data: { resourceType: "annotation", resourceId: input.id },
 						});
 					}
 
 					const annotationResult = result[0];
 					if (!annotationResult) {
-						throw new ORPCError("NOT_FOUND", {
+						throw errors.NOT_FOUND({
 							message: "Annotation not found",
+							data: { resourceType: "annotation", resourceId: input.id },
 						});
 					}
 					await authorizeWebsiteAccess(
@@ -194,7 +196,7 @@ export const annotationsRouter = {
 				isPublic: z.boolean().default(false),
 			})
 		)
-		.handler(async ({ context, input }) => {
+		.handler(async ({ context, input, errors }) => {
 			const website = await authorizeWebsiteAccess(
 				context,
 				input.websiteId,
@@ -207,9 +209,9 @@ export const annotationsRouter = {
 					website
 				);
 				if (!hasPermission) {
-					throw new ORPCError("FORBIDDEN", {
+					throw errors.FORBIDDEN({
 						message:
-							"You cannot create annotations on public websites unless you own them.",
+							"You cannot create annotations on public websites unless you own them",
 					});
 				}
 			}
@@ -250,7 +252,7 @@ export const annotationsRouter = {
 				isPublic: z.boolean().optional(),
 			})
 		)
-		.handler(async ({ context, input }) => {
+		.handler(async ({ context, input, errors }) => {
 			// First verify the annotation exists and get website ID
 			const existingAnnotation = await context.db
 				.select()
@@ -259,8 +261,9 @@ export const annotationsRouter = {
 				.limit(1);
 
 			if (existingAnnotation.length === 0) {
-				throw new ORPCError("NOT_FOUND", {
+				throw errors.NOT_FOUND({
 					message: "Annotation not found",
+					data: { resourceType: "annotation", resourceId: input.id },
 				});
 			}
 
@@ -277,8 +280,8 @@ export const annotationsRouter = {
 
 			// If user doesn't own website, they can only update their own annotations
 			if (!hasPermission && annotation.createdBy !== context.user.id) {
-				throw new ORPCError("FORBIDDEN", {
-					message: "You can only update your own annotations.",
+				throw errors.FORBIDDEN({
+					message: "You can only update your own annotations",
 				});
 			}
 
@@ -299,7 +302,7 @@ export const annotationsRouter = {
 	// Delete annotation (soft delete)
 	delete: protectedProcedure
 		.input(z.object({ id: z.string() }))
-		.handler(async ({ context, input }) => {
+		.handler(async ({ context, input, errors }) => {
 			// First verify the annotation exists and get website ID
 			const existingAnnotation = await context.db
 				.select()
@@ -308,8 +311,9 @@ export const annotationsRouter = {
 				.limit(1);
 
 			if (existingAnnotation.length === 0) {
-				throw new ORPCError("NOT_FOUND", {
+				throw errors.NOT_FOUND({
 					message: "Annotation not found",
+					data: { resourceType: "annotation", resourceId: input.id },
 				});
 			}
 
@@ -326,8 +330,8 @@ export const annotationsRouter = {
 
 			// If user doesn't own website, they can only delete their own annotations
 			if (!hasPermission && annotation.createdBy !== context.user.id) {
-				throw new ORPCError("FORBIDDEN", {
-					message: "You can only delete your own annotations.",
+				throw errors.FORBIDDEN({
+					message: "You can only delete your own annotations",
 				});
 			}
 

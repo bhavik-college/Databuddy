@@ -68,7 +68,7 @@ export function hasPlan(
  * @example
  * ```ts
  * if (isFreePlan(context.billing?.planId)) {
- *   throw new ORPCError("FORBIDDEN", { message: "Upgrade required" });
+ *   throw errors.FEATURE_UNAVAILABLE({ data: { feature: "export" } });
  * }
  * ```
  */
@@ -82,7 +82,7 @@ export function isFreePlan(planId: string | undefined): boolean {
  * @example
  * ```ts
  * if (!canAccessFeature(context.billing?.planId, GATED_FEATURES.AI_AGENT)) {
- *   throw new ORPCError("FORBIDDEN", { message: "AI Agent requires Pro plan" });
+ *   throw errors.FEATURE_UNAVAILABLE({ data: { feature: "ai_agent", requiredPlan: "pro" } });
  * }
  * ```
  */
@@ -99,7 +99,7 @@ export function canAccessFeature(
  * @example
  * ```ts
  * if (!canAccessAiCapability(context.billing?.planId, AI_CAPABILITIES.AUTO_INSIGHTS)) {
- *   throw new ORPCError("FORBIDDEN", { message: "Auto Insights requires Pro plan" });
+ *   throw errors.FEATURE_UNAVAILABLE({ data: { feature: "auto_insights", requiredPlan: "pro" } });
  * }
  * ```
  */
@@ -117,7 +117,7 @@ export function canAccessAiCapability(
  * ```ts
  * const limit = getFeatureLimit(context.billing?.planId, GATED_FEATURES.FUNNELS);
  * if (limit === false) {
- *   throw new ORPCError("FORBIDDEN", { message: "Funnels not available on your plan" });
+ *   throw errors.FEATURE_UNAVAILABLE({ data: { feature: "funnels" } });
  * }
  * ```
  */
@@ -135,10 +135,7 @@ export function getFeatureLimit(
  * ```ts
  * const funnelCount = await getFunnelCount(websiteId);
  * if (!isUsageWithinLimit(context.billing?.planId, GATED_FEATURES.FUNNELS, funnelCount)) {
- *   const nextPlan = getNextPlanForFeature(context.billing?.planId, GATED_FEATURES.FUNNELS);
- *   throw new ORPCError("FORBIDDEN", {
- *     message: `Funnel limit reached. Upgrade to ${nextPlan} for more.`
- *   });
+ *   throw errors.PLAN_LIMIT_EXCEEDED({ data: { limit: 5, current: funnelCount } });
  * }
  * ```
  */
@@ -157,7 +154,7 @@ export function isUsageWithinLimit(
  * ```ts
  * const remaining = getUsageRemaining(context.billing?.planId, GATED_FEATURES.GOALS, currentGoalCount);
  * if (remaining === 0) {
- *   throw new ORPCError("FORBIDDEN", { message: "Goal limit reached" });
+ *   throw errors.PLAN_LIMIT_EXCEEDED({ data: { limit: 3, current: currentGoalCount } });
  * }
  * ```
  */
@@ -170,7 +167,8 @@ export function getUsageRemaining(
 }
 
 /**
- * Throws an error if the feature is not available on the user's plan
+ * Throws an error if the feature is not available on the user's plan.
+ * Uses FEATURE_UNAVAILABLE error code for type-safe client handling.
  *
  * @example
  * ```ts
@@ -184,16 +182,18 @@ export function requireFeature(
 ): void {
 	if (!isFeatureAvailable(planId ?? null, feature)) {
 		const nextPlan = getNextPlanForFeature(planId ?? null, feature);
-		throw new ORPCError("FORBIDDEN", {
+		throw new ORPCError("FEATURE_UNAVAILABLE", {
 			message: nextPlan
 				? `This feature requires ${nextPlan} plan or higher`
-				: "This feature is not available on your plan",
+				: "This feature is not available on your current plan",
+			data: { feature, requiredPlan: nextPlan ?? undefined },
 		});
 	}
 }
 
 /**
- * Throws an error if current usage exceeds the plan's limit
+ * Throws an error if current usage exceeds the plan's limit.
+ * Uses PLAN_LIMIT_EXCEEDED error code for type-safe client handling.
  *
  * @example
  * ```ts
@@ -211,17 +211,19 @@ export function requireUsageWithinLimit(
 		const nextPlan = getNextPlanForFeature(planId ?? null, feature);
 
 		if (limit === false) {
-			throw new ORPCError("FORBIDDEN", {
+			throw new ORPCError("FEATURE_UNAVAILABLE", {
 				message: nextPlan
 					? `This feature requires ${nextPlan} plan or higher`
-					: "This feature is not available on your plan",
+					: "This feature is not available on your current plan",
+				data: { feature, requiredPlan: nextPlan ?? undefined },
 			});
 		}
 
-		throw new ORPCError("FORBIDDEN", {
+		throw new ORPCError("PLAN_LIMIT_EXCEEDED", {
 			message: nextPlan
 				? `Limit of ${limit} reached. Upgrade to ${nextPlan} for more.`
 				: `Limit of ${limit} reached`,
+			data: { limit, current: currentUsage, nextPlan: nextPlan ?? undefined },
 		});
 	}
 }
@@ -240,7 +242,8 @@ export function getUserCapabilities(planId: string | undefined) {
 }
 
 /**
- * Throws an error if the AI capability is not available
+ * Throws an error if the AI capability is not available.
+ * Uses FEATURE_UNAVAILABLE error code for type-safe client handling.
  *
  * @example
  * ```ts
@@ -253,10 +256,11 @@ export function requireAiCapability(
 ): void {
 	if (!isPlanAiCapabilityEnabled(planId ?? null, capability)) {
 		const minPlan = getMinimumPlanForAiCapability(capability);
-		throw new ORPCError("FORBIDDEN", {
+		throw new ORPCError("FEATURE_UNAVAILABLE", {
 			message: minPlan
-				? `This AI capability is not available on your plan; upgrade to ${minPlan} to access it`
-				: "This AI capability is not available on your plan",
+				? `This AI capability requires ${minPlan} plan or higher`
+				: "This AI capability is not available on your current plan",
+			data: { feature: capability, requiredPlan: minPlan ?? undefined },
 		});
 	}
 }
