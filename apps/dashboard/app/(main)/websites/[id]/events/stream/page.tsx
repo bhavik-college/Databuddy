@@ -19,6 +19,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { useAtom } from "jotai";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
+import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,8 +95,14 @@ export default function EventsStreamPage() {
 	const [scrollContainerRef, setScrollContainerRef] =
 		useState<HTMLDivElement | null>(null);
 	const [isInitialLoad, setIsInitialLoad] = useState(true);
-	const [searchQuery, setSearchQuery] = useState("");
-	const [selectedEventType, setSelectedEventType] = useState<string>("all");
+	const [searchQuery, setSearchQuery] = useQueryState(
+		"search",
+		parseAsString.withDefault("")
+	);
+	const [selectedEventType, setSelectedEventType] = useQueryState(
+		"event",
+		parseAsString.withDefault("all")
+	);
 
 	const { events, pagination, isLoading, isError, error } = useEventsStream(
 		websiteId,
