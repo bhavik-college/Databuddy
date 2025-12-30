@@ -1,6 +1,5 @@
 "use client";
 
-import type { InferSelectModel, websites } from "@databuddy/db";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -17,7 +16,11 @@ import {
 } from "@/components/ui/form";
 import { FormDialog } from "@/components/ui/form-dialog";
 import { Input } from "@/components/ui/input";
-import { useCreateWebsite, useUpdateWebsite } from "@/hooks/use-websites";
+import {
+	useCreateWebsite,
+	useUpdateWebsite,
+	type Website,
+} from "@/hooks/use-websites";
 
 interface UpdateWebsiteInput {
 	id: string;
@@ -49,8 +52,8 @@ type FormData = z.infer<typeof formSchema>;
 interface WebsiteDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	website?: InferSelectModel<typeof websites> | null;
-	onSave?: (website: InferSelectModel<typeof websites>) => void;
+	website?: Website | null;
+	onSave?: (website: Website) => void;
 }
 
 export type { CreateWebsiteData, WebsiteDialogProps };

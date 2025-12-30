@@ -10,6 +10,7 @@ import {
 	ChartBarIcon,
 	ChartLineUpIcon,
 	ChartPieIcon,
+	CodeIcon,
 	CreditCardIcon,
 	CurrencyDollarIcon,
 	EyeIcon,
@@ -303,6 +304,9 @@ export const websiteSettingsNavigation: NavigationSection[] = [
 			{ rootLevel: false }
 		),
 		createNavItem("Data Export", FileArrowDownIcon, "/settings/export", {
+			rootLevel: false,
+		}),
+		createNavItem("Setup", CodeIcon, "/settings/tracking", {
 			rootLevel: false,
 		}),
 	]),

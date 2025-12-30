@@ -171,7 +171,7 @@ export function useDeleteWebsite() {
 
 			return { previousData, listKey };
 		},
-		onError: (error, _variables, context) => {
+		onError: (_error, _variables, context) => {
 			if (context?.previousData && context.listKey) {
 				queryClient.setQueryData(context.listKey, context.previousData);
 			}

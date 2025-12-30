@@ -2,6 +2,8 @@
 
 import {
 	ArrowSquareOutIcon,
+	CheckIcon,
+	ClipboardIcon,
 	GearIcon,
 	PencilSimpleIcon,
 	TrashIcon,
@@ -27,6 +29,7 @@ export default function GeneralSettingsPage() {
 
 	const [showEditDialog, setShowEditDialog] = useState(false);
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+	const [copiedWebsiteId, setCopiedWebsiteId] = useState(false);
 
 	const handleWebsiteUpdated = useCallback(() => {
 		setShowEditDialog(false);
@@ -54,6 +57,13 @@ export default function GeneralSettingsPage() {
 		}
 	}, [websiteData, websiteId, deleteWebsiteMutation, router]);
 
+	const handleCopyWebsiteId = useCallback(() => {
+		navigator.clipboard.writeText(websiteId);
+		setCopiedWebsiteId(true);
+		toast.success("Website ID copied to clipboard");
+		setTimeout(() => setCopiedWebsiteId(false), 2000);
+	}, [websiteId]);
+
 	if (!websiteData) {
 		return (
 			<div className="flex h-64 items-center justify-center">
@@ -74,6 +84,31 @@ export default function GeneralSettingsPage() {
 
 			{/* Content */}
 			<div className="flex min-h-0 flex-1 flex-col">
+				{/* Website ID */}
+				<section className="border-b px-4 py-5 sm:px-6">
+					<div className="flex items-center justify-between gap-3">
+						<div className="min-w-0 flex-1">
+							<Label className="block font-medium text-sm">Website ID</Label>
+							<p className="mt-1 truncate font-mono text-muted-foreground text-sm">
+								{websiteId}
+							</p>
+						</div>
+						<Button onClick={handleCopyWebsiteId} size="sm" variant="secondary">
+							{copiedWebsiteId ? (
+								<>
+									<CheckIcon className="size-3.5" weight="bold" />
+									Copied
+								</>
+							) : (
+								<>
+									<ClipboardIcon className="size-3.5" weight="duotone" />
+									Copy
+								</>
+							)}
+						</Button>
+					</div>
+				</section>
+
 				{/* Name */}
 				<section className="border-b px-4 py-5 sm:px-6">
 					<div className="flex items-center justify-between gap-3">
