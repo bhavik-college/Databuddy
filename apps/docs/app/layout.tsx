@@ -3,6 +3,7 @@ import { Databuddy } from "@databuddy/sdk/react";
 import { RootProvider } from "fumadocs-ui/provider";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Manrope } from "next/font/google";
+import Script from "next/script";
 import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type { ReactNode } from "react";
@@ -99,6 +100,11 @@ export default function Layout({ children }: { children: ReactNode }) {
 				trackErrors
 				trackOutgoingLinks
 				trackWebVitals
+			/>
+			<Script
+				data-project-id="1dee68c1-9213-4e17-a4bc-afcc38c8862c"
+				src="https://ingest.promptwatch.com/js/client.min.js"
+				strategy="afterInteractive"
 			/>
 			<body>
 				<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
