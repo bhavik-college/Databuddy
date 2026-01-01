@@ -7,24 +7,56 @@ import {
 	inArray,
 	isNull,
 } from "@databuddy/db";
-import { createDrizzleCache, redis } from "@databuddy/redis";
+import {
+	createDrizzleCache,
+	invalidateCacheableWithArgs,
+	redis,
+} from "@databuddy/redis";
 import { logger } from "@/utils/logger";
 
 const flagsCache = createDrizzleCache({ redis, namespace: "flags" });
 
-const getScope = (websiteId?: string | null, organizationId?: string | null) =>
-	websiteId ? `website:${websiteId}` : `org:${organizationId}`;
+export const getScope = (
+	websiteId?: string | null,
+	organizationId?: string | null
+) => (websiteId ? `website:${websiteId}` : `org:${organizationId}`);
 
 export const invalidateFlagCache = async (
 	id: string,
 	websiteId?: string | null,
-	organizationId?: string | null
+	organizationId?: string | null,
+	flagKey?: string
 ) => {
+	const clientId = websiteId || organizationId;
+
+	let key = flagKey;
+	if (!key && clientId) {
+		const result = await db
+			.select({ key: flags.key })
+			.from(flags)
+			.where(eq(flags.id, id))
+			.limit(1);
+		key = result[0]?.key;
+	}
+
 	const scope = getScope(websiteId, organizationId);
-	await Promise.allSettled([
+	const invalidations: Promise<unknown>[] = [
 		flagsCache.invalidateByTables(["flags"]),
 		flagsCache.invalidateByKey(`byId:${id}:${scope}`),
-	]);
+	];
+
+	if (clientId) {
+		if (key) {
+			invalidations.push(
+				invalidateCacheableWithArgs("flag", [key, clientId])
+			);
+		}
+		invalidations.push(
+			invalidateCacheableWithArgs("flags-client", [clientId])
+		);
+	}
+
+	await Promise.allSettled(invalidations);
 };
 
 export const getScopeCondition = (
@@ -159,7 +191,8 @@ export async function handleFlagUpdateDependencyCascading(
 							return invalidateFlagCache(
 								flagUpdate.id,
 								affectedFlag?.websiteId,
-								affectedFlag?.organizationId
+								affectedFlag?.organizationId,
+								flagUpdate.key
 							);
 						})
 					);

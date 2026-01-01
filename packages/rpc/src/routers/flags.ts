@@ -1,7 +1,6 @@
 import { websitesApi } from "@databuddy/auth";
 import {
 	and,
-	db,
 	desc,
 	eq,
 	flags,
@@ -10,19 +9,17 @@ import {
 	isNull,
 	targetGroups,
 } from "@databuddy/db";
-import {
-	createDrizzleCache,
-	invalidateCacheableWithArgs,
-	redis,
-} from "@databuddy/redis";
+import { createDrizzleCache, redis } from "@databuddy/redis";
 import {
 	flagFormSchema,
 	userRuleSchema,
 	variantSchema,
 } from "@databuddy/shared/flags";
 import {
+	getScope,
 	getScopeCondition,
 	handleFlagUpdateDependencyCascading,
+	invalidateFlagCache,
 } from "@databuddy/shared/flags/utils";
 import { ORPCError } from "@orpc/server";
 import { randomUUIDv7 } from "bun";
@@ -34,9 +31,6 @@ import { getCacheAuthContext } from "../utils/cache-keys";
 
 const flagsCache = createDrizzleCache({ redis, namespace: "flags" });
 const CACHE_DURATION = 60;
-
-const getScope = (websiteId?: string, organizationId?: string) =>
-	websiteId ? `website:${websiteId}` : `org:${organizationId}`;
 
 const authorizeScope = async (
 	context: Context,
@@ -62,41 +56,6 @@ const authorizeScope = async (
 			});
 		}
 	}
-};
-
-const invalidateFlagCache = async (
-	id: string,
-	websiteId?: string | null,
-	organizationId?: string | null
-) => {
-	const scope = getScope(websiteId ?? undefined, organizationId ?? undefined);
-
-	// Get the flag details to invalidate public API cache
-	const flag = await db
-		.select({ key: flags.key })
-		.from(flags)
-		.where(eq(flags.id, id))
-		.limit(1);
-
-	const invalidations: Promise<unknown>[] = [
-		flagsCache.invalidateByTables(["flags"]),
-		flagsCache.invalidateByKey(`byId:${id}:${scope}`),
-	];
-
-	if (flag[0]?.key) {
-		const clientId = websiteId || organizationId;
-		if (clientId) {
-			invalidations.push(
-				invalidateCacheableWithArgs("flag", [flag[0].key, clientId])
-			);
-
-			invalidations.push(
-				invalidateCacheableWithArgs("flags-client", [clientId])
-			);
-		}
-	}
-
-	await Promise.all(invalidations);
 };
 
 const listFlagsSchema = z
@@ -264,7 +223,7 @@ function sanitizeFlagForDemo<T extends FlagWithTargetGroups>(flag: T): T {
 		...flag,
 		rules: Array.isArray(flag.rules) && flag.rules.length > 0 ? [] : flag.rules,
 		targetGroups: flag.targetGroups?.map(
-			(group: { rules?: unknown; [key: string]: unknown }) => ({
+			(group: { rules?: unknown;[key: string]: unknown }) => ({
 				...group,
 				rules:
 					Array.isArray(group.rules) && group.rules.length > 0
