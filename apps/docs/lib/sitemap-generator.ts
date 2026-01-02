@@ -5,6 +5,7 @@ import { getAllCompetitorSlugs } from "@/lib/comparison-config";
 import { source } from "@/lib/source";
 
 const priorityRules = [
+	{ pattern: "/", priority: 1.0 },
 	{ pattern: "/docs", priority: 1.0 },
 	{ pattern: "/compare", priority: 0.9 },
 	{ pattern: "/compare/plausible", priority: 0.85 },
@@ -128,10 +129,10 @@ export async function generateSitemapEntries(): Promise<MetadataRoute.Sitemap> {
 			const latestPostDate =
 				blogEntries.length > 0
 					? blogEntries.reduce(
-							(latest, entry) =>
-								entry.lastModified > latest ? entry.lastModified : latest,
-							blogEntries[0].lastModified
-						)
+						(latest, entry) =>
+							entry.lastModified > latest ? entry.lastModified : latest,
+						blogEntries[0].lastModified
+					)
 					: lastModified;
 
 			entries.push({
