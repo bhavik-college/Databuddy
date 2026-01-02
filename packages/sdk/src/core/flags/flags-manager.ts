@@ -106,9 +106,14 @@ export class CoreFlagsManager implements FlagsManager {
 		};
 	}
 
-	private removeStaleKeys(validCacheKeys: Set<string>): void {
+	private removeStaleKeys(validKeys: Set<string>, user?: UserContext): void {
+		const ctx = user ?? this.config.user;
+		const suffix =
+			ctx?.userId || ctx?.email ? `:${ctx.userId ?? ""}:${ctx.email ?? ""}` : "";
+
 		for (const key of this.cache.keys()) {
-			if (!validCacheKeys.has(key)) {
+			const belongsToUser = suffix ? key.endsWith(suffix) : !key.includes(":");
+			if (belongsToUser && !validKeys.has(key)) {
 				this.cache.delete(key);
 			}
 		}
@@ -313,7 +318,8 @@ export class CoreFlagsManager implements FlagsManager {
 			}));
 
 			this.removeStaleKeys(
-				new Set(flagCacheEntries.map(({ cacheKey }) => cacheKey))
+				new Set(flagCacheEntries.map(({ cacheKey }) => cacheKey)),
+				user
 			);
 
 			for (const { cacheKey, cacheEntry } of flagCacheEntries) {
