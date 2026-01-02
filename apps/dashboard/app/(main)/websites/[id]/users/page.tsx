@@ -16,6 +16,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import { useAtomValue } from "jotai";
+import Image from "next/image";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -41,7 +42,6 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { UserAvatar } from "@/components/user-avatar";
 import { useDateFilters } from "@/hooks/use-date-filters";
 import { getDeviceIcon } from "@/lib/utils";
 import { dynamicQueryFiltersAtom } from "@/stores/jotai/filterAtoms";
@@ -192,7 +192,14 @@ export default function UsersPage() {
 					const profileName = generateProfileName(row.original.visitor_id);
 					return (
 						<div className="flex items-center gap-2.5">
-							<UserAvatar size="sm" visitorId={row.original.visitor_id} />
+							<Image
+								alt=""
+								className="size-6 shrink-0 rounded"
+								height={32}
+								src={`https://api.dicebear.com/9.x/glass/svg?seed=${row.original.visitor_id}`}
+								unoptimized
+								width={32}
+							/>
 							<span className="truncate font-medium">{profileName}</span>
 						</div>
 					);
