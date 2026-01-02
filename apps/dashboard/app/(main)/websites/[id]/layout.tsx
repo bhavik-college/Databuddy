@@ -1,13 +1,17 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { useParams, usePathname } from "next/navigation";
+import { useLayoutEffect } from "react";
 import { toast } from "sonner";
 import { WebsiteErrorState } from "@/components/website-error-state";
 import { useTrackingSetup } from "@/hooks/use-tracking-setup";
 import { useWebsite } from "@/hooks/use-websites";
-import { isAnalyticsRefreshingAtom } from "@/stores/jotai/filterAtoms";
+import {
+	currentFilterWebsiteIdAtom,
+	isAnalyticsRefreshingAtom,
+} from "@/stores/jotai/filterAtoms";
 import { AnalyticsToolbar } from "./_components/analytics-toolbar";
 import { WebsiteTrackingSetupTab } from "./_components/tabs/tracking-setup-tab";
 
@@ -32,6 +36,11 @@ export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
 	const pathname = usePathname();
 	const queryClient = useQueryClient();
 	const [isRefreshing, setIsRefreshing] = useAtom(isAnalyticsRefreshingAtom);
+	const setCurrentFilterWebsiteId = useSetAtom(currentFilterWebsiteIdAtom);
+
+	useLayoutEffect(() => {
+		setCurrentFilterWebsiteId(websiteId);
+	}, [websiteId, setCurrentFilterWebsiteId]);
 
 	const isDemoRoute = pathname?.startsWith("/demo/");
 	const hideToolbar = NO_TOOLBAR_ROUTES.some((route) =>

@@ -74,7 +74,9 @@ export function FiltersSection() {
 
 	const handleSave = useCallback(
 		(name: string) => {
-			if (filters.length === 0) return;
+			if (filters.length === 0) {
+				return;
+			}
 			setIsSaving(true);
 
 			const result = editing
@@ -146,7 +148,9 @@ export function FiltersSection() {
 	}, [editing, setFilters]);
 
 	const handleSaveEdit = useCallback(() => {
-		if (!editing || filters.length === 0) return;
+		if (!editing || filters.length === 0) {
+			return;
+		}
 		setIsSaving(true);
 		const result = updateFilter(editing.id, editing.name, filters);
 		if (result.success) {
@@ -164,7 +168,9 @@ export function FiltersSection() {
 		setIsDeletingAll(false);
 	}, [deleteAllFilters]);
 
-	if (filters.length === 0) return null;
+	if (filters.length === 0) {
+		return null;
+	}
 
 	return (
 		<div className="angled-rectangle-gradient border-b bg-background">

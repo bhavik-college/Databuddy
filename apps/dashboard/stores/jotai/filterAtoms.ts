@@ -3,13 +3,13 @@ import dayjs from "dayjs";
 export interface DynamicQueryFilter {
 	field: string;
 	operator:
-		| "eq"
-		| "ne"
-		| "contains"
-		| "not_contains"
-		| "starts_with"
-		| "in"
-		| "not_in";
+	| "eq"
+	| "ne"
+	| "contains"
+	| "not_contains"
+	| "starts_with"
+	| "in"
+	| "not_in";
 	value: string | number | (string | number)[];
 }
 
@@ -291,10 +291,38 @@ export const isAnalyticsRefreshingAtom = atom(false);
 
 // --- Dynamic Query Filters (for shared package compatibility) ---
 /**
- * Atom for storing DynamicQueryFilter[] from @databuddy/shared
- * This is used for the analytics toolbar and shared across all website pages
+ * Internal atom storing filters with their associated websiteId.
+ * Filters are automatically cleared when accessing from a different website.
  */
-export const dynamicQueryFiltersAtom = atom<DynamicQueryFilter[]>([]);
+const dynamicQueryFiltersBaseAtom = atom<{
+	websiteId: string | null;
+	filters: DynamicQueryFilter[];
+}>({ websiteId: null, filters: [] });
+
+/** Atom to track current website context for filter scoping */
+export const currentFilterWebsiteIdAtom = atom<string | null>(null);
+
+/**
+ * Derived atom that returns filters only if they belong to the current website.
+ * Automatically clears stale filters from other websites.
+ */
+export const dynamicQueryFiltersAtom = atom(
+	(get) => {
+		const { websiteId, filters } = get(dynamicQueryFiltersBaseAtom);
+		const currentWebsiteId = get(currentFilterWebsiteIdAtom);
+		if (currentWebsiteId && websiteId && currentWebsiteId !== websiteId) {
+			return [];
+		}
+		return filters;
+	},
+	(get, set, newFilters: DynamicQueryFilter[]) => {
+		const currentWebsiteId = get(currentFilterWebsiteIdAtom);
+		set(dynamicQueryFiltersBaseAtom, {
+			websiteId: currentWebsiteId,
+			filters: newFilters,
+		});
+	}
+);
 
 /**
  * Action atom for adding a new dynamic query filter.
@@ -302,22 +330,18 @@ export const dynamicQueryFiltersAtom = atom<DynamicQueryFilter[]>([]);
  */
 export const addDynamicFilterAtom = atom(
 	null,
-	(_get, set, filter: DynamicQueryFilter) => {
-		set(dynamicQueryFiltersAtom, (prev) => {
-			// Check if a filter with the same field and value already exists
-			const isDuplicate = prev.some(
-				(existing) =>
-					existing.field === filter.field &&
-					existing.value === filter.value &&
-					existing.operator === filter.operator
-			);
+	(get, set, filter: DynamicQueryFilter) => {
+		const prev = get(dynamicQueryFiltersAtom);
+		const isDuplicate = prev.some(
+			(existing) =>
+				existing.field === filter.field &&
+				existing.value === filter.value &&
+				existing.operator === filter.operator
+		);
 
-			if (isDuplicate) {
-				return prev; // Don't add duplicate filters
-			}
-
-			return [...prev, filter];
-		});
+		if (!isDuplicate) {
+			set(dynamicQueryFiltersAtom, [...prev, filter]);
+		}
 	}
 );
 
@@ -327,8 +351,10 @@ export const addDynamicFilterAtom = atom(
  */
 export const removeDynamicFilterAtom = atom(
 	null,
-	(_get, set, filter: Partial<DynamicQueryFilter>) => {
-		set(dynamicQueryFiltersAtom, (prev) =>
+	(get, set, filter: Partial<DynamicQueryFilter>) => {
+		const prev = get(dynamicQueryFiltersAtom);
+		set(
+			dynamicQueryFiltersAtom,
 			prev.filter(
 				(existing) =>
 					!(
