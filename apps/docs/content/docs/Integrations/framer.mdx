@@ -5,11 +5,35 @@ description: Add privacy-first analytics to your Framer site
 
 Databuddy enables you to gather privacy-first analytics on user behavior, capture custom events, track performance metrics, and more within your Framer site - all while maintaining GDPR compliance without cookies.
 
-> TL;DR: Paste the inline loader below into Framer → Site Settings → General → Custom Code (Start of &lt;head&gt; tag). Replace `YOUR_CLIENT_ID` with your client ID. Publish, then check the dashboard.
+> **Easy Setup**: Install our [official Framer plugin](https://www.framer.com/marketplace/plugins/databuddy-analytics/) from the Framer Marketplace for the fastest setup, or manually add the script using the instructions below.
 
-## How to Add Databuddy to Framer
+## Installation Methods
 
-### 1. Get Your Tracking Script
+### Option 1: Framer Plugin (Recommended)
+
+The easiest way to add Databuddy to your Framer site is through our official plugin:
+
+1. Open your Framer project
+2. Go to **Plugins** in the left sidebar
+3. Search for "Databuddy Analytics"
+4. Click **Install** on the [Databuddy Analytics plugin](https://www.framer.com/marketplace/plugins/databuddy-analytics/)
+5. Enter your Client ID from your [Databuddy dashboard](https://app.databuddy.cc)
+6. Configure optional settings:
+   - Custom CDN URL (for self-hosted setups)
+   - Custom Dashboard URL (for self-hosted setups)
+7. Publish your site
+
+**Plugin Benefits**:
+- Zero configuration needed
+- Automatic updates
+- Self-hosted option available
+- No manual code editing required
+
+### Option 2: Manual Installation
+
+If you prefer manual control or need custom configuration:
+
+#### 1. Get Your Tracking Script
 
 Navigate to your [Databuddy dashboard](https://app.databuddy.cc) and copy your tracking code snippet:
 
@@ -28,7 +52,7 @@ Navigate to your [Databuddy dashboard](https://app.databuddy.cc) and copy your t
 </script>
 ```
 
-### 2. Add the Script to Your Framer Project
+#### 2. Add the Script to Your Framer Project
 
 1. Open your Framer project
 2. Go to **Site Settings** > **General**
@@ -36,7 +60,7 @@ Navigate to your [Databuddy dashboard](https://app.databuddy.cc) and copy your t
 4. Paste your Databuddy snippet into the **Start of &lt;head&gt; tag** section
 5. Click **Save** and publish your changes
 
-### 3. Verify Installation
+#### 3. Verify Installation
 
 Once published, you can verify that Databuddy is working by:
 
@@ -83,13 +107,26 @@ Enable performance tracking by updating your script configuration:
 
 ## Benefits for Framer Sites
 
-- **Lightweight**: Only 3KB script size (247x smaller than Google Analytics)
+- **Cookie-free tracking**: No cookie consent banners needed
+- **Lightweight**: Just 3KB script size (247x smaller than Google Analytics)
+- **True privacy**: No fingerprinting, complete data ownership
 - **Fast Loading**: Async loading won't slow down your Framer site
 - **SEO Friendly**: Improves Core Web Vitals and page speed scores
-- **Privacy Compliant**: No cookies required, fully GDPR/CCPA compliant
+- **Privacy Compliant**: Fully GDPR and CCPA compliant
 - **Real-time Data**: See visitor activity as it happens
+- **10x more efficient**: Better for the planet, better for performance
+- **Open Source**: Fully transparent and auditable code
 
 ## Troubleshooting
+
+### Plugin Issues
+
+If the plugin isn't working:
+
+1. Ensure you've entered the correct Client ID
+2. Verify your site is published (not just preview mode)
+3. Check that the plugin is enabled in your Framer project settings
+4. For self-hosted setups, verify your CDN and Dashboard URLs are correct
 
 ### Script Not Loading
 
