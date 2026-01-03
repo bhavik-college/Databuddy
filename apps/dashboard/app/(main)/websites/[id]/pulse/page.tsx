@@ -67,6 +67,7 @@ export default function PulsePage() {
 		...orpc.uptime.getScheduleByWebsiteId.queryOptions({
 			input: { websiteId: websiteId as string },
 		}),
+		enabled: !!websiteId,
 	});
 
 	const pauseMutation = useMutation({
