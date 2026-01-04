@@ -52,9 +52,8 @@ export function CategorySidebar({
 	user = null,
 }: CategorySidebarProps) {
 	const pathname = usePathname();
-	const isDemo = pathname.startsWith("/demo");
 	const { websites, isLoading: isLoadingWebsites } = useWebsites({
-		enabled: !isDemo,
+		enabled: user !== null,
 	});
 	const [helpOpen, setHelpOpen] = useState(false);
 	const { isOn } = useFlags();

@@ -93,10 +93,9 @@ export function Sidebar({ user = null }: SidebarProps) {
 
 	const isDemo = pathname.startsWith("/demo");
 	const isWebsite = pathname.startsWith("/websites/");
-	const enabled = !isDemo;
 
 	const { websites, isLoading: isLoadingWebsites } = useWebsites({
-		enabled,
+		enabled: user !== null,
 	});
 	const accordionStates = useAccordionStates();
 	const sidebarRef = useRef<HTMLDivElement>(null);
@@ -331,6 +330,7 @@ export function Sidebar({ user = null }: SidebarProps) {
 						<MobileCategorySelector
 							onCategoryChangeAction={setSelectedCategory}
 							selectedCategory={selectedCategory}
+							user={user}
 						/>
 
 						<nav aria-label="Main navigation" className="flex flex-col">

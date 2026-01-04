@@ -20,15 +20,15 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-type User = {
+interface User {
 	name?: string | null;
 	email?: string | null;
 	image?: string | null;
-};
+}
 
-type ProfileButtonClientProps = {
-user: User
-};
+interface ProfileButtonClientProps {
+	user: User;
+}
 
 export function ProfileButtonClient({ user }: ProfileButtonClientProps) {
 	const [isLoggingOut, setIsLoggingOut] = useState(false);

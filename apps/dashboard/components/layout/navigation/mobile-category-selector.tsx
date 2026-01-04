@@ -22,19 +22,26 @@ import {
 	getDefaultCategory,
 } from "./navigation-config";
 
+interface User {
+	name?: string | null;
+	email?: string | null;
+	image?: string | null;
+}
+
 interface MobileCategorySelectorProps {
 	onCategoryChangeAction?: (categoryId: string) => void;
 	selectedCategory?: string;
+	user: User | null;
 }
 
 export function MobileCategorySelector({
 	onCategoryChangeAction,
 	selectedCategory,
+	user,
 }: MobileCategorySelectorProps) {
 	const pathname = usePathname();
-	const isDemo = pathname.startsWith("/demo");
 	const { websites, isLoading: isLoadingWebsites } = useWebsites({
-		enabled: !isDemo,
+		enabled: user !== null,
 	});
 	const { isOn } = useFlags();
 
