@@ -520,6 +520,8 @@ export const websitesRouter = {
 				});
 			}
 
+			await invalidateWebsiteCaches(input.id, context.user.id);
+
 			logger.info(
 				{
 					websiteId: input.id,

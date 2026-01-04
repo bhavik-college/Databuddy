@@ -96,10 +96,6 @@ async function verifyWebsiteAccess(
 	ctx: AuthContext,
 	websiteId: string
 ): Promise<boolean> {
-	if (!ctx.isAuthenticated) {
-		return false;
-	}
-
 	const website = await db.query.websites.findFirst({
 		where: eq(websites.id, websiteId),
 		columns: {
@@ -116,6 +112,10 @@ async function verifyWebsiteAccess(
 
 	if (website.isPublic) {
 		return true;
+	}
+
+	if (!ctx.isAuthenticated) {
+		return false;
 	}
 
 	if (ctx.apiKey) {
@@ -276,22 +276,27 @@ export const query = new Elysia({ prefix: "/v1/query" })
 			query: { website_id?: string; timezone?: string };
 			auth: AuthContext;
 		}) => {
-			if (!ctx.isAuthenticated) {
-				return AUTH_FAILED;
-			}
-
+			// Check website access first (handles public websites)
 			if (q.website_id) {
 				const hasAccess = await verifyWebsiteAccess(ctx, q.website_id);
 				if (!hasAccess) {
 					return new Response(
 						JSON.stringify({
 							success: false,
-							error: "Access denied to this website",
-							code: "ACCESS_DENIED",
+							error: ctx.isAuthenticated
+								? "Access denied to this website"
+								: "Authentication required",
+							code: ctx.isAuthenticated ? "ACCESS_DENIED" : "AUTH_REQUIRED",
 						}),
-						{ status: 403, headers: { "Content-Type": "application/json" } }
+						{
+							status: ctx.isAuthenticated ? 403 : 401,
+							headers: { "Content-Type": "application/json" },
+						}
 					);
 				}
+			} else if (!ctx.isAuthenticated) {
+				// No website_id and not authenticated
+				return AUTH_FAILED;
 			}
 
 			try {
@@ -324,19 +329,21 @@ export const query = new Elysia({ prefix: "/v1/query" })
 			auth: AuthContext;
 		}) =>
 			record("executeQuery", async () => {
-				if (!ctx.isAuthenticated) {
-					return AUTH_FAILED;
-				}
-
+				// Check website access first (handles public websites)
 				if (q.website_id) {
 					const hasAccess = await verifyWebsiteAccess(ctx, q.website_id);
 					if (!hasAccess) {
 						return {
 							success: false,
-							error: "Access denied to this website",
-							code: "ACCESS_DENIED",
+							error: ctx.isAuthenticated
+								? "Access denied to this website"
+								: "Authentication required",
+							code: ctx.isAuthenticated ? "ACCESS_DENIED" : "AUTH_REQUIRED",
 						};
 					}
+				} else if (!ctx.isAuthenticated) {
+					// No website_id and not authenticated
+					return AUTH_FAILED;
 				}
 
 				const tz = q.timezone || "UTC";
