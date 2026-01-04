@@ -9,6 +9,8 @@ const flagQuerySchema = t.Object({
 	clientId: t.String(),
 	userId: t.Optional(t.String()),
 	email: t.Optional(t.String()),
+	organizationId: t.Optional(t.String()),
+	teamId: t.Optional(t.String()),
 	properties: t.Optional(t.String()),
 	environment: t.Optional(t.String()),
 });
@@ -17,6 +19,8 @@ const bulkFlagQuerySchema = t.Object({
 	clientId: t.String(),
 	userId: t.Optional(t.String()),
 	email: t.Optional(t.String()),
+	organizationId: t.Optional(t.String()),
+	teamId: t.Optional(t.String()),
 	properties: t.Optional(t.String()),
 	environment: t.Optional(t.String()),
 });
@@ -24,6 +28,8 @@ const bulkFlagQuerySchema = t.Object({
 interface UserContext {
 	userId?: string;
 	email?: string;
+	organizationId?: string;
+	teamId?: string;
 	properties?: Record<string, unknown>;
 }
 
@@ -66,6 +72,7 @@ interface EvaluableFlag {
 	status: "active" | "inactive" | "archived";
 	defaultValue: string | number | boolean | unknown;
 	rolloutPercentage: number | null;
+	rolloutBy?: string | null;
 	rules?: FlagRule[] | unknown;
 	variants?: Variant[];
 	payload?: unknown;
@@ -400,7 +407,20 @@ export function evaluateFlag(
 	let reason = "DEFAULT_VALUE";
 
 	if (flag.type === "rollout") {
-		const identifier = context.userId || context.email || "anonymous";
+		let identifier: string;
+
+		switch (flag.rolloutBy) {
+			case "organization":
+				identifier = context.organizationId || "anonymous";
+				break;
+			case "team":
+				identifier = context.teamId || "anonymous";
+				break;
+			default:
+				// Default: user-based rollout
+				identifier = context.userId || context.email || "anonymous";
+		}
+
 		const hash = hashString(`${flag.key}:${identifier}`);
 		const percentage = hash % 100;
 		const rolloutPercentage = flag.rolloutPercentage || 0;
@@ -450,6 +470,8 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 					const context: UserContext = {
 						userId: query.userId,
 						email: query.email,
+						organizationId: query.organizationId,
+						teamId: query.teamId,
 						properties: parseProperties(query.properties),
 					};
 
@@ -487,6 +509,7 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 							type: flag.type,
 							status: flag.status,
 							rolloutPercentage: flag.rolloutPercentage,
+							rolloutBy: flag.rolloutBy,
 							rules: flag.rules,
 							variants: flag.variants as Variant[],
 							payload: flag.payload,
@@ -548,6 +571,8 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 					const context: UserContext = {
 						userId: query.userId,
 						email: query.email,
+						organizationId: query.organizationId,
+						teamId: query.teamId,
 						properties: parseProperties(query.properties),
 					};
 

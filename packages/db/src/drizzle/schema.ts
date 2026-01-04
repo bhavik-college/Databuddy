@@ -678,11 +678,11 @@ export const flagScheduleActionType = pgEnum("flag_schedule_type", [
 export type RolloutStep =
 	| { scheduledAt: string; action: "enable" | "disable"; executedAt?: string }
 	| {
-			scheduledAt: string;
-			action: "set_percentage";
-			value: number;
-			executedAt?: string;
-	  };
+		scheduledAt: string;
+		action: "set_percentage";
+		value: number;
+		executedAt?: string;
+	};
 export const annotationType = pgEnum("annotation_type", [
 	"point",
 	"line",
@@ -705,6 +705,7 @@ export const flags = pgTable(
 		rules: jsonb("rules").default([]),
 		persistAcrossAuth: boolean("persist_across_auth").default(false).notNull(),
 		rolloutPercentage: integer("rollout_percentage").default(0),
+		rolloutBy: text("rollout_by"),
 		websiteId: text("website_id"),
 		organizationId: text("organization_id"),
 		userId: text("user_id"),

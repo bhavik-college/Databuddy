@@ -15,6 +15,7 @@ export interface Flag {
 	defaultValue?: boolean;
 	payload?: unknown;
 	rolloutPercentage?: number | null;
+	rolloutBy?: string | null;
 	rules?: UserRule[];
 	targetGroups?: TargetGroup[] | string[];
 	targetGroupIds?: string[];
@@ -34,14 +35,14 @@ export interface Flag {
 export interface UserRule {
 	type: "user_id" | "email" | "property";
 	operator:
-		| "equals"
-		| "contains"
-		| "starts_with"
-		| "ends_with"
-		| "in"
-		| "not_in"
-		| "exists"
-		| "not_exists";
+	| "equals"
+	| "contains"
+	| "starts_with"
+	| "ends_with"
+	| "in"
+	| "not_in"
+	| "exists"
+	| "not_exists";
 	field?: string;
 	value?: string;
 	values?: string[];

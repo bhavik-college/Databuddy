@@ -119,6 +119,7 @@ const updateFlagSchema = z
 		rules: z.array(userRuleSchema).optional(),
 		persistAcrossAuth: z.boolean().optional(),
 		rolloutPercentage: z.number().min(0).max(100).optional(),
+		rolloutBy: z.string().optional(),
 		variants: z.array(variantSchema).optional(),
 		dependencies: z.array(z.string()).optional(),
 		environment: z.string().optional(),
@@ -226,7 +227,7 @@ function sanitizeFlagForDemo<T extends FlagWithTargetGroups>(flag: T): T {
 		...flag,
 		rules: Array.isArray(flag.rules) && flag.rules.length > 0 ? [] : flag.rules,
 		targetGroups: flag.targetGroups?.map(
-			(group: { rules?: unknown; [key: string]: unknown }) => ({
+			(group: { rules?: unknown;[key: string]: unknown }) => ({
 				...group,
 				rules:
 					Array.isArray(group.rules) && group.rules.length > 0
@@ -533,6 +534,7 @@ export const flagsRouter = {
 							existingFlag[0].persistAcrossAuth ??
 							false,
 						rolloutPercentage: input.rolloutPercentage,
+						rolloutBy: input.rolloutBy,
 						variants: input.variants,
 						dependencies: input.dependencies,
 						environment: input.environment,
@@ -579,6 +581,7 @@ export const flagsRouter = {
 					rules: input.rules || [],
 					persistAcrossAuth: input.persistAcrossAuth ?? false,
 					rolloutPercentage: input.rolloutPercentage || 0,
+					rolloutBy: input.rolloutBy || null,
 					variants: input.variants || [],
 					dependencies: input.dependencies || [],
 					websiteId: input.websiteId || null,
