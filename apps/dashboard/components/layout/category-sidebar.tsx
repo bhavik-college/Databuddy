@@ -23,6 +23,7 @@ import {
 	getContextConfig,
 	getDefaultCategory,
 } from "./navigation/navigation-config";
+import { PendingInvitationsButton } from "./pending-invitations-button";
 import { ProfileButtonClient } from "./profile-button-client";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -179,9 +180,14 @@ export function CategorySidebar({
 					</div>
 
 					{user ? (
-						<div className="flex justify-center">
-							<ProfileButtonClient user={user} />
-						</div>
+						<>
+							<div className="flex justify-center">
+								<PendingInvitationsButton />
+							</div>
+							<div className="flex justify-center">
+								<ProfileButtonClient user={user} />
+							</div>
+						</>
 					) : null}
 				</div>
 

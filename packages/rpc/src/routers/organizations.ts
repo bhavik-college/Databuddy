@@ -4,6 +4,7 @@ import {
 	db,
 	desc,
 	eq,
+	gt,
 	invitation,
 	member,
 	organization,
@@ -191,6 +192,34 @@ export const organizationsRouter = {
 				});
 			}
 		}),
+
+	getUserPendingInvitations: protectedProcedure.handler(async ({ context }) => {
+		const pendingInvitations = await db
+			.select({
+				id: invitation.id,
+				email: invitation.email,
+				role: invitation.role,
+				status: invitation.status,
+				expiresAt: invitation.expiresAt,
+				createdAt: invitation.createdAt,
+				organizationId: invitation.organizationId,
+				organizationName: organization.name,
+				organizationLogo: organization.logo,
+				inviterId: invitation.inviterId,
+			})
+			.from(invitation)
+			.innerJoin(organization, eq(invitation.organizationId, organization.id))
+			.where(
+				and(
+					eq(invitation.email, context.user.email),
+					eq(invitation.status, "pending"),
+					gt(invitation.expiresAt, new Date())
+				)
+			)
+			.orderBy(desc(invitation.createdAt));
+
+		return pendingInvitations;
+	}),
 
 	getUsage: protectedProcedure.handler(async ({ context }) => {
 		const { customerId, isOrganization, canUserUpgrade } =
