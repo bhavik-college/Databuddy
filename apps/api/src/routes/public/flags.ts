@@ -624,6 +624,71 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 		{ query: bulkFlagQuerySchema }
 	)
 
+	.get(
+		"/definitions",
+		function getDefinitionsEndpoint({ query, set }) {
+			return record("getFlagDefinitions", async () => {
+				setAttributes({
+					"flag.client_id": query.clientId || "missing",
+					"flag.environment": query.environment || "missing",
+				});
+
+				try {
+					if (!query.clientId) {
+						setAttributes({ "flag.error": "missing_client_id" });
+						set.status = 400;
+						return {
+							flags: [],
+							error: "Missing required clientId parameter",
+						};
+					}
+
+					const allFlags = await getCachedFlagsForClient(
+						query.clientId,
+						query.environment
+					);
+
+					setAttributes({
+						"flag.total_flags": allFlags.length,
+					});
+
+					// Return flag definitions without evaluation
+					const flagDefinitions = allFlags.map((flag) => ({
+						key: flag.key,
+						description: flag.description,
+						type: flag.type,
+						variants: flag.variants,
+						createdAt: flag.createdAt,
+						updatedAt: flag.updatedAt,
+					}));
+
+					return {
+						flags: flagDefinitions,
+						count: flagDefinitions.length,
+						timestamp: new Date().toISOString(),
+					};
+				} catch (error) {
+					setAttributes({ "flag.error": true });
+					logger.error(
+						{ error, clientId: query.clientId },
+						"Flag definitions fetch failed"
+					);
+					set.status = 500;
+					return {
+						flags: [],
+						error: "Failed to fetch flag definitions",
+					};
+				}
+			});
+		},
+		{
+			query: t.Object({
+				clientId: t.String(),
+				environment: t.Optional(t.String()),
+			}),
+		}
+	)
+
 	.get("/health", () => ({
 		service: "flags",
 		status: "ok",

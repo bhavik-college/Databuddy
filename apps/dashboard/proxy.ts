@@ -1,30 +1,30 @@
 import { getSessionCookie } from "better-auth/cookies";
 import { type NextRequest, NextResponse } from "next/server";
 
+const AUTH_ROUTES = ["/login", "/register"];
+
 export function proxy(request: NextRequest) {
-	const sessionCookie = getSessionCookie(request, {
-		cookiePrefix: "databuddy",
-	});
+    const { pathname, searchParams } = request.nextUrl;
+    const sessionCookie = getSessionCookie(request, {
+        cookiePrefix: "databuddy",
+    });
 
-	if (!sessionCookie) {
-		return NextResponse.redirect(new URL("/login", request.url));
-	}
+    const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
+    const isAddingAccount = searchParams.get("add_account") === "true";
 
-	return NextResponse.next();
+    if (isAuthRoute && sessionCookie && !isAddingAccount) {
+        return NextResponse.redirect(new URL("/websites", request.url));
+    }
+
+    if (!(isAuthRoute || sessionCookie)) {
+        return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    return NextResponse.next();
 }
 
 export const config = {
-	matcher: [
-		/*
-		 * Match all request paths except for the ones starting with:
-		 * - api (API routes)
-		 * - _next/static (static files)
-		 * - _next/image (image optimization files)
-		 * - favicon.ico (favicon file)
-		 * - login (login page)
-		 * - demo (demo pages)
-		 * - public files (public folder)
-		 */
-		"/((?!api|_next/static|_next/image|favicon.ico|login|register|demo|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-	],
+    matcher: [
+        "/((?!api|_next/static|_next/image|favicon.ico|demo|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    ],
 };
