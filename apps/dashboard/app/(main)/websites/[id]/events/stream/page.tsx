@@ -253,7 +253,8 @@ export default function EventsStreamPage() {
 							<ArrowSquareOutIcon className="size-3 text-primary opacity-0 transition-opacity group-hover:opacity-100" />
 						</Link>
 						<button
-							className="rounded p-0.5 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover/row:opacity-100"
+							aria-label={`Filter by ${row.original.event_name}`}
+							className="rounded p-0.5 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus:opacity-100 group-hover/row:opacity-100"
 							onClick={() => handleAddFilter(row.original.event_name)}
 							title="Filter by this event"
 							type="button"
@@ -332,7 +333,8 @@ export default function EventsStreamPage() {
 				header: "",
 				cell: ({ row }) => (
 					<Button
-						className="size-7 opacity-0 transition-opacity group-hover/row:opacity-100"
+						aria-label="Copy event JSON"
+						className="size-7 opacity-0 transition-opacity focus:opacity-100 group-hover/row:opacity-100"
 						onClick={() => handleCopyEvent(row.original)}
 						size="icon"
 						title="Copy event JSON"

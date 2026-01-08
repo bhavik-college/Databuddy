@@ -8,7 +8,8 @@ import {
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { parseAsString, useQueryState } from "nuqs";
+import { useMemo } from "react";
 import {
 	Select,
 	SelectContent,
@@ -41,7 +42,10 @@ export function SummaryView({
 }: SummaryViewProps) {
 	const params = useParams();
 	const websiteId = params.id as string;
-	const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
+	const [selectedEvent, setSelectedEvent] = useQueryState(
+		"event",
+		parseAsString.withDefault("")
+	);
 
 	const activeEvent = useMemo(() => {
 		if (selectedEvent) {
@@ -184,7 +188,8 @@ function PropertyCard({
 
 					return (
 						<button
-							className="group relative flex w-full items-center gap-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-accent/50"
+							aria-label={`Filter by ${property.key}: ${displayValue || "empty"}`}
+							className="group relative flex w-full items-center gap-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-accent/50 focus:bg-accent/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 							key={`${displayValue}-${idx}`}
 							onClick={() =>
 								onFilterAction(eventName, property.key, displayValue)
@@ -210,7 +215,8 @@ function PropertyCard({
 										{percentage.toFixed(0)}%
 									</span>
 									<FunnelIcon
-										className="size-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+										aria-hidden="true"
+										className="size-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus:opacity-100"
 										weight="duotone"
 									/>
 								</div>

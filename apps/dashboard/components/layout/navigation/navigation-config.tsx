@@ -266,7 +266,7 @@ export const websiteNavigation: NavigationSection[] = [
 		}),
 		createNavItem("Events", LightningIcon, "/events", {
 			rootLevel: false,
-			flag: "events",
+			alpha: true,
 		}),
 		createNavItem("Funnels", FunnelIcon, "/funnels", {
 			rootLevel: false,
