@@ -154,6 +154,12 @@ export function CardSheet({
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+	// Check if form is valid for saving
+	const canSave =
+		dataSourceMode === "predefined"
+			? Boolean(selectedQueryType && selectedField)
+			: Boolean(customQuery?.table);
+
 	// Filter and group query types for cards
 	const { metricTypes, trendTypes } = useMemo(() => {
 		const compatible = queryTypes.filter((t) =>
@@ -1005,7 +1011,7 @@ export function CardSheet({
 						</Button>
 						<Button
 							className="min-w-24"
-							disabled={isSubmitting || !selectedQueryType || !selectedField}
+							disabled={isSubmitting || !canSave}
 							onClick={handleSubmit}
 							type="button"
 						>
