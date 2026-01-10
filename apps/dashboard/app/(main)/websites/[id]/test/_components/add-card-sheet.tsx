@@ -2,6 +2,7 @@
 
 import { filterOptions } from "@databuddy/shared/lists/filters";
 import type { DateRange } from "@databuddy/shared/types/analytics";
+import type { CustomQueryConfig } from "@databuddy/shared/types/custom-query";
 import type { QueryOutputField } from "@databuddy/shared/types/query";
 import {
 	CalendarDotsIcon,
@@ -9,6 +10,7 @@ import {
 	ChartBarIcon,
 	ChartLineUpIcon,
 	CheckIcon,
+	CodeIcon,
 	FunnelIcon,
 	GaugeIcon,
 	PencilSimpleIcon,
@@ -59,6 +61,7 @@ import { operatorOptions } from "@/hooks/use-filters";
 import { useAutocompleteData } from "@/hooks/use-funnels";
 import { cn } from "@/lib/utils";
 import { AutocompleteInput } from "../../funnels/_components/funnel-components";
+import { CustomQueryBuilder } from "./custom-query-builder";
 import { useDashboardData } from "./hooks/use-dashboard-data";
 import type { QueryTypeOption } from "./hooks/use-query-types";
 import { useQueryTypes } from "./hooks/use-query-types";
@@ -71,6 +74,7 @@ import {
 import type {
 	CardFilter,
 	DashboardCardConfig,
+	DataSourceMode,
 	DateRangePreset,
 } from "./utils/types";
 
@@ -129,9 +133,14 @@ export function CardSheet({
 	const autocompleteQuery = useAutocompleteData(websiteId, isOpen);
 	const isEditMode = !!editingCard;
 
+	const [dataSourceMode, setDataSourceMode] =
+		useState<DataSourceMode>("predefined");
 	const [selectedQueryType, setSelectedQueryType] =
 		useState<QueryTypeOption | null>(null);
 	const [selectedField, setSelectedField] = useState<QueryOutputField | null>(
+		null
+	);
+	const [customQuery, setCustomQuery] = useState<CustomQueryConfig | null>(
 		null
 	);
 	const [displayMode, setDisplayMode] = useState<StatCardDisplayMode>("text");
@@ -193,8 +202,10 @@ export function CardSheet({
 	});
 
 	const resetForm = () => {
+		setDataSourceMode("predefined");
 		setSelectedQueryType(null);
 		setSelectedField(null);
+		setCustomQuery(null);
 		setDisplayMode("text");
 		setCustomTitle("");
 		setDateRangePreset("global");
@@ -203,14 +214,26 @@ export function CardSheet({
 	};
 
 	const initializeFromCard = (card: DashboardCardConfig) => {
-		const queryType = queryTypes.find((t) => t.key === card.queryType);
-		if (queryType) {
-			setSelectedQueryType(queryType);
-			const field = queryType.outputFields.find((f) => f.name === card.field);
-			if (field) {
-				setSelectedField(field);
+		// Set data source mode
+		const mode = card.dataSourceMode || "predefined";
+		setDataSourceMode(mode);
+
+		if (mode === "custom" && card.customQuery) {
+			setCustomQuery(card.customQuery);
+			setSelectedQueryType(null);
+			setSelectedField(null);
+		} else {
+			const queryType = queryTypes.find((t) => t.key === card.queryType);
+			if (queryType) {
+				setSelectedQueryType(queryType);
+				const field = queryType.outputFields.find((f) => f.name === card.field);
+				if (field) {
+					setSelectedField(field);
+				}
 			}
+			setCustomQuery(null);
 		}
+
 		setDisplayMode(card.displayMode);
 		setCustomTitle(card.title || "");
 		setDateRangePreset(card.dateRangePreset || "global");
@@ -250,27 +273,59 @@ export function CardSheet({
 	};
 
 	const handleSubmit = () => {
-		if (!(selectedQueryType && selectedField)) {
-			return;
+		if (dataSourceMode === "predefined") {
+			if (!(selectedQueryType && selectedField)) {
+				return;
+			}
+
+			setIsSubmitting(true);
+
+			const card: DashboardCardConfig = {
+				id: editingCard?.id || `card-${Date.now()}`,
+				type: "card",
+				queryType: selectedQueryType.key,
+				field: selectedField.name,
+				label: selectedField.label || selectedField.name,
+				displayMode,
+				title: customTitle.trim() || undefined,
+				category: selectedQueryType.category,
+				dateRangePreset:
+					dateRangePreset !== "global" ? dateRangePreset : undefined,
+				filters: filters.length > 0 ? filters : undefined,
+				dataSourceMode: "predefined",
+			};
+
+			onSaveAction(card);
+		} else {
+			if (!customQuery || customQuery.selects.length === 0) {
+				return;
+			}
+
+			setIsSubmitting(true);
+
+			// Get the first select's alias as the label
+			const firstSelect = customQuery.selects.at(0);
+			const label =
+				firstSelect?.alias || `${firstSelect?.aggregate}_${firstSelect?.field}`;
+
+			const card: DashboardCardConfig = {
+				id: editingCard?.id || `card-${Date.now()}`,
+				type: "card",
+				queryType: `custom_${customQuery.table}`,
+				field: firstSelect?.field || "",
+				label,
+				displayMode: "text", // Custom queries only support text for now
+				title: customTitle.trim() || undefined,
+				category: "Custom",
+				dateRangePreset:
+					dateRangePreset !== "global" ? dateRangePreset : undefined,
+				dataSourceMode: "custom",
+				customQuery,
+			};
+
+			onSaveAction(card);
 		}
 
-		setIsSubmitting(true);
-
-		const card: DashboardCardConfig = {
-			id: editingCard?.id || `card-${Date.now()}`,
-			type: "card",
-			queryType: selectedQueryType.key,
-			field: selectedField.name,
-			label: selectedField.label || selectedField.name,
-			displayMode,
-			title: customTitle.trim() || undefined,
-			category: selectedQueryType.category,
-			dateRangePreset:
-				dateRangePreset !== "global" ? dateRangePreset : undefined,
-			filters: filters.length > 0 ? filters : undefined,
-		};
-
-		onSaveAction(card);
 		setIsSubmitting(false);
 		onCloseAction();
 	};
@@ -403,298 +458,373 @@ export function CardSheet({
 					{/* Separator */}
 					<div className="h-px bg-border" />
 
-					{/* Query Type Selector */}
+					{/* Data Source Mode Toggle */}
 					<div className="space-y-2">
-						<Label>
-							Data Source <span className="text-destructive">*</span>
-						</Label>
-						{isLoadingTypes ? (
-							<Skeleton className="h-10 w-full" />
-						) : (
-							<Popover onOpenChange={setIsQueryTypeOpen} open={isQueryTypeOpen}>
-								<PopoverTrigger asChild>
-									<Button
-										className="w-full justify-between"
-										role="combobox"
-										variant="outline"
-									>
-										{selectedQueryType ? (
-											<div className="flex items-center gap-2 truncate">
-												{(() => {
-													const Icon = getCategoryIcon(
-														selectedQueryType.category
-													);
-													return (
-														<Icon
-															className="size-4 shrink-0 text-muted-foreground"
-															weight="duotone"
-														/>
-													);
-												})()}
-												<span className="truncate">
-													{selectedQueryType.title}
-												</span>
-											</div>
-										) : (
-											<span className="text-muted-foreground">
-												Select a data source…
-											</span>
-										)}
-										<CaretDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
-									</Button>
-								</PopoverTrigger>
-								<PopoverContent
-									align="start"
-									className="w-80 p-0"
-									onOpenAutoFocus={(e) => e.preventDefault()}
-									onPointerDownOutside={(e) => e.preventDefault()}
-								>
-									<Command shouldFilter>
-										<CommandInput placeholder="Search data sources…" />
-										<CommandList
-											className="max-h-72"
-											onWheel={(e) => e.stopPropagation()}
-										>
-											<CommandEmpty>No data source found.</CommandEmpty>
-
-											{/* Metrics Section */}
-											{metricTypes.length > 0 && (
-												<CommandGroup
-													heading={
-														<div className="flex items-center gap-1.5">
-															<GaugeIcon
-																className="size-3.5 text-muted-foreground"
-																weight="duotone"
-															/>
-															Metrics
-															<span className="ml-auto text-[10px] text-muted-foreground/60">
-																single values
-															</span>
-														</div>
-													}
-												>
-													{metricTypes.map((type) => {
-														const Icon = getCategoryIcon(type.category);
-														return (
-															<CommandItem
-																key={type.key}
-																onSelect={() => handleQueryTypeSelect(type)}
-																value={`${type.title} ${type.category}`}
-															>
-																<CheckIcon
-																	className={cn(
-																		"mr-2 size-4 shrink-0",
-																		selectedQueryType?.key === type.key
-																			? "opacity-100"
-																			: "opacity-0"
-																	)}
-																/>
-																<Icon
-																	className="mr-2 size-4 shrink-0 text-muted-foreground"
-																	weight="duotone"
-																/>
-																<div className="min-w-0 flex-1">
-																	<p className="truncate font-medium text-sm">
-																		{type.title}
-																	</p>
-																	<p className="truncate text-muted-foreground text-xs">
-																		{type.description}
-																	</p>
-																</div>
-															</CommandItem>
-														);
-													})}
-												</CommandGroup>
-											)}
-
-											{/* Trends Section */}
-											{trendTypes.length > 0 && (
-												<CommandGroup
-													heading={
-														<div className="flex items-center gap-1.5">
-															<ChartLineUpIcon
-																className="size-3.5 text-muted-foreground"
-																weight="duotone"
-															/>
-															Trends
-															<span className="ml-auto text-[10px] text-muted-foreground/60">
-																over time
-															</span>
-														</div>
-													}
-												>
-													{trendTypes.map((type) => {
-														const Icon = getCategoryIcon(type.category);
-														return (
-															<CommandItem
-																key={type.key}
-																onSelect={() => handleQueryTypeSelect(type)}
-																value={`${type.title} ${type.category}`}
-															>
-																<CheckIcon
-																	className={cn(
-																		"mr-2 size-4 shrink-0",
-																		selectedQueryType?.key === type.key
-																			? "opacity-100"
-																			: "opacity-0"
-																	)}
-																/>
-																<Icon
-																	className="mr-2 size-4 shrink-0 text-muted-foreground"
-																	weight="duotone"
-																/>
-																<div className="min-w-0 flex-1">
-																	<p className="truncate font-medium text-sm">
-																		{type.title}
-																	</p>
-																	<p className="truncate text-muted-foreground text-xs">
-																		{type.description}
-																	</p>
-																</div>
-															</CommandItem>
-														);
-													})}
-												</CommandGroup>
-											)}
-										</CommandList>
-									</Command>
-								</PopoverContent>
-							</Popover>
-						)}
+						<Label>Data Source Type</Label>
+						<div className="flex gap-2">
+							<Button
+								className={cn(
+									"flex-1 justify-start gap-2",
+									dataSourceMode === "predefined" &&
+										"border-primary bg-primary/5"
+								)}
+								onClick={() => setDataSourceMode("predefined")}
+								type="button"
+								variant="outline"
+							>
+								<GaugeIcon className="size-4" weight="duotone" />
+								Predefined
+							</Button>
+							<Button
+								className={cn(
+									"flex-1 justify-start gap-2",
+									dataSourceMode === "custom" && "border-primary bg-primary/5"
+								)}
+								onClick={() => setDataSourceMode("custom")}
+								type="button"
+								variant="outline"
+							>
+								<CodeIcon className="size-4" weight="duotone" />
+								Custom Query
+							</Button>
+						</div>
 					</div>
 
-					{/* Field Selector */}
-					{selectedQueryType && (
-						<div className="space-y-2">
-							<Label>
-								Field to Display <span className="text-destructive">*</span>
-							</Label>
-							<Popover onOpenChange={setIsFieldOpen} open={isFieldOpen}>
-								<PopoverTrigger asChild>
-									<Button
-										className="w-full justify-between"
-										role="combobox"
-										variant="outline"
+					{dataSourceMode === "predefined" ? (
+						<>
+							{/* Query Type Selector */}
+							<div className="space-y-2">
+								<Label>
+									Data Source <span className="text-destructive">*</span>
+								</Label>
+								{isLoadingTypes ? (
+									<Skeleton className="h-10 w-full" />
+								) : (
+									<Popover
+										onOpenChange={setIsQueryTypeOpen}
+										open={isQueryTypeOpen}
 									>
-										{selectedField ? (
-											<span className="truncate">
-												{selectedField.label || selectedField.name}
-											</span>
-										) : (
-											<span className="text-muted-foreground">
-												Select a field…
-											</span>
-										)}
-										<CaretDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
-									</Button>
-								</PopoverTrigger>
-								<PopoverContent
-									align="start"
-									className="w-80 p-0"
-									onOpenAutoFocus={(e) => e.preventDefault()}
-									onPointerDownOutside={(e) => e.preventDefault()}
-								>
-									<Command shouldFilter>
-										<CommandInput placeholder="Search fields…" />
-										<CommandList className="max-h-72">
-											<CommandEmpty>No field found.</CommandEmpty>
-											<CommandGroup>
-												{selectedQueryType.outputFields.map((field) => (
-													<CommandItem
-														key={field.name}
-														onSelect={() => handleFieldSelect(field)}
-														value={field.label || field.name}
-													>
-														<CheckIcon
-															className={cn(
-																"mr-2 size-4",
-																selectedField?.name === field.name
-																	? "opacity-100"
-																	: "opacity-0"
-															)}
-														/>
-														<div className="min-w-0 flex-1">
-															<p className="truncate font-medium text-sm">
-																{field.label || field.name}
-																{field.unit && (
-																	<span className="ml-1 text-muted-foreground">
-																		({field.unit})
-																	</span>
-																)}
-															</p>
-															{field.description && (
-																<p className="truncate text-muted-foreground text-xs">
-																	{field.description}
-																</p>
-															)}
-														</div>
-													</CommandItem>
-												))}
-											</CommandGroup>
-										</CommandList>
-									</Command>
-								</PopoverContent>
-							</Popover>
-						</div>
-					)}
-
-					{/* Display Mode - only show if trends data supports chart */}
-					{selectedField && supportsChart && (
-						<div className="space-y-2">
-							<Label>Display Mode</Label>
-							<div className="flex gap-2">
-								{(
-									[
-										{ value: "text", label: "Text", icon: TextTIcon },
-										{ value: "chart", label: "Chart", icon: ChartBarIcon },
-									] as const
-								).map((mode) => {
-									const isSelected = displayMode === mode.value;
-									const Icon = mode.icon;
-									return (
-										<button
-											className={cn(
-												"flex flex-1 cursor-pointer items-center justify-center gap-2 rounded border py-2.5 transition-all",
-												isSelected
-													? "border-primary bg-primary/5 text-foreground"
-													: "border-transparent bg-secondary text-muted-foreground hover:border-border hover:text-foreground"
-											)}
-											key={mode.value}
-											onClick={() => setDisplayMode(mode.value)}
-											type="button"
-										>
-											<Icon
-												className={cn(
-													"size-4",
-													isSelected ? "text-primary" : "text-muted-foreground"
+										<PopoverTrigger asChild>
+											<Button
+												className="w-full justify-between"
+												role="combobox"
+												variant="outline"
+											>
+												{selectedQueryType ? (
+													<div className="flex items-center gap-2 truncate">
+														{(() => {
+															const Icon = getCategoryIcon(
+																selectedQueryType.category
+															);
+															return (
+																<Icon
+																	className="size-4 shrink-0 text-muted-foreground"
+																	weight="duotone"
+																/>
+															);
+														})()}
+														<span className="truncate">
+															{selectedQueryType.title}
+														</span>
+													</div>
+												) : (
+													<span className="text-muted-foreground">
+														Select a data source…
+													</span>
 												)}
-												weight="duotone"
-											/>
-											<span className="font-medium text-sm">{mode.label}</span>
-										</button>
-									);
-								})}
+												<CaretDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
+											</Button>
+										</PopoverTrigger>
+										<PopoverContent
+											align="start"
+											className="w-80 p-0"
+											onOpenAutoFocus={(e) => e.preventDefault()}
+											onPointerDownOutside={(e) => e.preventDefault()}
+										>
+											<Command shouldFilter>
+												<CommandInput placeholder="Search data sources…" />
+												<CommandList
+													className="max-h-72"
+													onWheel={(e) => e.stopPropagation()}
+												>
+													<CommandEmpty>No data source found.</CommandEmpty>
+
+													{/* Metrics Section */}
+													{metricTypes.length > 0 && (
+														<CommandGroup
+															heading={
+																<div className="flex items-center gap-1.5">
+																	<GaugeIcon
+																		className="size-3.5 text-muted-foreground"
+																		weight="duotone"
+																	/>
+																	Metrics
+																	<span className="ml-auto text-[10px] text-muted-foreground/60">
+																		single values
+																	</span>
+																</div>
+															}
+														>
+															{metricTypes.map((type) => {
+																const Icon = getCategoryIcon(type.category);
+																return (
+																	<CommandItem
+																		key={type.key}
+																		onSelect={() => handleQueryTypeSelect(type)}
+																		value={`${type.title} ${type.category}`}
+																	>
+																		<CheckIcon
+																			className={cn(
+																				"mr-2 size-4 shrink-0",
+																				selectedQueryType?.key === type.key
+																					? "opacity-100"
+																					: "opacity-0"
+																			)}
+																		/>
+																		<Icon
+																			className="mr-2 size-4 shrink-0 text-muted-foreground"
+																			weight="duotone"
+																		/>
+																		<div className="min-w-0 flex-1">
+																			<p className="truncate font-medium text-sm">
+																				{type.title}
+																			</p>
+																			<p className="truncate text-muted-foreground text-xs">
+																				{type.description}
+																			</p>
+																		</div>
+																	</CommandItem>
+																);
+															})}
+														</CommandGroup>
+													)}
+
+													{/* Trends Section */}
+													{trendTypes.length > 0 && (
+														<CommandGroup
+															heading={
+																<div className="flex items-center gap-1.5">
+																	<ChartLineUpIcon
+																		className="size-3.5 text-muted-foreground"
+																		weight="duotone"
+																	/>
+																	Trends
+																	<span className="ml-auto text-[10px] text-muted-foreground/60">
+																		over time
+																	</span>
+																</div>
+															}
+														>
+															{trendTypes.map((type) => {
+																const Icon = getCategoryIcon(type.category);
+																return (
+																	<CommandItem
+																		key={type.key}
+																		onSelect={() => handleQueryTypeSelect(type)}
+																		value={`${type.title} ${type.category}`}
+																	>
+																		<CheckIcon
+																			className={cn(
+																				"mr-2 size-4 shrink-0",
+																				selectedQueryType?.key === type.key
+																					? "opacity-100"
+																					: "opacity-0"
+																			)}
+																		/>
+																		<Icon
+																			className="mr-2 size-4 shrink-0 text-muted-foreground"
+																			weight="duotone"
+																		/>
+																		<div className="min-w-0 flex-1">
+																			<p className="truncate font-medium text-sm">
+																				{type.title}
+																			</p>
+																			<p className="truncate text-muted-foreground text-xs">
+																				{type.description}
+																			</p>
+																		</div>
+																	</CommandItem>
+																);
+															})}
+														</CommandGroup>
+													)}
+												</CommandList>
+											</Command>
+										</PopoverContent>
+									</Popover>
+								)}
 							</div>
-						</div>
-					)}
 
-					{/* Custom Title */}
-					{selectedField && (
-						<div className="space-y-2">
-							<Label className="text-muted-foreground" htmlFor="customTitle">
-								Custom Title (optional)
-							</Label>
-							<Input
-								id="customTitle"
-								onChange={(e) => setCustomTitle(e.target.value)}
-								placeholder={selectedField.label || selectedField.name}
-								value={customTitle}
+							{/* Field Selector */}
+							{selectedQueryType && (
+								<div className="space-y-2">
+									<Label>
+										Field to Display <span className="text-destructive">*</span>
+									</Label>
+									<Popover onOpenChange={setIsFieldOpen} open={isFieldOpen}>
+										<PopoverTrigger asChild>
+											<Button
+												className="w-full justify-between"
+												role="combobox"
+												variant="outline"
+											>
+												{selectedField ? (
+													<span className="truncate">
+														{selectedField.label || selectedField.name}
+													</span>
+												) : (
+													<span className="text-muted-foreground">
+														Select a field…
+													</span>
+												)}
+												<CaretDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
+											</Button>
+										</PopoverTrigger>
+										<PopoverContent
+											align="start"
+											className="w-80 p-0"
+											onOpenAutoFocus={(e) => e.preventDefault()}
+											onPointerDownOutside={(e) => e.preventDefault()}
+										>
+											<Command shouldFilter>
+												<CommandInput placeholder="Search fields…" />
+												<CommandList className="max-h-72">
+													<CommandEmpty>No field found.</CommandEmpty>
+													<CommandGroup>
+														{selectedQueryType.outputFields.map((field) => (
+															<CommandItem
+																key={field.name}
+																onSelect={() => handleFieldSelect(field)}
+																value={field.label || field.name}
+															>
+																<CheckIcon
+																	className={cn(
+																		"mr-2 size-4",
+																		selectedField?.name === field.name
+																			? "opacity-100"
+																			: "opacity-0"
+																	)}
+																/>
+																<div className="min-w-0 flex-1">
+																	<p className="truncate font-medium text-sm">
+																		{field.label || field.name}
+																		{field.unit && (
+																			<span className="ml-1 text-muted-foreground">
+																				({field.unit})
+																			</span>
+																		)}
+																	</p>
+																	{field.description && (
+																		<p className="truncate text-muted-foreground text-xs">
+																			{field.description}
+																		</p>
+																	)}
+																</div>
+															</CommandItem>
+														))}
+													</CommandGroup>
+												</CommandList>
+											</Command>
+										</PopoverContent>
+									</Popover>
+								</div>
+							)}
+
+							{/* Display Mode - only show if trends data supports chart */}
+							{selectedField && supportsChart && (
+								<div className="space-y-2">
+									<Label>Display Mode</Label>
+									<div className="flex gap-2">
+										{(
+											[
+												{ value: "text", label: "Text", icon: TextTIcon },
+												{ value: "chart", label: "Chart", icon: ChartBarIcon },
+											] as const
+										).map((mode) => {
+											const isSelected = displayMode === mode.value;
+											const Icon = mode.icon;
+											return (
+												<button
+													className={cn(
+														"flex flex-1 cursor-pointer items-center justify-center gap-2 rounded border py-2.5 transition-all",
+														isSelected
+															? "border-primary bg-primary/5 text-foreground"
+															: "border-transparent bg-secondary text-muted-foreground hover:border-border hover:text-foreground"
+													)}
+													key={mode.value}
+													onClick={() => setDisplayMode(mode.value)}
+													type="button"
+												>
+													<Icon
+														className={cn(
+															"size-4",
+															isSelected
+																? "text-primary"
+																: "text-muted-foreground"
+														)}
+														weight="duotone"
+													/>
+													<span className="font-medium text-sm">
+														{mode.label}
+													</span>
+												</button>
+											);
+										})}
+									</div>
+								</div>
+							)}
+
+							{/* Custom Title */}
+							{selectedField && (
+								<div className="space-y-2">
+									<Label
+										className="text-muted-foreground"
+										htmlFor="customTitle"
+									>
+										Custom Title (optional)
+									</Label>
+									<Input
+										id="customTitle"
+										onChange={(e) => setCustomTitle(e.target.value)}
+										placeholder={selectedField.label || selectedField.name}
+										value={customTitle}
+									/>
+								</div>
+							)}
+						</>
+					) : (
+						<>
+							{/* Custom Query Builder */}
+							<CustomQueryBuilder
+								onChangeAction={setCustomQuery}
+								value={customQuery}
 							/>
-						</div>
+
+							{/* Custom Title for Custom Query */}
+							{customQuery && customQuery.selects.length > 0 && (
+								<div className="space-y-2">
+									<Label
+										className="text-muted-foreground"
+										htmlFor="customTitle"
+									>
+										Custom Title (optional)
+									</Label>
+									<Input
+										id="customTitle"
+										onChange={(e) => setCustomTitle(e.target.value)}
+										placeholder={
+											customQuery.selects.at(0)?.alias || "Custom metric"
+										}
+										value={customTitle}
+									/>
+								</div>
+							)}
+						</>
 					)}
 
-					{/* Advanced Options - Date Range & Filters */}
-					{selectedField && (
+					{/* Advanced Options - Date Range & Filters (shared) */}
+					{(selectedField ||
+						(customQuery && customQuery.selects.length > 0)) && (
 						<>
 							<div className="h-px bg-border" />
 

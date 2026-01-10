@@ -4,6 +4,11 @@ import type {
 	DynamicQueryRequest,
 	ParameterWithDates,
 } from "@databuddy/shared/types/api";
+import type {
+	CustomQueryConfig,
+	CustomQueryRequest,
+} from "@databuddy/shared/types/custom-query";
+import { useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useBatchDynamicQuery } from "@/hooks/use-dynamic-query";
 import { resolveDateRange } from "../utils/date-presets";
@@ -11,6 +16,7 @@ import { formatWidgetValue, parseNumericValue } from "../utils/formatters";
 import type {
 	CardFilter,
 	DashboardWidgetBase,
+	DataSourceMode,
 	DateRangePreset,
 	QueryCell,
 	QueryRow,
@@ -47,7 +53,11 @@ interface DashboardDataResult {
 interface WidgetWithSettings extends DashboardWidgetBase {
 	filters?: CardFilter[];
 	dateRangePreset?: DateRangePreset;
+	dataSourceMode?: DataSourceMode;
+	customQuery?: CustomQueryConfig;
 }
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 function toQueryFilters(filters?: CardFilter[]): DynamicQueryFilter[] {
 	if (!filters || filters.length === 0) {
@@ -71,9 +81,29 @@ function createFilterKey(filters?: CardFilter[]): string {
 	);
 }
 
+async function fetchCustomQuery(
+	websiteId: string,
+	request: CustomQueryRequest
+): Promise<Record<string, unknown>[]> {
+	const response = await fetch(
+		`${API_BASE_URL}/v1/query/custom?website_id=${websiteId}`,
+		{
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			credentials: "include",
+			body: JSON.stringify(request),
+		}
+	);
+	const data = await response.json();
+	if (!data.success) {
+		throw new Error(data.error || "Custom query failed");
+	}
+	return data.data || [];
+}
+
 /**
  * Hook for fetching and accessing dashboard widget data.
- * Groups widgets by filters and uses ParameterWithDates for per-widget date ranges.
+ * Supports both predefined query types and custom queries.
  */
 export function useDashboardData<T extends WidgetWithSettings>(
 	websiteId: string,
@@ -81,9 +111,24 @@ export function useDashboardData<T extends WidgetWithSettings>(
 	widgets: T[],
 	options?: UseDashboardDataOptions
 ): DashboardDataResult {
-	// Group widgets by filters (date ranges are handled per-parameter)
+	// Split widgets into predefined and custom
+	const { predefinedWidgets, customWidgets } = useMemo(() => {
+		const predefined: T[] = [];
+		const custom: T[] = [];
+
+		for (const widget of widgets) {
+			if (widget.dataSourceMode === "custom" && widget.customQuery) {
+				custom.push(widget);
+			} else {
+				predefined.push(widget);
+			}
+		}
+
+		return { predefinedWidgets: predefined, customWidgets: custom };
+	}, [widgets]);
+
+	// Build queries for predefined widgets
 	const { queries, cardToQueryMap } = useMemo(() => {
-		// Group by filter combination - each unique filter set gets its own query
 		const filterGroups = new Map<
 			string,
 			{
@@ -93,7 +138,7 @@ export function useDashboardData<T extends WidgetWithSettings>(
 			}
 		>();
 
-		for (const widget of widgets) {
+		for (const widget of predefinedWidgets) {
 			const filterKey = createFilterKey(widget.filters);
 			const resolvedDateRange = resolveDateRange(
 				widget.dateRangePreset || "global",
@@ -117,7 +162,6 @@ export function useDashboardData<T extends WidgetWithSettings>(
 			}
 			group.cardIds.push(widget.id);
 
-			// Create a unique parameter key for this queryType + dateRange combo
 			const paramKey = `${widget.queryType}|${resolvedDateRange.start_date}|${resolvedDateRange.end_date}`;
 
 			if (!group.parameters.has(paramKey)) {
@@ -131,7 +175,6 @@ export function useDashboardData<T extends WidgetWithSettings>(
 			}
 		}
 
-		// Build queries - one per filter group
 		const batchQueries: DynamicQueryRequest[] = [];
 		const cardMap = new Map<string, { queryId: string; paramId: string }>();
 
@@ -146,9 +189,8 @@ export function useDashboardData<T extends WidgetWithSettings>(
 				granularity: globalDateRange.granularity,
 			});
 
-			// Map each card to its query and parameter
 			for (const cardId of group.cardIds) {
-				const widget = widgets.find((w) => w.id === cardId);
+				const widget = predefinedWidgets.find((w) => w.id === cardId);
 				if (widget) {
 					const resolvedDateRange = resolveDateRange(
 						widget.dateRangePreset || "global",
@@ -161,29 +203,94 @@ export function useDashboardData<T extends WidgetWithSettings>(
 		}
 
 		return { queries: batchQueries, cardToQueryMap: cardMap };
-	}, [widgets, globalDateRange]);
+	}, [predefinedWidgets, globalDateRange]);
 
-	const { getDataForQuery, isLoading, isFetching } = useBatchDynamicQuery(
-		websiteId,
-		globalDateRange,
-		queries,
-		{
-			enabled: (options?.enabled ?? true) && queries.length > 0,
+	// Fetch predefined data
+	const {
+		getDataForQuery,
+		isLoading: predefinedLoading,
+		isFetching: predefinedFetching,
+	} = useBatchDynamicQuery(websiteId, globalDateRange, queries, {
+		enabled: (options?.enabled ?? true) && queries.length > 0,
+	});
+
+	// Build custom query configs
+	const customQueryConfigs = useMemo(() => {
+		return customWidgets
+			.filter((widget) => widget.customQuery)
+			.map((widget) => {
+				const resolvedDateRange = resolveDateRange(
+					widget.dateRangePreset || "global",
+					globalDateRange
+				);
+				return {
+					cardId: widget.id,
+					request: {
+						query: widget.customQuery,
+						startDate: resolvedDateRange.start_date,
+						endDate: resolvedDateRange.end_date,
+						timezone: resolvedDateRange.timezone,
+						granularity: resolvedDateRange.granularity,
+					} as CustomQueryRequest,
+				};
+			});
+	}, [customWidgets, globalDateRange]);
+
+	// Fetch custom query data
+	const customQueries = useQueries({
+		queries: customQueryConfigs.map((config) => ({
+			queryKey: ["custom-query", websiteId, config.cardId, config.request],
+			queryFn: () => fetchCustomQuery(websiteId, config.request),
+			enabled: options?.enabled ?? true,
+			staleTime: 2 * 60 * 1000,
+		})),
+	});
+
+	// Build custom data map
+	const customDataMap = useMemo(() => {
+		const dataMap = new Map<string, Record<string, unknown>[]>();
+		for (let i = 0; i < customQueryConfigs.length; i++) {
+			const config = customQueryConfigs.at(i);
+			const query = customQueries.at(i);
+			if (config && query?.data) {
+				dataMap.set(config.cardId, query.data);
+			}
 		}
-	);
+		return dataMap;
+	}, [customQueryConfigs, customQueries]);
+
+	const customLoading = customQueries.some((q) => q.isLoading);
+	const customFetching = customQueries.some((q) => q.isFetching);
+
+	const isLoading = predefinedLoading || customLoading;
+	const isFetching = predefinedFetching || customFetching;
 
 	const getValue = useMemo(
 		() =>
 			(cardId: string, queryType: string, field: string): string => {
+				// Check if it's a custom query card
+				const customData = customDataMap.get(cardId);
+				if (customData) {
+					const firstRow = customData.at(0);
+					if (!firstRow) {
+						return "—";
+					}
+					// For custom queries, try to find the first aggregate result
+					const values = Object.values(firstRow);
+					const firstValue = values.at(0) as QueryCell | undefined;
+					if (firstValue !== undefined && firstValue !== null) {
+						return formatWidgetValue(firstValue, field);
+					}
+					return "—";
+				}
+
+				// Predefined query
 				const mapping = cardToQueryMap.get(cardId);
 				if (!mapping) {
 					return "—";
 				}
 
-				// Try to get data using the paramId (which includes date range info)
 				let rows = getDataForQuery(mapping.queryId, mapping.paramId);
-
-				// Fallback to queryType if paramId doesn't work
 				if (!Array.isArray(rows) || rows.length === 0) {
 					rows = getDataForQuery(mapping.queryId, queryType);
 				}
@@ -199,7 +306,7 @@ export function useDashboardData<T extends WidgetWithSettings>(
 
 				return formatWidgetValue(firstRow[field], field);
 			},
-		[getDataForQuery, cardToQueryMap]
+		[getDataForQuery, cardToQueryMap, customDataMap]
 	);
 
 	const getRawValue = useMemo(
@@ -209,6 +316,13 @@ export function useDashboardData<T extends WidgetWithSettings>(
 				queryType: string,
 				field: string
 			): QueryCell | undefined => {
+				const customData = customDataMap.get(cardId);
+				if (customData) {
+					const firstRow = customData.at(0);
+					const values = Object.values(firstRow || {});
+					return values.at(0) as QueryCell | undefined;
+				}
+
 				const mapping = cardToQueryMap.get(cardId);
 				if (!mapping) {
 					return undefined;
@@ -226,12 +340,17 @@ export function useDashboardData<T extends WidgetWithSettings>(
 				const firstRow = rows.at(0);
 				return firstRow?.[field];
 			},
-		[getDataForQuery, cardToQueryMap]
+		[getDataForQuery, cardToQueryMap, customDataMap]
 	);
 
 	const getRow = useMemo(
 		() =>
 			(cardId: string, queryType: string): QueryRow | undefined => {
+				const customData = customDataMap.get(cardId);
+				if (customData) {
+					return customData.at(0) as QueryRow | undefined;
+				}
+
 				const mapping = cardToQueryMap.get(cardId);
 				if (!mapping) {
 					return undefined;
@@ -247,12 +366,17 @@ export function useDashboardData<T extends WidgetWithSettings>(
 				}
 				return rows.at(0);
 			},
-		[getDataForQuery, cardToQueryMap]
+		[getDataForQuery, cardToQueryMap, customDataMap]
 	);
 
 	const getRows = useMemo(
 		() =>
 			(cardId: string, queryType: string): QueryRow[] => {
+				const customData = customDataMap.get(cardId);
+				if (customData) {
+					return customData as QueryRow[];
+				}
+
 				const mapping = cardToQueryMap.get(cardId);
 				if (!mapping) {
 					return [];
@@ -268,12 +392,27 @@ export function useDashboardData<T extends WidgetWithSettings>(
 				}
 				return rows;
 			},
-		[getDataForQuery, cardToQueryMap]
+		[getDataForQuery, cardToQueryMap, customDataMap]
 	);
 
 	const getChartData = useMemo(
 		() =>
 			(cardId: string, queryType: string, field: string): ChartDataPoint[] => {
+				const customData = customDataMap.get(cardId);
+				if (customData) {
+					return customData
+						.map((row) => {
+							const rawDate = row.date;
+							const rawValue = (row[field] ??
+								Object.values(row).at(0)) as QueryCell | undefined;
+							return {
+								date: rawDate ? String(rawDate) : "",
+								value: parseNumericValue(rawValue),
+							};
+						})
+						.filter((d) => d.date);
+				}
+
 				const mapping = cardToQueryMap.get(cardId);
 				if (!mapping) {
 					return [];
@@ -299,12 +438,17 @@ export function useDashboardData<T extends WidgetWithSettings>(
 					})
 					.filter((d) => d.date);
 			},
-		[getDataForQuery, cardToQueryMap]
+		[getDataForQuery, cardToQueryMap, customDataMap]
 	);
 
 	const hasData = useMemo(
 		() =>
 			(cardId: string, queryType: string): boolean => {
+				const customData = customDataMap.get(cardId);
+				if (customData) {
+					return customData.length > 0;
+				}
+
 				const mapping = cardToQueryMap.get(cardId);
 				if (!mapping) {
 					return false;
@@ -317,7 +461,7 @@ export function useDashboardData<T extends WidgetWithSettings>(
 
 				return Array.isArray(rows) && rows.length > 0;
 			},
-		[getDataForQuery, cardToQueryMap]
+		[getDataForQuery, cardToQueryMap, customDataMap]
 	);
 
 	return {

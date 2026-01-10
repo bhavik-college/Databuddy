@@ -1,3 +1,4 @@
+import type { CustomQueryConfig } from "@databuddy/shared/types/custom-query";
 import type { StatCardDisplayMode } from "@/components/analytics/stat-card";
 
 /** Filter operator types */
@@ -27,9 +28,13 @@ export type DateRangePreset =
 	| "this_month"
 	| "last_month";
 
+/** Data source mode for cards */
+export type DataSourceMode = "predefined" | "custom";
+
 /** Base config all dashboard widgets share */
 export interface DashboardWidgetBase {
 	id: string;
+	/** Predefined query type - used when dataSourceMode is 'predefined' */
 	queryType: string;
 	category?: string;
 	title?: string;
@@ -37,6 +42,10 @@ export interface DashboardWidgetBase {
 	filters?: CardFilter[];
 	/** Date range preset - defaults to 'global' */
 	dateRangePreset?: DateRangePreset;
+	/** Data source mode - 'predefined' uses queryType, 'custom' uses customQuery */
+	dataSourceMode?: DataSourceMode;
+	/** Custom query config - used when dataSourceMode is 'custom' */
+	customQuery?: CustomQueryConfig;
 }
 
 /** Card widget - displays a single value with optional chart */

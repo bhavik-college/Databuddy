@@ -1,6 +1,7 @@
 import { auth } from "@databuddy/auth";
 import { and, db, eq, inArray, isNull, member, websites } from "@databuddy/db";
 import { filterOptions } from "@databuddy/shared/lists/filters";
+import type { CustomQueryRequest } from "@databuddy/shared/types/custom-query";
 import { Elysia, t } from "elysia";
 import {
 	type ApiKeyRow,
@@ -13,6 +14,7 @@ import { record, setAttributes } from "../lib/tracing";
 import { getCachedWebsiteDomain, getWebsiteDomain } from "../lib/website-utils";
 import { compileQuery, executeBatch } from "../query";
 import { QueryBuilders } from "../query/builders";
+import { executeCustomQuery } from "../query/custom-query-builder";
 import type { Filter, QueryRequest } from "../query/types";
 import {
 	CompileRequestSchema,
@@ -376,6 +378,101 @@ export const query = new Elysia({ prefix: "/v1/query" })
 				DynamicQueryRequestSchema,
 				t.Array(DynamicQueryRequestSchema),
 			]),
+		}
+	)
+
+	.post(
+		"/custom",
+		async ({
+			body,
+			query: q,
+			auth: ctx,
+		}: {
+			body: CustomQueryRequest;
+			query: { website_id?: string };
+			auth: AuthContext;
+		}) =>
+			record("executeCustomQuery", async () => {
+				if (!q.website_id) {
+					return {
+						success: false,
+						error: "website_id is required",
+						code: "MISSING_WEBSITE_ID",
+					};
+				}
+
+				const hasAccess = await verifyWebsiteAccess(ctx, q.website_id);
+				if (!hasAccess) {
+					return {
+						success: false,
+						error: ctx.isAuthenticated
+							? "Access denied to this website"
+							: "Authentication required",
+						code: ctx.isAuthenticated ? "ACCESS_DENIED" : "AUTH_REQUIRED",
+					};
+				}
+
+				setAttributes({
+					"custom_query_table": body.query.table,
+					"custom_query_selects": body.query.selects.length,
+					"custom_query_filters": body.query.filters?.length || 0,
+				});
+
+				return executeCustomQuery(body, q.website_id);
+			}),
+		{
+			body: t.Object({
+				query: t.Object({
+					table: t.String(),
+					selects: t.Array(
+						t.Object({
+							field: t.String(),
+							aggregate: t.Union([
+								t.Literal("count"),
+								t.Literal("sum"),
+								t.Literal("avg"),
+								t.Literal("max"),
+								t.Literal("min"),
+								t.Literal("uniq"),
+							]),
+							alias: t.Optional(t.String()),
+						})
+					),
+					filters: t.Optional(
+						t.Array(
+							t.Object({
+								field: t.String(),
+								operator: t.Union([
+									t.Literal("eq"),
+									t.Literal("ne"),
+									t.Literal("gt"),
+									t.Literal("lt"),
+									t.Literal("gte"),
+									t.Literal("lte"),
+									t.Literal("contains"),
+									t.Literal("not_contains"),
+									t.Literal("starts_with"),
+									t.Literal("in"),
+									t.Literal("not_in"),
+								]),
+								value: t.Union([
+									t.String(),
+									t.Number(),
+									t.Array(t.Union([t.String(), t.Number()])),
+								]),
+							})
+						)
+					),
+					groupBy: t.Optional(t.Array(t.String())),
+				}),
+				startDate: t.String(),
+				endDate: t.String(),
+				timezone: t.Optional(t.String()),
+				granularity: t.Optional(
+					t.Union([t.Literal("hourly"), t.Literal("daily")])
+				),
+				limit: t.Optional(t.Number()),
+			}),
 		}
 	);
 
