@@ -6,12 +6,12 @@ import type { QueryRequest, SimpleQueryConfig } from "./types";
 import { applyPlugins } from "./utils";
 
 type BatchRequest = QueryRequest & { type: string };
-type BatchResult = {
+interface BatchResult {
 	type: string;
 	data: Record<string, unknown>[];
 	error?: string;
-};
-type BatchOptions = { websiteDomain?: string | null; timezone?: string };
+}
+interface BatchOptions { websiteDomain?: string | null; timezone?: string }
 
 function getSchemaSignature(config: SimpleQueryConfig): string | null {
 	const fields = config.meta?.output_fields;
