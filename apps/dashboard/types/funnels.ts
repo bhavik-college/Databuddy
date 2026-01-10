@@ -21,7 +21,7 @@ export interface FunnelStepAnalytics {
 export interface FunnelErrorInsights {
 	total_errors: number;
 	sessions_with_errors: number;
-	dropoffs_with_errors: number;
+		dropoffs_with_errors: number;
 	error_correlation_rate: number;
 };
 
