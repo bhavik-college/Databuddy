@@ -448,16 +448,16 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 		function evaluateFlagEndpoint({ query, set }) {
 			return record("evaluateFlag", async (): Promise<FlagResult> => {
 				setAttributes({
-					"flag.key": query.key || "missing",
-					"flag.client_id": query.clientId || "missing",
-					"flag.has_user_id": Boolean(query.userId),
-					"flag.has_email": Boolean(query.email),
-					"flag.environment": query.environment || "missing",
+					"flag_key": query.key || "missing",
+					"flag_client_id": query.clientId || "missing",
+					"flag_has_user_id": Boolean(query.userId),
+					"flag_has_email": Boolean(query.email),
+					"flag_environment": query.environment || "missing",
 				});
 
 				try {
 					if (!(query.key && query.clientId)) {
-						setAttributes({ "flag.error": "missing_params" });
+						setAttributes({ "flag_error": "missing_params" });
 						set.status = 400;
 						return {
 							enabled: false,
@@ -493,7 +493,7 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 					);
 
 					if (!flag) {
-						setAttributes({ "flag.found": false });
+						setAttributes({ "flag_found": false });
 						return {
 							enabled: false,
 							value: false,
@@ -519,15 +519,15 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 						context
 					);
 					setAttributes({
-						"flag.found": true,
-						"flag.type": flag.type,
-						"flag.enabled": result.enabled,
-						"flag.reason": result.reason,
+						"flag_found": true,
+						"flag_type": flag.type,
+						"flag_enabled": result.enabled,
+						"flag_reason": result.reason,
 					});
 
 					return result;
 				} catch (error) {
-					setAttributes({ "flag.error": true });
+					setAttributes({ "flag_error": true });
 					logger.error(
 						{ error, key: query.key, clientId: query.clientId },
 						"Flag evaluation failed"
@@ -550,16 +550,16 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 		function bulkEvaluateFlags({ query, set }) {
 			return record("bulkEvaluateFlags", async () => {
 				setAttributes({
-					"flag.bulk": true,
-					"flag.client_id": query.clientId || "missing",
-					"flag.has_user_id": Boolean(query.userId),
-					"flag.has_email": Boolean(query.email),
-					"flag.environment": query.environment || "missing",
+					"flag_bulk": true,
+					"flag_client_id": query.clientId || "missing",
+					"flag_has_user_id": Boolean(query.userId),
+					"flag_has_email": Boolean(query.email),
+					"flag_environment": query.environment || "missing",
 				});
 
 				try {
 					if (!query.clientId) {
-						setAttributes({ "flag.error": "missing_client_id" });
+						setAttributes({ "flag_error": "missing_client_id" });
 						set.status = 400;
 						return {
 							flags: {},
@@ -582,7 +582,7 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 					);
 
 					setAttributes({
-						"flag.total_flags": allFlags.length,
+						"flag_total_flags": allFlags.length,
 					});
 
 					const enabledFlags: Record<string, FlagResult> = {};
@@ -598,7 +598,7 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 					}
 
 					setAttributes({
-						"flag.enabled_count": Object.keys(enabledFlags).length,
+						"flag_enabled_count": Object.keys(enabledFlags).length,
 					});
 
 					return {
@@ -607,7 +607,7 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 						timestamp: new Date().toISOString(),
 					};
 				} catch (error) {
-					setAttributes({ "flag.error": true });
+					setAttributes({ "flag_error": true });
 					logger.error(
 						{ error, clientId: query.clientId },
 						"Bulk flag evaluation failed"
@@ -629,13 +629,13 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 		function getDefinitionsEndpoint({ query, set }) {
 			return record("getFlagDefinitions", async () => {
 				setAttributes({
-					"flag.client_id": query.clientId || "missing",
-					"flag.environment": query.environment || "missing",
+					"flag_client_id": query.clientId || "missing",
+					"flag_environment": query.environment || "missing",
 				});
 
 				try {
 					if (!query.clientId) {
-						setAttributes({ "flag.error": "missing_client_id" });
+						setAttributes({ "flag_error": "missing_client_id" });
 						set.status = 400;
 						return {
 							flags: [],
@@ -649,7 +649,7 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 					);
 
 					setAttributes({
-						"flag.total_flags": allFlags.length,
+						"flag_total_flags": allFlags.length,
 					});
 
 					// Return flag definitions without evaluation
@@ -668,7 +668,7 @@ export const flagsRoute = new Elysia({ prefix: "/v1/flags" })
 						timestamp: new Date().toISOString(),
 					};
 				} catch (error) {
-					setAttributes({ "flag.error": true });
+					setAttributes({ "flag_error": true });
 					logger.error(
 						{ error, clientId: query.clientId },
 						"Flag definitions fetch failed"

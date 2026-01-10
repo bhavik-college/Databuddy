@@ -231,7 +231,7 @@ export const query = new Elysia({ prefix: "/v1/query" })
 			}
 			const list = await getAccessibleWebsites(ctx);
 			const count = Array.isArray(list) ? list.length : 0;
-			setAttributes({ "websites.count": count, "auth.method": ctx.authMethod });
+			setAttributes({ "websites_count": count, "auth_method": ctx.authMethod });
 			return { success: true, websites: list, total: count };
 		})
 	)
@@ -349,8 +349,8 @@ export const query = new Elysia({ prefix: "/v1/query" })
 				const tz = q.timezone || "UTC";
 				const isBatch = Array.isArray(body);
 				setAttributes({
-					"query.is_batch": isBatch,
-					"query.count": isBatch ? body.length : 1,
+					"query_is_batch": isBatch,
+					"query_count": isBatch ? body.length : 1,
 				});
 
 				if (isBatch) {

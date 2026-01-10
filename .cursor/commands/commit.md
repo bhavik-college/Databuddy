@@ -19,7 +19,7 @@ Commits all changes and pushes to staging branch.
 ```
 fix: empty state consistency in events pages
 feat: add dark mode toggle
-cleanup: remove unused imports
+cleanup: remove unused imports  
 chore: update dependencies
 docs: update readme
 ```
