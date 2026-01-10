@@ -1,11 +1,42 @@
 import type { StatCardDisplayMode } from "@/components/analytics/stat-card";
 
+/** Filter operator types */
+export type FilterOperator =
+	| "eq"
+	| "ne"
+	| "contains"
+	| "not_contains"
+	| "starts_with";
+
+/** Single filter condition */
+export interface CardFilter {
+	field: string;
+	operator: FilterOperator;
+	value: string;
+}
+
+/** Date range preset for cards */
+export type DateRangePreset =
+	| "global"
+	| "today"
+	| "yesterday"
+	| "last_7_days"
+	| "last_14_days"
+	| "last_30_days"
+	| "last_90_days"
+	| "this_month"
+	| "last_month";
+
 /** Base config all dashboard widgets share */
 export interface DashboardWidgetBase {
 	id: string;
 	queryType: string;
 	category?: string;
 	title?: string;
+	/** Filters to apply to this widget's data */
+	filters?: CardFilter[];
+	/** Date range preset - defaults to 'global' */
+	dateRangePreset?: DateRangePreset;
 }
 
 /** Card widget - displays a single value with optional chart */

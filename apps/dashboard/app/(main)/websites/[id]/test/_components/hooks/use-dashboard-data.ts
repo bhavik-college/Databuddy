@@ -1,11 +1,18 @@
 import type { DateRange } from "@databuddy/shared/types/analytics";
+import type {
+	DynamicQueryFilter,
+	DynamicQueryRequest,
+	ParameterWithDates,
+} from "@databuddy/shared/types/api";
 import { useMemo } from "react";
-import { useDynamicQuery } from "@/hooks/use-dynamic-query";
+import { useBatchDynamicQuery } from "@/hooks/use-dynamic-query";
+import { resolveDateRange } from "../utils/date-presets";
 import { formatWidgetValue, parseNumericValue } from "../utils/formatters";
 import type {
+	CardFilter,
 	DashboardWidgetBase,
+	DateRangePreset,
 	QueryCell,
-	QueryDataMap,
 	QueryRow,
 } from "../utils/types";
 
@@ -19,116 +26,265 @@ interface ChartDataPoint {
 }
 
 interface DashboardDataResult {
-	/** Raw data map by query type */
-	dataMap: QueryDataMap | undefined;
-	/** Loading state */
 	isLoading: boolean;
-	/** Fetching state (for background refetches) */
 	isFetching: boolean;
-	/** Get formatted value for a single field from first row */
-	getValue: (queryType: string, field: string) => string;
-	/** Get raw value for a single field from first row */
-	getRawValue: (queryType: string, field: string) => QueryCell | undefined;
-	/** Get first row of data for a query type */
-	getRow: (queryType: string) => QueryRow | undefined;
-	/** Get all rows for a query type (useful for tables) */
-	getRows: (queryType: string) => QueryRow[];
-	/** Get chart-ready data points for a field */
-	getChartData: (queryType: string, field: string) => ChartDataPoint[];
-	/** Check if data exists for a query type */
-	hasData: (queryType: string) => boolean;
+	getValue: (cardId: string, queryType: string, field: string) => string;
+	getRawValue: (
+		cardId: string,
+		queryType: string,
+		field: string
+	) => QueryCell | undefined;
+	getRow: (cardId: string, queryType: string) => QueryRow | undefined;
+	getRows: (cardId: string, queryType: string) => QueryRow[];
+	getChartData: (
+		cardId: string,
+		queryType: string,
+		field: string
+	) => ChartDataPoint[];
+	hasData: (cardId: string, queryType: string) => boolean;
+}
+
+interface WidgetWithSettings extends DashboardWidgetBase {
+	filters?: CardFilter[];
+	dateRangePreset?: DateRangePreset;
+}
+
+function toQueryFilters(filters?: CardFilter[]): DynamicQueryFilter[] {
+	if (!filters || filters.length === 0) {
+		return [];
+	}
+	return filters
+		.filter((f) => f.value.trim() !== "")
+		.map((f) => ({
+			field: f.field,
+			operator: f.operator,
+			value: f.value,
+		}));
+}
+
+function createFilterKey(filters?: CardFilter[]): string {
+	if (!filters?.length) {
+		return "";
+	}
+	return JSON.stringify(
+		filters.map((f) => `${f.field}:${f.operator}:${f.value}`).sort()
+	);
 }
 
 /**
  * Hook for fetching and accessing dashboard widget data.
- * Handles collecting unique query types, fetching, and providing
- * convenient accessors for different widget types.
+ * Groups widgets by filters and uses ParameterWithDates for per-widget date ranges.
  */
-export function useDashboardData<T extends DashboardWidgetBase>(
+export function useDashboardData<T extends WidgetWithSettings>(
 	websiteId: string,
-	dateRange: DateRange,
+	globalDateRange: DateRange,
 	widgets: T[],
 	options?: UseDashboardDataOptions
 ): DashboardDataResult {
-	const queryParameters = useMemo(() => {
-		const uniqueTypes = [...new Set(widgets.map((w) => w.queryType))];
-		return uniqueTypes;
-	}, [widgets]);
+	// Group widgets by filters (date ranges are handled per-parameter)
+	const { queries, cardToQueryMap } = useMemo(() => {
+		// Group by filter combination - each unique filter set gets its own query
+		const filterGroups = new Map<
+			string,
+			{
+				filters?: DynamicQueryFilter[];
+				parameters: Map<string, ParameterWithDates>;
+				cardIds: string[];
+			}
+		>();
 
-	const { data, isLoading, isFetching } = useDynamicQuery(
+		for (const widget of widgets) {
+			const filterKey = createFilterKey(widget.filters);
+			const resolvedDateRange = resolveDateRange(
+				widget.dateRangePreset || "global",
+				globalDateRange
+			);
+
+			if (!filterGroups.has(filterKey)) {
+				filterGroups.set(filterKey, {
+					filters:
+						widget.filters && widget.filters.length > 0
+							? toQueryFilters(widget.filters)
+							: undefined,
+					parameters: new Map(),
+					cardIds: [],
+				});
+			}
+
+			const group = filterGroups.get(filterKey);
+			if (!group) {
+				continue;
+			}
+			group.cardIds.push(widget.id);
+
+			// Create a unique parameter key for this queryType + dateRange combo
+			const paramKey = `${widget.queryType}|${resolvedDateRange.start_date}|${resolvedDateRange.end_date}`;
+
+			if (!group.parameters.has(paramKey)) {
+				group.parameters.set(paramKey, {
+					name: widget.queryType,
+					id: paramKey,
+					start_date: resolvedDateRange.start_date,
+					end_date: resolvedDateRange.end_date,
+					granularity: resolvedDateRange.granularity,
+				});
+			}
+		}
+
+		// Build queries - one per filter group
+		const batchQueries: DynamicQueryRequest[] = [];
+		const cardMap = new Map<string, { queryId: string; paramId: string }>();
+
+		let queryIndex = 0;
+		for (const [, group] of filterGroups) {
+			const queryId = `query-${queryIndex++}`;
+
+			batchQueries.push({
+				id: queryId,
+				parameters: [...group.parameters.values()],
+				filters: group.filters,
+				granularity: globalDateRange.granularity,
+			});
+
+			// Map each card to its query and parameter
+			for (const cardId of group.cardIds) {
+				const widget = widgets.find((w) => w.id === cardId);
+				if (widget) {
+					const resolvedDateRange = resolveDateRange(
+						widget.dateRangePreset || "global",
+						globalDateRange
+					);
+					const paramId = `${widget.queryType}|${resolvedDateRange.start_date}|${resolvedDateRange.end_date}`;
+					cardMap.set(cardId, { queryId, paramId });
+				}
+			}
+		}
+
+		return { queries: batchQueries, cardToQueryMap: cardMap };
+	}, [widgets, globalDateRange]);
+
+	const { getDataForQuery, isLoading, isFetching } = useBatchDynamicQuery(
 		websiteId,
-		dateRange,
+		globalDateRange,
+		queries,
 		{
-			id: "dashboard-widgets",
-			parameters: queryParameters,
-		},
-		{
-			enabled: (options?.enabled ?? true) && queryParameters.length > 0,
+			enabled: (options?.enabled ?? true) && queries.length > 0,
 		}
 	);
 
-	const dataMap = data as QueryDataMap | undefined;
-
 	const getValue = useMemo(
-		() => (queryType: string, field: string): string => {
-			const rows = dataMap?.[queryType];
-			if (!(rows && Array.isArray(rows)) || rows.length === 0) {
-				return "—";
-			}
+		() =>
+			(cardId: string, queryType: string, field: string): string => {
+				const mapping = cardToQueryMap.get(cardId);
+				if (!mapping) {
+					return "—";
+				}
 
-			const firstRow = rows.at(0);
-			if (!firstRow) {
-				return "—";
-			}
+				// Try to get data using the paramId (which includes date range info)
+				let rows = getDataForQuery(mapping.queryId, mapping.paramId);
 
-			return formatWidgetValue(firstRow[field], field);
-		},
-		[dataMap]
+				// Fallback to queryType if paramId doesn't work
+				if (!Array.isArray(rows) || rows.length === 0) {
+					rows = getDataForQuery(mapping.queryId, queryType);
+				}
+
+				if (!Array.isArray(rows) || rows.length === 0) {
+					return "—";
+				}
+
+				const firstRow = rows.at(0);
+				if (!firstRow) {
+					return "—";
+				}
+
+				return formatWidgetValue(firstRow[field], field);
+			},
+		[getDataForQuery, cardToQueryMap]
 	);
 
 	const getRawValue = useMemo(
 		() =>
-			(queryType: string, field: string): QueryCell | undefined => {
-				const rows = dataMap?.[queryType];
-				if (!(rows && Array.isArray(rows)) || rows.length === 0) {
+			(
+				cardId: string,
+				queryType: string,
+				field: string
+			): QueryCell | undefined => {
+				const mapping = cardToQueryMap.get(cardId);
+				if (!mapping) {
+					return undefined;
+				}
+
+				let rows = getDataForQuery(mapping.queryId, mapping.paramId);
+				if (!Array.isArray(rows) || rows.length === 0) {
+					rows = getDataForQuery(mapping.queryId, queryType);
+				}
+
+				if (!Array.isArray(rows) || rows.length === 0) {
 					return undefined;
 				}
 
 				const firstRow = rows.at(0);
 				return firstRow?.[field];
 			},
-		[dataMap]
+		[getDataForQuery, cardToQueryMap]
 	);
 
 	const getRow = useMemo(
 		() =>
-			(queryType: string): QueryRow | undefined => {
-				const rows = dataMap?.[queryType];
-				if (!(rows && Array.isArray(rows)) || rows.length === 0) {
+			(cardId: string, queryType: string): QueryRow | undefined => {
+				const mapping = cardToQueryMap.get(cardId);
+				if (!mapping) {
+					return undefined;
+				}
+
+				let rows = getDataForQuery(mapping.queryId, mapping.paramId);
+				if (!Array.isArray(rows) || rows.length === 0) {
+					rows = getDataForQuery(mapping.queryId, queryType);
+				}
+
+				if (!Array.isArray(rows) || rows.length === 0) {
 					return undefined;
 				}
 				return rows.at(0);
 			},
-		[dataMap]
+		[getDataForQuery, cardToQueryMap]
 	);
 
 	const getRows = useMemo(
 		() =>
-			(queryType: string): QueryRow[] => {
-				const rows = dataMap?.[queryType];
-				if (!(rows && Array.isArray(rows))) {
+			(cardId: string, queryType: string): QueryRow[] => {
+				const mapping = cardToQueryMap.get(cardId);
+				if (!mapping) {
+					return [];
+				}
+
+				let rows = getDataForQuery(mapping.queryId, mapping.paramId);
+				if (!Array.isArray(rows) || rows.length === 0) {
+					rows = getDataForQuery(mapping.queryId, queryType);
+				}
+
+				if (!Array.isArray(rows)) {
 					return [];
 				}
 				return rows;
 			},
-		[dataMap]
+		[getDataForQuery, cardToQueryMap]
 	);
 
 	const getChartData = useMemo(
 		() =>
-			(queryType: string, field: string): ChartDataPoint[] => {
-				const rows = dataMap?.[queryType];
-				if (!(rows && Array.isArray(rows))) {
+			(cardId: string, queryType: string, field: string): ChartDataPoint[] => {
+				const mapping = cardToQueryMap.get(cardId);
+				if (!mapping) {
+					return [];
+				}
+
+				let rows = getDataForQuery(mapping.queryId, mapping.paramId);
+				if (!Array.isArray(rows) || rows.length === 0) {
+					rows = getDataForQuery(mapping.queryId, queryType);
+				}
+
+				if (!Array.isArray(rows)) {
 					return [];
 				}
 
@@ -143,20 +299,28 @@ export function useDashboardData<T extends DashboardWidgetBase>(
 					})
 					.filter((d) => d.date);
 			},
-		[dataMap]
+		[getDataForQuery, cardToQueryMap]
 	);
 
 	const hasData = useMemo(
 		() =>
-			(queryType: string): boolean => {
-				const rows = dataMap?.[queryType];
-				return !!(rows && Array.isArray(rows) && rows.length > 0);
+			(cardId: string, queryType: string): boolean => {
+				const mapping = cardToQueryMap.get(cardId);
+				if (!mapping) {
+					return false;
+				}
+
+				let rows = getDataForQuery(mapping.queryId, mapping.paramId);
+				if (!Array.isArray(rows) || rows.length === 0) {
+					rows = getDataForQuery(mapping.queryId, queryType);
+				}
+
+				return Array.isArray(rows) && rows.length > 0;
 			},
-		[dataMap]
+		[getDataForQuery, cardToQueryMap]
 	);
 
 	return {
-		dataMap,
 		isLoading,
 		isFetching,
 		getValue,

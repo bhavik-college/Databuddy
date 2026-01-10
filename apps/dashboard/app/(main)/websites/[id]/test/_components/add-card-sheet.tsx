@@ -1,18 +1,24 @@
 "use client";
 
+import { filterOptions } from "@databuddy/shared/lists/filters";
 import type { DateRange } from "@databuddy/shared/types/analytics";
 import type { QueryOutputField } from "@databuddy/shared/types/query";
 import {
+	CalendarDotsIcon,
 	CaretDownIcon,
 	ChartBarIcon,
 	ChartLineUpIcon,
 	CheckIcon,
+	FunnelIcon,
 	GaugeIcon,
+	PencilSimpleIcon,
+	PlusIcon,
 	SpinnerGapIcon,
 	SquaresFourIcon,
 	TextTIcon,
+	TrashIcon,
 } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { StatCardDisplayMode } from "@/components/analytics/stat-card";
 import { StatCard } from "@/components/analytics/stat-card";
 import { Button } from "@/components/ui/button";
@@ -24,6 +30,7 @@ import {
 	CommandItem,
 	CommandList,
 } from "@/components/ui/command";
+import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -31,6 +38,13 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import {
 	Sheet,
 	SheetBody,
@@ -41,12 +55,24 @@ import {
 	SheetTitle,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { operatorOptions } from "@/hooks/use-filters";
+import { useAutocompleteData } from "@/hooks/use-funnels";
 import { cn } from "@/lib/utils";
+import { AutocompleteInput } from "../../funnels/_components/funnel-components";
 import { useDashboardData } from "./hooks/use-dashboard-data";
 import type { QueryTypeOption } from "./hooks/use-query-types";
 import { useQueryTypes } from "./hooks/use-query-types";
 import { getCategoryIcon } from "./utils/category-utils";
-import type { DashboardCardConfig } from "./utils/types";
+import {
+	DATE_RANGE_PRESETS,
+	getPresetLabel,
+	resolveDateRange,
+} from "./utils/date-presets";
+import type {
+	CardFilter,
+	DashboardCardConfig,
+	DateRangePreset,
+} from "./utils/types";
 
 // Re-export for convenience
 export type { DashboardCardConfig } from "./utils/types";
@@ -59,12 +85,14 @@ const CARD_COMPATIBLE_VISUALIZATIONS = new Set([
 	"line",
 ]);
 
-interface AddCardSheetProps {
+interface CardSheetProps {
 	isOpen: boolean;
 	onCloseAction: () => void;
-	onAddAction: (card: DashboardCardConfig) => void;
+	onSaveAction: (card: DashboardCardConfig) => void;
+	onDeleteAction?: (cardId: string) => void;
 	websiteId: string;
 	dateRange: DateRange;
+	editingCard?: DashboardCardConfig | null;
 }
 
 function mapVisualizationToDisplayMode(
@@ -88,14 +116,18 @@ function isTrendType(viz: QueryTypeOption["defaultVisualization"]): boolean {
 	return viz === "timeseries" || viz === "area" || viz === "line";
 }
 
-export function AddCardSheet({
+export function CardSheet({
 	isOpen,
 	onCloseAction,
-	onAddAction,
+	onSaveAction,
+	onDeleteAction,
 	websiteId,
 	dateRange,
-}: AddCardSheetProps) {
+	editingCard,
+}: CardSheetProps) {
 	const { queryTypes, isLoading: isLoadingTypes } = useQueryTypes();
+	const autocompleteQuery = useAutocompleteData(websiteId, isOpen);
+	const isEditMode = !!editingCard;
 
 	const [selectedQueryType, setSelectedQueryType] =
 		useState<QueryTypeOption | null>(null);
@@ -104,9 +136,14 @@ export function AddCardSheet({
 	);
 	const [displayMode, setDisplayMode] = useState<StatCardDisplayMode>("text");
 	const [customTitle, setCustomTitle] = useState("");
+	const [dateRangePreset, setDateRangePreset] =
+		useState<DateRangePreset>("global");
+	const [filters, setFilters] = useState<CardFilter[]>([]);
 	const [isQueryTypeOpen, setIsQueryTypeOpen] = useState(false);
 	const [isFieldOpen, setIsFieldOpen] = useState(false);
+	const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
 	// Filter and group query types for cards
 	const { metricTypes, trendTypes } = useMemo(() => {
@@ -122,25 +159,36 @@ export function AddCardSheet({
 		};
 	}, [queryTypes]);
 
+	// Compute the preview date range based on preset
+	const previewDateRange = useMemo(
+		() => resolveDateRange(dateRangePreset, dateRange),
+		[dateRangePreset, dateRange]
+	);
+
 	// Create a temporary widget config for preview data fetching
-	const previewWidgets = selectedQueryType
-		? [
-				{
-					id: "preview",
-					queryType: selectedQueryType.key,
-					type: "card" as const,
-					field: selectedField?.name || "",
-					label: selectedField?.label || "",
-					displayMode,
-				},
-			]
-		: [];
+	const previewWidgets = useMemo(
+		() =>
+			selectedQueryType
+				? [
+						{
+							id: "preview",
+							queryType: selectedQueryType.key,
+							type: "card" as const,
+							field: selectedField?.name || "",
+							label: selectedField?.label || "",
+							displayMode,
+							filters,
+						},
+					]
+				: [],
+		[selectedQueryType, selectedField, displayMode, filters]
+	);
 
 	const {
 		getValue,
 		getChartData,
 		isLoading: isPreviewLoading,
-	} = useDashboardData(websiteId, dateRange, previewWidgets, {
+	} = useDashboardData(websiteId, previewDateRange, previewWidgets, {
 		enabled: isOpen && !!selectedQueryType,
 	});
 
@@ -149,15 +197,43 @@ export function AddCardSheet({
 		setSelectedField(null);
 		setDisplayMode("text");
 		setCustomTitle("");
+		setDateRangePreset("global");
+		setFilters([]);
+		setShowDeleteConfirm(false);
+	};
+
+	const initializeFromCard = (card: DashboardCardConfig) => {
+		const queryType = queryTypes.find((t) => t.key === card.queryType);
+		if (queryType) {
+			setSelectedQueryType(queryType);
+			const field = queryType.outputFields.find((f) => f.name === card.field);
+			if (field) {
+				setSelectedField(field);
+			}
+		}
+		setDisplayMode(card.displayMode);
+		setCustomTitle(card.title || "");
+		setDateRangePreset(card.dateRangePreset || "global");
+		setFilters(card.filters || []);
 	};
 
 	const handleOpenChange = (open: boolean) => {
-		if (open) {
-			resetForm();
-		} else {
+		if (!open) {
 			onCloseAction();
 		}
 	};
+
+	useEffect(() => {
+		if (!isOpen) {
+			return;
+		}
+
+		if (editingCard && queryTypes.length > 0) {
+			initializeFromCard(editingCard);
+		} else if (!editingCard) {
+			resetForm();
+		}
+	}, [isOpen, editingCard, queryTypes]);
 
 	const handleQueryTypeSelect = (queryType: QueryTypeOption) => {
 		setSelectedQueryType(queryType);
@@ -180,8 +256,8 @@ export function AddCardSheet({
 
 		setIsSubmitting(true);
 
-		const newCard: DashboardCardConfig = {
-			id: `card-${Date.now()}`,
+		const card: DashboardCardConfig = {
+			id: editingCard?.id || `card-${Date.now()}`,
 			type: "card",
 			queryType: selectedQueryType.key,
 			field: selectedField.name,
@@ -189,11 +265,73 @@ export function AddCardSheet({
 			displayMode,
 			title: customTitle.trim() || undefined,
 			category: selectedQueryType.category,
+			dateRangePreset:
+				dateRangePreset !== "global" ? dateRangePreset : undefined,
+			filters: filters.length > 0 ? filters : undefined,
 		};
 
-		onAddAction(newCard);
+		onSaveAction(card);
 		setIsSubmitting(false);
 		onCloseAction();
+	};
+
+	const handleAddFilter = () => {
+		setFilters((prev) => [
+			...prev,
+			{ field: "browser_name", operator: "eq", value: "" },
+		]);
+	};
+
+	const handleRemoveFilter = (index: number) => {
+		setFilters((prev) => prev.filter((_, i) => i !== index));
+	};
+
+	const handleUpdateFilter = (
+		index: number,
+		key: keyof CardFilter,
+		value: string
+	) => {
+		setFilters((prev) =>
+			prev.map((f, i) => (i === index ? { ...f, [key]: value } : f))
+		);
+	};
+
+	const getSuggestions = useCallback(
+		(field: string): string[] => {
+			const data = autocompleteQuery.data;
+			if (!data) {
+				return [];
+			}
+
+			switch (field) {
+				case "browser_name":
+					return data.browsers || [];
+				case "os_name":
+					return data.operatingSystems || [];
+				case "country":
+					return data.countries || [];
+				case "device_type":
+					return data.deviceTypes || [];
+				case "path":
+					return data.pagePaths || [];
+				case "utm_source":
+					return data.utmSources || [];
+				case "utm_medium":
+					return data.utmMediums || [];
+				case "utm_campaign":
+					return data.utmCampaigns || [];
+				default:
+					return [];
+			}
+		},
+		[autocompleteQuery.data]
+	);
+
+	const handleDelete = () => {
+		if (editingCard && onDeleteAction) {
+			onDeleteAction(editingCard.id);
+			onCloseAction();
+		}
 	};
 
 	const previewTitle =
@@ -203,11 +341,11 @@ export function AddCardSheet({
 		: undefined;
 	const previewValue =
 		selectedQueryType && selectedField
-			? getValue(selectedQueryType.key, selectedField.name)
+			? getValue("preview", selectedQueryType.key, selectedField.name)
 			: "—";
 	const previewChartData =
 		displayMode === "chart" && selectedQueryType && selectedField
-			? getChartData(selectedQueryType.key, selectedField.name)
+			? getChartData("preview", selectedQueryType.key, selectedField.name)
 			: undefined;
 
 	// Check if chart mode is supported for selected query type
@@ -220,15 +358,26 @@ export function AddCardSheet({
 				<SheetHeader>
 					<div className="flex items-center gap-4">
 						<div className="flex size-11 items-center justify-center rounded border bg-secondary">
-							<SquaresFourIcon
-								className="size-5 text-primary"
-								weight="duotone"
-							/>
+							{isEditMode ? (
+								<PencilSimpleIcon
+									className="size-5 text-primary"
+									weight="duotone"
+								/>
+							) : (
+								<SquaresFourIcon
+									className="size-5 text-primary"
+									weight="duotone"
+								/>
+							)}
 						</div>
 						<div>
-							<SheetTitle className="text-lg">Add Card</SheetTitle>
+							<SheetTitle className="text-lg">
+								{isEditMode ? "Edit Card" : "Add Card"}
+							</SheetTitle>
 							<SheetDescription>
-								Create a new stat card from your analytics data
+								{isEditMode
+									? "Modify your stat card configuration"
+									: "Create a new stat card from your analytics data"}
 							</SheetDescription>
 						</div>
 					</div>
@@ -543,28 +692,214 @@ export function AddCardSheet({
 							/>
 						</div>
 					)}
+
+					{/* Advanced Options - Date Range & Filters */}
+					{selectedField && (
+						<>
+							<div className="h-px bg-border" />
+
+							{/* Date Range Override */}
+							<div className="space-y-2">
+								<Label className="flex items-center gap-1.5 text-muted-foreground">
+									<CalendarDotsIcon className="size-3.5" weight="duotone" />
+									Date Range
+								</Label>
+								<Popover
+									onOpenChange={setIsDateRangeOpen}
+									open={isDateRangeOpen}
+								>
+									<PopoverTrigger asChild>
+										<Button
+											className="w-full justify-between"
+											role="combobox"
+											variant="outline"
+										>
+											<span
+												className={cn(
+													dateRangePreset === "global" &&
+														"text-muted-foreground"
+												)}
+											>
+												{getPresetLabel(dateRangePreset)}
+											</span>
+											<CaretDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
+										</Button>
+									</PopoverTrigger>
+									<PopoverContent
+										align="start"
+										className="w-64 p-0"
+										onOpenAutoFocus={(e) => e.preventDefault()}
+									>
+										<Command>
+											<CommandList>
+												<CommandGroup>
+													{DATE_RANGE_PRESETS.map((preset) => (
+														<CommandItem
+															key={preset.value}
+															onSelect={() => {
+																setDateRangePreset(preset.value);
+																setIsDateRangeOpen(false);
+															}}
+															value={preset.label}
+														>
+															<CheckIcon
+																className={cn(
+																	"mr-2 size-4",
+																	dateRangePreset === preset.value
+																		? "opacity-100"
+																		: "opacity-0"
+																)}
+															/>
+															{preset.label}
+														</CommandItem>
+													))}
+												</CommandGroup>
+											</CommandList>
+										</Command>
+									</PopoverContent>
+								</Popover>
+							</div>
+
+							{/* Filters */}
+							<div className="space-y-2">
+								<Label className="flex items-center gap-1.5 text-muted-foreground">
+									<FunnelIcon className="size-3.5" weight="duotone" />
+									Filters
+								</Label>
+
+								{filters.length > 0 && (
+									<div className="space-y-2">
+										{filters.map((filter, index) => (
+											<div
+												className="flex items-center gap-2 rounded border bg-card p-2.5"
+												key={`filter-${index}`}
+											>
+												<Select
+													onValueChange={(value) =>
+														handleUpdateFilter(index, "field", value)
+													}
+													value={filter.field}
+												>
+													<SelectTrigger className="h-8 w-28 text-xs">
+														<SelectValue />
+													</SelectTrigger>
+													<SelectContent>
+														{filterOptions.map((option) => (
+															<SelectItem
+																key={option.value}
+																value={option.value}
+															>
+																{option.label}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+
+												<Select
+													onValueChange={(value) =>
+														handleUpdateFilter(index, "operator", value)
+													}
+													value={filter.operator}
+												>
+													<SelectTrigger className="h-8 w-24 text-xs">
+														<SelectValue />
+													</SelectTrigger>
+													<SelectContent>
+														{operatorOptions.map((option) => (
+															<SelectItem
+																key={option.value}
+																value={option.value}
+															>
+																{option.label}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+
+												<AutocompleteInput
+													className="flex-1 text-xs"
+													inputClassName="h-8"
+													onValueChange={(value) =>
+														handleUpdateFilter(index, "value", value)
+													}
+													placeholder="Value…"
+													suggestions={getSuggestions(filter.field)}
+													value={filter.value}
+												/>
+
+												<Button
+													className="size-6 shrink-0 p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+													onClick={() => handleRemoveFilter(index)}
+													size="icon"
+													variant="ghost"
+												>
+													<TrashIcon size={14} />
+												</Button>
+											</div>
+										))}
+									</div>
+								)}
+
+								<Button
+									className="w-full"
+									onClick={handleAddFilter}
+									size="sm"
+									type="button"
+									variant="outline"
+								>
+									<PlusIcon className="size-4" />
+									Add Filter
+								</Button>
+							</div>
+						</>
+					)}
 				</SheetBody>
 
-				<SheetFooter>
-					<Button onClick={onCloseAction} type="button" variant="ghost">
-						Cancel
-					</Button>
-					<Button
-						className="min-w-24"
-						disabled={isSubmitting || !selectedQueryType || !selectedField}
-						onClick={handleSubmit}
-						type="button"
-					>
-						{isSubmitting ? (
-							<>
-								<SpinnerGapIcon className="animate-spin" size={16} />
-								Adding…
-							</>
-						) : (
-							"Add Card"
-						)}
-					</Button>
+				<SheetFooter className="flex-row justify-between sm:justify-between">
+					{isEditMode && onDeleteAction ? (
+						<Button
+							className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+							onClick={() => setShowDeleteConfirm(true)}
+							type="button"
+							variant="ghost"
+						>
+							<TrashIcon className="size-4" weight="duotone" />
+							Delete
+						</Button>
+					) : (
+						<div />
+					)}
+					<div className="flex gap-2">
+						<Button onClick={onCloseAction} type="button" variant="ghost">
+							Cancel
+						</Button>
+						<Button
+							className="min-w-24"
+							disabled={isSubmitting || !selectedQueryType || !selectedField}
+							onClick={handleSubmit}
+							type="button"
+						>
+							{isSubmitting ? (
+								<>
+									<SpinnerGapIcon className="animate-spin" size={16} />
+									{isEditMode ? "Saving…" : "Adding…"}
+								</>
+							) : isEditMode ? (
+								"Save Changes"
+							) : (
+								"Add Card"
+							)}
+						</Button>
+					</div>
 				</SheetFooter>
+
+				<DeleteDialog
+					isOpen={showDeleteConfirm}
+					itemName={`"${editingCard?.title || editingCard?.label}"`}
+					onClose={() => setShowDeleteConfirm(false)}
+					onConfirm={handleDelete}
+					title="Delete Card"
+				/>
 			</SheetContent>
 		</Sheet>
 	);
