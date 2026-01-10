@@ -5,10 +5,11 @@ import { PlusIcon } from "@phosphor-icons/react";
 import { useAtomValue } from "jotai";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
+import type { Layout } from "react-grid-layout";
+import GridLayout, { useContainerWidth } from "react-grid-layout";
 import { StatCard } from "@/components/analytics/stat-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import {
 	formattedDateRangeAtom,
 	timeGranularityAtom,
@@ -18,6 +19,9 @@ import { AddCardSheet } from "./_components/add-card-sheet";
 import { useDashboardData } from "./_components/hooks/use-dashboard-data";
 import { getCategoryIcon } from "./_components/utils/category-utils";
 import type { DashboardCardConfig } from "./_components/utils/types";
+
+const GRID_COLS = 4;
+const GRID_ROW_HEIGHT = 140;
 
 const DEFAULT_CARDS: DashboardCardConfig[] = [
 	{
@@ -64,7 +68,17 @@ export default function TestPage() {
 	const granularity = useAtomValue(timeGranularityAtom);
 	const timezone = useAtomValue(timezoneAtom);
 	const [cards, setCards] = useState<DashboardCardConfig[]>(DEFAULT_CARDS);
+	const [layout, setLayout] = useState<Layout>(() =>
+		cards.map((card, i) => ({
+			i: card.id,
+			x: i % GRID_COLS,
+			y: Math.floor(i / GRID_COLS),
+			w: 1,
+			h: 1,
+		}))
+	);
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
+	const { width, containerRef } = useContainerWidth();
 
 	const dateRange: DateRange = useMemo(
 		() => ({
@@ -89,6 +103,16 @@ export default function TestPage() {
 
 	const handleAddCard = (card: DashboardCardConfig) => {
 		setCards((prev) => [...prev, card]);
+		setLayout((prev) => [
+			...prev,
+			{
+				i: card.id,
+				x: prev.length % GRID_COLS,
+				y: Math.floor(prev.length / GRID_COLS),
+				w: 1,
+				h: 1,
+			},
+		]);
 	};
 
 	return (
@@ -110,31 +134,45 @@ export default function TestPage() {
 				</Button>
 			</div>
 
-			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-				{cards.map((card) => (
-					<StatCard
-						chartData={
-							card.displayMode === "chart"
-								? getChartData(card.queryType, card.field)
-								: undefined
-						}
-						chartType="area"
-						displayMode={card.displayMode}
-						icon={getCategoryIcon(card.category || "Other")}
-						id={card.id}
-						isLoading={isLoading || isFetching}
-						key={card.id}
-						title={card.title || card.label}
-						value={getValue(card.queryType, card.field)}
-					/>
-				))}
+			<div ref={containerRef}>
+				{width > 0 && (
+					<GridLayout
+						dragConfig={{ handle: ".drag-handle" }}
+						gridConfig={{
+							cols: GRID_COLS,
+							rowHeight: GRID_ROW_HEIGHT,
+							margin: [16, 16],
+						}}
+						layout={layout}
+						onLayoutChange={setLayout}
+						resizeConfig={{ enabled: false }}
+						width={width}
+					>
+						{cards.map((card) => (
+							<div className="drag-handle cursor-grab" key={card.id}>
+								<StatCard
+									chartData={
+										card.displayMode === "chart"
+											? getChartData(card.queryType, card.field)
+											: undefined
+									}
+									chartType="area"
+									className="h-full"
+									displayMode={card.displayMode}
+									icon={getCategoryIcon(card.category || "Other")}
+									id={card.id}
+									isLoading={isLoading || isFetching}
+									title={card.title || card.label}
+									value={getValue(card.queryType, card.field)}
+								/>
+							</div>
+						))}
+					</GridLayout>
+				)}
 
-				{/* Add Card Tile */}
+				{/* Add Card Tile - outside grid */}
 				<Card
-					className={cn(
-						"group flex cursor-pointer flex-col items-center justify-center gap-2 border-dashed bg-transparent py-0 transition-all hover:border-primary hover:bg-accent/50",
-						"min-h-[168px]"
-					)}
+					className="group mt-4 flex h-[140px] cursor-pointer flex-col items-center justify-center gap-2 border-dashed bg-transparent py-0 transition-all hover:border-primary hover:bg-accent/50"
 					onClick={() => setIsSheetOpen(true)}
 				>
 					<div className="flex size-10 items-center justify-center rounded-full bg-accent transition-colors group-hover:bg-primary/10">
