@@ -4,72 +4,30 @@ import {
 	ANALYTICS_TABLES,
 	getTableDefinition,
 } from "@databuddy/shared/schema/analytics-tables";
-import type {
-	AggregateFunction,
-	CustomQueryConfig,
+import {
+	CUSTOM_QUERY_OPERATORS,
+	type CustomQueryConfig,
+	type CustomQueryFilter,
+	type CustomQuerySelect,
 } from "@databuddy/shared/types/custom-query";
 import { useMemo } from "react";
 import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
-	SelectGroup,
 	SelectItem,
-	SelectLabel,
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { AggregatePopover } from "./aggregate-popover";
+import { FilterPopover } from "./filter-popover";
+import { QueryChip } from "./query-chip";
 
 interface CustomQueryBuilderProps {
 	value: CustomQueryConfig | null;
 	onChangeAction: (config: CustomQueryConfig) => void;
 	disabled?: boolean;
 }
-
-// Aggregate options that return a single value (for stat cards)
-const SINGLE_VALUE_AGGREGATES: {
-	value: AggregateFunction;
-	label: string;
-	description: string;
-	forTypes: ("string" | "number")[];
-}[] = [
-	{
-		value: "count",
-		label: "Count",
-		description: "Total number of rows",
-		forTypes: ["string", "number"],
-	},
-	{
-		value: "uniq",
-		label: "Count Unique",
-		description: "Number of distinct values",
-		forTypes: ["string"],
-	},
-	{
-		value: "sum",
-		label: "Sum",
-		description: "Total of all values",
-		forTypes: ["number"],
-	},
-	{
-		value: "avg",
-		label: "Average",
-		description: "Mean of all values",
-		forTypes: ["number"],
-	},
-	{
-		value: "max",
-		label: "Maximum",
-		description: "Highest value",
-		forTypes: ["number"],
-	},
-	{
-		value: "min",
-		label: "Minimum",
-		description: "Lowest value",
-		forTypes: ["number"],
-	},
-];
 
 export function CustomQueryBuilder({
 	value,
@@ -85,116 +43,103 @@ export function CustomQueryBuilder({
 		[]
 	);
 
-	// Get columns grouped by type
-	const { stringColumns, numberColumns } = useMemo(() => {
+	// Get columns for the selected table
+	const columns = useMemo(() => {
 		if (!value?.table) {
-			return { stringColumns: [], numberColumns: [] };
+			return [];
 		}
 		const table = getTableDefinition(value.table);
-		if (!table) {
-			return { stringColumns: [], numberColumns: [] };
-		}
-		return {
-			stringColumns: table.columns.filter((c) => c.type === "string"),
-			numberColumns: table.columns.filter(
-				(c) => c.type === "number" && c.aggregatable
-			),
-		};
+		return table?.columns || [];
 	}, [value?.table]);
 
-	// Get available aggregates based on selected field
-	const currentField = value?.selects?.at(0)?.field || "*";
-	const currentAggregate = value?.selects?.at(0)?.aggregate || "count";
-
-	const availableAggregates = useMemo(() => {
-		if (currentField === "*") {
-			return SINGLE_VALUE_AGGREGATES.filter((a) => a.value === "count");
-		}
-		const isNumber = numberColumns.some((c) => c.name === currentField);
-		const fieldType = isNumber ? "number" : "string";
-		return SINGLE_VALUE_AGGREGATES.filter((a) =>
-			a.forTypes.includes(fieldType)
-		);
-	}, [currentField, numberColumns]);
-
+	// Handle table change - reset to defaults
 	const handleTableChange = (tableName: string) => {
 		onChangeAction({
 			table: tableName,
 			selects: [{ field: "*", aggregate: "count", alias: "Count" }],
+			filters: [],
 		});
 	};
 
-	const handleFieldChange = (field: string) => {
-		if (!value?.table) {
+	// Add a new filter
+	const addFilter = (filter: CustomQueryFilter) => {
+		if (!value) {
 			return;
 		}
-
-		// Auto-select best aggregate for field type
-		const isNumber = numberColumns.some((c) => c.name === field);
-		let aggregate: AggregateFunction = "count";
-
-		if (field === "*") {
-			aggregate = "count";
-		} else if (isNumber) {
-			aggregate = "sum"; // Default to sum for numbers
-		} else {
-			aggregate = "uniq"; // Default to unique for strings
-		}
-
-		const col = [...stringColumns, ...numberColumns].find(
-			(c) => c.name === field
-		);
-		const alias =
-			field === "*"
-				? "Count"
-				: `${aggregate === "uniq" ? "Unique " : ""}${col?.label || field}`;
-
 		onChangeAction({
 			...value,
-			selects: [{ field, aggregate, alias }],
+			filters: [...(value.filters || []), filter],
 		});
 	};
 
-	const handleAggregateChange = (aggregate: AggregateFunction) => {
-		if (!value?.table) {
+	// Remove a filter by index
+	const removeFilter = (index: number) => {
+		if (!value?.filters) {
 			return;
 		}
-
-		const col = [...stringColumns, ...numberColumns].find(
-			(c) => c.name === currentField
-		);
-		const prefix =
-			aggregate === "uniq"
-				? "Unique "
-				: aggregate === "avg"
-					? "Avg "
-					: aggregate === "sum"
-						? "Total "
-						: aggregate === "max"
-							? "Max "
-							: aggregate === "min"
-								? "Min "
-								: "";
-		const alias =
-			currentField === "*" ? "Count" : `${prefix}${col?.label || currentField}`;
-
+		const newFilters = value.filters.filter((_, i) => i !== index);
 		onChangeAction({
 			...value,
-			selects: [{ field: currentField, aggregate, alias }],
+			filters: newFilters,
 		});
+	};
+
+	// Add a new select/aggregate
+	const addSelect = (select: CustomQuerySelect) => {
+		if (!value) {
+			return;
+		}
+		onChangeAction({
+			...value,
+			selects: [...value.selects, select],
+		});
+	};
+
+	// Remove a select by index (keep at least 1)
+	const removeSelect = (index: number) => {
+		if (!value || value.selects.length <= 1) {
+			return;
+		}
+		const newSelects = value.selects.filter((_, i) => i !== index);
+		onChangeAction({
+			...value,
+			selects: newSelects,
+		});
+	};
+
+	// Format filter for display
+	const formatFilter = (filter: CustomQueryFilter) => {
+		const col = columns.find((c) => c.name === filter.field);
+		const op = CUSTOM_QUERY_OPERATORS.find((o) => o.value === filter.operator);
+		const fieldLabel = col?.label || filter.field;
+		const opLabel = op?.label || filter.operator;
+		const valueStr = Array.isArray(filter.value)
+			? filter.value.join(", ")
+			: String(filter.value);
+		return `${fieldLabel} ${opLabel} ${valueStr}`;
+	};
+
+	// Format select for display
+	const formatSelect = (select: CustomQuerySelect) => {
+		if (select.alias) {
+			return select.alias;
+		}
+		const col = columns.find((c) => c.name === select.field);
+		const fieldLabel = select.field === "*" ? "" : col?.label || select.field;
+		return `${select.aggregate}(${fieldLabel || ""})`;
 	};
 
 	return (
-		<div className="space-y-4">
-			{/* Table */}
-			<div className="space-y-2">
-				<Label>Table</Label>
+		<div className="space-y-3">
+			{/* Row 1: Table */}
+			<div className="flex items-center gap-3">
+				<Label className="w-20 shrink-0 text-muted-foreground">Table</Label>
 				<Select
 					disabled={disabled}
 					onValueChange={handleTableChange}
 					value={value?.table || ""}
 				>
-					<SelectTrigger>
+					<SelectTrigger className="w-48">
 						<SelectValue placeholder="Select table..." />
 					</SelectTrigger>
 					<SelectContent>
@@ -207,72 +152,56 @@ export function CustomQueryBuilder({
 				</Select>
 			</div>
 
+			{/* Row 2: Where (filters) */}
 			{value?.table && (
-				<>
-					{/* Field */}
-					<div className="space-y-2">
-						<Label>Field</Label>
-						<Select
-							disabled={disabled}
-							onValueChange={handleFieldChange}
-							value={currentField}
-						>
-							<SelectTrigger>
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="*">All rows</SelectItem>
-
-								{stringColumns.length > 0 && (
-									<SelectGroup>
-										<SelectLabel>Text fields</SelectLabel>
-										{stringColumns.map((col) => (
-											<SelectItem key={col.name} value={col.name}>
-												{col.label}
-											</SelectItem>
-										))}
-									</SelectGroup>
-								)}
-
-								{numberColumns.length > 0 && (
-									<SelectGroup>
-										<SelectLabel>Numeric fields</SelectLabel>
-										{numberColumns.map((col) => (
-											<SelectItem key={col.name} value={col.name}>
-												{col.label}
-											</SelectItem>
-										))}
-									</SelectGroup>
-								)}
-							</SelectContent>
-						</Select>
-					</div>
-
-					{/* Aggregate - only show if not "All rows" or if multiple options */}
-					{availableAggregates.length > 1 && (
-						<div className="space-y-2">
-							<Label>Calculation</Label>
-							<Select
+				<div className="flex items-start gap-3">
+					<Label className="w-20 shrink-0 pt-1.5 text-muted-foreground">
+						Where
+					</Label>
+					<div className="flex flex-wrap items-center gap-2">
+						{value.filters?.map((filter, index) => (
+							<QueryChip
+								key={`${filter.field}-${filter.operator}-${index}`}
+								label={formatFilter(filter)}
+								onRemoveAction={() => removeFilter(index)}
 								disabled={disabled}
-								onValueChange={(v) =>
-									handleAggregateChange(v as AggregateFunction)
+							/>
+						))}
+						<FilterPopover
+							columns={columns}
+							disabled={disabled}
+							onAddAction={addFilter}
+						/>
+					</div>
+				</div>
+			)}
+
+			{/* Row 3: Summarize (aggregates) */}
+			{value?.table && (
+				<div className="flex items-start gap-3">
+					<Label className="w-20 shrink-0 pt-1.5 text-muted-foreground">
+						Summarize
+					</Label>
+					<div className="flex flex-wrap items-center gap-2">
+						{value.selects.map((select, index) => (
+							<QueryChip
+								key={`${select.field}-${select.aggregate}-${index}`}
+								label={formatSelect(select)}
+								onRemoveAction={
+									value.selects.length > 1
+										? () => removeSelect(index)
+										: undefined
 								}
-								value={currentAggregate}
-							>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{availableAggregates.map((agg) => (
-										<SelectItem key={agg.value} value={agg.value}>
-											{agg.label}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-					)}
-				</>
+								disabled={disabled}
+							/>
+						))}
+						<AggregatePopover
+							columns={columns}
+							disabled={disabled}
+							onAddAction={addSelect}
+						/>
+					</div>
+				</div>
 			)}
 		</div>
 	);
