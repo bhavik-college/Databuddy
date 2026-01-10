@@ -32,8 +32,18 @@ const AGGREGATES: {
 	prefix: string;
 	forTypes: ("string" | "number")[];
 }[] = [
-	{ value: "count", label: "Count", prefix: "", forTypes: ["string", "number"] },
-	{ value: "uniq", label: "Count Unique", prefix: "Unique ", forTypes: ["string"] },
+	{
+		value: "count",
+		label: "Count",
+		prefix: "",
+		forTypes: ["string", "number"],
+	},
+	{
+		value: "uniq",
+		label: "Count Unique",
+		prefix: "Unique ",
+		forTypes: ["string"],
+	},
 	{ value: "sum", label: "Sum", prefix: "Total ", forTypes: ["number"] },
 	{ value: "avg", label: "Average", prefix: "Avg ", forTypes: ["number"] },
 	{ value: "max", label: "Maximum", prefix: "Max ", forTypes: ["number"] },
@@ -60,7 +70,9 @@ export function CustomQueryBuilder({
 		}
 		return {
 			stringColumns: table.columns.filter((c) => c.type === "string"),
-			numberColumns: table.columns.filter((c) => c.type === "number" && c.aggregatable),
+			numberColumns: table.columns.filter(
+				(c) => c.type === "number" && c.aggregatable
+			),
 		};
 	}, [value?.table]);
 
@@ -72,14 +84,18 @@ export function CustomQueryBuilder({
 			return AGGREGATES.filter((a) => a.value === "count");
 		}
 		const isNumber = numberColumns.some((c) => c.name === currentField);
-		return AGGREGATES.filter((a) => a.forTypes.includes(isNumber ? "number" : "string"));
+		return AGGREGATES.filter((a) =>
+			a.forTypes.includes(isNumber ? "number" : "string")
+		);
 	}, [currentField, numberColumns]);
 
 	const getAlias = (field: string, aggregate: AggregateFunction) => {
 		if (field === "*") {
 			return "Count";
 		}
-		const col = [...stringColumns, ...numberColumns].find((c) => c.name === field);
+		const col = [...stringColumns, ...numberColumns].find(
+			(c) => c.name === field
+		);
 		const agg = AGGREGATES.find((a) => a.value === aggregate);
 		return `${agg?.prefix || ""}${col?.label || field}`;
 	};
@@ -111,7 +127,13 @@ export function CustomQueryBuilder({
 		}
 		onChangeAction({
 			...value,
-			selects: [{ field: currentField, aggregate, alias: getAlias(currentField, aggregate) }],
+			selects: [
+				{
+					field: currentField,
+					aggregate,
+					alias: getAlias(currentField, aggregate),
+				},
+			],
 		});
 	};
 
@@ -119,7 +141,11 @@ export function CustomQueryBuilder({
 		<div className="space-y-4">
 			<div className="space-y-2">
 				<Label>Table</Label>
-				<Select disabled={disabled} onValueChange={handleTableChange} value={value?.table || ""}>
+				<Select
+					disabled={disabled}
+					onValueChange={handleTableChange}
+					value={value?.table || ""}
+				>
 					<SelectTrigger>
 						<SelectValue placeholder="Select table..." />
 					</SelectTrigger>
@@ -137,7 +163,11 @@ export function CustomQueryBuilder({
 				<>
 					<div className="space-y-2">
 						<Label>Field</Label>
-						<Select disabled={disabled} onValueChange={handleFieldChange} value={currentField}>
+						<Select
+							disabled={disabled}
+							onValueChange={handleFieldChange}
+							value={currentField}
+						>
 							<SelectTrigger>
 								<SelectValue />
 							</SelectTrigger>
@@ -172,7 +202,9 @@ export function CustomQueryBuilder({
 							<Label>Calculation</Label>
 							<Select
 								disabled={disabled}
-								onValueChange={(v) => handleAggregateChange(v as AggregateFunction)}
+								onValueChange={(v) =>
+									handleAggregateChange(v as AggregateFunction)
+								}
 								value={currentAggregate}
 							>
 								<SelectTrigger>
