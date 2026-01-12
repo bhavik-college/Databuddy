@@ -7,7 +7,7 @@ function stringifyEvent(event: unknown): string {
 	);
 }
 
-type ProducerConfig = {
+interface ProducerConfig {
 	broker?: string;
 	username?: string;
 	password?: string;
@@ -37,13 +37,13 @@ class UptimeProducer {
 				clientId: "uptime-producer",
 				...(this.config.username &&
 					this.config.password && {
-						sasl: {
-							mechanism: "scram-sha-256",
-							username: this.config.username,
-							password: this.config.password,
-						},
-						ssl: false,
-					}),
+					sasl: {
+						mechanism: "scram-sha-256",
+						username: this.config.username,
+						password: this.config.password,
+					},
+					ssl: false,
+				}),
 			});
 
 			this.producer = kafka.producer({
@@ -65,7 +65,6 @@ class UptimeProducer {
 	async send(topic: string, event: unknown, key?: string): Promise<void> {
 		try {
 			if (!((await this.connect()) && this.producer)) {
-				console.error("Failed to connect to Redpanda, event not sent");
 				return;
 			}
 
@@ -81,7 +80,6 @@ class UptimeProducer {
 			});
 		} catch (error) {
 			captureError(error);
-			console.error("Failed to send event to Redpanda:", error);
 		}
 	}
 

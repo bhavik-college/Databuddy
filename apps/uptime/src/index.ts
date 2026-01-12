@@ -14,28 +14,24 @@ import {
 initTracing();
 
 process.on("unhandledRejection", (reason, _promise) => {
-	console.error("Unhandled Rejection:", reason);
 	captureError(reason);
 });
 
 process.on("uncaughtException", (error) => {
-	console.error("Uncaught Exception:", error);
 	captureError(error);
 });
 
 process.on("SIGTERM", async () => {
-	console.log("SIGTERM received, shutting down gracefully...");
-	await shutdownTracing().catch((error) =>
-		console.error("Shutdown error:", error)
-	);
+	await shutdownTracing().catch(() => {
+		// Shutdown error
+	});
 	process.exit(0);
 });
 
 process.on("SIGINT", async () => {
-	console.log("SIGINT received, shutting down gracefully...");
-	await shutdownTracing().catch((error) =>
-		console.error("Shutdown error:", error)
-	);
+	await shutdownTracing().catch(() => {
+		// Shutdown error
+	});
 	process.exit(0);
 });
 
@@ -85,8 +81,6 @@ const app = new Elysia()
 	.get("/health", () => ({ status: "ok" }))
 	.post("/", async ({ headers, body }) => {
 		try {
-			console.log("Received headers:", JSON.stringify(headers, null, 2));
-
 			const headerSchema = z.object({
 				"upstash-signature": z.string(),
 				"x-schedule-id": z.string(),
@@ -95,7 +89,6 @@ const app = new Elysia()
 
 			const parsed = headerSchema.safeParse(headers);
 			if (!parsed.success) {
-				console.error("Header validation failed:", parsed.error.format());
 				return new Response(
 					JSON.stringify({
 						error: "Missing required headers",
@@ -122,11 +115,8 @@ const app = new Elysia()
 				return new Response("Invalid signature", { status: 401 });
 			}
 
-			console.log(`Looking up schedule: ${scheduleId}`);
-
 			const schedule = await lookupSchedule(scheduleId);
 			if (!schedule.success) {
-				console.error(`Schedule lookup failed: ${schedule.error}`);
 				captureError(schedule.error);
 				return new Response(
 					JSON.stringify({
@@ -155,7 +145,6 @@ const app = new Elysia()
 			);
 
 			if (!result.success) {
-				console.error("Uptime check failed:", result.error);
 				captureError(result.error);
 				return new Response("Failed to check uptime", { status: 500 });
 			}
@@ -163,7 +152,6 @@ const app = new Elysia()
 			try {
 				await sendUptimeEvent(result.data, monitorId);
 			} catch (error) {
-				console.error("Failed to send uptime event:", error);
 				captureError(error);
 			}
 

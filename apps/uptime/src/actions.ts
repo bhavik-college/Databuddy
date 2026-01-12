@@ -47,26 +47,15 @@ export function lookupSchedule(
 > {
 	return record("uptime.lookup_schedule", async () => {
 		try {
-			console.log(`Looking up schedule with ID: ${id}`);
-
 			const schedule = await db.query.uptimeSchedules.findFirst({
 				where: eq(uptimeSchedules.id, id),
 			});
 
 			if (!schedule) {
-				console.error(`Schedule not found in database: ${id}`);
 				return { success: false, error: `Schedule ${id} not found` };
 			}
 
-			console.log("Schedule found:", {
-				id: schedule.id,
-				url: schedule.url,
-				websiteId: schedule.websiteId,
-				userId: schedule.userId,
-			});
-
 			if (!schedule.url) {
-				console.error(`Schedule ${id} has NULL url - needs migration`);
 				return {
 					success: false,
 					error: `Schedule ${id} has invalid data (missing url)`,
@@ -82,7 +71,6 @@ export function lookupSchedule(
 				},
 			};
 		} catch (error) {
-			console.error("Schedule lookup failed:", error);
 			return {
 				success: false,
 				error: error instanceof Error ? error.message : "Database error",
@@ -173,11 +161,6 @@ function pingWebsite(
 						: error.message;
 			}
 
-			console.error(
-				"Ping failed:",
-				JSON.stringify({ url: originalUrl, error: message })
-			);
-
 			return {
 				ok: false,
 				statusCode: 0,
@@ -257,8 +240,8 @@ function getProbeMetadata(): Promise<{ ip: string; region: string }> {
 				const data = (await res.json()) as { ip: string };
 				return { ip: data.ip || "unknown", region: CONFIG.region };
 			}
-		} catch (error) {
-			console.error("Failed to get probe IP:", error);
+		} catch {
+			// Failed to get probe IP
 		}
 
 		return { ip: "unknown", region: CONFIG.region };
@@ -449,11 +432,6 @@ export function checkUptime(
 			};
 		} catch (error) {
 			captureError(error);
-			// for now we'll just error, but ideally i wanna add axiom OTEL and error logging here
-			console.error(
-				"Uptime check failed:",
-				JSON.stringify({ siteId, url, error })
-			);
 
 			return {
 				success: false,
