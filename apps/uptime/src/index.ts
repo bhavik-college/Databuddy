@@ -43,11 +43,6 @@ if (!(CURRENT_SIGNING_KEY && NEXT_SIGNING_KEY)) {
 	);
 }
 
-const isProd = process.env.NODE_ENV === "production";
-const UPTIME_URL = isProd
-	? "https://uptime.databuddy.cc"
-	: "https://staging-uptime.databuddy.cc";
-
 const receiver = new Receiver({
 	currentSigningKey: CURRENT_SIGNING_KEY,
 	nextSigningKey: NEXT_SIGNING_KEY,
@@ -113,16 +108,11 @@ const app = new Elysia()
 			const { "upstash-signature": signature, "x-schedule-id": scheduleId } =
 				parsed.data;
 
-			// Use the URL that matches what QStash is configured with
-			// QStash signs the exact URL it sends to - check your QStash dashboard configuration
-			// Error shows it wants trailing slash: http://staging-uptime.databuddy.cc/
-			const verificationUrl = `${UPTIME_URL}/`;
-
 			const isValid = await receiver.verify({
 				// @ts-expect-error, this doesn't require type assertions
 				body,
 				signature,
-				url: verificationUrl,
+				url: process.env.UPTIME_URL,
 			});
 
 			if (!isValid) {
