@@ -32,12 +32,14 @@ const granularityEnum = z.enum([
 	"day",
 ]);
 
-const UPTIME_URL_GROUP = process.env.UPTIME_URL_GROUP || "uptime";
+const isProd = process.env.NODE_ENV === "production";
+const UPTIME_URL_GROUP = isProd ? "uptime" : "uptnvime-staging";
 
 async function getScheduleAndAuthorize(
 	scheduleId: string,
 	context: Parameters<typeof authorizeUptimeScheduleAccess>[0]
 ) {
+
 	const schedule = await db.query.uptimeSchedules.findFirst({
 		where: eq(uptimeSchedules.id, scheduleId),
 	});

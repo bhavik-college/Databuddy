@@ -31,7 +31,7 @@ export const UptimeSchema = t.Object({
 	error: t.String(),
 });
 
-export type UptimeData = {
+export interface UptimeData {
 	site_id: string;
 	url: string;
 	timestamp: number;
