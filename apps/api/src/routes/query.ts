@@ -554,7 +554,6 @@ async function runDynamicQuery(
 ) {
 	const from = req.startDate;
 	const to = req.endDate;
-	// Try to get domain for website IDs (will return null for schedule IDs)
 	const domain = projectId
 		? (domainCache?.[projectId] ?? (await getWebsiteDomain(projectId).catch(() => null)))
 		: null;
