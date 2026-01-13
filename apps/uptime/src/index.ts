@@ -2,6 +2,7 @@ import { Receiver } from "@upstash/qstash";
 import { Elysia } from "elysia";
 import { z } from "zod";
 import { checkUptime, lookupSchedule } from "./actions";
+import type { JsonParsingConfig } from "./json-parser";
 import { sendUptimeEvent } from "./lib/producer";
 import {
 	captureError,
@@ -148,11 +149,17 @@ const app = new Elysia()
 				? Number.parseInt(parsed.data["upstash-retried"], 10) + 3
 				: 3;
 
+			const jsonParsingConfig = schedule.data.jsonParsingConfig as
+				| JsonParsingConfig
+				| null
+				| undefined;
+
 			const result = await checkUptime(
 				monitorId,
 				schedule.data.url,
 				1,
-				maxRetries
+				maxRetries,
+				jsonParsingConfig
 			);
 
 			if (!result.success) {

@@ -55,6 +55,11 @@ export default function PulsePage() {
 	const [editingSchedule, setEditingSchedule] = useState<{
 		id: string;
 		granularity: string;
+		jsonParsingConfig?: {
+			enabled: boolean;
+			mode: "auto" | "manual";
+			fields?: string[];
+		} | null;
 	} | null>(null);
 	const [isRefreshing, setIsRefreshing] = useState(false);
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -154,6 +159,7 @@ export default function PulsePage() {
 			setEditingSchedule({
 				id: schedule.id,
 				granularity: schedule.granularity,
+				jsonParsingConfig: schedule.jsonParsingConfig ?? null,
 			});
 			setIsDialogOpen(true);
 		}

@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { connect } from "node:tls";
 import { db, eq, uptimeSchedules } from "@databuddy/db";
+import { type JsonParsingConfig, parseJsonResponse } from "./json-parser";
 import { captureError, record } from "./lib/tracing";
 import type { ActionResult, UptimeData } from "./types";
 import { MonitorStatus } from "./types";
@@ -39,6 +40,8 @@ interface FetchSuccess {
 	redirects: number;
 	bytes: number;
 	content: string;
+	contentType: string | null;
+	parsedJson?: unknown;
 }
 
 interface FetchFailure {
@@ -49,16 +52,13 @@ interface FetchFailure {
 	error: string;
 }
 
-// type Heartbeat = {
-// 	status: number;
-// 	retries: number;
-// 	streak: number;
-// };
-
-export function lookupSchedule(
-	id: string
-): Promise<
-	ActionResult<{ id: string; url: string; websiteId: string | null }>
+export function lookupSchedule(id: string): Promise<
+	ActionResult<{
+		id: string;
+		url: string;
+		websiteId: string | null;
+		jsonParsingConfig: unknown;
+	}>
 > {
 	return record("uptime.lookup_schedule", async () => {
 		try {
@@ -83,6 +83,7 @@ export function lookupSchedule(
 					id: schedule.id,
 					url: schedule.url,
 					websiteId: schedule.websiteId,
+					jsonParsingConfig: schedule.jsonParsingConfig,
 				},
 			};
 		} catch (error) {
@@ -127,7 +128,6 @@ function pingWebsite(
 
 				const ttfb = performance.now() - start;
 
-				// check if we got a redirect
 				if (res.status >= 300 && res.status < 400) {
 					const location = res.headers.get("location");
 					if (!location) {
@@ -150,7 +150,19 @@ function pingWebsite(
 					continue;
 				}
 
-				const content = await res.text();
+				const contentType = res.headers.get("content-type");
+				const isJson = contentType?.includes("application/json");
+
+				let content: string;
+				let parsedJson: unknown | undefined;
+
+				if (isJson) {
+					parsedJson = await res.json();
+					content = JSON.stringify(parsedJson);
+				} else {
+					content = await res.text();
+				}
+
 				const total = performance.now() - start;
 
 				clearTimeout(timeout);
@@ -179,6 +191,8 @@ function pingWebsite(
 					redirects,
 					bytes,
 					content,
+					contentType,
+					parsedJson,
 				};
 			}
 
@@ -282,83 +296,6 @@ function getProbeMetadata(): Promise<{ ip: string; region: string }> {
 	});
 }
 
-// function getLastHeartbeat(siteId: string): Promise<Heartbeat | null> {
-// 	return record("uptime.get_last_heartbeat", async () => {
-// 		try {
-// 			const rows = await chQuery<{
-// 				status: number;
-// 				retries: number;
-// 				failure_streak: number;
-// 			}>(
-// 				`
-//             SELECT status, retries, failure_streak
-//             FROM uptime.uptime_monitor
-//             WHERE site_id = {siteId:String}
-//             ORDER BY timestamp DESC
-//             LIMIT 1
-//             `,
-// 				{ siteId }
-// 			);
-
-// 			if (!rows || rows.length === 0) {
-// 				return null;
-// 			}
-
-// 			return {
-// 				status: rows[0].status,
-// 				retries: rows[0].retries,
-// 				streak: rows[0].failure_streak,
-// 			};
-// 		} catch (error) {
-// 			console.error("Failed to fetch last heartbeat:", error);
-// 			return null;
-// 		}
-// 	});
-// }
-
-// the retry logic - this prevents false alarms when a site has a temporary hiccup
-// function calculateStatus(
-// 	isUp: boolean,
-// 	last: Heartbeat | null,
-// 	maxRetries: number
-// ): { status: number; retries: number; streak: number } {
-// 	const { UP, DOWN } = MonitorStatus;
-// 	// const { UP, DOWN, PENDING } = MonitorStatus;
-
-// 	// first time checking this site
-// 	if (!last) {
-// 		// if (!isUp && maxRetries > 0) {
-// 		// 	return { status: PENDING, retries: 1, streak: 0 };
-// 		// }
-// 		return { status: isUp ? UP : DOWN, retries: 0, streak: isUp ? 0 : 1 };
-// 	}
-
-// 	// site was up, now it's down
-// 	if (last.status === UP && !isUp) {
-// 		// if (maxRetries > 0 && last.retries < maxRetries) {
-// 		// 	return {
-// 		// 		status: PENDING,
-// 		// 		retries: last.retries + 1,
-// 		// 		streak: last.streak,
-// 		// 	};
-// 		// }
-// 		return { status: DOWN, retries: 0, streak: last.streak + 1 };
-// 	}
-
-// 	// still pending, still down
-// 	// if (last.status === PENDING && !isUp && last.retries < maxRetries) {
-// 	// 	return { status: PENDING, retries: last.retries + 1, streak: last.streak };
-// 	// }
-
-// 	// confirmed down or recovered
-// 	if (!isUp) {
-// 		return { status: DOWN, retries: 0, streak: last.streak + 1 };
-// 	}
-
-// 	return { status: UP, retries: 0, streak: 0 };
-// }
-
-// simplified status calculation - just UP or DOWN based on current check
 function calculateStatus(isUp: boolean): {
 	status: number;
 	retries: number;
@@ -372,32 +309,21 @@ export function checkUptime(
 	siteId: string,
 	url: string,
 	attempt = 1,
-	_maxRetries: number = CONFIG.maxRetries
+	_maxRetries: number = CONFIG.maxRetries,
+	jsonParsingConfig?: JsonParsingConfig | null
 ): Promise<ActionResult<UptimeData>> {
 	return record("uptime.check_uptime", async () => {
 		try {
 			const normalizedUrl = normalizeUrl(url);
 			const timestamp = Date.now();
 
-			// gather all the data we need in parallel
 			const [pingResult, probe] = await Promise.all([
 				pingWebsite(normalizedUrl),
 				getProbeMetadata(),
 			]);
-			// const [pingResult, lastBeat, probe] = await Promise.all([
-			// 	pingWebsite(normalizedUrl),
-			// 	getLastHeartbeat(siteId),
-			// 	getProbeMetadata(),
-			// ]);
 
 			const { status, retries, streak } = calculateStatus(pingResult.ok);
-			// const { status, retries, streak } = calculateStatus(
-			// 	pingResult.ok,
-			// 	lastBeat,
-			// 	maxRetries
-			// );
 
-			// site is down - minimal data
 			if (!pingResult.ok) {
 				const cert = await checkCertificate(normalizedUrl);
 
@@ -429,7 +355,6 @@ export function checkUptime(
 				};
 			}
 
-			// site is up - full enrichment
 			const [cert, contentHash] = await Promise.all([
 				checkCertificate(normalizedUrl),
 				Promise.resolve(
@@ -437,7 +362,14 @@ export function checkUptime(
 				),
 			]);
 
-			// return the full data for debugging, but later it'll be fire & forget, we won't need to.
+			const jsonData = jsonParsingConfig
+				? parseJsonResponse(
+					pingResult.parsedJson ?? pingResult.content,
+					pingResult.contentType,
+					jsonParsingConfig
+				)
+				: null;
+
 			return {
 				success: true,
 				data: {
@@ -462,6 +394,7 @@ export function checkUptime(
 					check_type: "http",
 					user_agent: CONFIG.userAgent,
 					error: "",
+					json_data: jsonData ? JSON.stringify(jsonData) : undefined,
 				},
 			};
 		} catch (error) {

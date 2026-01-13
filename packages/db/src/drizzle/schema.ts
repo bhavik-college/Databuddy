@@ -678,11 +678,11 @@ export const flagScheduleActionType = pgEnum("flag_schedule_type", [
 export type RolloutStep =
 	| { scheduledAt: string; action: "enable" | "disable"; executedAt?: string }
 	| {
-			scheduledAt: string;
-			action: "set_percentage";
-			value: number;
-			executedAt?: string;
-	  };
+		scheduledAt: string;
+		action: "set_percentage";
+		value: number;
+		executedAt?: string;
+	};
 export const annotationType = pgEnum("annotation_type", [
 	"point",
 	"line",
@@ -907,6 +907,7 @@ export const uptimeSchedules = pgTable(
 		granularity: text("granularity").notNull(),
 		cron: text().notNull(),
 		isPaused: boolean("is_paused").default(false).notNull(),
+		jsonParsingConfig: jsonb("json_parsing_config"),
 		createdAt: timestamp("created_at", { precision: 3 }).defaultNow().notNull(),
 		updatedAt: timestamp("updated_at", { precision: 3 }).defaultNow().notNull(),
 	},
