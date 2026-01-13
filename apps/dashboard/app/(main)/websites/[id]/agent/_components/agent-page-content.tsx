@@ -23,10 +23,10 @@ import { AgentInput } from "./agent-input";
 import { AgentMessages } from "./agent-messages";
 import { NewChatButton } from "./new-chat-button";
 
-type AgentPageContentProps = {
+interface AgentPageContentProps {
 	chatId: string;
 	websiteId: string;
-};
+}
 
 const SUGGESTED_PROMPTS = [
 	{
@@ -51,13 +51,10 @@ const SUGGESTED_PROMPTS = [
 	},
 ];
 
-export function AgentPageContent({
-	chatId,
-	websiteId: _websiteId,
-}: AgentPageContentProps) {
+export function AgentPageContent({ chatId, websiteId }: AgentPageContentProps) {
 	return (
 		<AgentChatProvider chatId={chatId}>
-			<AgentPageContentInner websiteId={_websiteId} />
+			<AgentPageContentInner websiteId={websiteId} />
 		</AgentChatProvider>
 	);
 }
@@ -78,7 +75,6 @@ function AgentPageContentInner({
 				className={cn(
 					"flex flex-1 flex-col overflow-hidden",
 					"transition-all duration-300 ease-in-out",
-					false
 				)}
 			>
 				<div className="relative z-10 bg-sidebar-accent">
@@ -111,7 +107,7 @@ function AgentPageContentInner({
 				</div>
 
 				<Conversation className="flex-1">
-					<ConversationContent className="mx-auto w-full max-w-4xl pb-[150px]">
+					<ConversationContent className="mx-auto w-full max-w-4xl">
 						{hasMessages ? (
 							<AgentMessages />
 						) : (
@@ -135,23 +131,25 @@ function WelcomeState({
 	onPromptSelect: (text: string) => void;
 }) {
 	return (
-		<div className="flex min-h-[400px] flex-col items-center justify-center py-8">
-			<Avatar className="size-10">
-				<AvatarImage alt="Databunny avatar" src="/databunny.webp" />
-				<AvatarFallback className="bg-primary/10 font-semibold text-primary">
-					DB
-				</AvatarFallback>
-			</Avatar>
+		<div className="min-h-[400px] space-y-6 py-8">
+			<div className="flex flex-col items-center justify-center">
+				<Avatar className="size-10">
+					<AvatarImage alt="Databunny avatar" src="/databunny.webp" />
+					<AvatarFallback className="bg-primary/10 font-semibold text-primary">
+						DB
+					</AvatarFallback>
+				</Avatar>
 
-			<div className="mb-8 max-w-md text-center">
-				<h3 className="mb-2 font-semibold text-xl">Meet Databunny</h3>
-				<p className="text-balance text-foreground/60 text-sm leading-relaxed">
-					Databunny explores your analytics, uncovers patterns, and surfaces
-					actionable insights without you babysitting every step.
-				</p>
+				<div className="max-w-md space-y-2 text-center">
+					<h3 className="font-semibold text-xl">Meet Databunny</h3>
+					<p className="text-balance text-foreground/60 text-sm leading-relaxed">
+						Databunny explores your analytics, uncovers patterns, and surfaces
+						actionable insights without you babysitting every step.
+					</p>
+				</div>
 			</div>
 
-			<div className="mb-8 flex flex-wrap justify-center gap-2">
+			<div className="flex flex-wrap justify-center gap-2">
 				{[
 					"Deep Analysis",
 					"Pattern Detection",
@@ -167,37 +165,31 @@ function WelcomeState({
 				))}
 			</div>
 
-			<div className="w-full max-w-lg space-y-3">
-				<div className="flex items-center gap-2 text-foreground/50 text-sm">
-					<LightningIcon className="size-4" weight="duotone" />
-					<span>Try asking:</span>
-				</div>
-				<div className="grid gap-2 sm:grid-cols-2">
-					{SUGGESTED_PROMPTS.map((prompt) => (
-						<button
-							className={cn(
-								"group flex items-start gap-3 rounded border border-dashed p-3 text-left",
-								"transition-all hover:border-solid hover:bg-accent/30",
-								"disabled:cursor-not-allowed disabled:opacity-50"
-							)}
-							key={prompt.text}
-							onClick={() => onPromptSelect(prompt.text)}
-							type="button"
-						>
-							<div className="flex size-8 shrink-0 items-center justify-center rounded bg-accent/50">
-								<prompt.icon
-									className="size-4 text-foreground/60"
-									weight="duotone"
-								/>
-							</div>
-							<div className="min-w-0 flex-1">
-								<p className="truncate text-sm">{prompt.text}</p>
-								<p className="text-foreground/50 text-xs">{prompt.category}</p>
-							</div>
-							<ArrowRightIcon className="size-4 shrink-0 text-transparent transition-all group-hover:text-foreground/50" />
-						</button>
-					))}
-				</div>
+			<div className="grid max-w-4xl gap-2 sm:grid-cols-2">
+				{SUGGESTED_PROMPTS.map((prompt) => (
+					<button
+						className={cn(
+							"group flex items-start gap-3 rounded border border-dashed p-3 text-left",
+							"transition-all hover:border-solid hover:bg-accent/30",
+							"disabled:cursor-not-allowed disabled:opacity-50"
+						)}
+						key={prompt.text}
+						onClick={() => onPromptSelect(prompt.text)}
+						type="button"
+					>
+						<div className="flex size-8 shrink-0 items-center justify-center rounded bg-accent/50">
+							<prompt.icon
+								className="size-4 text-foreground/60"
+								weight="duotone"
+							/>
+						</div>
+						<div className="min-w-0 flex-1">
+							<p className="text-sm">{prompt.text}</p>
+							<p className="text-foreground/50 text-xs">{prompt.category}</p>
+						</div>
+						<ArrowRightIcon className="size-4 shrink-0 text-transparent transition-all group-hover:text-foreground/50" />
+					</button>
+				))}
 			</div>
 		</div>
 	);
