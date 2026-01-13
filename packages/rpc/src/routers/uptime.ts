@@ -14,6 +14,7 @@ const client = new Client({ token: process.env.UPSTASH_QSTASH_TOKEN });
 
 const CRON_GRANULARITIES = {
 	minute: "* * * * *",
+	five_minutes: "*/5 * * * *",
 	ten_minutes: "*/10 * * * *",
 	thirty_minutes: "*/30 * * * *",
 	hour: "0 * * * *",
@@ -24,6 +25,7 @@ const CRON_GRANULARITIES = {
 
 const granularityEnum = z.enum([
 	"minute",
+	"five_minutes",
 	"ten_minutes",
 	"thirty_minutes",
 	"hour",

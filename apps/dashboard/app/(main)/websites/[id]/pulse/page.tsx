@@ -31,7 +31,7 @@ import { useBatchDynamicQuery } from "@/hooks/use-dynamic-query";
 import { useWebsite } from "@/hooks/use-websites";
 import { orpc } from "@/lib/orpc";
 import { WebsitePageHeader } from "../_components/website-page-header";
-import { MonitorDialog } from "./_components/monitor-dialog";
+import { MonitorSheet } from "./_components/monitor-dialog";
 import { RecentActivity } from "./_components/recent-activity";
 import { UptimeHeatmap } from "./_components/uptime-heatmap";
 
@@ -159,7 +159,7 @@ export default function PulsePage() {
 			setEditingSchedule({
 				id: schedule.id,
 				granularity: schedule.granularity,
-				jsonParsingConfig: schedule.jsonParsingConfig ?? null,
+				jsonParsingConfig: schedule.jsonParsingConfig,
 			});
 			setIsDialogOpen(true);
 		}
@@ -378,7 +378,7 @@ export default function PulsePage() {
 				)}
 			</div>
 
-			<MonitorDialog
+			<MonitorSheet
 				onCloseAction={setIsDialogOpen}
 				onSaveAction={handleMonitorSaved}
 				open={isDialogOpen}
