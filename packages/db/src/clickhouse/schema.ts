@@ -395,7 +395,7 @@ SETTINGS index_granularity = 8192
 const CREATE_AI_CALL_SPANS_TABLE = `
 CREATE TABLE IF NOT EXISTS ${DATABASES.OBSERVABILITY}.ai_call_spans (
   website_id Nullable(String) CODEC(ZSTD(1)),
-  user_id Nullable(String) CODEC(ZSTD(1)),
+  user_id String CODEC(ZSTD(1)),
   
   timestamp DateTime64(3, 'UTC') CODEC(Delta(8), ZSTD(1)),
   
@@ -654,7 +654,7 @@ export interface UptimeMonitor {
  */
 export interface AICallSpan {
 	website_id?: string;
-	user_id?: string;
+	user_id: string;
 	timestamp: number;
 	type: "generate" | "stream";
 	model: string;

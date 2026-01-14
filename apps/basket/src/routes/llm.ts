@@ -81,55 +81,64 @@ const app = new Elysia().post("/llm", async (context) => {
 			);
 		}
 
-		const ownerId = apiKey.organizationId ?? apiKey.userId ?? undefined;
+		const ownerId = apiKey.organizationId ?? apiKey.userId;
+		if (!ownerId) {
+			return new Response(
+				JSON.stringify({
+					status: "error",
+					message: "API key missing owner ID",
+				}),
+				{
+					status: 400,
+					headers: { "Content-Type": "application/json" },
+				}
+			);
+		}
 
 		// Always run autumn check using API key owner's ID
-		if (ownerId) {
-			try {
-				const result = await record("autumn.check", () =>
-					autumn.check({
-						customer_id: ownerId,
-						feature_id: "llm",
-						send_event: true,
-						// @ts-expect-error autumn types are not up to date
-						properties: {
-							api_key_id: apiKey.id,
+		try {
+			const result = await record("autumn.check", () =>
+				autumn.check({
+					customer_id: ownerId,
+					feature_id: "llm",
+					send_event: true,
+					// @ts-expect-error autumn types are not up to date
+					properties: {
+						api_key_id: apiKey.id,
+					},
+				})
+			);
+			const data = result.data;
 
-						},
-					})
+			if (data && !(data.allowed || data.overage_allowed)) {
+				setAttributes({
+					validation_failed: true,
+					validation_reason: "exceeded_event_limit",
+					autumn_allowed: false,
+				});
+				return new Response(
+					JSON.stringify({
+						status: "error",
+						message: "Exceeded event limit",
+					}),
+					{
+						status: 429,
+						headers: { "Content-Type": "application/json" },
+					}
 				);
-				const data = result.data;
-
-				if (data && !(data.allowed || data.overage_allowed)) {
-					setAttributes({
-						validation_failed: true,
-						validation_reason: "exceeded_event_limit",
-						autumn_allowed: false,
-					});
-					return new Response(
-						JSON.stringify({
-							status: "error",
-							message: "Exceeded event limit",
-						}),
-						{
-							status: 429,
-							headers: { "Content-Type": "application/json" },
-						}
-					);
-				}
-
-				setAttributes({
-					autumn_allowed: data?.allowed ?? false,
-					autumn_overage_allowed: data?.overage_allowed ?? false,
-				});
-			} catch (error) {
-				captureError(error, {
-					message: "Autumn check failed, allowing event through",
-				});
-				setAttributes({
-					autumn_check_failed: true,
-				});
 			}
+
+			setAttributes({
+				autumn_allowed: data?.allowed ?? false,
+				autumn_overage_allowed: data?.overage_allowed ?? false,
+			});
+		} catch (error) {
+			captureError(error, {
+				message: "Autumn check failed, allowing event through",
+			});
+			setAttributes({
+				autumn_check_failed: true,
+			});
 		}
 
 		// Optionally validate website if clientId is provided

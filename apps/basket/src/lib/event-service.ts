@@ -384,7 +384,7 @@ export function insertOutgoingLinksBatch(
 export async function insertAICallSpans(
 	calls: Array<{
 		website_id?: string;
-		user_id?: string;
+		user_id: string;
 		timestamp: number;
 		type: "generate" | "stream";
 		model: string;
