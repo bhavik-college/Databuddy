@@ -6,10 +6,13 @@ import {
 	FlagIcon,
 	FlaskIcon,
 	GaugeIcon,
+	LinkIcon,
 	PencilSimpleIcon,
+	ShareNetworkIcon,
 	TrashIcon,
 } from "@phosphor-icons/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,7 +55,7 @@ const TYPE_CONFIG = {
 
 function GroupsDisplay({ groups }: { groups: TargetGroup[] }) {
 	if (groups.length === 0) {
-		return <span className="text-muted-foreground">—</span>;
+		return null;
 	}
 
 	return (
@@ -190,14 +193,96 @@ function FlagActions({
 	);
 }
 
+function DependencyBadges({
+	dependencies,
+	dependents,
+	flagMap,
+}: {
+	dependencies: string[];
+	dependents: Flag[];
+	flagMap: Map<string, Flag>;
+}) {
+	if (dependencies.length === 0 && dependents.length === 0) {
+		return null;
+	}
+
+	return (
+		<div className="flex items-center gap-1.5">
+			{dependencies.length > 0 && (
+				<Tooltip delayDuration={200}>
+					<TooltipTrigger asChild>
+						<div className="flex items-center gap-1 rounded bg-blue-500/10 px-1.5 py-0.5 text-blue-600 dark:text-blue-400">
+							<LinkIcon className="size-3" />
+							<span className="font-medium text-xs">{dependencies.length}</span>
+						</div>
+					</TooltipTrigger>
+					<TooltipContent>
+						<p className="mb-1.5 font-medium text-xs">Requires:</p>
+						<div className="flex flex-col gap-1">
+							{dependencies.map((depKey) => {
+								const dep = flagMap.get(depKey);
+								const isActive = dep?.status === "active";
+								return (
+									<div className="flex items-center gap-1.5" key={depKey}>
+										<span
+											className={cn(
+												"size-1.5 rounded-full",
+												isActive ? "bg-green-500" : "bg-amber-500"
+											)}
+										/>
+										<span className="font-mono text-xs">{depKey}</span>
+									</div>
+								);
+							})}
+						</div>
+					</TooltipContent>
+				</Tooltip>
+			)}
+			{dependents.length > 0 && (
+				<Tooltip delayDuration={200}>
+					<TooltipTrigger asChild>
+						<div className="flex items-center gap-1 rounded bg-violet-500/10 px-1.5 py-0.5 text-violet-600 dark:text-violet-400">
+							<ShareNetworkIcon className="size-3" weight="fill" />
+							<span className="font-medium text-xs">{dependents.length}</span>
+						</div>
+					</TooltipTrigger>
+					<TooltipContent>
+						<p className="mb-1.5 font-medium text-xs">Used by:</p>
+						<div className="flex flex-col gap-1">
+							{dependents.map((dep) => {
+								const isActive = dep.status === "active";
+								return (
+									<div className="flex items-center gap-1.5" key={dep.id}>
+										<span
+											className={cn(
+												"size-1.5 rounded-full",
+												isActive ? "bg-green-500" : "bg-amber-500"
+											)}
+										/>
+										<span className="font-mono text-xs">{dep.key}</span>
+									</div>
+								);
+							})}
+						</div>
+					</TooltipContent>
+				</Tooltip>
+			)}
+		</div>
+	);
+}
+
 function FlagRow({
 	flag,
 	groups,
+	dependents,
+	flagMap,
 	onEdit,
 	onDelete,
 }: {
 	flag: Flag;
 	groups: TargetGroup[];
+	dependents: Flag[];
+	flagMap: Map<string, Flag>;
 	onEdit: (flag: Flag) => void;
 	onDelete: (flagId: string) => void;
 }) {
@@ -207,6 +292,7 @@ function FlagRow({
 	const ruleCount = flag.rules?.length ?? 0;
 	const variantCount = flag.variants?.length ?? 0;
 	const rollout = flag.rolloutPercentage ?? 0;
+	const dependencies = flag.dependencies ?? [];
 
 	return (
 		<button
@@ -229,22 +315,27 @@ function FlagRow({
 				>
 					<TypeIconComponent className="size-4" weight="duotone" />
 				</div>
-				<div className="flex flex-col items-start">
-					<p className="truncate font-medium text-foreground text-sm">
-						{flag.name ?? flag.key}
-					</p>
+				<div className="flex flex-col items-start gap-0.5">
+					<div className="flex items-center gap-2">
+						<p className="truncate font-medium text-foreground text-sm">
+							{flag.name ?? flag.key}
+						</p>
+						<DependencyBadges
+							dependencies={dependencies}
+							dependents={dependents}
+							flagMap={flagMap}
+						/>
+					</div>
 					<FlagKey className="-ms-1.5" flag={flag} />
 				</div>
 			</div>
 
 			{/* Description */}
 			<div className="min-w-[300px] flex-1">
-				{flag.description ? (
+				{flag.description && (
 					<p className="line-clamp-2 text-muted-foreground text-xs">
 						{flag.description}
 					</p>
-				) : (
-					<span className="text-muted-foreground">—</span>
 				)}
 			</div>
 
@@ -257,16 +348,14 @@ function FlagRow({
 
 			{/* Rollout */}
 			<div className="w-20 shrink-0 text-center">
-				{flag.type === "rollout" && rollout > 0 ? (
+				{flag.type === "rollout" && rollout > 0 && (
 					<RolloutProgress percentage={rollout} />
-				) : (
-					<span className="text-muted-foreground">—</span>
 				)}
 			</div>
 
 			{/* Rules & Variants */}
 			<div className="w-[100px] shrink-0">
-				{ruleCount > 0 || variantCount > 0 ? (
+				{(ruleCount > 0 || variantCount > 0) && (
 					<div className="flex flex-col gap-0.5 text-muted-foreground text-xs">
 						{ruleCount > 0 && (
 							<span>
@@ -277,8 +366,6 @@ function FlagRow({
 							<FlagVariants variants={flag.variants ?? []} />
 						)}
 					</div>
-				) : (
-					<span className="text-muted-foreground">—</span>
 				)}
 			</div>
 
@@ -318,11 +405,35 @@ function FlagRow({
 }
 
 export function FlagsList({ flags, groups, onEdit, onDelete }: FlagsListProps) {
+	const flagMap = useMemo(() => {
+		const map = new Map<string, Flag>();
+		for (const f of flags) {
+			map.set(f.key, f);
+		}
+		return map;
+	}, [flags]);
+
+	const dependentsMap = useMemo(() => {
+		const map = new Map<string, Flag[]>();
+		for (const f of flags) {
+			if (f.dependencies) {
+				for (const depKey of f.dependencies) {
+					const existing = map.get(depKey) || [];
+					existing.push(f);
+					map.set(depKey, existing);
+				}
+			}
+		}
+		return map;
+	}, [flags]);
+
 	return (
 		<div className="w-full overflow-x-auto">
 			{flags.map((flag) => (
 				<FlagRow
+					dependents={dependentsMap.get(flag.key) ?? []}
 					flag={flag}
+					flagMap={flagMap}
 					groups={groups.get(flag.id) ?? []}
 					key={flag.id}
 					onDelete={onDelete}
