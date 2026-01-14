@@ -299,6 +299,44 @@ export const websiteNavigation: NavigationSection[] = [
 			// gatedFeature: GATED_FEATURES.AI_AGENT,
 		}),
 	]),
+	createNavSection(
+		"LLM Analytics",
+		RobotIcon,
+		[
+			createNavItem("Overview", RobotIcon, "/llm-analytics", {
+				rootLevel: false,
+				alpha: true,
+			}),
+			createNavItem("Cost", CurrencyDollarIcon, "/llm-analytics/cost", {
+				rootLevel: false,
+				alpha: true,
+			}),
+			createNavItem(
+				"Performance",
+				ChartLineUpIcon,
+				"/llm-analytics/performance",
+				{
+					rootLevel: false,
+					alpha: true,
+				}
+			),
+			createNavItem("Reliability", BugIcon, "/llm-analytics/reliability", {
+				rootLevel: false,
+				alpha: true,
+			}),
+			createNavItem("Tooling", LightningIcon, "/llm-analytics/tooling", {
+				rootLevel: false,
+				alpha: true,
+			}),
+			createNavItem("Traces", RoadHorizonIcon, "/llm-analytics/traces", {
+				rootLevel: false,
+				alpha: true,
+			}),
+		],
+		{
+			flag: "llm",
+		}
+	),
 ];
 
 export const websiteSettingsNavigation: NavigationSection[] = [

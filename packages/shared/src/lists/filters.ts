@@ -9,6 +9,14 @@ export const filterOptions = [
 	{ value: "utm_source", label: "UTM Source" },
 	{ value: "utm_medium", label: "UTM Medium" },
 	{ value: "utm_campaign", label: "UTM Campaign" },
+	{ value: "provider", label: "Provider" },
+	{ value: "model", label: "Model" },
+	{ value: "type", label: "Call Type" },
+	{ value: "finish_reason", label: "Finish Reason" },
+	{ value: "error_name", label: "Error Name" },
+	{ value: "http_status", label: "HTTP Status" },
+	{ value: "user_id", label: "User ID" },
+	{ value: "trace_id", label: "Trace ID" },
 ] as const;
 
 export const tableFilterMapping: Record<string, string> = {

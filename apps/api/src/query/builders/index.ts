@@ -4,6 +4,7 @@ import { EngagementBuilders } from "./engagement";
 import { ErrorsBuilders } from "./errors";
 import { GeoBuilders } from "./geo";
 import { LinksBuilders } from "./links";
+import { LLMAnalyticsBuilders } from "./llm-analytics";
 import { PagesBuilders } from "./pages";
 import { PerformanceBuilders } from "./performance";
 import { ProfilesBuilders } from "./profiles";
@@ -28,6 +29,7 @@ export const QueryBuilders = {
 	...EngagementBuilders,
 	...VitalsBuilders,
 	...UptimeBuilders,
+	...LLMAnalyticsBuilders,
 };
 
 export type QueryType = keyof typeof QueryBuilders;

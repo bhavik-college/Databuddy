@@ -1,4 +1,5 @@
 import type {
+	AICallSpan,
 	AnalyticsEvent,
 	BlockedTraffic,
 	CustomEventSpan,
@@ -24,6 +25,10 @@ export const Analytics = {
 	uptime_monitor: "uptime.uptime_monitor",
 } as const;
 
+export const Observability = {
+	ai_call_spans: "observability.ai_call_spans",
+} as const;
+
 export type AnalyticsTable = (typeof Analytics)[keyof typeof Analytics];
 
 export interface TableFieldsMap {
@@ -37,4 +42,5 @@ export interface TableFieldsMap {
 	"analytics.blocked_traffic": keyof BlockedTraffic;
 	"analytics.outgoing_links": keyof CustomOutgoingLink;
 	"uptime.uptime_monitor": keyof UptimeMonitor;
+	"observability.ai_call_spans": keyof AICallSpan;
 }
