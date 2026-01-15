@@ -391,11 +391,11 @@ SETTINGS index_granularity = 8192
 
 /**
  * Lean AI call spans table - stores individual AI model calls
+ * owner_id: The org or user ID that owns this data (from API key)
  */
 const CREATE_AI_CALL_SPANS_TABLE = `
 CREATE TABLE IF NOT EXISTS ${DATABASES.OBSERVABILITY}.ai_call_spans (
-  website_id Nullable(String) CODEC(ZSTD(1)),
-  user_id String CODEC(ZSTD(1)),
+  owner_id String CODEC(ZSTD(1)),
   
   timestamp DateTime64(3, 'UTC') CODEC(Delta(8), ZSTD(1)),
   
@@ -428,14 +428,13 @@ CREATE TABLE IF NOT EXISTS ${DATABASES.OBSERVABILITY}.ai_call_spans (
   error_message Nullable(String) CODEC(ZSTD(1)),
   error_stack Nullable(String) CODEC(ZSTD(1)),
   
-  INDEX idx_website_id website_id TYPE bloom_filter(0.01) GRANULARITY 1,
-  INDEX idx_user_id user_id TYPE bloom_filter(0.01) GRANULARITY 1,
+  INDEX idx_owner_id owner_id TYPE bloom_filter(0.01) GRANULARITY 1,
   INDEX idx_model model TYPE bloom_filter(0.01) GRANULARITY 1,
   INDEX idx_provider provider TYPE bloom_filter(0.01) GRANULARITY 1,
   INDEX idx_error_name error_name TYPE bloom_filter(0.01) GRANULARITY 1
 ) ENGINE = MergeTree
 PARTITION BY toDate(timestamp)
-ORDER BY (user_id, provider, model, timestamp)
+ORDER BY (owner_id, provider, model, timestamp)
 SETTINGS index_granularity = 8192, ttl_only_drop_parts = 1
 `;
 
@@ -651,10 +650,10 @@ export interface UptimeMonitor {
 
 /**
  * AI call span type
+ * owner_id: The org or user ID that owns this data (from API key)
  */
 export interface AICallSpan {
-	website_id?: string;
-	user_id: string;
+	owner_id: string;
 	timestamp: number;
 	type: "generate" | "stream";
 	model: string;

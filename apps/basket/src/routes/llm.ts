@@ -1,6 +1,5 @@
 import { getApiKeyFromHeader, hasKeyScope } from "@lib/api-key";
 import { insertAICallSpans } from "@lib/event-service";
-import { validateRequest } from "@lib/request-validation";
 import { captureError, record, setAttributes } from "@lib/tracing";
 import { Autumn as autumn } from "autumn-js";
 import { Elysia } from "elysia";
@@ -48,9 +47,8 @@ const aiCallSchema = z.object({
 });
 
 const app = new Elysia().post("/llm", async (context) => {
-	const { body, query, request } = context as {
+	const { body, request } = context as {
 		body: unknown;
-		query: Record<string, string>;
 		request: Request;
 	};
 
@@ -141,18 +139,6 @@ const app = new Elysia().post("/llm", async (context) => {
 			});
 		}
 
-		// Optionally validate website if clientId is provided
-		let websiteId: string | undefined;
-		const clientId =
-			query.client_id || request.headers.get("databuddy-client-id") || undefined;
-		if (clientId) {
-			const validation = await validateRequest(body, query, request);
-			if ("error" in validation) {
-				return validation.error;
-			}
-			websiteId = validation.clientId;
-		}
-
 		const parseResult = z
 			.union([aiCallSchema, z.array(aiCallSchema)])
 			.safeParse(body);
@@ -185,8 +171,7 @@ const app = new Elysia().post("/llm", async (context) => {
 						: new Date(call.timestamp).getTime();
 
 			return {
-				website_id: websiteId,
-				user_id: ownerId,
+				owner_id: ownerId,
 				timestamp: timestamp || now,
 				type: call.type,
 				model: call.model,
@@ -214,7 +199,7 @@ const app = new Elysia().post("/llm", async (context) => {
 			};
 		});
 
-		await insertAICallSpans(spans, websiteId);
+		await insertAICallSpans(spans);
 
 		return new Response(
 			JSON.stringify({

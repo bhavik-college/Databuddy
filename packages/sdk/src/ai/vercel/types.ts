@@ -95,15 +95,10 @@ export interface DatabuddyLLMOptions {
 	 */
 	apiUrl?: string;
 	/**
-	 * API key for authentication
+	 * API key for authentication (determines owner - org or user)
 	 * @default process.env.DATABUDDY_API_KEY
 	 */
 	apiKey?: string;
-	/**
-	 * Client/Website ID for tracking
-	 * @default process.env.DATABUDDY_CLIENT_ID
-	 */
-	clientId?: string;
 	/**
 	 * Custom transport function to send log entries
 	 * If provided, overrides default HTTP transport
@@ -147,10 +142,6 @@ export interface TrackOptions {
 	 * Trace ID to link related calls together
 	 */
 	traceId?: string;
-	/**
-	 * Client ID for this specific call (overrides instance-level clientId)
-	 */
-	clientId?: string;
 	/**
 	 * Whether to compute costs using TokenLens
 	 * @default true

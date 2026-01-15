@@ -9,7 +9,6 @@ const LLM_ALLOWED_FILTERS = [
 	"finish_reason",
 	"error_name",
 	"http_status",
-	"user_id",
 	"trace_id",
 ];
 
@@ -29,8 +28,9 @@ const buildTimeBucket = (granularity?: TimeUnit, timezone?: string) => {
 const buildFilterClause = (filterConditions?: string[]) =>
 	filterConditions?.length ? `AND ${filterConditions.join(" AND ")}` : "";
 
+// owner_id is the org or user ID that owns this data (from API key)
 const baseWhereClause = `
-  (website_id = {websiteId:String} OR (website_id IS NULL AND user_id = {websiteId:String}))
+  owner_id = {ownerId:String}
   AND ${TIME_FIELD} >= toDateTime({startDate:String})
   AND ${TIME_FIELD} <= toDateTime(concat({endDate:String}, ' 23:59:59'))
 `;
@@ -71,7 +71,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 					${filterClause}
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...filterParams,
@@ -123,7 +123,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				ORDER BY date ASC
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...params,
@@ -179,7 +179,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				LIMIT ${appliedLimit}
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...filterParams,
@@ -235,7 +235,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				LIMIT ${appliedLimit}
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...filterParams,
@@ -286,7 +286,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				LIMIT ${appliedLimit}
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...filterParams,
@@ -338,7 +338,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				LIMIT ${appliedLimit}
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...filterParams,
@@ -387,7 +387,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				ORDER BY date ASC
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...params,
@@ -437,7 +437,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				ORDER BY date ASC
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...params,
@@ -488,7 +488,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				ORDER BY date ASC
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...params,
@@ -544,7 +544,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				LIMIT ${appliedLimit}
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...filterParams,
@@ -598,7 +598,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				LIMIT ${appliedLimit}
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...filterParams,
@@ -652,7 +652,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				LIMIT ${appliedLimit}
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...filterParams,
@@ -701,7 +701,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				ORDER BY date ASC
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...params,
@@ -753,7 +753,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				LIMIT ${appliedLimit}
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...filterParams,
@@ -807,7 +807,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				LIMIT ${appliedLimit}
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...filterParams,
@@ -857,7 +857,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				ORDER BY date ASC
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...params,
@@ -911,7 +911,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				LIMIT ${appliedLimit}
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...filterParams,
@@ -970,7 +970,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				LIMIT ${appliedLimit}
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...filterParams,
@@ -1026,7 +1026,7 @@ export const LLMAnalyticsBuilders: Record<string, SimpleQueryConfig> = {
 				LIMIT ${appliedLimit}
 				`,
 				params: {
-					websiteId,
+					ownerId: websiteId,
 					startDate,
 					endDate,
 					...filterParams,

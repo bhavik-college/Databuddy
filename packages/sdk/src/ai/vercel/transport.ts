@@ -2,10 +2,10 @@ import type { AICall, Transport } from "./types";
 
 /**
  * Create default HTTP transport
+ * Owner is determined by the API key on the server side
  */
 export const createDefaultTransport = (
 	apiUrl: string,
-	clientId?: string,
 	apiKey?: string,
 ): Transport => {
 	return async (call) => {
@@ -15,10 +15,6 @@ export const createDefaultTransport = (
 
 		if (apiKey) {
 			headers.Authorization = `Bearer ${apiKey}`;
-		}
-
-		if (clientId) {
-			headers["databuddy-client-id"] = clientId;
 		}
 
 		const response = await fetch(apiUrl, {
@@ -43,13 +39,12 @@ export const createDefaultTransport = (
  * import { databuddyLLM, httpTransport } from "@databuddy/sdk/ai/vercel";
  *
  * const { track } = databuddyLLM({
- *   transport: httpTransport("https://api.example.com/ai-logs", "client-id", "api-key"),
+ *   transport: httpTransport("https://api.example.com/ai-logs", "api-key"),
  * });
  * ```
  */
 export const httpTransport = (
 	url: string,
-	clientId?: string,
 	apiKey?: string,
 ): Transport => {
 	return async (call: AICall) => {
@@ -59,10 +54,6 @@ export const httpTransport = (
 
 		if (apiKey) {
 			headers.Authorization = `Bearer ${apiKey}`;
-		}
-
-		if (clientId) {
-			headers["databuddy-client-id"] = clientId;
 		}
 
 		const response = await fetch(url, {

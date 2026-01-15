@@ -94,7 +94,6 @@ export const databuddyLLM = (options: DatabuddyLLMOptions = {}) => {
 	const {
 		apiUrl,
 		apiKey,
-		clientId,
 		transport: customTransport,
 		computeCosts: defaultComputeCosts = true,
 		privacyMode: defaultPrivacyMode = false,
@@ -107,7 +106,6 @@ export const databuddyLLM = (options: DatabuddyLLMOptions = {}) => {
 		? customTransport
 		: createDefaultTransport(
 			apiUrl ?? process.env.DATABUDDY_API_URL ?? "https://basket.databuddy.cc/llm",
-			clientId ?? process.env.DATABUDDY_CLIENT_ID,
 			apiKey ?? process.env.DATABUDDY_API_KEY
 		);
 
@@ -118,13 +116,6 @@ export const databuddyLLM = (options: DatabuddyLLMOptions = {}) => {
 		const getEffectiveTransport = (): Transport => {
 			if (trackOptions.transport) {
 				return trackOptions.transport;
-			}
-			if (trackOptions.clientId && trackOptions.clientId !== clientId) {
-				return createDefaultTransport(
-					apiUrl ?? process.env.DATABUDDY_API_URL ?? "https://basket.databuddy.cc/llm",
-					trackOptions.clientId,
-					apiKey ?? process.env.DATABUDDY_API_KEY
-				);
 			}
 			return transport;
 		};

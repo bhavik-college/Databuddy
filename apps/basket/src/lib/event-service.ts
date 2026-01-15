@@ -380,11 +380,11 @@ export function insertOutgoingLinksBatch(
 
 /**
  * Insert AI call spans
+ * owner_id: The org or user ID that owns this data (from API key)
  */
 export async function insertAICallSpans(
 	calls: Array<{
-		website_id?: string;
-		user_id: string;
+		owner_id: string;
 		timestamp: number;
 		type: "generate" | "stream";
 		model: string;
@@ -409,16 +409,14 @@ export async function insertAICallSpans(
 		error_name?: string;
 		error_message?: string;
 		error_stack?: string;
-	}>,
-	websiteId?: string
+	}>
 ): Promise<void> {
 	if (calls.length === 0) {
 		return;
 	}
 
 	const spans: AICallSpan[] = calls.map((call) => ({
-		website_id: call.website_id ?? websiteId,
-		user_id: call.user_id,
+		owner_id: call.owner_id,
 		timestamp: call.timestamp,
 		type: call.type,
 		model: call.model,
