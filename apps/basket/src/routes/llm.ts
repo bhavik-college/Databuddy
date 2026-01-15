@@ -98,7 +98,7 @@ const app = new Elysia().post("/llm", async (context) => {
 			const result = await record("autumn.check", () =>
 				autumn.check({
 					customer_id: ownerId,
-					feature_id: "llm",
+					feature_id: "events",
 					send_event: true,
 					// @ts-expect-error autumn types are not up to date
 					properties: {
