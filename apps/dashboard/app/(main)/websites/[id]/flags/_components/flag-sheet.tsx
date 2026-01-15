@@ -72,29 +72,31 @@ function CollapsibleSection({
 	children: React.ReactNode;
 }) {
 	return (
-		<div>
-			<button
-				className="group flex w-full cursor-pointer items-center justify-between rounded py-3 text-left transition-colors hover:bg-accent/50"
-				onClick={onToggleAction}
-				type="button"
-			>
-				<div className="flex items-center gap-2.5">
-					<Icon size={16} weight="duotone" />
-					<span className="font-medium text-sm">{title}</span>
-					{badge !== undefined && badge > 0 && (
-						<span className="flex size-5 items-center justify-center rounded-full bg-primary font-medium text-primary-foreground text-xs">
-							{badge}
-						</span>
-					)}
-				</div>
-				<CaretDownIcon
-					className={cn(
-						"size-4 text-muted-foreground transition-transform duration-200",
-						isExpanded && "rotate-180"
-					)}
-					weight="fill"
-				/>
-			</button>
+		<div className="space-y-2">
+			<div className="-mx-3">
+				<button
+					className="group flex w-full cursor-pointer items-center justify-between rounded px-3 py-3 text-left transition-colors hover:bg-accent/50"
+					onClick={onToggleAction}
+					type="button"
+				>
+					<div className="flex items-center gap-2.5">
+						<Icon size={16} weight="duotone" />
+						<span className="font-medium text-sm">{title}</span>
+						{badge !== undefined && badge > 0 && (
+							<span className="flex size-5 items-center justify-center rounded-full bg-primary font-medium text-primary-foreground text-xs">
+								{badge}
+							</span>
+						)}
+					</div>
+					<CaretDownIcon
+						className={cn(
+							"size-4 text-muted-foreground transition-transform duration-200",
+							isExpanded && "rotate-180"
+						)}
+						weight="fill"
+					/>
+				</button>
+			</div>
 
 			<AnimatePresence initial={false}>
 				{isExpanded && (
@@ -389,7 +391,7 @@ export function FlagSheet({
 						<SheetBody className="space-y-6">
 							{/* Basic Info */}
 							<div className="space-y-4">
-								<div className="grid gap-4 sm:grid-cols-2">
+								<div className="grid place-items-start gap-4 sm:grid-cols-2">
 									<FormField
 										control={form.control}
 										name="flag.name"
@@ -805,10 +807,7 @@ export function FlagSheet({
 							{/* Advanced Options */}
 							<div className="space-y-1">
 								<CollapsibleSection
-									badge={
-										form.watch("flag.targetGroupIds")?.length ??
-										(targetGroups as TargetGroup[] | undefined)?.length
-									}
+									badge={form.watch("flag.targetGroupIds")?.length ?? 0}
 									icon={UsersThreeIcon}
 									isExpanded={expandedSection === "groups"}
 									onToggleAction={() => toggleSection("groups")}
