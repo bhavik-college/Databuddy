@@ -1,1 +1,2 @@
-export { default } from "../../../(main)/websites/[id]/llm-analytics/errors/page";
+// biome-ignore lint/performance/noBarrelFile: this is a barrel tbh
+export { default } from "../../../../(main)/websites/[id]/llm/errors/page";
