@@ -48,6 +48,7 @@ export function LinkQrCode({
 	className,
 }: LinkQrCodeProps) {
 	const qrRef = useRef<QRCode>(null);
+	const qrContainerRef = useRef<HTMLDivElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const shortUrl = `${LINKS_BASE_URL}/${slug}`;
 
@@ -70,39 +71,32 @@ export function LinkQrCode({
 		toast.success("QR code downloaded");
 	}, [name]);
 
-	const copyQrCode = useCallback(async () => {
-		if (!qrRef.current) {
+	const copyQrCode = useCallback(() => {
+		if (!qrContainerRef.current) {
+			toast.error("Failed to copy QR code");
 			return;
 		}
 
-		try {
-			const canvas = (
-				qrRef.current as unknown as {
-					canvas: React.RefObject<HTMLCanvasElement>;
-				}
-			).canvas?.current;
-			if (!canvas) {
+		const canvas = qrContainerRef.current.querySelector("canvas");
+		if (!canvas) {
+			toast.error("Failed to copy QR code");
+			return;
+		}
+
+		canvas.toBlob((blob) => {
+			if (!blob) {
 				toast.error("Failed to copy QR code");
 				return;
 			}
-
-			canvas.toBlob(async (blob) => {
-				if (!blob) {
-					toast.error("Failed to copy QR code");
-					return;
-				}
-				try {
-					await navigator.clipboard.write([
-						new ClipboardItem({ "image/png": blob }),
-					]);
+			navigator.clipboard
+				.write([new ClipboardItem({ "image/png": blob })])
+				.then(() => {
 					toast.success("QR code copied to clipboard");
-				} catch {
+				})
+				.catch(() => {
 					toast.error("Failed to copy QR code");
-				}
-			}, "image/png");
-		} catch {
-			toast.error("Failed to copy QR code");
-		}
+				});
+		}, "image/png");
 	}, []);
 
 	const handleLogoUpload = useCallback(
@@ -137,7 +131,7 @@ export function LinkQrCode({
 		<div className={cn("flex flex-col gap-6", className)}>
 			{/* Preview */}
 			<div className="flex flex-col items-center gap-3">
-				<div className="rounded border bg-white p-4">
+				<div className="rounded border bg-white p-4" ref={qrContainerRef}>
 					<QRCode
 						bgColor="#ffffff"
 						ecLevel="H"
@@ -260,7 +254,9 @@ export function LinkQrCode({
 									<img
 										alt="Logo preview"
 										className="size-full object-contain"
+										height={48}
 										src={logoImage}
+										width={48}
 									/>
 								</div>
 								<div className="flex-1 space-y-2">
