@@ -863,6 +863,11 @@ export const links = pgTable(
 		slug: text().notNull(),
 		name: text().notNull(),
 		targetUrl: text("target_url").notNull(),
+		expiresAt: timestamp("expires_at", { withTimezone: true }),
+		expiredRedirectUrl: text("expired_redirect_url"),
+		ogTitle: text("og_title"),
+		ogDescription: text("og_description"),
+		ogImageUrl: text("og_image_url"),
 		deletedAt: timestamp("deleted_at", { withTimezone: true }),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.defaultNow()

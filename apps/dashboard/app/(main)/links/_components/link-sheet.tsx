@@ -2,12 +2,14 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+	CalendarIcon,
 	CircleNotchIcon,
 	CopyIcon,
 	LinkIcon,
 	QrCodeIcon,
 } from "@phosphor-icons/react";
-import { useCallback, useEffect, useRef } from "react";
+import dayjs from "dayjs";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -23,6 +25,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	Sheet,
 	SheetBody,
@@ -34,7 +37,16 @@ import {
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { type Link, useCreateLink, useUpdateLink } from "@/hooks/use-links";
+import { AdvancedOptions } from "./advanced-options";
 import { LinkQrCode } from "./link-qr-code";
+import { type OgData, OgPreview } from "./og-preview";
+import {
+	appendUtmToUrl,
+	parseUtmFromUrl,
+	stripUtmFromUrl,
+	UtmBuilder,
+	type UtmParams,
+} from "./utm-builder";
 
 const LINKS_BASE_URL = "dby.sh";
 
@@ -76,9 +88,43 @@ const formSchema = z.object({
 		})
 		.optional()
 		.or(z.literal("")),
+	expiresAt: z.string().optional().or(z.literal("")),
+	expiredRedirectUrl: z
+		.string()
+		.optional()
+		.or(z.literal(""))
+		.refine(
+			(val) => {
+				if (!val || val === "") {
+					return true;
+				}
+				try {
+					const urlToTest = val.startsWith("http") ? val : `https://${val}`;
+					const url = new URL(urlToTest);
+					return url.protocol === "http:" || url.protocol === "https:";
+				} catch {
+					return false;
+				}
+			},
+			{ message: "Please enter a valid URL" }
+		),
 });
 
 type FormData = z.infer<typeof formSchema>;
+
+const DEFAULT_UTM_PARAMS: UtmParams = {
+	utm_source: "",
+	utm_medium: "",
+	utm_campaign: "",
+	utm_content: "",
+	utm_term: "",
+};
+
+const DEFAULT_OG_DATA: OgData = {
+	ogTitle: "",
+	ogDescription: "",
+	ogImageUrl: "",
+};
 
 interface LinkSheetProps {
 	open: boolean;
@@ -99,6 +145,13 @@ export function LinkSheet({
 	const createLinkMutation = useCreateLink();
 	const updateLinkMutation = useUpdateLink();
 
+	// UTM parameters state (not part of form, handled separately)
+	const [utmParams, setUtmParams] = useState<UtmParams>(DEFAULT_UTM_PARAMS);
+
+	// OG data state
+	const [ogData, setOgData] = useState<OgData>(DEFAULT_OG_DATA);
+	const [useCustomOg, setUseCustomOg] = useState(false);
+
 	const form = useForm<FormData>({
 		resolver: zodResolver(formSchema),
 		mode: "onChange",
@@ -106,6 +159,8 @@ export function LinkSheet({
 			name: "",
 			targetUrl: "",
 			slug: "",
+			expiresAt: "",
+			expiredRedirectUrl: "",
 		},
 	});
 
@@ -118,29 +173,58 @@ export function LinkSheet({
 				} else if (targetUrl.startsWith("http://")) {
 					targetUrl = targetUrl.slice(7);
 				}
+
+				// Parse UTM params from the target URL
+				const parsedUtm = parseUtmFromUrl(targetUrl);
+				setUtmParams(parsedUtm);
+
+				// Strip UTM params for display in the form
+				const urlWithoutUtm = stripUtmFromUrl(targetUrl);
+
+				// Set OG data from link
+				const hasCustomOg =
+					linkData.ogTitle ?? linkData.ogDescription ?? linkData.ogImageUrl;
+				setUseCustomOg(!!hasCustomOg);
+				setOgData({
+					ogTitle: linkData.ogTitle ?? "",
+					ogDescription: linkData.ogDescription ?? "",
+					ogImageUrl: linkData.ogImageUrl ?? "",
+				});
+
 				form.reset({
 					name: linkData.name,
-					targetUrl,
+					targetUrl: urlWithoutUtm,
 					slug: linkData.slug,
+					expiresAt: linkData.expiresAt
+						? dayjs(linkData.expiresAt).format("YYYY-MM-DDTHH:mm")
+						: "",
+					expiredRedirectUrl: linkData.expiredRedirectUrl ?? "",
 				});
 			} else {
-				form.reset({ name: "", targetUrl: "", slug: "" });
+				form.reset({
+					name: "",
+					targetUrl: "",
+					slug: "",
+					expiresAt: "",
+					expiredRedirectUrl: "",
+				});
+				setUtmParams(DEFAULT_UTM_PARAMS);
+				setOgData(DEFAULT_OG_DATA);
+				setUseCustomOg(false);
 			}
 		},
 		[form]
 	);
 
-	// Reset form when sheet opens or link changes
 	const prevOpenRef = useRef(open);
-	useEffect(() => {
-		const wasOpen = prevOpenRef.current;
-		prevOpenRef.current = open;
+	const prevLinkRef = useRef(link);
 
-		// Reset when opening (transition from closed to open)
-		if (open && !wasOpen) {
-			resetForm(link);
-		}
-	}, [open, link, resetForm]);
+	// Reset form when sheet opens or link changes
+	if (open && (!prevOpenRef.current || prevLinkRef.current !== link)) {
+		resetForm(link);
+	}
+	prevOpenRef.current = open;
+	prevLinkRef.current = link;
 
 	const handleOpenChange = useCallback(
 		(isOpen: boolean) => {
@@ -150,6 +234,17 @@ export function LinkSheet({
 	);
 
 	const slugValue = form.watch("slug");
+	const targetUrlValue = form.watch("targetUrl");
+
+	// Compute full target URL with protocol for OG preview
+	const fullTargetUrl = useMemo(() => {
+		if (!targetUrlValue) {
+			return "";
+		}
+		return targetUrlValue.startsWith("http")
+			? targetUrlValue
+			: `https://${targetUrlValue}`;
+	}, [targetUrlValue]);
 
 	const getErrorMessage = (error: unknown, isEditingMode: boolean): string => {
 		const defaultMessage = `Failed to ${isEditingMode ? "update" : "create"} link.`;
@@ -195,7 +290,29 @@ export function LinkSheet({
 			targetUrl = `https://${targetUrl}`;
 		}
 
+		// Append UTM params to target URL
+		targetUrl = appendUtmToUrl(targetUrl, utmParams);
+
 		const slug = formData.slug?.trim() || undefined;
+
+		// Handle expiration date - pass undefined if not set
+		const expiresAt = formData.expiresAt
+			? new Date(formData.expiresAt).toISOString()
+			: undefined;
+
+		// Handle expired redirect URL
+		let expiredRedirectUrl: string | undefined =
+			formData.expiredRedirectUrl?.trim() || undefined;
+		if (expiredRedirectUrl && !expiredRedirectUrl.startsWith("http")) {
+			expiredRedirectUrl = `https://${expiredRedirectUrl}`;
+		}
+
+		// Handle OG data - pass undefined if not using custom OG or if field is empty
+		const ogTitle = useCustomOg && ogData.ogTitle ? ogData.ogTitle : undefined;
+		const ogDescription =
+			useCustomOg && ogData.ogDescription ? ogData.ogDescription : undefined;
+		const ogImageUrl =
+			useCustomOg && ogData.ogImageUrl ? ogData.ogImageUrl : undefined;
 
 		try {
 			if (link?.id) {
@@ -204,6 +321,11 @@ export function LinkSheet({
 					name: formData.name,
 					targetUrl,
 					slug,
+					expiresAt,
+					expiredRedirectUrl,
+					ogTitle,
+					ogDescription,
+					ogImageUrl,
 				});
 				if (onSave) {
 					onSave(result);
@@ -215,6 +337,11 @@ export function LinkSheet({
 					name: formData.name,
 					targetUrl,
 					slug,
+					expiresAt,
+					expiredRedirectUrl,
+					ogTitle,
+					ogDescription,
+					ogImageUrl,
 				});
 				if (onSave) {
 					onSave(result);
@@ -341,6 +468,87 @@ export function LinkSheet({
 					</FormItem>
 				)}
 			/>
+
+			<div className="h-px bg-border" />
+
+			<AdvancedOptions>
+				{/* Link Expiration */}
+				<div className="space-y-3">
+					<div className="flex items-center gap-2">
+						<CalendarIcon size={16} weight="duotone" />
+						<span className="font-medium text-sm">Link Expiration</span>
+					</div>
+
+					<FormField
+						control={form.control}
+						name="expiresAt"
+						render={({ field }) => (
+							<FormItem>
+								<Label className="text-xs" htmlFor="expires-at">
+									Expiration Date & Time
+								</Label>
+								<FormControl>
+									<Input
+										className="h-8 text-sm"
+										id="expires-at"
+										type="datetime-local"
+										{...field}
+									/>
+								</FormControl>
+								<FormDescription className="text-xs">
+									Leave empty for no expiration
+								</FormDescription>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					<FormField
+						control={form.control}
+						name="expiredRedirectUrl"
+						render={({ field }) => (
+							<FormItem>
+								<Label className="text-xs" htmlFor="expired-redirect">
+									Expired Redirect URL
+								</Label>
+								<FormControl>
+									<Input
+										className="h-8 text-sm"
+										id="expired-redirect"
+										placeholder="example.com/expired"
+										prefix="https://"
+										{...field}
+									/>
+								</FormControl>
+								<FormDescription className="text-xs">
+									Where to redirect after expiration (optional)
+								</FormDescription>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
+
+				<div className="h-px bg-border" />
+
+				{/* UTM Parameters */}
+				<UtmBuilder
+					baseUrl={fullTargetUrl}
+					onChange={setUtmParams}
+					value={utmParams}
+				/>
+
+				<div className="h-px bg-border" />
+
+				{/* OG Preview */}
+				<OgPreview
+					onChange={setOgData}
+					onUseCustomOgChange={setUseCustomOg}
+					targetUrl={fullTargetUrl}
+					useCustomOg={useCustomOg}
+					value={ogData}
+				/>
+			</AdvancedOptions>
 		</div>
 	);
 

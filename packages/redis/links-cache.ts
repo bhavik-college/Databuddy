@@ -6,6 +6,11 @@ const LINKS_CACHE_TTL = 300; // 5 minutes
 export interface CachedLink {
 	id: string;
 	targetUrl: string;
+	expiresAt: string | null;
+	expiredRedirectUrl: string | null;
+	ogTitle: string | null;
+	ogDescription: string | null;
+	ogImageUrl: string | null;
 }
 
 /**

@@ -45,11 +45,17 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 		const hasPrefix = !!prefix;
 		const hasSuffix = !!suffix;
 
+		const isSmallHeight = className?.includes("h-8");
+		const heightClass = isSmallHeight ? "h-8" : "h-9";
+
 		if (hasPrefix || hasSuffix) {
 			return (
 				<div className={cn("flex min-w-0 flex-1 items-center", wrapperClassName)}>
 					{hasPrefix && (
-						<span className="inline-flex h-9 shrink-0 items-center rounded-none border border-r-0 bg-dialog px-3 text-accent-foreground text-sm">
+						<span className={cn(
+							"inline-flex shrink-0 items-center rounded-l border border-r-0 bg-dialog px-3 text-muted-foreground text-sm",
+							heightClass
+						)}>
 							{prefix}
 						</span>
 					)}
@@ -67,8 +73,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 								hasPrefix && "rounded-l-none border-l-0",
 								hasSuffix && "rounded-r-none border-r-0",
 								!hasPrefix && !hasSuffix && "rounded",
-								hasPrefix && !hasSuffix && "rounded-r-sm",
-								!hasPrefix && hasSuffix && "rounded-l-sm",
+								hasPrefix && !hasSuffix && "rounded-r",
+								!hasPrefix && hasSuffix && "rounded-l",
 								className
 							)}
 							data-slot="input"
@@ -98,7 +104,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 						)}
 					</div>
 					{hasSuffix && (
-						<span className="inline-flex h-9 shrink-0 items-center rounded-none border border-l-0 bg-dialog px-3 text-accent-foreground text-sm">
+						<span className={cn(
+							"inline-flex shrink-0 items-center rounded-r border border-l-0 bg-dialog px-3 text-muted-foreground text-sm",
+							heightClass
+						)}>
 							{suffix}
 						</span>
 					)}

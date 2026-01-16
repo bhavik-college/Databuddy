@@ -75,6 +75,11 @@ const createLinkSchema = z.object({
 			"Slug can only contain letters, numbers, hyphens, and underscores"
 		)
 		.optional(),
+	expiresAt: z.date().nullable().optional(),
+	expiredRedirectUrl: z.url().nullable().optional(),
+	ogTitle: z.string().max(200).nullable().optional(),
+	ogDescription: z.string().max(500).nullable().optional(),
+	ogImageUrl: z.url().nullable().optional(),
 });
 
 const updateLinkSchema = z.object({
@@ -90,6 +95,11 @@ const updateLinkSchema = z.object({
 			"Slug can only contain letters, numbers, hyphens, and underscores"
 		)
 		.optional(),
+	expiresAt: z.string().datetime().nullable().optional(),
+	expiredRedirectUrl: z.url().nullable().optional(),
+	ogTitle: z.string().max(200).nullable().optional(),
+	ogDescription: z.string().max(500).nullable().optional(),
+	ogImageUrl: z.url().nullable().optional(),
 });
 
 const deleteLinkSchema = z.object({
@@ -156,6 +166,18 @@ export const linksRouter = {
 				});
 			}
 
+			const linkValues = {
+				organizationId: input.organizationId,
+				createdBy: context.user.id,
+				name: input.name,
+				targetUrl: input.targetUrl,
+				expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
+				expiredRedirectUrl: input.expiredRedirectUrl ?? null,
+				ogTitle: input.ogTitle ?? null,
+				ogDescription: input.ogDescription ?? null,
+				ogImageUrl: input.ogImageUrl ?? null,
+			};
+
 			if (input.slug) {
 				try {
 					const linkId = randomUUIDv7();
@@ -163,11 +185,8 @@ export const linksRouter = {
 						.insert(links)
 						.values({
 							id: linkId,
-							organizationId: input.organizationId,
-							createdBy: context.user.id,
 							slug: input.slug,
-							name: input.name,
-							targetUrl: input.targetUrl,
+							...linkValues,
 						})
 						.returning();
 
@@ -201,11 +220,8 @@ export const linksRouter = {
 						.insert(links)
 						.values({
 							id: linkId,
-							organizationId: input.organizationId,
-							createdBy: context.user.id,
 							slug,
-							name: input.name,
-							targetUrl: input.targetUrl,
+							...linkValues,
 						})
 						.returning();
 
@@ -257,7 +273,7 @@ export const linksRouter = {
 				}
 			}
 
-			const { id, ...updates } = input;
+			const { id, expiresAt, ...updates } = input;
 			const oldSlug = link.slug;
 
 			try {
@@ -265,6 +281,7 @@ export const linksRouter = {
 					.update(links)
 					.set({
 						...updates,
+						expiresAt: expiresAt !== undefined ? (expiresAt ? new Date(expiresAt) : null) : undefined,
 						updatedAt: new Date(),
 					})
 					.where(eq(links.id, id))

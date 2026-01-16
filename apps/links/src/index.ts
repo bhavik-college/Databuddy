@@ -1,10 +1,12 @@
 import { Elysia } from "elysia";
 import { disconnectProducer } from "./lib/producer";
+import { expiredRoute } from "./routes/expired";
 import { redirectRoute } from "./routes/redirect";
 
 const app = new Elysia()
 	.get("/", () => ({ status: "ok" }))
 	.get("/health", () => ({ status: "ok" }))
+	.use(expiredRoute)
 	.use(redirectRoute);
 
 process.on("SIGTERM", async () => {
