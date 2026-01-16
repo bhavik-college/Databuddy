@@ -24,6 +24,7 @@ interface ReferrerEntry {
 	referrer: string;
 	clicks: number;
 	percentage: number;
+	domain?: string;
 }
 
 interface TimeSeriesEntry {

@@ -44,6 +44,27 @@ interface ReferrerEntry {
 	referrer: string;
 	clicks: number;
 	percentage: number;
+	domain?: string;
+}
+
+function extractDomain(referrer: string | undefined): string | undefined {
+	if (!referrer || referrer === "Direct" || referrer === "") {
+		return undefined;
+	}
+	try {
+		// If it already looks like a URL, parse it
+		if (referrer.startsWith("http://") || referrer.startsWith("https://")) {
+			return new URL(referrer).hostname;
+		}
+		// If it's just a domain or path like "t.co/" or "google.com"
+		const cleaned = referrer.replace(/^\/+|\/+$/g, "");
+		if (cleaned.includes(".")) {
+			return cleaned.split("/")[0];
+		}
+		return undefined;
+	} catch {
+		return undefined;
+	}
 }
 
 interface GeoEntry {
@@ -282,9 +303,18 @@ function createReferrerColumns(): ColumnDef<ReferrerEntry>[] {
 			id: "name",
 			accessorKey: "name",
 			header: "Source",
-			cell: ({ row }: CellContext<ReferrerEntry, unknown>) => (
-				<ReferrerSourceCell {...row.original} />
-			),
+			cell: ({ row }: CellContext<ReferrerEntry, unknown>) => {
+				const entry = row.original;
+				const domain =
+					entry.domain || extractDomain(entry.referrer || entry.name);
+				return (
+					<ReferrerSourceCell
+						domain={domain}
+						name={entry.name}
+						referrer={entry.referrer}
+					/>
+				);
+			},
 		},
 		{
 			id: "clicks",

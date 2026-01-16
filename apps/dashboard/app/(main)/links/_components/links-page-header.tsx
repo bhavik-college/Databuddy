@@ -81,7 +81,7 @@ export function LinksPageHeader({
 								),
 								"aria-hidden": "true",
 								size: 24,
-								weight: "fill",
+								weight: "duotone",
 							})}
 						</div>
 						<div>

@@ -30,7 +30,7 @@ export function PercentageBadge({
 				className
 			)}
 		>
-			{percentage}%
+			{percentage.toFixed(1)}%
 		</span>
 	);
 }

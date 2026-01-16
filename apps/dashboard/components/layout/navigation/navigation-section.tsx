@@ -139,7 +139,7 @@ export const NavigationSection = memo(function NavigationSectionComponent({
 				onClick={() => toggleAccordion(title, true)}
 				type="button"
 			>
-				<Icon className="size-5 shrink-0 text-sidebar-ring" weight="fill" />
+				<Icon className="size-5 shrink-0 text-sidebar-ring" weight="duotone" />
 				<span className="flex-1 truncate text-sm">{title}</span>
 				<CaretDownIcon
 					className={clsx(

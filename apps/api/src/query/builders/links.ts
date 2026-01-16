@@ -237,6 +237,7 @@ export const LinkShortenerBuilders: Record<string, SimpleQueryConfig> = {
 		},
 		timeField: "timestamp",
 		customizable: false,
+		plugins: { parseReferrers: true },
 	},
 
 	link_top_countries: {
