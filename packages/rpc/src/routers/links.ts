@@ -69,13 +69,13 @@ const getLinkSchema = z.object({
 const createLinkSchema = z.object({
 	organizationId: z.string(),
 	name: z.string().min(1).max(255),
-	targetUrl: z.string().url(),
+	targetUrl: z.url(),
 });
 
 const updateLinkSchema = z.object({
 	id: z.string(),
 	name: z.string().min(1).max(255).optional(),
-	targetUrl: z.string().url().optional(),
+	targetUrl: z.url().optional(),
 });
 
 const deleteLinkSchema = z.object({

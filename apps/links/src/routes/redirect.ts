@@ -1,15 +1,9 @@
-import { createHash } from "node:crypto";
 import { and, clickHouse, db, eq, isNull, links } from "@databuddy/db";
 import { Elysia, t } from "elysia";
-
-const getDailySalt = () => new Date().toISOString().split("T")[0];
-const hashIP = (ip: string) =>
-	createHash("sha256")
-		.update(ip + getDailySalt())
-		.digest("hex");
+import { hashIp } from "../utils/hash";
 
 export const redirectRoute = new Elysia().get(
-	"/r/:slug",
+	"/:slug",
 	async ({ params, request, set }) => {
 		const link = await db.query.links.findFirst({
 			where: and(eq(links.slug, params.slug), isNull(links.deletedAt)),
@@ -17,21 +11,20 @@ export const redirectRoute = new Elysia().get(
 
 		if (!link) {
 			set.status = 404;
-			return { success: false, error: "Link not found" };
+			return { error: "Link not found" };
 		}
 
-		const referrer = request.headers.get("referer") || null;
-		const userAgent = request.headers.get("user-agent") || null;
+		const referrer = request.headers.get("referer");
+		const userAgent = request.headers.get("user-agent");
 		const forwardedFor = request.headers.get("x-forwarded-for");
 		const ip = forwardedFor?.split(",")[0]?.trim() || "unknown";
-		const ipHash = hashIP(ip);
 
-		const country = request.headers.get("cf-ipcountry") || null;
-		const city = request.headers.get("cf-ipcity") || null;
-		const region = request.headers.get("cf-ipregion") || null;
+		const country = request.headers.get("cf-ipcountry");
+		const city = request.headers.get("cf-ipcity");
+		const region = request.headers.get("cf-ipregion");
 
-		try {
-			await clickHouse.insert({
+		clickHouse
+			.insert({
 				table: "analytics.link_visits",
 				values: [
 					{
@@ -43,7 +36,7 @@ export const redirectRoute = new Elysia().get(
 							.replace("Z", ""),
 						referrer,
 						user_agent: userAgent,
-						ip_hash: ipHash,
+						ip_hash: hashIp(ip),
 						country,
 						region,
 						city,
@@ -52,14 +45,10 @@ export const redirectRoute = new Elysia().get(
 					},
 				],
 				format: "JSONEachRow",
-			});
-		} catch (error) {
-			console.error("Failed to track link visit:", error);
-		}
+			})
+			.catch((error) => console.error("Failed to track visit:", error));
 
-		set.status = 302;
-		set.headers.location = link.targetUrl;
-		return;
+		set.redirect = link.targetUrl;
 	},
 	{
 		params: t.Object({
