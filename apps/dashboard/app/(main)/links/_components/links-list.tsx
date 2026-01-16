@@ -11,6 +11,7 @@ interface LinksListProps {
 	onLinkClick: (link: Link) => void;
 	onEditLink: (link: Link) => void;
 	onDeleteLink: (linkId: string) => void;
+	onShowQr: (link: Link) => void;
 	onCreateLink: () => void;
 }
 
@@ -20,6 +21,7 @@ export function LinksList({
 	onLinkClick,
 	onEditLink,
 	onDeleteLink,
+	onShowQr,
 	onCreateLink,
 }: LinksListProps) {
 	if (isLoading) {
@@ -52,6 +54,7 @@ export function LinksList({
 					onClick={onLinkClick}
 					onDelete={onDeleteLink}
 					onEdit={onEditLink}
+					onShowQr={onShowQr}
 				/>
 			))}
 		</div>

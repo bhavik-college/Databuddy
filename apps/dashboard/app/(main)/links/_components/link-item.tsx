@@ -5,6 +5,7 @@ import {
 	DotsThreeIcon,
 	LinkIcon,
 	PencilSimpleIcon,
+	QrCodeIcon,
 	TrashIcon,
 } from "@phosphor-icons/react";
 import dayjs from "dayjs";
@@ -33,6 +34,7 @@ interface LinkItemProps {
 	onClick: (link: Link) => void;
 	onEdit: (link: Link) => void;
 	onDelete: (linkId: string) => void;
+	onShowQr: (link: Link) => void;
 	className?: string;
 }
 
@@ -41,6 +43,7 @@ export function LinkItem({
 	onClick,
 	onEdit,
 	onDelete,
+	onShowQr,
 	className,
 }: LinkItemProps) {
 	const shortUrl = `${LINKS_BASE_URL.replace("https://", "")}/${link.slug}`;
@@ -152,6 +155,10 @@ export function LinkItem({
 						<DropdownMenuItem className="gap-2" onClick={handleCopy}>
 							<CopyIcon className="size-4" weight="duotone" />
 							Copy Link
+						</DropdownMenuItem>
+						<DropdownMenuItem className="gap-2" onClick={() => onShowQr(link)}>
+							<QrCodeIcon className="size-4" weight="duotone" />
+							QR Code
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem className="gap-2" onClick={() => onEdit(link)}>

@@ -3,14 +3,16 @@
 import { LinkIcon } from "@phosphor-icons/react/dist/ssr/Link";
 import { TrendDownIcon } from "@phosphor-icons/react/dist/ssr/TrendDown";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { type Link, useDeleteLink, useLinks } from "@/hooks/use-links";
-import { LinkDialog } from "./_components/link-dialog";
 import { LinkItemSkeleton } from "./_components/link-item";
+import { LinkSheet } from "./_components/link-sheet";
 import { LinksList } from "./_components/links-list";
 import { LinksPageHeader } from "./_components/links-page-header";
+import { LinksSearchBar } from "./_components/links-search-bar";
+import { QrCodeDialog } from "./_components/qr-code-dialog";
 
 function LinksListSkeleton() {
 	return (
@@ -24,9 +26,11 @@ function LinksListSkeleton() {
 
 export default function LinksPage() {
 	const router = useRouter();
-	const [isDialogOpen, setIsDialogOpen] = useState(false);
+	const [isSheetOpen, setIsSheetOpen] = useState(false);
 	const [editingLink, setEditingLink] = useState<Link | null>(null);
 	const [deletingLinkId, setDeletingLinkId] = useState<string | null>(null);
+	const [qrLink, setQrLink] = useState<Link | null>(null);
+	const [filteredLinks, setFilteredLinks] = useState<Link[]>([]);
 
 	const { links, isLoading, isError, isFetching, refetch } = useLinks();
 	const deleteLinkMutation = useDeleteLink();
@@ -39,6 +43,14 @@ export default function LinksPage() {
 			console.error("Failed to delete link:", error);
 		}
 	};
+
+	const handleFilteredLinksChange = useCallback((newFilteredLinks: Link[]) => {
+		setFilteredLinks(newFilteredLinks);
+	}, []);
+
+	const handleShowQr = useCallback((link: Link) => {
+		setQrLink(link);
+	}, []);
 
 	if (isError) {
 		return (
@@ -63,6 +75,10 @@ export default function LinksPage() {
 		);
 	}
 
+	const displayLinks = isLoading ? [] : filteredLinks;
+	const showEmptySearch =
+		!isLoading && links.length > 0 && filteredLinks.length === 0;
+
 	return (
 		<div className="relative flex h-full flex-col">
 			<LinksPageHeader
@@ -79,7 +95,7 @@ export default function LinksPage() {
 				isRefreshing={isFetching}
 				onCreateAction={() => {
 					setEditingLink(null);
-					setIsDialogOpen(true);
+					setIsSheetOpen(true);
 				}}
 				onRefreshAction={() => refetch()}
 				subtitle={
@@ -90,37 +106,59 @@ export default function LinksPage() {
 				title="Links"
 			/>
 
+			{!isLoading && links.length > 0 && (
+				<LinksSearchBar
+					links={links}
+					onFilteredLinksChange={handleFilteredLinksChange}
+				/>
+			)}
+
 			{isLoading ? (
 				<LinksListSkeleton />
+			) : showEmptySearch ? (
+				<div className="flex flex-1 items-center justify-center py-16">
+					<div className="text-center">
+						<p className="text-muted-foreground">No links match your search</p>
+					</div>
+				</div>
 			) : (
 				<LinksList
 					isLoading={isLoading}
-					links={links}
+					links={displayLinks}
 					onCreateLink={() => {
 						setEditingLink(null);
-						setIsDialogOpen(true);
+						setIsSheetOpen(true);
 					}}
 					onDeleteLink={(linkId) => setDeletingLinkId(linkId)}
 					onEditLink={(link) => {
 						setEditingLink(link);
-						setIsDialogOpen(true);
+						setIsSheetOpen(true);
 					}}
 					onLinkClick={(link) => router.push(`/links/${link.id}`)}
+					onShowQr={handleShowQr}
 				/>
 			)}
 
-			{isDialogOpen && (
-				<LinkDialog
-					link={editingLink}
-					onOpenChange={(open) => {
-						if (!open) {
-							setIsDialogOpen(false);
-							setEditingLink(null);
-						}
-					}}
-					open={isDialogOpen}
-				/>
-			)}
+			<LinkSheet
+				link={editingLink}
+				onOpenChange={(open) => {
+					if (open) {
+						setIsSheetOpen(true);
+					} else {
+						setIsSheetOpen(false);
+						setEditingLink(null);
+					}
+				}}
+				open={isSheetOpen}
+			/>
+
+			<QrCodeDialog
+				link={qrLink}
+				onOpenChange={(open) => {
+					if (!open) setQrLink(null);
+				}}
+				open={!!qrLink}
+			/>
 
 			{deletingLinkId && (
 				<DeleteDialog

@@ -76,6 +76,7 @@
     "react-hotkeys-hook": "^5.2.1",
     "react-image-crop": "^11.0.10",
     "react-leaflet": "^5.0.0",
+    "react-qrcode-logo": "^4.0.0",
     "react-resizable-panels": "^3.0.6",
     "react-textarea-autosize": "^8.5.9",
     "recharts": "^2.15.4",
