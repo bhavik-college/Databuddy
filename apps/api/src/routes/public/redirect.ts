@@ -1,6 +1,5 @@
-import { and, db, eq, links, isNull } from "@databuddy/db";
-import { clickHouse } from "@databuddy/db";
 import { createHash } from "node:crypto";
+import { and, clickHouse, db, eq, isNull, links } from "@databuddy/db";
 import { Elysia, t } from "elysia";
 
 const getDailySalt = () => new Date().toISOString().split("T")[0];
@@ -21,7 +20,7 @@ export const redirectRoute = new Elysia().get(
 			return { success: false, error: "Link not found" };
 		}
 
-		const referer = request.headers.get("referer") || null;
+		const referrer = request.headers.get("referer") || null;
 		const userAgent = request.headers.get("user-agent") || null;
 		const forwardedFor = request.headers.get("x-forwarded-for");
 		const ip = forwardedFor?.split(",")[0]?.trim() || "unknown";
@@ -38,9 +37,11 @@ export const redirectRoute = new Elysia().get(
 					{
 						id: crypto.randomUUID(),
 						link_id: link.id,
-						workspace_id: link.workspaceId,
-						visited_at: new Date().toISOString().replace("T", " ").replace("Z", ""),
-						referer,
+						timestamp: new Date()
+							.toISOString()
+							.replace("T", " ")
+							.replace("Z", ""),
+						referrer,
 						user_agent: userAgent,
 						ip_hash: ipHash,
 						country,
@@ -53,7 +54,6 @@ export const redirectRoute = new Elysia().get(
 				format: "JSONEachRow",
 			});
 		} catch (error) {
-			// Log error but don't block redirect
 			console.error("Failed to track link visit:", error);
 		}
 

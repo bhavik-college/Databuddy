@@ -1,12 +1,5 @@
 import { websitesApi } from "@databuddy/auth";
-import {
-	and,
-	chQuery,
-	desc,
-	eq,
-	isNull,
-	links,
-} from "@databuddy/db";
+import { and, chQuery, desc, eq, isNull, links } from "@databuddy/db";
 import { ORPCError } from "@orpc/server";
 import { randomUUIDv7 } from "bun";
 import { z } from "zod";
@@ -28,7 +21,7 @@ function generateSlug(): string {
 
 async function authorizeOrganizationAccess(
 	context: Context,
-	organizationId: string,
+	_organizationId: string,
 	permission: "read" | "create" | "update" | "delete" = "read"
 ): Promise<void> {
 	if (!context.user) {
@@ -46,7 +39,12 @@ async function authorizeOrganizationAccess(
 		headersObj[key] = value;
 	});
 
-	const perm = permission === "read" ? "read" : permission === "delete" ? "delete" : "create";
+	const perm =
+		permission === "read"
+			? "read"
+			: permission === "delete"
+				? "delete"
+				: "create";
 	const { success } = await websitesApi.hasPermission({
 		headers: headersObj,
 		body: { permissions: { website: [perm] } },
@@ -101,7 +99,7 @@ export const linksRouter = {
 				.from(links)
 				.where(
 					and(
-						eq(links.workspaceId, input.organizationId),
+						eq(links.organizationId, input.organizationId),
 						isNull(links.deletedAt)
 					)
 				)
@@ -119,7 +117,7 @@ export const linksRouter = {
 				.where(
 					and(
 						eq(links.id, input.id),
-						eq(links.workspaceId, input.organizationId),
+						eq(links.organizationId, input.organizationId),
 						isNull(links.deletedAt)
 					)
 				)
@@ -143,7 +141,6 @@ export const linksRouter = {
 				"create"
 			);
 
-			// Validate targetUrl is absolute http/https
 			const url = new URL(input.targetUrl);
 			if (url.protocol !== "http:" && url.protocol !== "https:") {
 				throw new ORPCError("BAD_REQUEST", {
@@ -151,23 +148,21 @@ export const linksRouter = {
 				});
 			}
 
-			// Generate unique slug with retry on collision
-			// Generate unique slug with retry on collision
 			let slug = "";
 			let attempts = 0;
 			const maxAttempts = 10;
 
 			while (attempts < maxAttempts) {
 				slug = generateSlug();
-				
+
 				try {
 					const linkId = randomUUIDv7();
 					const [newLink] = await context.db
 						.insert(links)
 						.values({
 							id: linkId,
-							workspaceId: input.organizationId,
-							createdById: context.user.id,
+							organizationId: input.organizationId,
+							createdBy: context.user.id,
 							slug,
 							name: input.name,
 							targetUrl: input.targetUrl,
@@ -176,7 +171,11 @@ export const linksRouter = {
 					return newLink;
 				} catch (error) {
 					// If unique constraint violation, retry with new slug
-					if (error?.code === '23505' && error?.constraint === 'links_slug_unique') {
+					const dbError = error as { code?: string; constraint?: string };
+					if (
+						dbError.code === "23505" &&
+						dbError.constraint === "links_slug_unique"
+					) {
 						attempts++;
 						continue;
 					}
@@ -187,21 +186,6 @@ export const linksRouter = {
 			throw new ORPCError("INTERNAL_SERVER_ERROR", {
 				message: "Failed to generate unique slug",
 			});
-
-			const linkId = randomUUIDv7();
-			const [newLink] = await context.db
-				.insert(links)
-				.values({
-					id: linkId,
-					workspaceId: input.organizationId,
-					createdById: context.user.id,
-					slug,
-					name: input.name,
-					targetUrl: input.targetUrl,
-				})
-				.returning();
-
-			return newLink;
 		}),
 
 	update: protectedProcedure
@@ -220,9 +204,8 @@ export const linksRouter = {
 			}
 
 			const link = existingLink[0];
-			await authorizeOrganizationAccess(context, link.workspaceId, "update");
+			await authorizeOrganizationAccess(context, link.organizationId, "update");
 
-			// Validate targetUrl if provided
 			if (input.targetUrl) {
 				const url = new URL(input.targetUrl);
 				if (url.protocol !== "http:" && url.protocol !== "https:") {
@@ -249,7 +232,7 @@ export const linksRouter = {
 		.input(deleteLinkSchema)
 		.handler(async ({ context, input }) => {
 			const existingLink = await context.db
-				.select({ workspaceId: links.workspaceId })
+				.select({ organizationId: links.organizationId })
 				.from(links)
 				.where(and(eq(links.id, input.id), isNull(links.deletedAt)))
 				.limit(1);
@@ -262,7 +245,7 @@ export const linksRouter = {
 
 			await authorizeOrganizationAccess(
 				context,
-				existingLink[0].workspaceId,
+				existingLink[0].organizationId,
 				"delete"
 			);
 
@@ -278,7 +261,7 @@ export const linksRouter = {
 		.input(getLinkStatsSchema)
 		.handler(async ({ context, input }) => {
 			const existingLink = await context.db
-				.select({ workspaceId: links.workspaceId })
+				.select({ organizationId: links.organizationId })
 				.from(links)
 				.where(and(eq(links.id, input.id), isNull(links.deletedAt)))
 				.limit(1);
@@ -291,61 +274,65 @@ export const linksRouter = {
 
 			await authorizeOrganizationAccess(
 				context,
-				existingLink[0].workspaceId,
+				existingLink[0].organizationId,
 				"read"
 			);
 
-			const fromDate = input.from || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+			const fromDate =
+				input.from ||
+				new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 			const toDate = input.to || new Date().toISOString();
 
-			// Total clicks
 			const totalClicksResult = await chQuery<{ total: number }>(
 				`SELECT count() as total
 				FROM analytics.link_visits
 				WHERE link_id = {linkId:String}
-					AND visited_at >= {from:DateTime64(3)}
-					AND visited_at <= {to:DateTime64(3)}`,
+					AND timestamp >= {from:DateTime64(3)}
+					AND timestamp <= {to:DateTime64(3)}`,
 				{ linkId: input.id, from: fromDate, to: toDate }
 			);
 
-			// Clicks by day
 			const clicksByDayResult = await chQuery<{ date: string; clicks: number }>(
 				`SELECT
-					toDate(visited_at) as date,
+					toDate(timestamp) as date,
 					count() as clicks
 				FROM analytics.link_visits
 				WHERE link_id = {linkId:String}
-					AND visited_at >= {from:DateTime64(3)}
-					AND visited_at <= {to:DateTime64(3)}
+					AND timestamp >= {from:DateTime64(3)}
+					AND timestamp <= {to:DateTime64(3)}
 				GROUP BY date
 				ORDER BY date`,
 				{ linkId: input.id, from: fromDate, to: toDate }
 			);
 
-			// Top referrers
-			const topReferrersResult = await chQuery<{ referer: string; clicks: number }>(
+			const topReferrersResult = await chQuery<{
+				referrer: string;
+				clicks: number;
+			}>(
 				`SELECT
-					coalesce(referer, 'Direct') as referer,
+					coalesce(referrer, 'Direct') as referrer,
 					count() as clicks
 				FROM analytics.link_visits
 				WHERE link_id = {linkId:String}
-					AND visited_at >= {from:DateTime64(3)}
-					AND visited_at <= {to:DateTime64(3)}
-				GROUP BY referer
+					AND timestamp >= {from:DateTime64(3)}
+					AND timestamp <= {to:DateTime64(3)}
+				GROUP BY referrer
 				ORDER BY clicks DESC
 				LIMIT 10`,
 				{ linkId: input.id, from: fromDate, to: toDate }
 			);
 
-			// Top countries
-			const topCountriesResult = await chQuery<{ country: string; clicks: number }>(
+			const topCountriesResult = await chQuery<{
+				country: string;
+				clicks: number;
+			}>(
 				`SELECT
 					coalesce(country, 'Unknown') as country,
 					count() as clicks
 				FROM analytics.link_visits
 				WHERE link_id = {linkId:String}
-					AND visited_at >= {from:DateTime64(3)}
-					AND visited_at <= {to:DateTime64(3)}
+					AND timestamp >= {from:DateTime64(3)}
+					AND timestamp <= {to:DateTime64(3)}
 				GROUP BY country
 				ORDER BY clicks DESC
 				LIMIT 10`,

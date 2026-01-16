@@ -171,24 +171,27 @@ export const flagsToTargetGroupsRelations = relations(
 	})
 );
 
-export const uptimeSchedulesRelations = relations(uptimeSchedules, ({ one }) => ({
-	website: one(websites, {
-		fields: [uptimeSchedules.websiteId],
-		references: [websites.id],
-	}),
-	user: one(user, {
-		fields: [uptimeSchedules.userId],
-		references: [user.id],
-	}),
-}));
+export const uptimeSchedulesRelations = relations(
+	uptimeSchedules,
+	({ one }) => ({
+		website: one(websites, {
+			fields: [uptimeSchedules.websiteId],
+			references: [websites.id],
+		}),
+		user: one(user, {
+			fields: [uptimeSchedules.userId],
+			references: [user.id],
+		}),
+	})
+);
 
 export const linksRelations = relations(links, ({ one }) => ({
 	organization: one(organization, {
-		fields: [links.workspaceId],
+		fields: [links.organizationId],
 		references: [organization.id],
 	}),
-	createdBy: one(user, {
-		fields: [links.createdById],
+	creator: one(user, {
+		fields: [links.createdBy],
 		references: [user.id],
 	}),
 }));

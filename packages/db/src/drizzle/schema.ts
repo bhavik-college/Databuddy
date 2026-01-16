@@ -464,10 +464,7 @@ export const team = pgTable(
 );
 
 export const apiKeyType = pgEnum("api_key_type", ["user", "sdk", "automation"]);
-export const apiScope = pgEnum("api_scope", [
-	"read:data",
-	"write:llm",
-]);
+export const apiScope = pgEnum("api_scope", ["read:data", "write:llm"]);
 
 // Resource type for flexible, future-proof per-resource access control
 export const apiResourceType = pgEnum("api_resource_type", [
@@ -861,8 +858,8 @@ export const links = pgTable(
 	"links",
 	{
 		id: text().primaryKey().notNull(),
-		workspaceId: text("workspace_id").notNull(),
-		createdById: text("created_by_id").notNull(),
+		organizationId: text("organization_id").notNull(),
+		createdBy: text("created_by").notNull(),
 		slug: text().notNull(),
 		name: text().notNull(),
 		targetUrl: text("target_url").notNull(),
@@ -875,27 +872,27 @@ export const links = pgTable(
 			.notNull(),
 	},
 	(table) => [
-		index("links_workspace_id_idx").using(
+		index("links_organization_id_idx").using(
 			"btree",
-			table.workspaceId.asc().nullsLast().op("text_ops")
+			table.organizationId.asc().nullsLast().op("text_ops")
 		),
-		index("links_created_by_id_idx").using(
+		index("links_created_by_idx").using(
 			"btree",
-			table.createdById.asc().nullsLast().op("text_ops")
+			table.createdBy.asc().nullsLast().op("text_ops")
 		),
 		uniqueIndex("links_slug_unique").using(
 			"btree",
 			table.slug.asc().nullsLast().op("text_ops")
 		),
 		foreignKey({
-			columns: [table.workspaceId],
+			columns: [table.organizationId],
 			foreignColumns: [organization.id],
-			name: "links_workspace_id_fkey",
+			name: "links_organization_id_fkey",
 		}).onDelete("cascade"),
 		foreignKey({
-			columns: [table.createdById],
+			columns: [table.createdBy],
 			foreignColumns: [user.id],
-			name: "links_created_by_id_fkey",
+			name: "links_created_by_fkey",
 		}).onDelete("cascade"),
 	]
 );

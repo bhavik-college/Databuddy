@@ -225,24 +225,24 @@ GROUP BY client_id, path, metric_name, hour
 
 const CREATE_LINK_VISITS_TABLE = `
 CREATE TABLE IF NOT EXISTS ${DATABASES.ANALYTICS}.link_visits (
-  id UUID,
-  link_id String,
-  workspace_id String,
-  visited_at DateTime64(3, 'UTC'),
-  referer Nullable(String),
-  user_agent Nullable(String),
-  ip_hash String,
-  country Nullable(String),
-  region Nullable(String),
-  city Nullable(String),
-  browser_name Nullable(String),
-  device_type Nullable(String),
+  id UUID CODEC(ZSTD(1)),
+  link_id String CODEC(ZSTD(1)),
+  timestamp DateTime64(3, 'UTC') CODEC(Delta(8), ZSTD(1)),
+  referrer Nullable(String) CODEC(ZSTD(1)),
+  user_agent Nullable(String) CODEC(ZSTD(1)),
+  ip_hash String CODEC(ZSTD(1)),
+  country Nullable(String) CODEC(ZSTD(1)),
+  region Nullable(String) CODEC(ZSTD(1)),
+  city Nullable(String) CODEC(ZSTD(1)),
+  browser_name Nullable(String) CODEC(ZSTD(1)),
+  device_type Nullable(String) CODEC(ZSTD(1)),
 
   INDEX idx_link_id link_id TYPE bloom_filter(0.01) GRANULARITY 1
-) ENGINE = MergeTree()
-PARTITION BY toYYYYMM(visited_at)
-ORDER BY (workspace_id, link_id, visited_at)
-SETTINGS index_granularity = 8192
+) ENGINE = MergeTree
+PARTITION BY toDate(timestamp)
+ORDER BY (link_id, timestamp)
+TTL toDateTime(timestamp) + INTERVAL 1 YEAR
+SETTINGS index_granularity = 8192, ttl_only_drop_parts = 1
 `;
 
 const CREATE_BLOCKED_TRAFFIC_TABLE = `
@@ -705,9 +705,8 @@ export interface AICallSpan {
 export interface LinkVisit {
 	id: string;
 	link_id: string;
-	workspace_id: string;
-	visited_at: number;
-	referer?: string;
+	timestamp: number;
+	referrer?: string;
 	user_agent?: string;
 	ip_hash: string;
 	country?: string;
