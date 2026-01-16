@@ -1,17 +1,16 @@
 import { and, clickHouse, db, eq, isNull, links } from "@databuddy/db";
-import { Elysia, t } from "elysia";
+import { Elysia, redirect, t } from "elysia";
 import { hashIp } from "../utils/hash";
 
 export const redirectRoute = new Elysia().get(
 	"/:slug",
-	async ({ params, request, set }) => {
+	async ({ params, request, error }) => {
 		const link = await db.query.links.findFirst({
 			where: and(eq(links.slug, params.slug), isNull(links.deletedAt)),
 		});
 
 		if (!link) {
-			set.status = 404;
-			return { error: "Link not found" };
+			return error(404, { error: "Link not found" });
 		}
 
 		const referrer = request.headers.get("referer");
@@ -46,9 +45,9 @@ export const redirectRoute = new Elysia().get(
 				],
 				format: "JSONEachRow",
 			})
-			.catch((error) => console.error("Failed to track visit:", error));
+			.catch((err) => console.error("Failed to track visit:", err));
 
-		set.redirect = link.targetUrl;
+		return redirect(link.targetUrl, 302);
 	},
 	{
 		params: t.Object({
